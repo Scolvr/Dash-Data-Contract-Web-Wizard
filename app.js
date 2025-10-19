@@ -500,8 +500,8 @@
           name: '',
           threshold: 2,
           members: [
-            { id: 'member-default-1', identityId: '' },
-            { id: 'member-default-2', identityId: '' }
+            { id: 'member-default-1', identityId: '', power: '1' },
+            { id: 'member-default-2', identityId: '', power: '1' }
           ],
           permissions: {
             mint: true,
@@ -7229,7 +7229,12 @@ function buildManualActionRulesConfig(actionState, permissions) {
       payload.group = {
         name: wizardState.form.group.name,
         threshold: wizardState.form.group.threshold,
-        members: wizardState.form.group.members.map(m => m.identityId).filter(id => id),
+        members: wizardState.form.group.members
+          .filter(m => m.identityId)
+          .map(m => ({
+            identity: m.identityId,
+            power: parseInt(m.power, 10) || 1
+          })),
         permissions: wizardState.form.group.permissions
       };
     }
@@ -7647,14 +7652,15 @@ function buildManualActionRulesConfig(actionState, permissions) {
       const memberId = 'member-' + Date.now();
       wizardState.form.group.members.push({
         id: memberId,
-        identityId: ''
+        identityId: '',
+        power: '1'
       });
       renderGroupMembers();
       persistState();
 
       // Focus the new member input
       setTimeout(() => {
-        const newInput = document.querySelector(`input[data-member-id="${memberId}"]`);
+        const newInput = document.querySelector(`input[data-member-id="${memberId}"][data-field="identityId"]`);
         if (newInput) newInput.focus();
       }, 0);
     });
@@ -7681,12 +7687,20 @@ function buildManualActionRulesConfig(actionState, permissions) {
       memberEntry.className = 'field-group';
       memberEntry.style.cssText = 'padding: var(--space-3); border: 1px solid var(--color-border); border-radius: var(--border-radius-md); margin-bottom: var(--space-3);';
       memberEntry.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3);">
           <label class="wizard-field__label" style="margin-bottom: 0;">Member ${index + 1}</label>
           <button class="wizard-button wizard-button--text wizard-button--sm" type="button" data-remove-member="${member.id}">Remove</button>
         </div>
-        <input class="wizard-field__input" type="text" data-member-id="${member.id}" placeholder="Dash Platform Identity ID" value="${member.identityId || ''}">
-        <span class="field-hint">Enter the Dash Platform identity ID for this group member</span>
+        <div style="margin-bottom: var(--space-3);">
+          <label class="wizard-field__label" for="member-identity-${member.id}">Identity ID *</label>
+          <input class="wizard-field__input" type="text" id="member-identity-${member.id}" data-member-id="${member.id}" data-field="identityId" placeholder="e.g., 4ZJZ8nQ5P..." value="${member.identityId || ''}">
+          <span class="field-hint">Base58-encoded Dash Platform identity ID (43-44 characters)</span>
+        </div>
+        <div>
+          <label class="wizard-field__label" for="member-power-${member.id}">Voting Power *</label>
+          <input class="wizard-field__input" type="number" id="member-power-${member.id}" data-member-id="${member.id}" data-field="power" min="1" placeholder="e.g., 1" value="${member.power || '1'}">
+          <span class="field-hint">Weight of this member's vote (positive integer)</span>
+        </div>
       `;
       groupMembersList.appendChild(memberEntry);
     });
@@ -7697,9 +7711,10 @@ function buildManualActionRulesConfig(actionState, permissions) {
     groupMembersList.addEventListener('input', function(e) {
       if (e.target.hasAttribute('data-member-id')) {
         const memberId = e.target.getAttribute('data-member-id');
+        const field = e.target.getAttribute('data-field');
         const member = wizardState.form.group.members.find(m => m.id === memberId);
-        if (member) {
-          member.identityId = e.target.value;
+        if (member && field) {
+          member[field] = e.target.value;
           persistState();
         }
       }

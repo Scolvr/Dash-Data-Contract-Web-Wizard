@@ -7,8 +7,8 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dash Token Wizard</title>
-  <link rel="preload" href="styles.css?v=37.0.1760857080" as="style">
-  <link rel="stylesheet" href="styles.css?v=37.0.1760857080">
+  <link rel="preload" href="styles.css?v=38.0.1760857080" as="style">
+  <link rel="stylesheet" href="styles.css?v=38.0.1760857080">
 </head>
 <body>
   <div class="wizard-shell">
@@ -2420,84 +2420,7 @@
         });
       })();
 
-      // Group management functionality
-      document.addEventListener('DOMContentLoaded', function() {
-        const enableGroupCheckbox = document.getElementById('enable-group');
-        const groupConfigSection = document.getElementById('group-config-section');
-        const groupPermissionsSection = document.getElementById('group-permissions-section');
-        const addMemberButton = document.getElementById('add-group-member');
-        const membersList = document.getElementById('group-members-list');
-        let memberCount = 0;
-
-        // Toggle group configuration visibility
-        if (enableGroupCheckbox) {
-          enableGroupCheckbox.addEventListener('change', function() {
-            const isEnabled = this.checked;
-            if (groupConfigSection) {
-              groupConfigSection.style.display = isEnabled ? 'block' : 'none';
-            }
-            if (groupPermissionsSection) {
-              groupPermissionsSection.style.display = isEnabled ? 'block' : 'none';
-            }
-
-            // Add initial member if enabling for first time
-            if (isEnabled && membersList && membersList.children.length === 0) {
-              addGroupMember();
-            }
-          });
-        }
-
-        // Add group member
-        function addGroupMember() {
-          memberCount++;
-          const memberId = 'group-member-' + memberCount;
-
-          const memberEntry = document.createElement('div');
-          memberEntry.className = 'field-group';
-          memberEntry.id = memberId + '-container';
-          memberEntry.style.marginBottom = 'var(--space-3)';
-
-          memberEntry.innerHTML = `
-            <div style="display: flex; gap: var(--space-2); align-items: start;">
-              <div style="flex: 1;">
-                <label class="wizard-field__label" for="${memberId}">Member ${memberCount} Identity ID *</label>
-                <input
-                  class="wizard-field__input"
-                  id="${memberId}"
-                  name="${memberId}"
-                  type="text"
-                  placeholder="e.g., 4ZJZ8nQ5P..."
-                  pattern="^[a-zA-Z0-9]{43,44}$"
-                  aria-describedby="${memberId}-hint">
-                <span class="field-hint" id="${memberId}-hint">Base58-encoded Dash Platform identity ID (43-44 characters)</span>
-              </div>
-              <button
-                class="wizard-button wizard-button--ghost"
-                type="button"
-                onclick="removeGroupMember('${memberId}-container')"
-                style="margin-top: 28px; min-width: auto; padding: 8px 12px;"
-                aria-label="Remove member ${memberCount}">
-                ✕
-              </button>
-            </div>
-          `;
-
-          membersList.appendChild(memberEntry);
-        }
-
-        // Remove group member
-        window.removeGroupMember = function(containerId) {
-          const container = document.getElementById(containerId);
-          if (container) {
-            container.remove();
-          }
-        };
-
-        // Add member button handler
-        if (addMemberButton) {
-          addMemberButton.addEventListener('click', addGroupMember);
-        }
-      });
+      // Group management is handled in app.js
     })();
   </script>
 
