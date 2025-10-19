@@ -7509,20 +7509,12 @@ function buildManualActionRulesConfig(actionState, permissions) {
 (function initializeGroupManagement() {
   const enableGroupCheckbox = document.getElementById('enable-group');
   const groupConfigSection = document.getElementById('group-config-section');
-  const groupPermissionsSection = document.getElementById('group-permissions-section');
   const groupNameInput = document.getElementById('group-name');
   const groupThresholdInput = document.getElementById('group-threshold');
   const groupMembersList = document.getElementById('group-members-list');
   const addGroupMemberBtn = document.getElementById('add-group-member');
 
-  // Group permission checkboxes
-  const groupPermMint = document.getElementById('group-perm-mint');
-  const groupPermBurn = document.getElementById('group-perm-burn');
-  const groupPermFreeze = document.getElementById('group-perm-freeze');
-  const groupPermConfig = document.getElementById('group-perm-config');
-  const groupPermMembers = document.getElementById('group-perm-members');
-
-  if (!enableGroupCheckbox || !groupConfigSection || !groupPermissionsSection) {
+  if (!enableGroupCheckbox || !groupConfigSection) {
     console.warn('Group management elements not found');
     return;
   }
@@ -7561,13 +7553,6 @@ function buildManualActionRulesConfig(actionState, permissions) {
     if (groupNameInput) groupNameInput.value = wizardState.form.group.name;
     if (groupThresholdInput) groupThresholdInput.value = wizardState.form.group.threshold;
 
-    // Sync permission checkboxes
-    if (groupPermMint) groupPermMint.checked = wizardState.form.group.permissions.mint;
-    if (groupPermBurn) groupPermBurn.checked = wizardState.form.group.permissions.burn;
-    if (groupPermFreeze) groupPermFreeze.checked = wizardState.form.group.permissions.freeze;
-    if (groupPermConfig) groupPermConfig.checked = wizardState.form.group.permissions.config;
-    if (groupPermMembers) groupPermMembers.checked = wizardState.form.group.permissions.members;
-
     // Render existing members
     renderGroupMembers();
   }
@@ -7576,9 +7561,6 @@ function buildManualActionRulesConfig(actionState, permissions) {
   function toggleGroupSections(enabled) {
     if (groupConfigSection) {
       groupConfigSection.style.display = enabled ? 'block' : 'none';
-    }
-    if (groupPermissionsSection) {
-      groupPermissionsSection.style.display = enabled ? 'block' : 'none';
     }
   }
 
@@ -7607,42 +7589,6 @@ function buildManualActionRulesConfig(actionState, permissions) {
         wizardState.form.group.threshold = value;
         persistState();
       }
-    });
-  }
-
-  // Group permission checkboxes handlers
-  if (groupPermMint) {
-    groupPermMint.addEventListener('change', function() {
-      wizardState.form.group.permissions.mint = this.checked;
-      persistState();
-    });
-  }
-
-  if (groupPermBurn) {
-    groupPermBurn.addEventListener('change', function() {
-      wizardState.form.group.permissions.burn = this.checked;
-      persistState();
-    });
-  }
-
-  if (groupPermFreeze) {
-    groupPermFreeze.addEventListener('change', function() {
-      wizardState.form.group.permissions.freeze = this.checked;
-      persistState();
-    });
-  }
-
-  if (groupPermConfig) {
-    groupPermConfig.addEventListener('change', function() {
-      wizardState.form.group.permissions.config = this.checked;
-      persistState();
-    });
-  }
-
-  if (groupPermMembers) {
-    groupPermMembers.addEventListener('change', function() {
-      wizardState.form.group.permissions.members = this.checked;
-      persistState();
     });
   }
 
