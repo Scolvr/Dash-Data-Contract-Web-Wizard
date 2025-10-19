@@ -7,8 +7,8 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dash Token Wizard</title>
-  <link rel="preload" href="styles.css?v=35.0.1760857080" as="style">
-  <link rel="stylesheet" href="styles.css?v=35.0.1760857080">
+  <link rel="preload" href="styles.css?v=36.0.1760857080" as="style">
+  <link rel="stylesheet" href="styles.css?v=36.0.1760857080">
 </head>
 <body>
   <div class="wizard-shell">
@@ -1372,20 +1372,87 @@
         <section class="wizard-screen" id="screen-document" data-step="document" data-tab="document" hidden>
       <div class="wizard-screen__inner">
         <div class="wizard-form">
-          <h1 class="wizard-screen__title" id="title-document" tabindex="-1">Token Documentation</h1>
-          <p class="wizard-screen__subtitle">View and manage your token configuration and documentation.</p>
+          <h1 class="wizard-screen__title" id="title-document" tabindex="-1">Document Types</h1>
+          <p class="wizard-screen__subtitle">Define custom document types for your token's data contract.</p>
 
-          <!-- Documentation Card -->
-          <div class="form-card">
-            <div class="form-card__header">
-              <h3 class="form-card__title">Configuration Summary</h3>
-              <p class="form-card__description">Overview of your token settings</p>
-            </div>
+          <!-- Info Card -->
+          <div class="form-card form-card--highlight">
             <div class="form-card__body">
-              <p>This section will display your complete token configuration, including all settings from the Token and Group tabs.</p>
-              <p style="margin-bottom: 0;">Documentation features coming soon...</p>
+              <p><strong>What are document types?</strong></p>
+              <p>Document types define the structure of data that can be stored with your token on the Dash Platform. Each document type is a JSON Schema that specifies the fields and their properties.</p>
+              <p style="margin-bottom: 0;"><strong>Examples:</strong> NFT metadata • User profiles • Transaction records • Custom data structures</p>
             </div>
           </div>
+
+          <!-- Document Types List -->
+          <div class="form-card">
+            <div class="form-card__header">
+              <h3 class="form-card__title">Defined Document Types</h3>
+              <p class="form-card__description">Manage your custom document schemas</p>
+            </div>
+            <div class="form-card__body">
+              <div id="document-types-list" class="document-types-list">
+                <p class="wizard-subsection__hint" id="document-types-empty">No document types defined yet. Click "Add Document Type" to create one.</p>
+              </div>
+              <button class="wizard-button wizard-button--secondary" type="button" id="document-type-add" style="margin-top: var(--space-4);">+ Add Document Type</button>
+            </div>
+          </div>
+
+          <!-- Add/Edit Document Type Modal -->
+          <div class="document-modal" id="document-type-modal" hidden>
+            <div class="document-modal__overlay"></div>
+            <div class="document-modal__content">
+              <div class="document-modal__header">
+                <h2 class="document-modal__title" id="document-modal-title">Add Document Type</h2>
+                <button class="document-modal__close" type="button" id="document-modal-close" aria-label="Close modal">×</button>
+              </div>
+              <div class="document-modal__body">
+                <form id="document-type-form">
+                  <!-- Document Type Name -->
+                  <div class="field-group">
+                    <label class="wizard-field__label" for="document-type-name">Document Type Name *</label>
+                    <input class="wizard-field__input" id="document-type-name" name="document-type-name" type="text" placeholder="e.g., nftMetadata" pattern="[a-zA-Z][a-zA-Z0-9_]*" required>
+                    <span class="field-hint">Must start with a letter, can contain letters, numbers, and underscores</span>
+                  </div>
+
+                  <!-- JSON Schema -->
+                  <div class="field-group">
+                    <label class="wizard-field__label" for="document-type-schema">JSON Schema *</label>
+                    <textarea class="wizard-field__input wizard-field__input--code" id="document-type-schema" name="document-type-schema" rows="16" placeholder='{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "position": 0,
+      "description": "NFT name"
+    },
+    "description": {
+      "type": "string",
+      "position": 1,
+      "description": "NFT description"
+    },
+    "imageUrl": {
+      "type": "string",
+      "position": 2,
+      "description": "URL to image"
+    }
+  },
+  "additionalProperties": false,
+  "required": ["name"]
+}' required></textarea>
+                    <span class="field-hint">Enter valid JSON Schema. Each property must have "type" and "position" fields. Set "additionalProperties": false.</span>
+                  </div>
+
+                  <p class="wizard-field__message" id="document-type-message" role="status" aria-live="polite"></p>
+                </form>
+              </div>
+              <div class="document-modal__footer">
+                <button class="wizard-button wizard-button--secondary" type="button" id="document-modal-cancel">Cancel</button>
+                <button class="wizard-button wizard-button--primary" type="button" id="document-modal-save">Save Document Type</button>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>

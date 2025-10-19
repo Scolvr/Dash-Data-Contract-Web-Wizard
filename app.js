@@ -508,6 +508,7 @@
             members: false
           }
         },
+        documentTypes: {},
         advanced: {
           tradeMode: 'permissionless',
           changeControl: { ...DEFAULT_CHANGE_CONTROL_FLAGS }
@@ -7149,18 +7150,92 @@ function buildManualActionRulesConfig(actionState, permissions) {
     const rawName = wizardState.form.tokenName || '';
     const tokenName = rawName.trim() || 'Unnamed Token';
     const registrationMethod = wizardState.form.registration.method || 'mobile';
-    const base = {
+
+    // Build complete token configuration
+    const payload = {
       tokenName,
       tokenId: slugifyTokenName(tokenName),
+      conventions: {
+        name: tokenName,
+        symbol: tokenName.substring(0, 5).toUpperCase(),
+        decimals: wizardState.form.permissions.decimals || 2,
+        localizations: wizardState.form.naming.conventions.localizations || {}
+      },
+      supply_rules: {
+        base_supply: wizardState.form.permissions.baseSupply || '0',
+        max_supply: wizardState.form.permissions.useMaxSupply ? wizardState.form.permissions.maxSupply : null
+      },
+      permissions: {
+        keepsHistory: wizardState.form.permissions.keepsHistory || {},
+        startAsPaused: wizardState.form.permissions.startAsPaused || false,
+        allowTransferToFrozenBalance: wizardState.form.permissions.allowTransferToFrozenBalance || false
+      },
       registration: {
         method: registrationMethod,
         details: registrationStubFor(registrationMethod)
       }
     };
-    if (registrationMethod !== 'det') {
-      base.registration.requestedAt = new Date().toISOString();
+
+    // Add distribution rules if configured
+    if (wizardState.form.distribution) {
+      const dist = wizardState.form.distribution;
+      if (dist.cadence && dist.cadence.type) {
+        payload.distribution_rules = {
+          cadence: {
+            type: dist.cadence.type,
+            interval_blocks: dist.cadence.intervalBlocks || undefined,
+            interval_seconds: dist.cadence.intervalSeconds || undefined,
+            epoch: dist.cadence.epoch || undefined,
+            start_block: dist.cadence.startBlock || undefined,
+            start_timestamp: dist.cadence.startTimestamp || undefined
+          }
+        };
+
+        // Add emission if configured
+        if (dist.emission && dist.emission.type) {
+          payload.distribution_rules.emission = {
+            type: dist.emission.type
+          };
+          // Add emission-specific fields based on type
+          if (dist.emission.type === 'FixedAmount' && dist.emission.amount) {
+            payload.distribution_rules.emission.amount = dist.emission.amount;
+          } else if (dist.emission.type === 'Random') {
+            payload.distribution_rules.emission.min = dist.emission.min;
+            payload.distribution_rules.emission.max = dist.emission.max;
+          }
+          // Add other emission types as needed
+        }
+      }
     }
-    return base;
+
+    // Add advanced settings
+    if (wizardState.form.advanced) {
+      payload.marketplace = {
+        trade_mode: wizardState.form.advanced.tradeMode || 'permissionless'
+      };
+      payload.change_control = wizardState.form.advanced.changeControl || {};
+    }
+
+    // Add document types if any
+    if (wizardState.form.documentTypes && Object.keys(wizardState.form.documentTypes).length > 0) {
+      payload.document_types = wizardState.form.documentTypes;
+    }
+
+    // Add group configuration if enabled
+    if (wizardState.form.group && wizardState.form.group.enabled) {
+      payload.group = {
+        name: wizardState.form.group.name,
+        threshold: wizardState.form.group.threshold,
+        members: wizardState.form.group.members.map(m => m.identityId).filter(id => id),
+        permissions: wizardState.form.group.permissions
+      };
+    }
+
+    if (registrationMethod !== 'det') {
+      payload.registration.requestedAt = new Date().toISOString();
+    }
+
+    return payload;
   }
 
   function chunkPayloadIntoQRCodes(str, maxCharsPerQR = 800) {
@@ -7644,4 +7719,242 @@ function buildManualActionRulesConfig(actionState, permissions) {
   initializeGroupState();
 
   console.log('Group management initialized');
+})();
+
+// ==================== DOCUMENT TYPES MANAGEMENT ====================
+(function() {
+  const documentTypesList = document.getElementById('document-types-list');
+  const documentTypesEmpty = document.getElementById('document-types-empty');
+  const documentTypeAddButton = document.getElementById('document-type-add');
+  const documentTypeModal = document.getElementById('document-type-modal');
+  const documentModalTitle = document.getElementById('document-modal-title');
+  const documentModalClose = document.getElementById('document-modal-close');
+  const documentModalCancel = document.getElementById('document-modal-cancel');
+  const documentModalSave = document.getElementById('document-modal-save');
+  const documentTypeForm = document.getElementById('document-type-form');
+  const documentTypeNameInput = document.getElementById('document-type-name');
+  const documentTypeSchemaInput = document.getElementById('document-type-schema');
+  const documentTypeMessage = document.getElementById('document-type-message');
+
+  let editingDocumentType = null;
+
+  // Render document types list
+  function renderDocumentTypes() {
+    if (!documentTypesList) return;
+
+    const documentTypes = wizardState.form.documentTypes || {};
+    const typeNames = Object.keys(documentTypes);
+
+    // Show/hide empty message
+    if (documentTypesEmpty) {
+      documentTypesEmpty.style.display = typeNames.length === 0 ? 'block' : 'none';
+    }
+
+    // Clear existing items (except empty message)
+    const items = documentTypesList.querySelectorAll('.document-type-item');
+    items.forEach(item => item.remove());
+
+    // Render each document type
+    typeNames.forEach(typeName => {
+      const schema = documentTypes[typeName];
+      const item = document.createElement('div');
+      item.className = 'document-type-item';
+
+      const schemaPreview = JSON.stringify(schema).substring(0, 100) + '...';
+
+      item.innerHTML = `
+        <div class="document-type-item__info">
+          <div class="document-type-item__name">${typeName}</div>
+          <div class="document-type-item__schema">${schemaPreview}</div>
+        </div>
+        <div class="document-type-item__actions">
+          <button class="document-type-item__btn" data-edit-doc="${typeName}">Edit</button>
+          <button class="document-type-item__btn document-type-item__btn--delete" data-delete-doc="${typeName}">Delete</button>
+        </div>
+      `;
+
+      documentTypesList.appendChild(item);
+    });
+  }
+
+  // Open modal for adding/editing
+  function openModal(typeName = null) {
+    if (!documentTypeModal) return;
+
+    editingDocumentType = typeName;
+
+    if (typeName) {
+      // Edit mode
+      documentModalTitle.textContent = 'Edit Document Type';
+      documentTypeNameInput.value = typeName;
+      documentTypeNameInput.disabled = true; // Can't change name when editing
+      const schema = wizardState.form.documentTypes[typeName];
+      documentTypeSchemaInput.value = JSON.stringify(schema, null, 2);
+    } else {
+      // Add mode
+      documentModalTitle.textContent = 'Add Document Type';
+      documentTypeNameInput.value = '';
+      documentTypeNameInput.disabled = false;
+      documentTypeSchemaInput.value = '';
+    }
+
+    documentTypeMessage.textContent = '';
+    documentTypeModal.hidden = false;
+  }
+
+  // Close modal
+  function closeModal() {
+    if (!documentTypeModal) return;
+    documentTypeModal.hidden = true;
+    editingDocumentType = null;
+    documentTypeForm.reset();
+  }
+
+  // Save document type
+  function saveDocumentType() {
+    const typeName = documentTypeNameInput.value.trim();
+    const schemaText = documentTypeSchemaInput.value.trim();
+
+    // Validate name
+    if (!typeName) {
+      documentTypeMessage.textContent = 'Document type name is required.';
+      documentTypeMessage.style.color = 'var(--color-error)';
+      return;
+    }
+
+    if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(typeName)) {
+      documentTypeMessage.textContent = 'Name must start with a letter and contain only letters, numbers, and underscores.';
+      documentTypeMessage.style.color = 'var(--color-error)';
+      return;
+    }
+
+    // Check if name already exists (only when adding new)
+    if (!editingDocumentType && wizardState.form.documentTypes[typeName]) {
+      documentTypeMessage.textContent = 'A document type with this name already exists.';
+      documentTypeMessage.style.color = 'var(--color-error)';
+      return;
+    }
+
+    // Validate JSON
+    let schema;
+    try {
+      schema = JSON.parse(schemaText);
+    } catch (e) {
+      documentTypeMessage.textContent = 'Invalid JSON: ' + e.message;
+      documentTypeMessage.style.color = 'var(--color-error)';
+      return;
+    }
+
+    // Basic validation for Dash Platform requirements
+    if (!schema.type || schema.type !== 'object') {
+      documentTypeMessage.textContent = 'Schema must have "type": "object"';
+      documentTypeMessage.style.color = 'var(--color-error)';
+      return;
+    }
+
+    if (!schema.properties || typeof schema.properties !== 'object' || Object.keys(schema.properties).length === 0) {
+      documentTypeMessage.textContent = 'Schema must have at least one property in "properties"';
+      documentTypeMessage.style.color = 'var(--color-error)';
+      return;
+    }
+
+    if (schema.additionalProperties !== false) {
+      documentTypeMessage.textContent = 'Schema must have "additionalProperties": false';
+      documentTypeMessage.style.color = 'var(--color-error)';
+      return;
+    }
+
+    // Validate each property has type and position
+    const properties = schema.properties;
+    for (const propName in properties) {
+      const prop = properties[propName];
+      if (!prop.type) {
+        documentTypeMessage.textContent = `Property "${propName}" must have a "type" field`;
+        documentTypeMessage.style.color = 'var(--color-error)';
+        return;
+      }
+      if (typeof prop.position !== 'number') {
+        documentTypeMessage.textContent = `Property "${propName}" must have a numeric "position" field`;
+        documentTypeMessage.style.color = 'var(--color-error)';
+        return;
+      }
+    }
+
+    // Save to state
+    if (!wizardState.form.documentTypes) {
+      wizardState.form.documentTypes = {};
+    }
+
+    // If editing, remove old name first (in case it changed)
+    if (editingDocumentType && editingDocumentType !== typeName) {
+      delete wizardState.form.documentTypes[editingDocumentType];
+    }
+
+    wizardState.form.documentTypes[typeName] = schema;
+    persistState();
+    renderDocumentTypes();
+    closeModal();
+
+    console.log('Document type saved:', typeName, schema);
+  }
+
+  // Delete document type
+  function deleteDocumentType(typeName) {
+    if (!confirm(`Are you sure you want to delete the document type "${typeName}"?`)) {
+      return;
+    }
+
+    delete wizardState.form.documentTypes[typeName];
+    persistState();
+    renderDocumentTypes();
+
+    console.log('Document type deleted:', typeName);
+  }
+
+  // Event listeners
+  if (documentTypeAddButton) {
+    documentTypeAddButton.addEventListener('click', () => openModal());
+  }
+
+  if (documentModalClose) {
+    documentModalClose.addEventListener('click', closeModal);
+  }
+
+  if (documentModalCancel) {
+    documentModalCancel.addEventListener('click', closeModal);
+  }
+
+  if (documentModalSave) {
+    documentModalSave.addEventListener('click', saveDocumentType);
+  }
+
+  // Close modal on overlay click
+  if (documentTypeModal) {
+    documentTypeModal.addEventListener('click', (e) => {
+      if (e.target.classList.contains('document-modal__overlay')) {
+        closeModal();
+      }
+    });
+  }
+
+  // Handle edit and delete buttons
+  if (documentTypesList) {
+    documentTypesList.addEventListener('click', (e) => {
+      const editBtn = e.target.closest('[data-edit-doc]');
+      const deleteBtn = e.target.closest('[data-delete-doc]');
+
+      if (editBtn) {
+        const typeName = editBtn.getAttribute('data-edit-doc');
+        openModal(typeName);
+      } else if (deleteBtn) {
+        const typeName = deleteBtn.getAttribute('data-delete-doc');
+        deleteDocumentType(typeName);
+      }
+    });
+  }
+
+  // Initialize on load
+  renderDocumentTypes();
+
+  console.log('Document types management initialized');
 })();
