@@ -499,7 +499,10 @@
           enabled: false,
           name: '',
           threshold: 2,
-          members: [],
+          members: [
+            { id: 'member-default-1', identityId: '' },
+            { id: 'member-default-2', identityId: '' }
+          ],
           permissions: {
             mint: true,
             burn: true,
