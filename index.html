@@ -7,8 +7,8 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dash Token Wizard</title>
-  <link rel="preload" href="styles.css?v=39.0.1760857080" as="style">
-  <link rel="stylesheet" href="styles.css?v=39.0.1760857080">
+  <link rel="preload" href="styles.css?v=41.0.1760860000" as="style">
+  <link rel="stylesheet" href="styles.css?v=41.0.1760860000">
 </head>
 <body>
   <div class="wizard-shell">
@@ -84,6 +84,15 @@
             </a>
             <a href="#" class="wizard-nav-subitem" data-substep="permissions-manual-burn">
               <span class="wizard-nav-subitem__text">Manual Burn</span>
+            </a>
+            <a href="#" class="wizard-nav-subitem" data-substep="permissions-manual-freeze">
+              <span class="wizard-nav-subitem__text">Manual Freeze</span>
+            </a>
+            <a href="#" class="wizard-nav-subitem" data-substep="permissions-destroy-frozen">
+              <span class="wizard-nav-subitem__text">Destroy Frozen</span>
+            </a>
+            <a href="#" class="wizard-nav-subitem" data-substep="permissions-emergency">
+              <span class="wizard-nav-subitem__text">Emergency Actions</span>
             </a>
           </div>
 
@@ -494,6 +503,57 @@
             </div>
           </div>
 
+          <!-- History Tracking Card (Optional) -->
+          <div class="form-card">
+            <div class="form-card__header">
+              <h3 class="form-card__title">History Tracking <span class="wizard-badge wizard-badge--optional" style="margin-left: var(--space-2);">Optional</span></h3>
+              <p class="form-card__description">Record operations on-chain for auditing and transparency</p>
+            </div>
+            <div class="form-card__body">
+              <p class="field-hint" style="margin-bottom: var(--space-4);">Enable history tracking for specific operations. Tracked operations are recorded on-chain permanently.</p>
+
+              <div class="field-group" style="margin-bottom: var(--space-3);">
+                <label class="wizard-checkbox">
+                  <input class="wizard-checkbox__input" type="checkbox" id="permissions-history-transfers" name="permissions-history-transfers">
+                  <span class="wizard-checkbox__label">
+                    <span class="wizard-checkbox__title">Track Transfers</span>
+                    <span class="wizard-checkbox__hint">Record all token transfers between identities</span>
+                  </span>
+                </label>
+              </div>
+
+              <div class="field-group" style="margin-bottom: var(--space-3);">
+                <label class="wizard-checkbox">
+                  <input class="wizard-checkbox__input" type="checkbox" id="permissions-history-mints" name="permissions-history-mints">
+                  <span class="wizard-checkbox__label">
+                    <span class="wizard-checkbox__title">Track Mints</span>
+                    <span class="wizard-checkbox__hint">Record all token minting operations</span>
+                  </span>
+                </label>
+              </div>
+
+              <div class="field-group" style="margin-bottom: var(--space-3);">
+                <label class="wizard-checkbox">
+                  <input class="wizard-checkbox__input" type="checkbox" id="permissions-history-burns" name="permissions-history-burns">
+                  <span class="wizard-checkbox__label">
+                    <span class="wizard-checkbox__title">Track Burns</span>
+                    <span class="wizard-checkbox__hint">Record all token burning operations</span>
+                  </span>
+                </label>
+              </div>
+
+              <div class="field-group">
+                <label class="wizard-checkbox">
+                  <input class="wizard-checkbox__input" type="checkbox" id="permissions-history-freezes" name="permissions-history-freezes">
+                  <span class="wizard-checkbox__label">
+                    <span class="wizard-checkbox__title">Track Freezes</span>
+                    <span class="wizard-checkbox__hint">Record all freeze/unfreeze operations</span>
+                  </span>
+                </label>
+              </div>
+            </div>
+          </div>
+
           <p class="wizard-field__message" id="permissions-message" role="status" aria-live="polite"></p>
           <div class="wizard-actions wizard-actions--between wizard-actions--sticky">
             <button class="wizard-button wizard-button--secondary" type="button" data-step-back="permissions">← Back</button>
@@ -696,6 +756,195 @@
           <div class="wizard-actions wizard-actions--between wizard-actions--sticky">
             <button class="wizard-button wizard-button--secondary" type="button" data-step-back="permissions-manual-burn">← Back</button>
             <button class="wizard-button wizard-button--primary" id="permissions-manual-burn-next" type="submit">Continue →</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Permissions: Manual Freeze Sub-step -->
+    <section class="wizard-screen" id="screen-permissions-manual-freeze" data-step="permissions" data-substep="permissions-manual-freeze" data-tab="token" hidden>
+      <div class="wizard-screen__inner">
+        <form class="wizard-form" id="permissions-manual-freeze-form" novalidate>
+          <h1 class="wizard-screen__title" id="title-permissions-manual-freeze" tabindex="-1">Who can freeze/unfreeze token balances? <span class="wizard-badge wizard-badge--optional">Optional</span></h1>
+          <p class="wizard-screen__subtitle">Configure permissions for freezing and unfreezing identities to prevent token transfers.</p>
+
+          <!-- Manual Freeze Configuration Card -->
+          <div class="form-card">
+            <div class="form-card__header">
+              <h3 class="form-card__title">Freeze/Thaw Permissions</h3>
+              <p class="form-card__description">Control who can freeze or unfreeze token balances</p>
+            </div>
+            <div class="form-card__body">
+              <fieldset class="wizard-fieldset">
+                <legend class="wizard-field__label">Who can freeze/unfreeze balances?</legend>
+
+                <!-- No One Option -->
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="manual-freeze-permission" value="no-one" checked>
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">No One</span>
+                    <span class="wizard-choice__hint">Freezing functionality is disabled</span>
+                  </span>
+                </label>
+
+                <!-- Owner Only Option -->
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="manual-freeze-permission" value="owner-only">
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">Owner Only</span>
+                    <span class="wizard-choice__hint">Only the contract owner can freeze/unfreeze balances</span>
+                  </span>
+                </label>
+
+                <!-- Specific Group Option -->
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="manual-freeze-permission" value="group" data-toggle-panel="manual-freeze-panel-group">
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">Specific Group</span>
+                    <span class="wizard-choice__hint">Members of a designated group can freeze/unfreeze</span>
+                  </span>
+                </label>
+                <div class="distribution-inline-panel" id="manual-freeze-panel-group" hidden>
+                  <div class="field-group">
+                    <label class="wizard-field__label" for="manual-freeze-group-id">Group ID</label>
+                    <input class="wizard-field__input" type="text" id="manual-freeze-group-id" placeholder="e.g., compliance-team">
+                    <span class="field-hint">Authorized group identifier</span>
+                  </div>
+                </div>
+              </fieldset>
+            </div>
+          </div>
+
+          <p class="wizard-field__message" id="permissions-manual-freeze-message" role="status" aria-live="polite"></p>
+          <div class="wizard-actions wizard-actions--between wizard-actions--sticky">
+            <button class="wizard-button wizard-button--secondary" type="button" data-step-back="permissions-manual-freeze">← Back</button>
+            <button class="wizard-button wizard-button--primary" id="permissions-manual-freeze-next" type="submit">Continue →</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Permissions: Destroy Frozen Funds Sub-step -->
+    <section class="wizard-screen" id="screen-permissions-destroy-frozen" data-step="permissions" data-substep="permissions-destroy-frozen" data-tab="token" hidden>
+      <div class="wizard-screen__inner">
+        <form class="wizard-form" id="permissions-destroy-frozen-form" novalidate>
+          <h1 class="wizard-screen__title" id="title-permissions-destroy-frozen" tabindex="-1">Who can destroy frozen funds? <span class="wizard-badge wizard-badge--optional">Optional</span></h1>
+          <p class="wizard-screen__subtitle">Configure permissions for permanently removing tokens from frozen identities.</p>
+
+          <!-- Destroy Frozen Configuration Card -->
+          <div class="form-card">
+            <div class="form-card__header">
+              <h3 class="form-card__title">Destroy Frozen Funds Permissions</h3>
+              <p class="form-card__description">Control who can permanently destroy tokens from frozen balances</p>
+            </div>
+            <div class="form-card__body">
+              <fieldset class="wizard-fieldset">
+                <legend class="wizard-field__label">Who can destroy frozen funds?</legend>
+
+                <!-- No One Option -->
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="destroy-frozen-permission" value="no-one" checked>
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">No One</span>
+                    <span class="wizard-choice__hint">Frozen funds cannot be destroyed</span>
+                  </span>
+                </label>
+
+                <!-- Owner Only Option -->
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="destroy-frozen-permission" value="owner-only">
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">Owner Only</span>
+                    <span class="wizard-choice__hint">Only the contract owner can destroy frozen funds</span>
+                  </span>
+                </label>
+
+                <!-- Specific Group Option -->
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="destroy-frozen-permission" value="group" data-toggle-panel="destroy-frozen-panel-group">
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">Specific Group</span>
+                    <span class="wizard-choice__hint">Members of a designated group can destroy frozen funds</span>
+                  </span>
+                </label>
+                <div class="distribution-inline-panel" id="destroy-frozen-panel-group" hidden>
+                  <div class="field-group">
+                    <label class="wizard-field__label" for="destroy-frozen-group-id">Group ID</label>
+                    <input class="wizard-field__input" type="text" id="destroy-frozen-group-id" placeholder="e.g., compliance-team">
+                    <span class="field-hint">Authorized group identifier</span>
+                  </div>
+                </div>
+              </fieldset>
+            </div>
+          </div>
+
+          <p class="wizard-field__message" id="permissions-destroy-frozen-message" role="status" aria-live="polite"></p>
+          <div class="wizard-actions wizard-actions--between wizard-actions--sticky">
+            <button class="wizard-button wizard-button--secondary" type="button" data-step-back="permissions-destroy-frozen">← Back</button>
+            <button class="wizard-button wizard-button--primary" id="permissions-destroy-frozen-next" type="submit">Continue →</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Permissions: Emergency Actions Sub-step -->
+    <section class="wizard-screen" id="screen-permissions-emergency" data-step="permissions" data-substep="permissions-emergency" data-tab="token" hidden>
+      <div class="wizard-screen__inner">
+        <form class="wizard-form" id="permissions-emergency-form" novalidate>
+          <h1 class="wizard-screen__title" id="title-permissions-emergency" tabindex="-1">Who can perform emergency actions? <span class="wizard-badge wizard-badge--optional">Optional</span></h1>
+          <p class="wizard-screen__subtitle">Configure permissions for pausing/resuming all token activity in emergencies.</p>
+
+          <!-- Emergency Actions Configuration Card -->
+          <div class="form-card">
+            <div class="form-card__header">
+              <h3 class="form-card__title">Emergency Action Permissions</h3>
+              <p class="form-card__description">Control who can pause or resume all token operations</p>
+            </div>
+            <div class="form-card__body">
+              <fieldset class="wizard-fieldset">
+                <legend class="wizard-field__label">Who can trigger emergency pause/resume?</legend>
+
+                <!-- No One Option -->
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="emergency-permission" value="no-one" checked>
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">No One</span>
+                    <span class="wizard-choice__hint">Emergency actions are disabled</span>
+                  </span>
+                </label>
+
+                <!-- Owner Only Option -->
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="emergency-permission" value="owner-only">
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">Owner Only</span>
+                    <span class="wizard-choice__hint">Only the contract owner can pause/resume token activity</span>
+                  </span>
+                </label>
+
+                <!-- Specific Group Option -->
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="emergency-permission" value="group" data-toggle-panel="emergency-panel-group">
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">Specific Group</span>
+                    <span class="wizard-choice__hint">Members of a designated group can pause/resume</span>
+                  </span>
+                </label>
+                <div class="distribution-inline-panel" id="emergency-panel-group" hidden>
+                  <div class="field-group">
+                    <label class="wizard-field__label" for="emergency-group-id">Group ID</label>
+                    <input class="wizard-field__input" type="text" id="emergency-group-id" placeholder="e.g., emergency-response">
+                    <span class="field-hint">Authorized group identifier</span>
+                  </div>
+                </div>
+              </fieldset>
+            </div>
+          </div>
+
+          <p class="wizard-field__message" id="permissions-emergency-message" role="status" aria-live="polite"></p>
+          <div class="wizard-actions wizard-actions--between wizard-actions--sticky">
+            <button class="wizard-button wizard-button--secondary" type="button" data-step-back="permissions-emergency">← Back</button>
+            <button class="wizard-button wizard-button--primary" id="permissions-emergency-next" type="submit">Continue →</button>
           </div>
         </form>
       </div>

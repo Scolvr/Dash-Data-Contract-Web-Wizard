@@ -35,7 +35,10 @@
   const TRACKED_STEPS = Object.freeze([...STEP_SEQUENCE, ...INFO_STEPS]);
   const MANUAL_ACTION_DEFINITIONS = Object.freeze([
     { key: 'manualMint', stepId: 'permissions-manual-mint', domPrefix: 'manual-mint' },
-    { key: 'manualBurn', stepId: 'permissions-manual-burn', domPrefix: 'manual-burn' }
+    { key: 'manualBurn', stepId: 'permissions-manual-burn', domPrefix: 'manual-burn' },
+    { key: 'manualFreeze', stepId: 'permissions-manual-freeze', domPrefix: 'manual-freeze' },
+    { key: 'destroyFrozen', stepId: 'permissions-destroy-frozen', domPrefix: 'destroy-frozen' },
+    { key: 'emergencyAction', stepId: 'permissions-emergency', domPrefix: 'emergency' }
   ]);
   const INFO_STEP_PARENT = Object.freeze({
     'permissions-group': 'permissions',
@@ -54,13 +57,13 @@
 
   // FIXED: Substep sequences matching the actual sidebar navigation
   // naming: Token Name → Localization
-  // permissions: Token Supply → Control Model → Manual Mint → Manual Burn
+  // permissions: Token Supply → Control Model → Manual Mint → Manual Burn → Manual Freeze → Destroy Frozen → Emergency Actions
   // advanced (displayed as "Usage"): Trading Rules → Change Control
   // distribution: Schedule → Emission
   // registration: Register Token (no substeps)
   const SUBSTEP_SEQUENCES = Object.freeze({
     naming: ['naming', 'naming-localization'],
-    permissions: ['permissions', 'permissions-control', 'permissions-manual-mint', 'permissions-manual-burn'],
+    permissions: ['permissions', 'permissions-control', 'permissions-manual-mint', 'permissions-manual-burn', 'permissions-manual-freeze', 'permissions-destroy-frozen', 'permissions-emergency'],
     advanced: ['advanced', 'advanced-control'],
     distribution: ['distribution', 'distribution-emission'],
     registration: ['registration']
@@ -76,9 +79,11 @@
     'permissions-group': 'Group permissions',
     'permissions-manual-mint': 'Manual mint',
     'permissions-manual-burn': 'Manual burn',
+    'permissions-manual-freeze': 'Manual freeze',
     'permissions-freeze': 'Freeze',
     'permissions-unfreeze': 'Unfreeze',
-    'permissions-destroy-frozen': 'Destroy frozen fund',
+    'permissions-destroy-frozen': 'Destroy frozen funds',
+    'permissions-emergency': 'Emergency actions',
     'permissions-emergency-action': 'Emergency action',
     'permissions-max-supply': 'Max. supply change',
     'permissions-conventions': 'Conventions change',
@@ -922,6 +927,9 @@ let advancedUI = createAdvancedUI(advancedForm);
   const registrationScreen = document.getElementById('screen-registration');
   const manualMintScreen = document.getElementById('screen-permissions-manual-mint');
   const manualBurnScreen = document.getElementById('screen-permissions-manual-burn');
+  const manualFreezeScreen = document.getElementById('screen-permissions-manual-freeze');
+  const destroyFrozenScreen = document.getElementById('screen-permissions-destroy-frozen');
+  const emergencyActionScreen = document.getElementById('screen-permissions-emergency');
   const freezeForm = document.getElementById('freeze-form');
   const infoScreenEntries = INFO_STEPS.map((id) => ({
     id,
@@ -1013,6 +1021,15 @@ let advancedUI = createAdvancedUI(advancedForm);
         break;
       case 'manualBurn':
         screen = manualBurnScreen;
+        break;
+      case 'manualFreeze':
+        screen = manualFreezeScreen;
+        break;
+      case 'destroyFrozen':
+        screen = destroyFrozenScreen;
+        break;
+      case 'emergencyAction':
+        screen = emergencyActionScreen;
         break;
       default:
         screen = null;
