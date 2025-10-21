@@ -7,8 +7,8 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dash Token Wizard</title>
-  <link rel="preload" href="styles.css?v=41.0.1760860000" as="style">
-  <link rel="stylesheet" href="styles.css?v=41.0.1760860000">
+  <link rel="preload" href="styles.css?v=42.0.1760863000" as="style">
+  <link rel="stylesheet" href="styles.css?v=42.0.1760863000">
 </head>
 <body>
   <div class="wizard-shell">
@@ -78,6 +78,9 @@
             </a>
             <a href="#" class="wizard-nav-subitem" data-substep="permissions-control">
               <span class="wizard-nav-subitem__text">Control Model</span>
+            </a>
+            <a href="#" class="wizard-nav-subitem" data-substep="permissions-transfer">
+              <span class="wizard-nav-subitem__text">Transfer Settings</span>
             </a>
             <a href="#" class="wizard-nav-subitem" data-substep="permissions-manual-mint">
               <span class="wizard-nav-subitem__text">Manual Mint</span>
@@ -601,6 +604,91 @@
           <div class="wizard-actions wizard-actions--between wizard-actions--sticky">
             <button class="wizard-button wizard-button--secondary" type="button" data-step-back="permissions-control">← Back</button>
             <button class="wizard-button wizard-button--primary" id="permissions-control-next" type="submit">Continue →</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Permissions: Transfer Settings Sub-step -->
+    <section class="wizard-screen" id="screen-permissions-transfer" data-step="permissions" data-substep="permissions-transfer" data-tab="token" hidden>
+      <div class="wizard-screen__inner">
+        <form class="wizard-form" id="permissions-transfer-form" novalidate>
+          <h1 class="wizard-screen__title" id="title-permissions-transfer" tabindex="-1">How should token transfers work?</h1>
+          <p class="wizard-screen__subtitle">Configure transfer behavior and optional note/memo capabilities.</p>
+
+          <!-- Transfer Notes Configuration Card -->
+          <div class="form-card">
+            <div class="form-card__header">
+              <h3 class="form-card__title">Transfer Notes <span class="wizard-badge wizard-badge--optional" style="margin-left: var(--space-2);">Optional</span></h3>
+              <p class="form-card__description">Allow senders to attach messages to transfers</p>
+            </div>
+            <div class="form-card__body">
+              <fieldset class="wizard-fieldset">
+                <legend class="wizard-field__label">Enable transfer notes/memos?</legend>
+
+                <!-- Disabled Option -->
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="transfer-notes-enabled" value="disabled" checked>
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">Disabled</span>
+                    <span class="wizard-choice__hint">Transfers cannot include notes (saves on-chain space)</span>
+                  </span>
+                </label>
+
+                <!-- Enabled Option -->
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="transfer-notes-enabled" value="enabled" data-toggle-panel="transfer-notes-types-panel">
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">Enabled</span>
+                    <span class="wizard-choice__hint">Allow optional notes on transfers</span>
+                  </span>
+                </label>
+
+                <!-- Note Types Configuration Panel -->
+                <div class="distribution-inline-panel" id="transfer-notes-types-panel" hidden>
+                  <fieldset class="wizard-fieldset" style="margin-top: var(--space-4);">
+                    <legend class="wizard-field__label">Allowed note types</legend>
+                    <p class="field-hint" style="margin-bottom: var(--space-3);">Select which types of notes can be attached to transfers</p>
+
+                    <div class="field-group" style="margin-bottom: var(--space-3);">
+                      <label class="wizard-checkbox">
+                        <input class="wizard-checkbox__input" type="checkbox" id="transfer-note-type-public" name="transfer-note-type-public" checked>
+                        <span class="wizard-checkbox__label">
+                          <span class="wizard-checkbox__title">Public Notes</span>
+                          <span class="wizard-checkbox__hint">Visible to everyone on-chain (like a public memo)</span>
+                        </span>
+                      </label>
+                    </div>
+
+                    <div class="field-group" style="margin-bottom: var(--space-3);">
+                      <label class="wizard-checkbox">
+                        <input class="wizard-checkbox__input" type="checkbox" id="transfer-note-type-shared" name="transfer-note-type-shared">
+                        <span class="wizard-checkbox__label">
+                          <span class="wizard-checkbox__title">Shared Encrypted Notes</span>
+                          <span class="wizard-checkbox__hint">Only sender and recipient can read (encrypted private message)</span>
+                        </span>
+                      </label>
+                    </div>
+
+                    <div class="field-group">
+                      <label class="wizard-checkbox">
+                        <input class="wizard-checkbox__input" type="checkbox" id="transfer-note-type-private" name="transfer-note-type-private">
+                        <span class="wizard-checkbox__label">
+                          <span class="wizard-checkbox__title">Private Encrypted Notes</span>
+                          <span class="wizard-checkbox__hint">Only sender can read (encrypted personal record)</span>
+                        </span>
+                      </label>
+                    </div>
+                  </fieldset>
+                </div>
+              </fieldset>
+            </div>
+          </div>
+
+          <p class="wizard-field__message" id="permissions-transfer-message" role="status" aria-live="polite"></p>
+          <div class="wizard-actions wizard-actions--between wizard-actions--sticky">
+            <button class="wizard-button wizard-button--secondary" type="button" data-step-back="permissions-transfer">← Back</button>
+            <button class="wizard-button wizard-button--primary" id="permissions-transfer-next" type="submit">Continue →</button>
           </div>
         </form>
       </div>

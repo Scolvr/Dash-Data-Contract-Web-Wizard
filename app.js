@@ -63,7 +63,7 @@
   // registration: Register Token (no substeps)
   const SUBSTEP_SEQUENCES = Object.freeze({
     naming: ['naming', 'naming-localization'],
-    permissions: ['permissions', 'permissions-control', 'permissions-manual-mint', 'permissions-manual-burn', 'permissions-manual-freeze', 'permissions-destroy-frozen', 'permissions-emergency'],
+    permissions: ['permissions', 'permissions-control', 'permissions-transfer', 'permissions-manual-mint', 'permissions-manual-burn', 'permissions-manual-freeze', 'permissions-destroy-frozen', 'permissions-emergency'],
     advanced: ['advanced', 'advanced-control'],
     distribution: ['distribution', 'distribution-emission'],
     registration: ['registration']
@@ -77,6 +77,7 @@
     advanced: 'Advanced',
     registration: 'Registration',
     'permissions-group': 'Group permissions',
+    'permissions-transfer': 'Transfer settings',
     'permissions-manual-mint': 'Manual mint',
     'permissions-manual-burn': 'Manual burn',
     'permissions-manual-freeze': 'Manual freeze',
@@ -435,6 +436,12 @@
           keepsHistory: { ...DEFAULT_KEEP_HISTORY },
           startAsPaused: false,
           allowTransferToFrozenBalance: false,
+          transferNotesEnabled: false,
+          transferNoteTypes: {
+            public: true,
+            sharedEncrypted: false,
+            privateEncrypted: false
+          },
           groups: [],
           mainControlGroupIndex: -1,
           freeze: createDefaultFreezeState(),
@@ -782,6 +789,7 @@
 
   const namingForm = document.getElementById('naming-form');
   const permissionsForm = document.getElementById('permissions-form');
+  const transferForm = document.getElementById('permissions-transfer-form');
   const distributionForm = document.getElementById('distribution-form');
   const advancedForm = document.getElementById('advanced-form');
   const registrationForm = document.getElementById('registration-form');
@@ -818,6 +826,8 @@
 
   const permissionsMessage = document.getElementById('permissions-message');
   const permissionsNextButton = document.getElementById('permissions-next');
+  const transferMessage = document.getElementById('permissions-transfer-message');
+  const transferNextButton = document.getElementById('permissions-transfer-next');
 
 const distributionMessage = document.getElementById('distribution-message');
 const distributionNextButton = document.getElementById('distribution-next');
@@ -835,6 +845,7 @@ const advancedControlNextButton = document.getElementById('advanced-control-next
 
 // FIXED: Use existing HTML inputs instead of creating new ones
 let permissionsUI = createPermissionsUIFromHTML(permissionsForm);
+let transferUI = createTransferUI(transferForm);
 let distributionUI = createDistributionUI(distributionForm);
 let advancedUI = createAdvancedUI(advancedForm);
   const manualActionUIs = {};
@@ -5071,6 +5082,81 @@ function ensurePermissionsGroupState() {
           allowTransferToFrozenBalance: Boolean(allowFrozenInput && allowFrozenInput.checked)
         };
       }
+    };
+  }
+
+  function createTransferUI(form) {
+    if (!form) {
+      return null;
+    }
+
+    const notesEnabledRadios = Array.from(form.querySelectorAll('input[name="transfer-notes-enabled"]'));
+    const notesTypesPanel = form.querySelector('#transfer-notes-types-panel');
+    const publicCheckbox = form.querySelector('#transfer-note-type-public');
+    const sharedCheckbox = form.querySelector('#transfer-note-type-shared');
+    const privateCheckbox = form.querySelector('#transfer-note-type-private');
+
+    function updatePanelVisibility() {
+      const enabled = notesEnabledRadios.find(r => r.checked && r.value === 'enabled');
+      if (enabled && notesTypesPanel) {
+        notesTypesPanel.removeAttribute('hidden');
+      } else if (notesTypesPanel) {
+        notesTypesPanel.setAttribute('hidden', '');
+      }
+    }
+
+    notesEnabledRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        updatePanelVisibility();
+        saveTransferSettings();
+      });
+    });
+
+    [publicCheckbox, sharedCheckbox, privateCheckbox].forEach(checkbox => {
+      if (checkbox) {
+        checkbox.addEventListener('change', () => saveTransferSettings());
+      }
+    });
+
+    function saveTransferSettings() {
+      const notesEnabled = notesEnabledRadios.find(r => r.checked && r.value === 'enabled');
+      wizardState.form.permissions.transferNotesEnabled = Boolean(notesEnabled);
+      wizardState.form.permissions.transferNoteTypes = {
+        public: Boolean(publicCheckbox && publicCheckbox.checked),
+        sharedEncrypted: Boolean(sharedCheckbox && sharedCheckbox.checked),
+        privateEncrypted: Boolean(privateCheckbox && privateCheckbox.checked)
+      };
+
+      if (transferNextButton) {
+        transferNextButton.disabled = false; // Always valid (optional)
+      }
+    }
+
+    function loadTransferSettings() {
+      const settings = wizardState.form.permissions;
+      const enabledRadio = notesEnabledRadios.find(r => r.value === (settings.transferNotesEnabled ? 'enabled' : 'disabled'));
+      if (enabledRadio) {
+        enabledRadio.checked = true;
+      }
+
+      if (publicCheckbox) publicCheckbox.checked = Boolean(settings.transferNoteTypes.public);
+      if (sharedCheckbox) sharedCheckbox.checked = Boolean(settings.transferNoteTypes.sharedEncrypted);
+      if (privateCheckbox) privateCheckbox.checked = Boolean(settings.transferNoteTypes.privateEncrypted);
+
+      updatePanelVisibility();
+      if (transferNextButton) {
+        transferNextButton.disabled = false; // Always valid
+      }
+    }
+
+    form.addEventListener('submit', (event) => event.preventDefault());
+
+    updatePanelVisibility();
+    loadTransferSettings();
+
+    return {
+      load: loadTransferSettings,
+      save: saveTransferSettings
     };
   }
 
