@@ -330,7 +330,8 @@
     transfers: true,
     mints: true,
     burns: true,
-    freezes: false
+    freezes: false,
+    purchases: false
   };
 
   const DEFAULT_CHANGE_CONTROL_FLAGS = {
@@ -4992,7 +4993,8 @@ function ensurePermissionsGroupState() {
       transfers: form.querySelector('#permissions-history-transfers'),
       mints: form.querySelector('#permissions-history-mints'),
       burns: form.querySelector('#permissions-history-burns'),
-      freezes: form.querySelector('#permissions-history-freezes')
+      freezes: form.querySelector('#permissions-history-freezes'),
+      purchases: form.querySelector('#permissions-history-purchases')
     };
 
     function syncMaxSupplyVisibility(checked) {
