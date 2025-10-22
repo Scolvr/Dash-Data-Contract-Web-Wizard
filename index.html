@@ -7,8 +7,8 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dash Token Wizard</title>
-  <link rel="preload" href="styles.css?v=42.0.1760863000" as="style">
-  <link rel="stylesheet" href="styles.css?v=42.0.1760863000">
+  <link rel="preload" href="styles.css?v=44.0.1760865000" as="style">
+  <link rel="stylesheet" href="styles.css?v=44.0.1760865000">
 </head>
 <body>
   <div class="wizard-shell">
@@ -980,13 +980,13 @@
       <div class="wizard-screen__inner">
         <form class="wizard-form" id="permissions-emergency-form" novalidate>
           <h1 class="wizard-screen__title" id="title-permissions-emergency" tabindex="-1">Who can perform emergency actions? <span class="wizard-badge wizard-badge--optional">Optional</span></h1>
-          <p class="wizard-screen__subtitle">Configure permissions for pausing/resuming all token activity in emergencies.</p>
+          <p class="wizard-screen__subtitle">Configure permissions for global pause/resume in emergencies. When paused, all token transfers are frozen.</p>
 
           <!-- Emergency Actions Configuration Card -->
           <div class="form-card">
             <div class="form-card__header">
               <h3 class="form-card__title">Emergency Action Permissions</h3>
-              <p class="form-card__description">Control who can pause or resume all token operations</p>
+              <p class="form-card__description">Control who can trigger global pause (freezes all transfers) or resume operations</p>
             </div>
             <div class="form-card__body">
               <fieldset class="wizard-fieldset">
@@ -1006,7 +1006,7 @@
                   <input class="wizard-choice__input" type="radio" name="emergency-permission" value="owner-only">
                   <span class="wizard-choice__content">
                     <span class="wizard-choice__title">Owner Only</span>
-                    <span class="wizard-choice__hint">Only the contract owner can pause/resume token activity</span>
+                    <span class="wizard-choice__hint">Only the contract owner can freeze/unfreeze all transfers globally</span>
                   </span>
                 </label>
 
@@ -1015,7 +1015,7 @@
                   <input class="wizard-choice__input" type="radio" name="emergency-permission" value="group" data-toggle-panel="emergency-panel-group">
                   <span class="wizard-choice__content">
                     <span class="wizard-choice__title">Specific Group</span>
-                    <span class="wizard-choice__hint">Members of a designated group can pause/resume</span>
+                    <span class="wizard-choice__hint">Members of a designated group can freeze/unfreeze all transfers globally</span>
                   </span>
                 </label>
                 <div class="distribution-inline-panel" id="emergency-panel-group" hidden>
@@ -1175,15 +1175,15 @@
                 <label class="wizard-choice">
                   <input class="wizard-choice__input" type="radio" name="distribution-type" value="block" data-toggle-panel="distribution-panel-block">
                   <span class="wizard-choice__content">
-                    <span class="wizard-choice__title">Block-based</span>
-                    <span class="wizard-choice__hint">Release tokens every N blocks</span>
+                    <span class="wizard-choice__title">Block-based (Perpetual)</span>
+                    <span class="wizard-choice__hint">Continuous emission - Release tokens every N blocks</span>
                   </span>
                 </label>
                 <div class="distribution-inline-panel" id="distribution-panel-block" hidden>
                   <div class="field-group">
                     <label class="wizard-field__label" for="dist-block-interval">Release every (blocks)</label>
                     <input class="wizard-field__input" type="number" id="dist-block-interval" placeholder="e.g., 1000" min="1">
-                    <span class="field-hint">Example: 1000 blocks ≈ 2.5 hours</span>
+                    <span class="field-hint">Example: 1000 blocks ≈ 2.5 hours • Tokens are claimable at each interval</span>
                   </div>
                 </div>
 
@@ -1191,15 +1191,15 @@
                 <label class="wizard-choice">
                   <input class="wizard-choice__input" type="radio" name="distribution-type" value="time" data-toggle-panel="distribution-panel-time">
                   <span class="wizard-choice__content">
-                    <span class="wizard-choice__title">Time-based</span>
-                    <span class="wizard-choice__hint">Release tokens every N hours/days</span>
+                    <span class="wizard-choice__title">Time-based (Perpetual)</span>
+                    <span class="wizard-choice__hint">Continuous emission - Release tokens every N hours/days</span>
                   </span>
                 </label>
                 <div class="distribution-inline-panel" id="distribution-panel-time" hidden>
                   <div class="field-group">
                     <label class="wizard-field__label" for="dist-time-interval">Release every</label>
                     <input class="wizard-field__input" type="number" id="dist-time-interval" placeholder="e.g., 24" min="1">
-                    <span class="field-hint">Hours (24 = daily, 168 = weekly)</span>
+                    <span class="field-hint">Hours (24 = daily, 168 = weekly) • Tokens are claimable at each interval</span>
                   </div>
                 </div>
 
@@ -1642,6 +1642,18 @@
                   <label class="wizard-checkbox">
                     <input class="wizard-checkbox__input" type="checkbox" id="change-burn">
                     <span class="wizard-checkbox__label">Allow burning tokens</span>
+                  </label>
+                </div>
+                <div class="wizard-field wizard-field--checkbox">
+                  <label class="wizard-checkbox">
+                    <input class="wizard-checkbox__input" type="checkbox" id="change-direct-purchase">
+                    <span class="wizard-checkbox__label">
+                      <span style="display: flex; align-items: center; gap: var(--space-2);">
+                        Allow direct purchase pricing changes
+                        <span class="wizard-badge" style="background: var(--color-warning); color: var(--color-ink);">Coming Soon</span>
+                      </span>
+                      <span class="wizard-checkbox__hint" style="display: block; margin-top: var(--space-2xs);">Enable direct token sales at fixed prices (Platform feature in development)</span>
+                    </span>
                   </label>
                 </div>
               </div>

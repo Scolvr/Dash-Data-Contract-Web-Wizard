@@ -337,8 +337,9 @@
     freeze: true,
     unfreeze: true,
     destroyFrozen: false,
-  emergency: false,
-  admin: true
+    emergency: false,
+    directPurchase: false,
+    admin: true
   };
 
   const DEFAULT_WALLET_STATE = Object.freeze({
@@ -6185,6 +6186,15 @@ function syncManualActionUIs({ announce = false } = {}) {
           </label>
         </div>
         <div class="wizard-field wizard-field--checkbox">
+          <label class="wizard-checkbox" for="advanced-ctrl-direct-purchase">
+            <input class="wizard-checkbox__input" id="advanced-ctrl-direct-purchase" type="checkbox">
+            <span class="wizard-checkbox__label">
+              Allow direct purchase pricing changes
+              <span class="wizard-badge" style="background: var(--color-warning); color: var(--color-ink); margin-left: var(--space-2);">Coming Soon</span>
+            </span>
+          </label>
+        </div>
+        <div class="wizard-field wizard-field--checkbox">
           <label class="wizard-checkbox" for="advanced-ctrl-admin">
             <input class="wizard-checkbox__input" id="advanced-ctrl-admin" type="checkbox" checked>
             <span class="wizard-checkbox__label">Admin overrides enabled</span>
@@ -6202,6 +6212,7 @@ function syncManualActionUIs({ announce = false } = {}) {
       unfreeze: form.querySelector('#advanced-ctrl-unfreeze'),
       destroyFrozen: form.querySelector('#advanced-ctrl-destroy'),
       emergency: form.querySelector('#advanced-ctrl-emergency'),
+      directPurchase: form.querySelector('#advanced-ctrl-direct-purchase'),
       admin: form.querySelector('#advanced-ctrl-admin')
     };
 
@@ -6907,6 +6918,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
     const unfreezeRule = createChangeRule(changeControl.unfreeze);
     const destroyRule = createChangeRule(changeControl.destroyFrozen);
     const emergencyRule = createChangeRule(changeControl.emergency);
+    const directPurchaseRule = createChangeRule(changeControl.directPurchase);
   const manualMintRules = buildManualActionRulesConfig(permissions.manualMint, permissions);
   const manualBurnRules = buildManualActionRulesConfig(permissions.manualBurn, permissions);
 
@@ -6932,6 +6944,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
       unfreezeRules: unfreezeRule,
       destroyFrozenFundsRules: destroyRule,
       emergencyActionRules: emergencyRule,
+      changeDirectPurchasePricingRules: directPurchaseRule,
       mainControlGroup: {
         contractId: 'control-group-primary',
         position: changeControl.admin ? 'primary' : 'observer'
