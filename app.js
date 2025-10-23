@@ -4622,7 +4622,7 @@ function ensurePermissionsGroupState() {
       return;
     }
 
-    const payload = getRegistrationPayload();
+    const payload = generatePlatformContractJSON();
     const serialized = JSON.stringify(payload, null, 2);
     let chunks = chunkPayloadIntoQRCodes(serialized);
 
@@ -4665,7 +4665,7 @@ function ensurePermissionsGroupState() {
       return;
     }
 
-    const payload = getRegistrationPayload();
+    const payload = generatePlatformContractJSON();
     const serialized = JSON.stringify(payload, null, 2);
     jsonPreviewContent.textContent = serialized;
   }
@@ -7372,7 +7372,396 @@ function buildManualActionRulesConfig(actionState, permissions) {
     return output;
   }
 
+  /**
+   * Generate Platform-compatible data contract JSON
+   * This function transforms wizard state into the exact format expected by Dash Platform
+   */
+  function generatePlatformContractJSON() {
+    const rawName = wizardState.form.tokenName || '';
+    const tokenName = rawName.trim() || 'Unnamed Token';
+
+    // Helper: Convert change control boolean to V0 rule object
+    function createRuleV0(isEnabled, actionTaker = 'ContractOwner') {
+      return {
+        V0: {
+          authorized_to_make_change: isEnabled ? actionTaker : 'NoOne',
+          admin_action_takers: isEnabled ? actionTaker : 'NoOne',
+          changing_authorized_action_takers_to_no_one_allowed: false,
+          changing_admin_action_takers_to_no_one_allowed: false,
+          self_changing_admin_action_takers_allowed: false
+        }
+      };
+    }
+
+    // Helper: Convert keepsHistory to Platform format
+    function transformKeepsHistory(keepsHistory) {
+      return {
+        $format_version: '0',
+        keepsTransferHistory: Boolean(keepsHistory.transfers),
+        keepsMintingHistory: Boolean(keepsHistory.mints),
+        keepsBurningHistory: Boolean(keepsHistory.burns),
+        keepsFreezingHistory: Boolean(keepsHistory.freezes),
+        keepsDirectPricingHistory: true,
+        keepsDirectPurchaseHistory: Boolean(keepsHistory.purchases)
+      };
+    }
+
+    // Helper: Transform localizations to Platform format (camelCase)
+    function transformLocalizations(localizations) {
+      const result = {};
+      for (const [langCode, loc] of Object.entries(localizations)) {
+        result[langCode] = {
+          $format_version: '0',
+          shouldCapitalize: Boolean(loc.should_capitalize ?? loc.shouldCapitalize),
+          singularForm: String(loc.singular_form || loc.singularForm || loc.singular || ''),
+          pluralForm: String(loc.plural_form || loc.pluralForm || loc.plural || '')
+        };
+      }
+      return result;
+    }
+
+    // Helper: Transform distribution rules
+    function transformDistributionRules() {
+      const dist = wizardState.form.distribution;
+      if (!dist || !dist.emission || !dist.emission.type) {
+        return null;
+      }
+
+      const distributionRules = {
+        $format_version: '0',
+        perpetualDistribution: null,
+        perpetualDistributionRules: createRuleV0(false),
+        preProgrammedDistribution: null,
+        preProgrammedDistributionRules: createRuleV0(false),
+        newTokensDestinationIdentity: null,
+        newTokensDestinationIdentityRules: createRuleV0(true),
+        mintingAllowChoosingDestination: true,
+        mintingAllowChoosingDestinationRules: createRuleV0(true),
+        changeDirectPurchasePricingRules: createRuleV0(
+          Boolean(wizardState.form.advanced?.changeControl?.directPurchase)
+        )
+      };
+
+      // Build perpetual distribution if emission is configured
+      if (dist.emission && dist.emission.type) {
+        let distributionType = {};
+        const cadence = dist.cadence;
+
+        // Determine distribution type (Block, Time, or Epoch based)
+        if (cadence.type === 'BlockBasedDistribution') {
+          const interval = parseInt(cadence.intervalBlocks, 10) || 100;
+          distributionType.BlockBasedDistribution = {
+            interval: interval,
+            function: buildEmissionFunction(dist.emission)
+          };
+        } else if (cadence.type === 'TimeBasedDistribution') {
+          const interval = parseInt(cadence.intervalSeconds, 10) * 1000 || 3600000; // Convert to ms
+          distributionType.TimeBasedDistribution = {
+            interval: interval,
+            function: buildEmissionFunction(dist.emission)
+          };
+        } else if (cadence.type === 'EpochBasedDistribution') {
+          distributionType.EpochBasedDistribution = {
+            epoch: cadence.epoch || 'monthly',
+            function: buildEmissionFunction(dist.emission)
+          };
+        }
+
+        // Determine recipient
+        const recipient = dist.recipient?.type === 'specific-identity' && dist.recipient.identityId
+          ? dist.recipient.identityId
+          : 'ContractOwner';
+
+        distributionRules.perpetualDistribution = {
+          $format_version: '0',
+          distributionType: distributionType,
+          distributionRecipient: recipient
+        };
+        distributionRules.perpetualDistributionRules = createRuleV0(true);
+      }
+
+      // Build pre-programmed distribution if configured
+      if (dist.preProgrammed && Array.isArray(dist.preProgrammed.entries) && dist.preProgrammed.entries.length > 0) {
+        const distributions = {};
+        dist.preProgrammed.entries.forEach(entry => {
+          if (entry.timestamp && entry.identityId && entry.amount) {
+            const timestamp = String(entry.timestamp);
+            if (!distributions[timestamp]) {
+              distributions[timestamp] = {};
+            }
+            distributions[timestamp][entry.identityId] = parseInt(entry.amount, 10) || 0;
+          }
+        });
+
+        if (Object.keys(distributions).length > 0) {
+          distributionRules.preProgrammedDistribution = {
+            $format_version: '0',
+            distributions: distributions
+          };
+          distributionRules.preProgrammedDistributionRules = createRuleV0(true);
+        }
+      }
+
+      return distributionRules;
+    }
+
+    // Helper: Build emission function based on type
+    function buildEmissionFunction(emission) {
+      const type = emission.type;
+
+      // FixedAmount: Constant emission per period
+      if (type === 'FixedAmount') {
+        return {
+          FixedAmount: {
+            amount: parseInt(emission.amount, 10) || 0
+          }
+        };
+      }
+
+      // Random: Random amount between min and max
+      else if (type === 'Random') {
+        return {
+          Random: {
+            min: parseInt(emission.min, 10) || 0,
+            max: parseInt(emission.max, 10) || 100
+          }
+        };
+      }
+
+      // StepDecreasing: Bitcoin-style halving
+      else if (type === 'StepDecreasing') {
+        return {
+          StepDecreasing: {
+            stepCount: parseInt(emission.stepCount, 10) || 1,
+            decreasePerInterval: {
+              numerator: parseInt(emission.decreasePerIntervalNumerator, 10) || 1,
+              denominator: parseInt(emission.decreasePerIntervalDenominator, 10) || 2
+            },
+            distributionStartAmount: parseInt(emission.distributionStartAmount, 10) || 100,
+            trailingDistributionIntervalAmount: parseInt(emission.trailingDistributionIntervalAmount, 10) || 0
+          }
+        };
+      }
+
+      // Linear: f(x) = (a * (x - s) / d) + b
+      else if (type === 'Linear') {
+        return {
+          Linear: {
+            a: parseInt(emission.linearChange, 10) || 1,
+            d: 1,
+            s: 0,
+            b: parseInt(emission.linearStart, 10) || 0,
+            minValue: null,
+            maxValue: null
+          }
+        };
+      }
+
+      // Exponential: f(x) = a * e^(b * x) + c
+      else if (type === 'Exponential') {
+        return {
+          Exponential: {
+            a: parseInt(emission.exponentialInitial, 10) || 100,
+            b: parseFloat(emission.exponentialRate) || 0.1,
+            c: 0
+          }
+        };
+      }
+
+      // Polynomial: f(x) = (a * (x - s + o)^(m / n)) / d + b
+      else if (type === 'Polynomial') {
+        return {
+          Polynomial: {
+            a: parseInt(emission.polyA, 10) || 1,
+            m: parseInt(emission.polyM, 10) || 2,
+            n: parseInt(emission.polyN, 10) || 1,
+            d: parseInt(emission.polyD, 10) || 1,
+            o: parseInt(emission.polyO, 10) || 0,
+            s: 0,
+            b: parseInt(emission.polyB, 10) || 0,
+            minValue: null,
+            maxValue: null
+          }
+        };
+      }
+
+      // Logarithmic: f(x) = a * log_b(x) + c
+      else if (type === 'Logarithmic') {
+        return {
+          Logarithmic: {
+            a: parseInt(emission.logA, 10) || 1,
+            d: parseInt(emission.logD, 10) || 1,
+            m: parseInt(emission.logM, 10) || 1,
+            n: parseInt(emission.logN, 10) || 1,
+            o: parseInt(emission.logO, 10) || 0,
+            s: 0,
+            b: parseInt(emission.logB, 10) || 0,
+            minValue: null,
+            maxValue: null
+          }
+        };
+      }
+
+      // InvertedLogarithmic: f(x) = (a * log(n / (m * (x - s + o)))) / d + b
+      else if (type === 'InvertedLogarithmic') {
+        return {
+          InvertedLogarithmic: {
+            a: parseInt(emission.invlogA, 10) || 1000,
+            d: parseInt(emission.invlogD, 10) || 10,
+            m: parseInt(emission.invlogM, 10) || 5,
+            n: parseInt(emission.invlogN, 10) || 5000,
+            o: parseInt(emission.invlogO, 10) || 0,
+            s: 0,
+            b: parseInt(emission.invlogB, 10) || 10,
+            minValue: null,
+            maxValue: null
+          }
+        };
+      }
+
+      // Stepwise: Custom step-based schedule
+      else if (type === 'Stepwise' && Array.isArray(emission.stepwise) && emission.stepwise.length > 0) {
+        const steps = emission.stepwise.map(step => ({
+          period: parseInt(step.period, 10) || 0,
+          amount: parseInt(step.amount, 10) || 0
+        }));
+        return {
+          Stepwise: {
+            steps: steps
+          }
+        };
+      }
+
+      // Default fallback to FixedAmount
+      return {
+        FixedAmount: {
+          amount: 100
+        }
+      };
+    }
+
+    // Helper: Transform marketplace rules
+    function transformMarketplaceRules() {
+      const tradeMode = wizardState.form.advanced?.tradeMode;
+      return {
+        $format_version: '0',
+        tradeMode: tradeMode === 'permissionless' || tradeMode === 'committee-approved'
+          ? 'NotTradeable'  // Platform uses NotTradeable, not our custom values
+          : 'NotTradeable',
+        tradeModeChangeRules: createRuleV0(false)
+      };
+    }
+
+    // Build token configuration (to be wrapped in tokens.0)
+    const tokenConfig = {
+      $format_version: '0',
+      conventions: {
+        $format_version: '0',
+        localizations: transformLocalizations(
+          wizardState.form.naming.conventions.localizations || {}
+        ),
+        decimals: parseInt(wizardState.form.permissions.decimals, 10) || 2
+      },
+      conventionsChangeRules: createRuleV0(false),
+      baseSupply: parseInt(wizardState.form.permissions.baseSupply, 10) || 0,
+      maxSupply: wizardState.form.permissions.useMaxSupply
+        ? parseInt(wizardState.form.permissions.maxSupply, 10) || null
+        : null,
+      keepsHistory: transformKeepsHistory(wizardState.form.permissions.keepsHistory || {}),
+      transferable: true,  // Tokens are transferable by default
+      startAsPaused: Boolean(wizardState.form.permissions.startAsPaused),
+      allowTransferToFrozenBalance: Boolean(wizardState.form.permissions.allowTransferToFrozenBalance),
+      maxSupplyChangeRules: createRuleV0(false),
+      manualMintingRules: createRuleV0(
+        Boolean(wizardState.form.permissions.manualMint?.enabled)
+      ),
+      manualBurningRules: createRuleV0(
+        Boolean(wizardState.form.permissions.manualBurn?.enabled)
+      ),
+      freezeRules: createRuleV0(
+        Boolean(wizardState.form.advanced?.changeControl?.freeze)
+      ),
+      unfreezeRules: createRuleV0(
+        Boolean(wizardState.form.advanced?.changeControl?.unfreeze)
+      ),
+      destroyFrozenFundsRules: createRuleV0(
+        Boolean(wizardState.form.advanced?.changeControl?.destroyFrozen)
+      ),
+      emergencyActionRules: createRuleV0(
+        Boolean(wizardState.form.advanced?.changeControl?.emergency)
+      ),
+      mainControlGroup: null,
+      mainControlGroupCanBeModified: 'NoOne'
+    };
+
+    // Add distribution rules if configured
+    const distributionRules = transformDistributionRules();
+    if (distributionRules) {
+      tokenConfig.distributionRules = distributionRules;
+    }
+
+    // Add marketplace rules
+    tokenConfig.marketplaceRules = transformMarketplaceRules();
+
+    // Add description if token name is available
+    if (tokenName && tokenName !== 'Unnamed Token') {
+      const description = `Token: ${tokenName}`;
+      tokenConfig.description = description.substring(0, 100); // Max 100 chars
+    }
+
+    // Build groups at root level (if enabled)
+    const groups = {};
+    if (wizardState.form.group?.enabled && wizardState.form.group.members?.length > 0) {
+      const validMembers = wizardState.form.group.members
+        .filter(m => m.identityId)
+        .map(m => ({
+          identity: m.identityId,
+          power: parseInt(m.power, 10) || 1
+        }));
+
+      if (validMembers.length > 0) {
+        groups['0'] = {
+          members: validMembers,
+          requiredPower: parseInt(wizardState.form.group.threshold, 10) || 2
+        };
+        // Update mainControlGroup in token if group is defined
+        tokenConfig.mainControlGroup = 0;
+        tokenConfig.mainControlGroupCanBeModified = 'NoOne';
+      }
+    }
+
+    // Build Platform contract structure
+    const platformContract = {
+      $format_version: '1',
+      id: '<generated-by-platform>',  // Platform generates this
+      ownerId: '<from-identity>',     // Comes from identity during registration
+      version: 1,
+      documentSchemas: {},  // Empty for token-only contracts
+      tokens: {
+        '0': tokenConfig  // Token at position 0
+      }
+    };
+
+    // Add groups if any
+    if (Object.keys(groups).length > 0) {
+      platformContract.groups = groups;
+    }
+
+    // Add keywords if token name exists
+    if (tokenName && tokenName !== 'Unnamed Token') {
+      platformContract.keywords = [tokenName.toLowerCase()];
+    }
+
+    // Add description
+    if (tokenName && tokenName !== 'Unnamed Token') {
+      platformContract.description = `Data contract for ${tokenName}`;
+    }
+
+    return platformContract;
+  }
+
   window.getRegistrationPayload = getRegistrationPayload;
+  window.generatePlatformContractJSON = generatePlatformContractJSON;
   window.chunkPayloadIntoQRCodes = chunkPayloadIntoQRCodes;
 })();
 
