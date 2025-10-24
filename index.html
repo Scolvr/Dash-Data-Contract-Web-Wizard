@@ -59,6 +59,9 @@
             <a href="#" class="wizard-nav-subitem" data-substep="naming-localization">
               <span class="wizard-nav-subitem__text">Localization</span>
             </a>
+            <a href="#" class="wizard-nav-subitem" data-substep="naming-metadata">
+              <span class="wizard-nav-subitem__text">Keywords & Description</span>
+            </a>
           </div>
 
           <!-- Permissions Step (Collapsible) -->
@@ -149,6 +152,19 @@
               <span class="wizard-nav-subitem__text">Emission</span>
             </a>
           </div>
+        </div>
+
+        <!-- REVIEW Section -->
+        <div class="wizard-nav-section">
+          <div class="wizard-nav__label">Review</div>
+          <button class="wizard-nav-item" data-step="overview">
+            <svg class="wizard-nav-item__icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M10 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 10s3-7 8-7 8 7 8 7-3 7-8 7-8-7-8-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="wizard-nav-item__text">Overview</span>
+            <span class="wizard-path__pill pill" id="status-overview" aria-live="polite"></span>
+          </button>
         </div>
 
         <!-- PUBLISH Section -->
@@ -396,10 +412,10 @@
           <p class="wizard-screen__subtitle">Give your token a memorable name that users will recognize and trust.</p>
 
           <!-- Token Name Card -->
-          <div class="form-card">
+          <div class="form-card" style="max-width: 100%;">
             <div class="form-card__header">
               <h3 class="form-card__title">Token Name</h3>
-              <p class="form-card__description">Choose a unique name for your token</p>
+              <p class="form-card__description">Choose a unique name for your token and define how it should be displayed</p>
             </div>
             <div class="form-card__body">
               <div class="field-group">
@@ -407,6 +423,30 @@
                 <input class="wizard-field__input" id="token-name" name="token-name" type="text" inputmode="text" autocomplete="off" placeholder="e.g., Mega Awesome Token" required maxlength="64" aria-describedby="token-name-message">
                 <span class="field-hint">2-64 characters • This is what users will see</span>
                 <p class="wizard-field__message" id="token-name-message" role="status" aria-live="polite"></p>
+              </div>
+
+              <div class="localization-row__grid">
+                <div class="wizard-field">
+                  <label class="wizard-field__label" for="token-singular">Singular form</label>
+                  <input class="wizard-field__input" id="token-singular" name="token-singular" type="text" inputmode="text" autocomplete="off" placeholder="Token" required minlength="3" maxlength="25" aria-describedby="token-singular-message">
+                  <p class="wizard-field__message" id="token-singular-message" role="status" aria-live="polite"></p>
+                </div>
+
+                <div class="wizard-field">
+                  <label class="wizard-field__label" for="token-plural">Plural form</label>
+                  <input class="wizard-field__input" id="token-plural" name="token-plural" type="text" inputmode="text" autocomplete="off" placeholder="Tokens" required minlength="3" maxlength="25" aria-describedby="token-plural-message">
+                  <p class="wizard-field__message" id="token-plural-message" role="status" aria-live="polite"></p>
+                </div>
+              </div>
+
+              <span class="field-hint" style="margin-top: -0.5rem; margin-bottom: 1rem; display: block;">3-25 characters • How one unit or multiple units are displayed (e.g., "Token"/"Tokens", "Coin"/"Coins")</span>
+
+              <div class="field-group">
+                <label class="wizard-checkbox" for="token-capitalize">
+                  <input class="wizard-checkbox__input" type="checkbox" id="token-capitalize" name="token-capitalize">
+                  <span class="wizard-checkbox__label">Capitalize token name</span>
+                </label>
+                <span class="field-hint">When enabled, "token" becomes "Token" in displays</span>
               </div>
             </div>
           </div>
@@ -454,12 +494,126 @@
       </div>
     </section>
 
+    <!-- Naming: Keywords & Description Sub-step -->
+    <section class="wizard-screen" id="screen-naming-metadata" data-step="naming" data-substep="naming-metadata" data-tab="token" hidden>
+      <div class="wizard-screen__inner">
+        <form class="wizard-form" id="naming-metadata-form" novalidate>
+          <h1 class="wizard-screen__title" id="title-naming-metadata" tabindex="-1">How would you describe your token?</h1>
+          <p class="wizard-screen__subtitle">Add a description and keywords to help users discover and understand your token.</p>
+
+          <!-- Description Card -->
+          <div class="form-card">
+            <div class="form-card__header">
+              <h3 class="form-card__title">Description <span class="wizard-badge wizard-badge--optional" style="margin-left: var(--space-2);">Optional</span></h3>
+              <p class="form-card__description">A brief explanation of your token's purpose</p>
+            </div>
+            <div class="form-card__body">
+              <div class="field-group">
+                <label class="wizard-field__label" for="token-description">Token description</label>
+                <textarea class="wizard-field__input" id="token-description" name="token-description" rows="3" minlength="3" maxlength="100" placeholder="e.g., A utility token for accessing premium features in our platform" aria-describedby="token-description-hint token-description-message"></textarea>
+                <span class="field-hint" id="token-description-hint">3-100 characters • Explain what your token is used for and its main purpose</span>
+                <p class="wizard-field__message" id="token-description-message" role="status" aria-live="polite"></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Keywords Card -->
+          <div class="form-card">
+            <div class="form-card__header">
+              <h3 class="form-card__title">Keywords <span class="wizard-badge wizard-badge--optional" style="margin-left: var(--space-2);">Optional</span></h3>
+              <p class="form-card__description">Tags to improve searchability and categorization</p>
+            </div>
+            <div class="form-card__body">
+              <div class="field-group">
+                <label class="wizard-field__label" for="token-keywords">Keywords (comma-separated)</label>
+                <input class="wizard-field__input" id="token-keywords" name="token-keywords" type="text" placeholder="e.g., utility, gaming, rewards, governance" aria-describedby="token-keywords-hint token-keywords-message">
+                <span class="field-hint" id="token-keywords-hint">Separate keywords with commas • Max 50 keywords • Examples: DeFi, NFT, payments, social</span>
+                <p class="wizard-field__message" id="token-keywords-message" role="status" aria-live="polite"></p>
+              </div>
+              <div id="keywords-preview" class="keywords-preview" style="margin-top: var(--space-3); display: none;">
+                <label class="wizard-field__label" style="margin-bottom: var(--space-2);">Preview:</label>
+                <div id="keywords-tag-container" class="keywords-tag-container"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="wizard-actions wizard-actions--between wizard-actions--sticky">
+            <button class="wizard-button wizard-button--secondary" type="button" data-step-back="naming-metadata">← Back</button>
+            <button class="wizard-button wizard-button--primary" id="naming-metadata-next" type="submit">Continue →</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
         <!-- Permissions: Token Supply Sub-step -->
         <section class="wizard-screen" id="screen-permissions" data-step="permissions" data-substep="permissions" data-tab="token" hidden>
       <div class="wizard-screen__inner">
         <form class="wizard-form" id="permissions-form" novalidate>
           <h1 class="wizard-screen__title" id="title-permissions" tabindex="-1">How do you want to manage your token supply?</h1>
           <p class="wizard-screen__subtitle">Set the initial amount, divisibility, and supply limits for your token.</p>
+
+          <!-- Action Rules Preset Card -->
+          <div class="form-card">
+            <div class="form-card__header">
+              <h3 class="form-card__title">Action Rules Preset <span class="wizard-badge wizard-badge--recommended" style="margin-left: var(--space-2);">Quick Start</span></h3>
+              <p class="form-card__description">Choose a template to quickly configure permission rules</p>
+            </div>
+            <div class="form-card__body">
+              <fieldset class="wizard-fieldset" aria-describedby="preset-hint">
+                <legend class="wizard-field__label">Select a preset template</legend>
+
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="action-rules-preset" value="custom" checked>
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">Custom</span>
+                    <span class="wizard-choice__hint">Configure all action rules independently for maximum flexibility</span>
+                  </span>
+                </label>
+
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="action-rules-preset" value="most-restrictive">
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">Most Restrictive</span>
+                    <span class="wizard-choice__hint">No actions permitted after initialization. All settings are immutable and tamper-proof.</span>
+                  </span>
+                </label>
+
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="action-rules-preset" value="emergency-only">
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">Only Emergency Action</span>
+                    <span class="wizard-choice__hint">Only emergency actions (pausing) are permitted. Minting, burning, and freezing are disabled.</span>
+                  </span>
+                </label>
+
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="action-rules-preset" value="mint-burn">
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">Minting and Burning</span>
+                    <span class="wizard-choice__hint">Allows supply management through minting and burning. Advanced features like freezing are disabled.</span>
+                  </span>
+                </label>
+
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="action-rules-preset" value="advanced">
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">Advanced Actions</span>
+                    <span class="wizard-choice__hint">Enables minting, burning, freezing, and unfreezing. Suitable for tokens requiring moderate administrative control.</span>
+                  </span>
+                </label>
+
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="action-rules-preset" value="all-allowed">
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">All Allowed</span>
+                    <span class="wizard-choice__hint">Enables all actions including minting, burning, freezing, destroying frozen funds, and emergency controls.</span>
+                  </span>
+                </label>
+
+                <span class="field-hint" id="preset-hint" style="margin-top: var(--space-3);">Presets automatically configure action permissions. You can fine-tune individual settings in later steps.</span>
+              </fieldset>
+            </div>
+          </div>
 
           <!-- Supply Amount Card -->
           <div class="form-card">
@@ -485,8 +639,8 @@
             <div class="form-card__body">
               <div class="field-group">
                 <label class="wizard-field__label" for="decimals">Decimals *</label>
-                <input class="wizard-field__input" id="decimals" name="decimals" type="number" min="0" max="18" value="8" required aria-describedby="decimals-hint">
-                <span class="field-hint">8 decimals (like Bitcoin) is standard • 0 for whole units only • Max: 18</span>
+                <input class="wizard-field__input" id="decimals" name="decimals" type="number" min="0" max="16" value="8" required aria-describedby="decimals-hint">
+                <span class="field-hint">8 decimals (like Bitcoin) is standard • 0 for whole units only • Max: 16</span>
               </div>
             </div>
           </div>
@@ -506,63 +660,19 @@
             </div>
           </div>
 
-          <!-- History Tracking Card (Optional) -->
+          <!-- Launch Settings Card -->
           <div class="form-card">
             <div class="form-card__header">
-              <h3 class="form-card__title">History Tracking <span class="wizard-badge wizard-badge--optional" style="margin-left: var(--space-2);">Optional</span></h3>
-              <p class="form-card__description">Record operations on-chain for auditing and transparency</p>
+              <h3 class="form-card__title">Launch Settings <span class="wizard-badge wizard-badge--optional" style="margin-left: var(--space-2);">Optional</span></h3>
+              <p class="form-card__description">Control the initial state of your token</p>
             </div>
             <div class="form-card__body">
-              <p class="field-hint" style="margin-bottom: var(--space-4);">Enable history tracking for specific operations. Tracked operations are recorded on-chain permanently.</p>
-
-              <div class="field-group" style="margin-bottom: var(--space-3);">
-                <label class="wizard-checkbox">
-                  <input class="wizard-checkbox__input" type="checkbox" id="permissions-history-transfers" name="permissions-history-transfers">
-                  <span class="wizard-checkbox__label">
-                    <span class="wizard-checkbox__title">Track Transfers</span>
-                    <span class="wizard-checkbox__hint">Record all token transfers between identities</span>
-                  </span>
-                </label>
-              </div>
-
-              <div class="field-group" style="margin-bottom: var(--space-3);">
-                <label class="wizard-checkbox">
-                  <input class="wizard-checkbox__input" type="checkbox" id="permissions-history-mints" name="permissions-history-mints">
-                  <span class="wizard-checkbox__label">
-                    <span class="wizard-checkbox__title">Track Mints</span>
-                    <span class="wizard-checkbox__hint">Record all token minting operations</span>
-                  </span>
-                </label>
-              </div>
-
-              <div class="field-group" style="margin-bottom: var(--space-3);">
-                <label class="wizard-checkbox">
-                  <input class="wizard-checkbox__input" type="checkbox" id="permissions-history-burns" name="permissions-history-burns">
-                  <span class="wizard-checkbox__label">
-                    <span class="wizard-checkbox__title">Track Burns</span>
-                    <span class="wizard-checkbox__hint">Record all token burning operations</span>
-                  </span>
-                </label>
-              </div>
-
               <div class="field-group">
-                <label class="wizard-checkbox">
-                  <input class="wizard-checkbox__input" type="checkbox" id="permissions-history-freezes" name="permissions-history-freezes">
-                  <span class="wizard-checkbox__label">
-                    <span class="wizard-checkbox__title">Track Freezes</span>
-                    <span class="wizard-checkbox__hint">Record all freeze/unfreeze operations</span>
-                  </span>
+                <label class="wizard-checkbox" for="permissions-start-paused">
+                  <input class="wizard-checkbox__input" type="checkbox" id="permissions-start-paused" name="permissions-start-paused">
+                  <span class="wizard-checkbox__label">Start as paused</span>
                 </label>
-              </div>
-
-              <div class="field-group">
-                <label class="wizard-checkbox">
-                  <input class="wizard-checkbox__input" type="checkbox" id="permissions-history-purchases" name="permissions-history-purchases">
-                  <span class="wizard-checkbox__label">
-                    <span class="wizard-checkbox__title">Track Purchases</span>
-                    <span class="wizard-checkbox__hint">Record all direct purchase transactions</span>
-                  </span>
-                </label>
+                <span class="field-hint" style="margin-top: 0.5rem; display: block;">When enabled, all token transfers will be frozen immediately after creation. This gives you time to verify everything is working correctly before allowing trading. You can unpause the token later using emergency controls. <strong>Recommended for security:</strong> Launch paused, test thoroughly, then enable transfers.</span>
               </div>
             </div>
           </div>
@@ -600,10 +710,10 @@
                   </span>
                 </label>
                 <label class="wizard-choice">
-                  <input class="wizard-choice__input" type="radio" name="permissions-scope" value="committee">
+                  <input class="wizard-choice__input" type="radio" name="permissions-scope" value="groups">
                   <span class="wizard-choice__content">
-                    <span class="wizard-choice__title">Committee approval</span>
-                    <span class="wizard-choice__hint">Require multiple approvers for changes (more secure)</span>
+                    <span class="wizard-choice__title">Groups</span>
+                    <span class="wizard-choice__hint">Multi-signature control with multiple approvers (more secure)</span>
                   </span>
                 </label>
               </fieldset>
@@ -730,30 +840,23 @@
                   </span>
                 </label>
 
-                <!-- Specific Group Option -->
+                <!-- Group Option -->
                 <label class="wizard-choice">
                   <input class="wizard-choice__input" type="radio" name="manual-mint-permission" value="group" data-toggle-panel="manual-mint-panel-group">
                   <span class="wizard-choice__content">
-                    <span class="wizard-choice__title">Specific Group</span>
+                    <span class="wizard-choice__title">Group</span>
                     <span class="wizard-choice__hint">Members of a designated group can mint</span>
                   </span>
                 </label>
                 <div class="distribution-inline-panel" id="manual-mint-panel-group" hidden>
-                  <div class="field-group">
-                    <label class="wizard-field__label" for="manual-mint-group-id">Group ID</label>
-                    <input class="wizard-field__input" type="text" id="manual-mint-group-id" placeholder="e.g., minters">
-                    <span class="field-hint">Authorized group identifier</span>
+                  <div class="field-group" id="manual-mint-group-selector-container">
+                    <label class="wizard-field__label" for="manual-mint-group-id">Select group</label>
+                    <select class="wizard-field__input" id="manual-mint-group-id" name="manual-mint-group-id">
+                      <option value="">Select a group...</option>
+                    </select>
+                    <span class="field-hint" id="manual-mint-group-hint">Choose which group can perform this action</span>
                   </div>
                 </div>
-
-                <!-- Anyone Option -->
-                <label class="wizard-choice">
-                  <input class="wizard-choice__input" type="radio" name="manual-mint-permission" value="anyone">
-                  <span class="wizard-choice__content">
-                    <span class="wizard-choice__title">Anyone</span>
-                    <span class="wizard-choice__hint">Any identity can mint tokens (not recommended)</span>
-                  </span>
-                </label>
               </fieldset>
 
               <!-- Minting Destination Configuration -->
@@ -822,19 +925,21 @@
                   </span>
                 </label>
 
-                <!-- Specific Group Option -->
+                <!-- Group Option -->
                 <label class="wizard-choice">
                   <input class="wizard-choice__input" type="radio" name="manual-burn-permission" value="group" data-toggle-panel="manual-burn-panel-group">
                   <span class="wizard-choice__content">
-                    <span class="wizard-choice__title">Specific Group</span>
+                    <span class="wizard-choice__title">Group</span>
                     <span class="wizard-choice__hint">Members of a designated group can burn</span>
                   </span>
                 </label>
                 <div class="distribution-inline-panel" id="manual-burn-panel-group" hidden>
-                  <div class="field-group">
-                    <label class="wizard-field__label" for="manual-burn-group-id">Group ID</label>
-                    <input class="wizard-field__input" type="text" id="manual-burn-group-id" placeholder="e.g., burners">
-                    <span class="field-hint">Authorized group identifier</span>
+                  <div class="field-group" id="manual-burn-group-selector-container">
+                    <label class="wizard-field__label" for="manual-burn-group-id">Select group</label>
+                    <select class="wizard-field__input" id="manual-burn-group-id" name="manual-burn-group-id">
+                      <option value="">Select a group...</option>
+                    </select>
+                    <span class="field-hint" id="manual-burn-group-hint">Choose which group can perform this action</span>
                   </div>
                 </div>
 
@@ -894,19 +999,21 @@
                   </span>
                 </label>
 
-                <!-- Specific Group Option -->
+                <!-- Group Option -->
                 <label class="wizard-choice">
                   <input class="wizard-choice__input" type="radio" name="manual-freeze-permission" value="group" data-toggle-panel="manual-freeze-panel-group">
                   <span class="wizard-choice__content">
-                    <span class="wizard-choice__title">Specific Group</span>
+                    <span class="wizard-choice__title">Group</span>
                     <span class="wizard-choice__hint">Members of a designated group can freeze/unfreeze</span>
                   </span>
                 </label>
                 <div class="distribution-inline-panel" id="manual-freeze-panel-group" hidden>
-                  <div class="field-group">
-                    <label class="wizard-field__label" for="manual-freeze-group-id">Group ID</label>
-                    <input class="wizard-field__input" type="text" id="manual-freeze-group-id" placeholder="e.g., compliance-team">
-                    <span class="field-hint">Authorized group identifier</span>
+                  <div class="field-group" id="manual-freeze-group-selector-container">
+                    <label class="wizard-field__label" for="manual-freeze-group-id">Select group</label>
+                    <select class="wizard-field__input" id="manual-freeze-group-id" name="manual-freeze-group-id">
+                      <option value="">Select a group...</option>
+                    </select>
+                    <span class="field-hint" id="manual-freeze-group-hint">Choose which group can perform this action</span>
                   </div>
                 </div>
               </fieldset>
@@ -957,19 +1064,21 @@
                   </span>
                 </label>
 
-                <!-- Specific Group Option -->
+                <!-- Group Option -->
                 <label class="wizard-choice">
                   <input class="wizard-choice__input" type="radio" name="destroy-frozen-permission" value="group" data-toggle-panel="destroy-frozen-panel-group">
                   <span class="wizard-choice__content">
-                    <span class="wizard-choice__title">Specific Group</span>
+                    <span class="wizard-choice__title">Group</span>
                     <span class="wizard-choice__hint">Members of a designated group can destroy frozen funds</span>
                   </span>
                 </label>
                 <div class="distribution-inline-panel" id="destroy-frozen-panel-group" hidden>
-                  <div class="field-group">
-                    <label class="wizard-field__label" for="destroy-frozen-group-id">Group ID</label>
-                    <input class="wizard-field__input" type="text" id="destroy-frozen-group-id" placeholder="e.g., compliance-team">
-                    <span class="field-hint">Authorized group identifier</span>
+                  <div class="field-group" id="destroy-frozen-group-selector-container">
+                    <label class="wizard-field__label" for="destroy-frozen-group-id">Select group</label>
+                    <select class="wizard-field__input" id="destroy-frozen-group-id" name="destroy-frozen-group-id">
+                      <option value="">Select a group...</option>
+                    </select>
+                    <span class="field-hint" id="destroy-frozen-group-hint">Choose which group can perform this action</span>
                   </div>
                 </div>
               </fieldset>
@@ -1020,19 +1129,21 @@
                   </span>
                 </label>
 
-                <!-- Specific Group Option -->
+                <!-- Group Option -->
                 <label class="wizard-choice">
                   <input class="wizard-choice__input" type="radio" name="emergency-permission" value="group" data-toggle-panel="emergency-panel-group">
                   <span class="wizard-choice__content">
-                    <span class="wizard-choice__title">Specific Group</span>
+                    <span class="wizard-choice__title">Group</span>
                     <span class="wizard-choice__hint">Members of a designated group can freeze/unfreeze all transfers globally</span>
                   </span>
                 </label>
                 <div class="distribution-inline-panel" id="emergency-panel-group" hidden>
-                  <div class="field-group">
-                    <label class="wizard-field__label" for="emergency-group-id">Group ID</label>
-                    <input class="wizard-field__input" type="text" id="emergency-group-id" placeholder="e.g., emergency-response">
-                    <span class="field-hint">Authorized group identifier</span>
+                  <div class="field-group" id="emergency-group-selector-container">
+                    <label class="wizard-field__label" for="emergency-group-id">Select group</label>
+                    <select class="wizard-field__input" id="emergency-group-id" name="emergency-group-id">
+                      <option value="">Select a group...</option>
+                    </select>
+                    <span class="field-hint" id="emergency-group-hint">Choose which group can perform this action</span>
                   </div>
                 </div>
               </fieldset>
@@ -1160,25 +1271,10 @@
                 </label>
                 <div class="distribution-inline-panel" id="distribution-panel-preprogrammed" hidden>
                   <div id="preprogrammed-entries" style="margin-bottom: var(--space-4);">
-                    <div class="field-group preprogrammed-entry" data-entry-index="0" style="padding: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--border-radius-md); margin-bottom: var(--space-3);">
-                      <div class="field-group">
-                        <label class="wizard-field__label">Release timestamp</label>
-                        <input class="wizard-field__input" type="datetime-local" name="preprogrammed-timestamp" placeholder="2025-01-01T00:00">
-                        <span class="field-hint">When tokens should be available for claim</span>
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label">Recipient Identity ID</label>
-                        <input class="wizard-field__input" type="text" name="preprogrammed-identity" placeholder="e.g., 4hKFP3mFB9vku8VJKcZvwVN123...">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label">Token amount</label>
-                        <input class="wizard-field__input" type="text" name="preprogrammed-amount" placeholder="e.g., 1000000">
-                      </div>
-                      <button class="wizard-button wizard-button--text wizard-button--sm" type="button" data-remove-preprogrammed style="margin-top: var(--space-2);">Remove</button>
-                    </div>
+                    <!-- Entries dynamically generated by JavaScript -->
                   </div>
                   <button class="wizard-button wizard-button--secondary wizard-button--sm" type="button" id="add-preprogrammed-entry">+ Add Distribution</button>
-                  <span class="field-hint" style="display: block; margin-top: var(--space-2);">Recipients must claim tokens after the timestamp</span>
+                  <span class="field-hint" style="display: block; margin-top: var(--space-2);">Recipients must claim tokens after the timestamp. Each entry creates a claimable distribution at the specified time.</span>
                 </div>
 
                 <!-- Block-based Option -->
@@ -1728,30 +1824,26 @@
 
                   <!-- JSON Schema -->
                   <div class="field-group">
-                    <label class="wizard-field__label" for="document-type-schema">JSON Schema *</label>
-                    <textarea class="wizard-field__input wizard-field__input--code" id="document-type-schema" name="document-type-schema" rows="16" placeholder='{
-  "type": "object",
-  "properties": {
-    "name": {
-      "type": "string",
-      "position": 0,
-      "description": "NFT name"
-    },
-    "description": {
-      "type": "string",
-      "position": 1,
-      "description": "NFT description"
-    },
-    "imageUrl": {
-      "type": "string",
-      "position": 2,
-      "description": "URL to image"
-    }
-  },
-  "additionalProperties": false,
-  "required": ["name"]
-}' required></textarea>
-                    <span class="field-hint">Enter valid JSON Schema. Each property must have "type" and "position" fields. Set "additionalProperties": false.</span>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
+                      <label class="wizard-field__label" for="document-type-schema" style="margin-bottom: 0;">JSON Schema *</label>
+                      <div style="display: flex; gap: var(--space-2);">
+                        <button class="wizard-button wizard-button--text wizard-button--small" type="button" id="document-schema-sample">📄 Sample</button>
+                        <button class="wizard-button wizard-button--text wizard-button--small" type="button" id="document-schema-paste">📋 Paste</button>
+                        <button class="wizard-button wizard-button--text wizard-button--small" type="button" id="document-schema-format">✨ Format</button>
+                        <button class="wizard-button wizard-button--text wizard-button--small" type="button" id="document-schema-clear">🗑️ Clear</button>
+                      </div>
+                    </div>
+                    <textarea class="wizard-field__input wizard-field__input--code" id="document-type-schema" name="document-type-schema" rows="16" placeholder='Paste a document schema here or click "Sample" for an example...' required></textarea>
+                    <div class="field-hint" style="background: var(--color-info-light); padding: var(--space-3); border-radius: var(--radius-sm); border-left: 3px solid var(--color-info);">
+                      <strong>📝 Document Schema Requirements:</strong>
+                      <ul style="margin: var(--space-2) 0 0 var(--space-4); padding: 0;">
+                        <li>Must have <code>"type": "object"</code> at the root</li>
+                        <li>Must have a <code>"properties"</code> object with at least one field</li>
+                        <li>Each property needs <code>"type"</code> and <code>"position"</code> (number)</li>
+                        <li>Must set <code>"additionalProperties": false</code></li>
+                      </ul>
+                      <p style="margin: var(--space-2) 0 0 0; font-style: italic;">💡 Tip: Click "Sample" to see a complete example, or paste only the document schema (not the entire contract).</p>
+                    </div>
                   </div>
 
                   <p class="wizard-field__message" id="document-type-message" role="status" aria-live="polite"></p>
@@ -1764,6 +1856,64 @@
             </div>
           </div>
 
+        </div>
+      </div>
+    </section>
+
+    <!-- Overview Screen -->
+    <section class="wizard-screen" id="screen-overview" data-step="overview" data-tab="token" hidden>
+      <div class="wizard-screen__inner">
+        <h1 class="wizard-screen__title" id="title-overview" tabindex="-1">Review Your Token Configuration</h1>
+        <p class="wizard-screen__subtitle">Review all settings before publishing to the Dash Platform</p>
+
+        <!-- Configuration Overview -->
+        <div class="form-card">
+          <div class="form-card__header">
+            <h3 class="form-card__title">Configuration Summary</h3>
+            <p class="form-card__description">All your token settings at a glance</p>
+          </div>
+          <div class="form-card__body">
+            <div class="config-overview" id="config-overview">
+              <div class="config-overview__item">
+                <span class="config-overview__label">Token Name:</span>
+                <span class="config-overview__value" id="overview-token-name">—</span>
+              </div>
+              <div class="config-overview__item">
+                <span class="config-overview__label">Decimals:</span>
+                <span class="config-overview__value" id="overview-decimals">—</span>
+              </div>
+              <div class="config-overview__item">
+                <span class="config-overview__label">Base Supply:</span>
+                <span class="config-overview__value" id="overview-base-supply">—</span>
+              </div>
+              <div class="config-overview__item">
+                <span class="config-overview__label">Max Supply:</span>
+                <span class="config-overview__value" id="overview-max-supply">—</span>
+              </div>
+              <div class="config-overview__item">
+                <span class="config-overview__label">Localizations:</span>
+                <span class="config-overview__value" id="overview-localizations">—</span>
+              </div>
+              <div class="config-overview__item">
+                <span class="config-overview__label">Document Types:</span>
+                <span class="config-overview__value" id="overview-document-types">—</span>
+              </div>
+              <div class="config-overview__item">
+                <span class="config-overview__label">Groups:</span>
+                <span class="config-overview__value" id="overview-groups">—</span>
+              </div>
+              <div class="config-overview__item">
+                <span class="config-overview__label">Distribution:</span>
+                <span class="config-overview__value" id="overview-distribution">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="wizard-actions">
+          <button class="wizard-button wizard-button--secondary" type="button" id="overview-back">Back</button>
+          <button class="wizard-button wizard-button--primary" type="button" id="overview-next">Continue to Registration</button>
         </div>
       </div>
     </section>
@@ -2017,7 +2167,7 @@
                   <input class="wizard-field__input wizard-field__input--condensed" id="manual-mint-performer-identity" type="text" placeholder="identity-id">
                   <p class="wizard-field__hint">Provide the Dash Platform identity ID allowed to mint.</p>
                 </div>
-                <p class="wizard-field__hint" id="manual-mint-performer-hint">Choose <strong>No one</strong> to block manual minting entirely, or assign the contract owner, main group, or a specific committee. Select <strong>Specific Identity</strong> to target a single identity ID.</p>
+                <p class="wizard-field__hint" id="manual-mint-performer-hint">Choose <strong>No one</strong> to block manual minting entirely, or assign the contract owner, main group, or a specific group. Select <strong>Specific Identity</strong> to target a single identity ID.</p>
               </div>
             </section>
 
@@ -2143,7 +2293,7 @@
                   <input class="wizard-field__input wizard-field__input--condensed" id="manual-burn-performer-identity" type="text" placeholder="identity-id">
                   <p class="wizard-field__hint">Provide the Dash Platform identity ID allowed to burn tokens.</p>
                 </div>
-                <p class="wizard-field__hint">Select <strong>No one</strong> to prevent manual burns, or delegate the capability to the contract owner, a committee, or the Specific Identity option. Choose <strong>Specific Identity</strong> to target a single identity ID.</p>
+                <p class="wizard-field__hint">Select <strong>No one</strong> to prevent manual burns, or delegate the capability to the contract owner, a group, or the Specific Identity option. Choose <strong>Specific Identity</strong> to target a single identity ID.</p>
               </div>
             </section>
 

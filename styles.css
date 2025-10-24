@@ -816,6 +816,12 @@ img {
   border: 1px solid var(--color-warning-border);
 }
 
+.wizard-badge--recommended {
+  background: var(--color-success-light);
+  color: var(--color-success);
+  border: 1px solid var(--color-success-border);
+}
+
 /* ============================================
    DISTRIBUTION PROGRESSIVE DISCLOSURE (INLINE)
    ============================================ */
@@ -1911,6 +1917,36 @@ html[data-theme='auto'] .wizard-tab--active {
   gap: var(--space-2);
 }
 
+/* Configuration Overview */
+.config-overview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.config-overview__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: var(--space-3);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-sm);
+  gap: var(--space-4);
+}
+
+.config-overview__label {
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.config-overview__value {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  text-align: right;
+  word-break: break-word;
+}
+
 .field-group--row {
   flex-direction: row;
   align-items: center;
@@ -1922,6 +1958,24 @@ html[data-theme='auto'] .wizard-tab--active {
   color: var(--color-muted);
   line-height: 1.5;
   margin: 0;
+}
+
+.field-hint code {
+  background: var(--color-bg-tertiary);
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  font-size: 0.9em;
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+
+.field-hint ul {
+  list-style-type: disc;
+}
+
+.field-hint li {
+  margin-bottom: var(--space-1);
 }
 
 @media (max-width: 767px) {
@@ -2490,6 +2544,46 @@ html[data-theme='auto'] .wizard-tab--active {
   }
 }
 
+/* Keywords & Description */
+.keywords-preview {
+  padding: var(--space-4);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.keywords-tag-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.keyword-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 4px 12px;
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.keyword-tag--empty {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+@media (max-width: 480px) {
+  .keyword-tag {
+    font-size: 0.8125rem;
+    padding: 3px 10px;
+  }
+}
+
 .wizard-fieldset {
   border: none;
   margin: 0;
@@ -2808,6 +2902,46 @@ textarea.wizard-field__input {
 
 .wizard-button--secondary:active:not(:disabled) {
   transform: translateY(0);
+}
+
+.wizard-button--danger {
+  background: #dc2626;
+  color: #ffffff;
+  border: none;
+}
+
+.wizard-button--danger:hover:not(:disabled) {
+  background: #b91c1c;
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.wizard-button--danger:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: var(--shadow-xs);
+}
+
+.wizard-button--small {
+  padding: 8px 16px;
+  min-height: 36px;
+  min-width: 80px;
+  font-size: 0.875rem;
+}
+
+.wizard-button--text {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  padding: 6px 12px;
+  min-height: 32px;
+  min-width: auto;
+  font-size: 0.875rem;
+}
+
+.wizard-button--text:hover:not(:disabled) {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .wizard-button:disabled {

@@ -17,7 +17,7 @@
   const STATE_STORAGE_KEY = 'dashTokenWizardState';
   const THEME_STORAGE_KEY = 'ui.theme';
   // FIXED: Correct order matching sidebar navigation
-  const STEP_SEQUENCE = ['naming', 'permissions', 'advanced', 'distribution', 'registration'];
+  const STEP_SEQUENCE = ['naming', 'permissions', 'advanced', 'distribution', 'overview', 'registration'];
   const INFO_STEPS = Object.freeze([
     'permissions-group',
     'permissions-manual-mint',
@@ -62,10 +62,11 @@
   // distribution: Schedule → Emission
   // registration: Register Token (no substeps)
   const SUBSTEP_SEQUENCES = Object.freeze({
-    naming: ['naming', 'naming-localization'],
+    naming: ['naming', 'naming-localization', 'naming-metadata'],
     permissions: ['permissions', 'permissions-control', 'permissions-transfer', 'permissions-manual-mint', 'permissions-manual-burn', 'permissions-manual-freeze', 'permissions-destroy-frozen', 'permissions-emergency'],
     advanced: ['advanced', 'advanced-control'],
     distribution: ['distribution', 'distribution-emission'],
+    overview: ['overview'],
     registration: ['registration']
   });
 
@@ -75,6 +76,7 @@
     permissions: 'Permissions',
     distribution: 'Distribution',
     advanced: 'Advanced',
+    overview: 'Overview',
     registration: 'Registration',
     'permissions-group': 'Group permissions',
     'permissions-transfer': 'Transfer settings',
@@ -425,6 +427,11 @@
       form: {
         tokenName: '',
         naming: {
+          singular: '',
+          plural: '',
+          capitalize: true,
+          description: '',
+          keywords: [],
           conventions: {
             localizations: {}
           },
@@ -547,9 +554,7 @@
   function createEmptyLocalizationRowData() {
     return {
       code: '',
-      shouldCapitalize: true,
-      singular: '',
-      plural: ''
+      shouldCapitalize: true
     };
   }
 
@@ -565,19 +570,7 @@
           : Boolean(row.should_capitalize);
     return {
       code: typeof row.code === 'string' ? row.code : '',
-      shouldCapitalize,
-      singular:
-        typeof row.singular === 'string'
-          ? row.singular
-          : typeof row.singular_form === 'string'
-            ? row.singular_form
-            : '',
-      plural:
-        typeof row.plural === 'string'
-          ? row.plural
-          : typeof row.plural_form === 'string'
-            ? row.plural_form
-            : ''
+      shouldCapitalize
     };
   }
 
@@ -643,6 +636,7 @@
   // FIXED: Expose wizardState and persistState to window for access from separate IIFEs (Group Management)
   window.wizardState = wizardState;
   window.persistState = persistState;
+  window.renderPermissionGroups = renderPermissionGroups;
   const tokenNamePattern = createTokenNamePattern();
   try {
     if (typeof window !== 'undefined' && window.sessionStorage) {
@@ -819,6 +813,12 @@
   const tokenNameMessage = document.getElementById('token-name-message');
   const namingNextButton = document.getElementById('naming-next');
 
+  const tokenSingularInput = document.getElementById('token-singular');
+  const tokenPluralInput = document.getElementById('token-plural');
+  const tokenCapitalizeInput = document.getElementById('token-capitalize');
+  const tokenSingularMessage = document.getElementById('token-singular-message');
+  const tokenPluralMessage = document.getElementById('token-plural-message');
+
   const localizationWrapper = document.getElementById('localization-wrapper');
   const localizationEmptyState = document.getElementById('localization-empty-state');
   const localizationGuidance = document.getElementById('localization-guidance');
@@ -844,6 +844,9 @@ const advancedMessage = document.getElementById('advanced-message');
 const advancedNextButton = document.getElementById('advanced-next');
 // FIXED: Add reference to advanced-control substep Continue button
 const advancedControlNextButton = document.getElementById('advanced-control-next');
+
+const overviewNextButton = document.getElementById('overview-next');
+const overviewBackButton = document.getElementById('overview-back');
 
 // FIXED: Use existing HTML inputs instead of creating new ones
 let permissionsUI = createPermissionsUIFromHTML(permissionsForm);
@@ -1076,6 +1079,14 @@ let advancedUI = createAdvancedUI(advancedForm);
 
   tokenNameInput.addEventListener('input', handleNamingInput);
   tokenNameInput.addEventListener('blur', () => evaluateNaming({ touched: true }));
+
+  // Singular/plural fields now part of naming screen
+  tokenSingularInput.addEventListener('input', handleNamingInput);
+  tokenSingularInput.addEventListener('blur', () => evaluateNaming({ touched: true }));
+  tokenPluralInput.addEventListener('input', handleNamingInput);
+  tokenPluralInput.addEventListener('blur', () => evaluateNaming({ touched: true }));
+  tokenCapitalizeInput.addEventListener('change', handleNamingInput);
+
   if (registrationMethodsContainer) {
     registrationMethodsContainer.addEventListener('change', handleRegistrationSelection);
   }
@@ -1274,6 +1285,14 @@ let advancedUI = createAdvancedUI(advancedForm);
   }
   if (createTokenButton) {
     createTokenButton.addEventListener('click', () => handleStepAdvance('registration'));
+  }
+
+  if (overviewNextButton) {
+    overviewNextButton.addEventListener('click', () => handleStepAdvance('overview'));
+  }
+
+  if (overviewBackButton) {
+    overviewBackButton.addEventListener('click', () => goToPreviousScreen('overview'));
   }
 
   const readinessEvents = [
@@ -1879,6 +1898,11 @@ let advancedUI = createAdvancedUI(advancedForm);
   }
 
   function handleNamingInput() {
+    // Save all naming fields to state
+    wizardState.form.naming.singular = tokenSingularInput.value;
+    wizardState.form.naming.plural = tokenPluralInput.value;
+    wizardState.form.naming.capitalize = tokenCapitalizeInput.checked;
+
     const touched = tokenNameInput.value.length > 0 || wizardState.steps.naming.touched;
     const validation = evaluateNaming({ touched });
     if (validation.valid) {
@@ -1916,8 +1940,75 @@ let advancedUI = createAdvancedUI(advancedForm);
 
     wizardState.form.tokenName = rawValue;
 
+    // Validate singular and plural forms
+    const singular = tokenSingularInput.value.trim();
+    const plural = tokenPluralInput.value.trim();
+    let singularValid = true;
+    let pluralValid = true;
+    let singularError = '';
+    let pluralError = '';
+
+    if (singular.length === 0) {
+      singularError = 'Enter a singular name.';
+      singularValid = false;
+    } else if (singular.length < 3 || singular.length > 25) {
+      singularError = 'Must be 3-25 characters.';
+      singularValid = false;
+    } else if (singular !== tokenSingularInput.value) {
+      singularError = 'Remove leading or trailing spaces.';
+      singularValid = false;
+    }
+
+    if (plural.length === 0) {
+      pluralError = 'Enter a plural name.';
+      pluralValid = false;
+    } else if (plural.length < 3 || plural.length > 25) {
+      pluralError = 'Must be 3-25 characters.';
+      pluralValid = false;
+    } else if (plural !== tokenPluralInput.value) {
+      pluralError = 'Remove leading or trailing spaces.';
+      pluralValid = false;
+    }
+
+    // Update singular/plural UI
+    if (touched || !silent) {
+      tokenSingularMessage.textContent = singularError;
+      tokenPluralMessage.textContent = pluralError;
+
+      // Visual feedback for singular
+      if (singular.length > 0) {
+        if (singularValid) {
+          tokenSingularInput.classList.remove('wizard-field__input--error');
+          tokenSingularInput.classList.add('wizard-field__input--valid');
+        } else {
+          tokenSingularInput.classList.remove('wizard-field__input--valid');
+          tokenSingularInput.classList.add('wizard-field__input--error');
+        }
+      } else {
+        tokenSingularInput.classList.remove('wizard-field__input--valid', 'wizard-field__input--error');
+      }
+
+      // Visual feedback for plural
+      if (plural.length > 0) {
+        if (pluralValid) {
+          tokenPluralInput.classList.remove('wizard-field__input--error');
+          tokenPluralInput.classList.add('wizard-field__input--valid');
+        } else {
+          tokenPluralInput.classList.remove('wizard-field__input--valid');
+          tokenPluralInput.classList.add('wizard-field__input--error');
+        }
+      } else {
+        tokenPluralInput.classList.remove('wizard-field__input--valid', 'wizard-field__input--error');
+      }
+    }
+
+    // Save singular/plural/capitalize to state
+    wizardState.form.naming.singular = tokenSingularInput.value;
+    wizardState.form.naming.plural = tokenPluralInput.value;
+    wizardState.form.naming.capitalize = tokenCapitalizeInput.checked;
+
     const localizationResult = validateLocalizationRows({ touched, silent });
-    const isValid = nameResult.valid && localizationResult.valid;
+    const isValid = nameResult.valid && singularValid && pluralValid && localizationResult.valid;
 
     namingNextButton.disabled = !isValid;
 
@@ -1956,8 +2047,8 @@ let advancedUI = createAdvancedUI(advancedForm);
     let message = '';
     let valid = true;
 
-    if (!Number.isInteger(decimals) || decimals < 0 || decimals > 18) {
-      message = 'Decimals must be between 0 and 18.';
+    if (!Number.isInteger(decimals) || decimals < 0 || decimals > 16) {
+      message = 'Decimals must be between 0 and 16.';
       valid = false;
     }
 
@@ -2001,7 +2092,7 @@ let advancedUI = createAdvancedUI(advancedForm);
 
     // Decimals validation feedback
     if (decimalsInput) {
-      const decimalsValid = Number.isInteger(decimals) && decimals >= 0 && decimals <= 18;
+      const decimalsValid = Number.isInteger(decimals) && decimals >= 0 && decimals <= 16;
       const decimalsHasValue = values.decimals && values.decimals.trim().length > 0;
       if (decimalsHasValue) {
         if (decimalsValid) {
@@ -2212,6 +2303,20 @@ let advancedUI = createAdvancedUI(advancedForm);
     syncRegistrationPreflightUI();
     evaluateRegistration({ touched: true });
     refreshFlow({ suppressFocus: true });
+  }
+
+  function evaluateOverview({ touched = false, silent = false } = {}) {
+    // Overview step is always valid - it's just a review screen
+    const stepState = wizardState.steps.overview;
+    stepState.touched = touched;
+    stepState.validity = 'valid';
+
+    if (!silent) {
+      updateStepStatusUI('overview');
+      persistState();
+    }
+
+    return { valid: true, message: '' };
   }
 
   function evaluateRegistration({ touched = false, silent = false } = {}) {
@@ -2429,6 +2534,8 @@ let advancedUI = createAdvancedUI(advancedForm);
         return evaluateDistribution(options);
       case 'advanced':
         return evaluateAdvanced(options);
+      case 'overview':
+        return evaluateOverview(options);
       case 'registration':
         return evaluateRegistration(options);
       default:
@@ -2470,6 +2577,14 @@ let advancedUI = createAdvancedUI(advancedForm);
         validation = evaluateAdvanced({ touched: true });
         if (!validation.valid) {
           announce(validation.message);
+          return;
+        }
+        goToNextScreen(substepId);
+        break;
+      case 'overview':
+        validation = evaluateOverview({ touched: true });
+        if (!validation.valid) {
+          announce(validation.message || 'Review your configuration to continue.');
           return;
         }
         goToNextScreen(substepId);
@@ -3534,20 +3649,59 @@ function ensurePermissionsGroupState() {
     codeLabel.className = 'wizard-field__label';
     codeLabel.setAttribute('for', `${rowId}-code`);
     codeLabel.textContent = 'Language code';
-    const codeInput = document.createElement('input');
+    const codeInput = document.createElement('select');
     codeInput.className = 'wizard-field__input';
-    codeInput.type = 'text';
     codeInput.id = `${rowId}-code`;
     codeInput.name = `${rowId}-code`;
-    codeInput.autocomplete = 'off';
-    codeInput.inputMode = 'text';
-    codeInput.maxLength = 2;
-    codeInput.placeholder = 'en';
-    codeInput.value = (data.code || '').toLowerCase();
+
+    // Add language options
+    const languages = [
+      { code: '', name: 'Select language...' },
+      { code: 'en', name: 'English' },
+      { code: 'ar', name: 'Arabic (العربية)' },
+      { code: 'zh', name: 'Chinese (中文)' },
+      { code: 'de', name: 'German (Deutsch)' },
+      { code: 'es', name: 'Spanish (Español)' },
+      { code: 'fr', name: 'French (Français)' },
+      { code: 'it', name: 'Italian (Italiano)' },
+      { code: 'ja', name: 'Japanese (日本語)' },
+      { code: 'ru', name: 'Russian (Русский)' },
+      { code: 'pt', name: 'Portuguese (Português)' },
+      { code: 'hi', name: 'Hindi (हिन्दी)' },
+      { code: 'bn', name: 'Bengali (বাংলা)' },
+      { code: 'ko', name: 'Korean (한국어)' },
+      { code: 'tr', name: 'Turkish (Türkçe)' },
+      { code: 'vi', name: 'Vietnamese (Tiếng Việt)' },
+      { code: 'pl', name: 'Polish (Polski)' },
+      { code: 'uk', name: 'Ukrainian (Українська)' },
+      { code: 'nl', name: 'Dutch (Nederlands)' },
+      { code: 'el', name: 'Greek (Ελληνικά)' },
+      { code: 'sv', name: 'Swedish (Svenska)' },
+      { code: 'cs', name: 'Czech (Čeština)' },
+      { code: 'ro', name: 'Romanian (Română)' },
+      { code: 'hu', name: 'Hungarian (Magyar)' },
+      { code: 'th', name: 'Thai (ไทย)' },
+      { code: 'id', name: 'Indonesian (Bahasa Indonesia)' },
+      { code: 'he', name: 'Hebrew (עברית)' },
+      { code: 'da', name: 'Danish (Dansk)' },
+      { code: 'fi', name: 'Finnish (Suomi)' },
+      { code: 'no', name: 'Norwegian (Norsk)' }
+    ];
+
+    languages.forEach(lang => {
+      const option = document.createElement('option');
+      option.value = lang.code;
+      option.textContent = lang.name;
+      if (lang.code === (data.code || '').toLowerCase()) {
+        option.selected = true;
+      }
+      codeInput.appendChild(option);
+    });
+
     const codeHint = document.createElement('p');
     codeHint.className = 'wizard-field__hint';
     codeHint.id = `${rowId}-code-hint`;
-    codeHint.textContent = 'Use a 2-letter ISO 639-1 code (e.g., en).';
+    codeHint.textContent = 'Select a language from the list.';
     const codeMessage = document.createElement('p');
     codeMessage.className = 'wizard-field__message';
     codeMessage.id = `${rowId}-code-message`;
@@ -3571,53 +3725,6 @@ function ensurePermissionsGroupState() {
 
     header.append(codeField, capitalizeLabel);
 
-    const grid = document.createElement('div');
-    grid.className = 'localization-row__grid';
-
-    const singularField = document.createElement('div');
-    singularField.className = 'wizard-field';
-    const singularLabel = document.createElement('label');
-    singularLabel.className = 'wizard-field__label';
-    singularLabel.setAttribute('for', `${rowId}-singular`);
-    singularLabel.textContent = 'Singular form';
-    const singularInput = document.createElement('input');
-    singularInput.className = 'wizard-field__input';
-    singularInput.type = 'text';
-    singularInput.id = `${rowId}-singular`;
-    singularInput.name = `${rowId}-singular`;
-    singularInput.placeholder = 'Token';
-    singularInput.value = data.singular || '';
-    const singularMessage = document.createElement('p');
-    singularMessage.className = 'wizard-field__message';
-    singularMessage.id = `${rowId}-singular-message`;
-    singularMessage.setAttribute('role', 'status');
-    singularMessage.setAttribute('aria-live', 'polite');
-    singularInput.setAttribute('aria-describedby', singularMessage.id);
-    singularField.append(singularLabel, singularInput, singularMessage);
-
-    const pluralField = document.createElement('div');
-    pluralField.className = 'wizard-field';
-    const pluralLabel = document.createElement('label');
-    pluralLabel.className = 'wizard-field__label';
-    pluralLabel.setAttribute('for', `${rowId}-plural`);
-    pluralLabel.textContent = 'Plural form';
-    const pluralInput = document.createElement('input');
-    pluralInput.className = 'wizard-field__input';
-    pluralInput.type = 'text';
-    pluralInput.id = `${rowId}-plural`;
-    pluralInput.name = `${rowId}-plural`;
-    pluralInput.placeholder = 'Tokens';
-    pluralInput.value = data.plural || '';
-    const pluralMessage = document.createElement('p');
-    pluralMessage.className = 'wizard-field__message';
-    pluralMessage.id = `${rowId}-plural-message`;
-    pluralMessage.setAttribute('role', 'status');
-    pluralMessage.setAttribute('aria-live', 'polite');
-    pluralInput.setAttribute('aria-describedby', pluralMessage.id);
-    pluralField.append(pluralLabel, pluralInput, pluralMessage);
-
-    grid.append(singularField, pluralField);
-
     // ADDED: Remove button for each localization row
     const removeButton = document.createElement('button');
     removeButton.type = 'button';
@@ -3629,7 +3736,7 @@ function ensurePermissionsGroupState() {
     const langLabel = data.code ? ` (${data.code})` : '';
     removeButton.setAttribute('aria-label', `Remove localization${langLabel}`);
 
-    container.append(header, grid, removeButton);
+    container.append(header, removeButton);
 
     const row = {
       id: rowId,
@@ -3637,25 +3744,16 @@ function ensurePermissionsGroupState() {
         container,
         codeInput,
         codeMessage,
-        singularInput,
-        singularMessage,
-        pluralInput,
-        pluralMessage,
         capitalizeInput,
         removeButton
       },
       data: {
         code: codeInput.value,
-        shouldCapitalize: capitalizeInput.checked,
-        singular: singularInput.value,
-        plural: pluralInput.value
+        shouldCapitalize: capitalizeInput.checked
       }
     };
 
-    codeInput.addEventListener('input', () => handleLocalizationFieldInput(row, 'code', codeInput.value));
-    codeInput.addEventListener('blur', () => handleLocalizationFieldInput(row, 'code', codeInput.value.trim().toLowerCase()));
-    singularInput.addEventListener('input', () => handleLocalizationFieldInput(row, 'singular', singularInput.value));
-    pluralInput.addEventListener('input', () => handleLocalizationFieldInput(row, 'plural', pluralInput.value));
+    codeInput.addEventListener('change', () => handleLocalizationFieldInput(row, 'code', codeInput.value));
     capitalizeInput.addEventListener('change', () => handleLocalizationCheckboxChange(row, capitalizeInput.checked));
 
     return row;
@@ -3766,12 +3864,14 @@ function ensurePermissionsGroupState() {
       return { valid: false, record: {}, reasons: ['Add at least one localization.'] };
     }
 
+    // Get singular/plural from main token name form
+    const mainSingular = wizardState.form.naming.singular || '';
+    const mainPlural = wizardState.form.naming.plural || '';
+
     let rowsData = localizationRows.map((row) => {
       const data = {
         code: row.elements.codeInput.value || '',
-        shouldCapitalize: row.elements.capitalizeInput.checked,
-        singular: row.elements.singularInput.value || '',
-        plural: row.elements.pluralInput.value || ''
+        shouldCapitalize: row.elements.capitalizeInput.checked
       };
       row.data = data;
       return data;
@@ -3786,7 +3886,7 @@ function ensurePermissionsGroupState() {
     const record = {};
     let hasValidEntry = false;
     const hasAnyInput = rowsData.some((data) => {
-      return data.code.trim().length > 0 || data.singular.trim().length > 0 || data.plural.trim().length > 0;
+      return data.code.trim().length > 0;
     });
 
     rowsData.forEach((data, index) => {
@@ -3795,54 +3895,30 @@ function ensurePermissionsGroupState() {
         return;
       }
       const trimmedCode = data.code.trim();
-      const trimmedSingular = data.singular.trim();
-      const trimmedPlural = data.plural.trim();
-      const errors = { code: '', singular: '', plural: '' };
+      const errors = { code: '' };
       const showRowErrors = touched || hasAnyInput;
 
       if (trimmedCode.length === 0) {
         if (showRowErrors) {
-          errors.code = 'Enter a language code.';
+          errors.code = 'Select a language code.';
         }
       } else if (!LANGUAGE_CODE_PATTERN.test(trimmedCode)) {
         errors.code = 'Use a 2-letter lowercase code.';
-        reasons.push(`Localization ${index + 1} language code: Enter a 2-letter lowercase ISO 639-1 value.`);
-      }
-
-      if (trimmedSingular.length === 0) {
-        if (showRowErrors) {
-          errors.singular = 'Enter a singular name.';
-        }
-        reasons.push(`Localization ${index + 1} singular form: Enter a singular name.`);
-      } else if (trimmedSingular !== data.singular) {
-        errors.singular = 'Remove leading or trailing spaces.';
-        reasons.push(`Localization ${index + 1} singular form: Remove leading or trailing spaces.`);
-      }
-
-      if (trimmedPlural.length === 0) {
-        if (showRowErrors) {
-          errors.plural = 'Enter a plural name.';
-        }
-        reasons.push(`Localization ${index + 1} plural form: Enter a plural name.`);
-      } else if (trimmedPlural !== data.plural) {
-        errors.plural = 'Remove leading or trailing spaces.';
-        reasons.push(`Localization ${index + 1} plural form: Remove leading or trailing spaces.`);
+        reasons.push(`Localization ${index + 1} language code: Select a valid ISO 639-1 language.`);
       }
 
       if (!silent) {
         applyLocalizationRowErrors(row, errors, {
-          showCode: showRowErrors,
-          showSingular: showRowErrors,
-          showPlural: showRowErrors
+          showCode: showRowErrors
         });
       }
 
-      if (!errors.code && !errors.singular && !errors.plural) {
+      if (!errors.code) {
         hasValidEntry = true;
         record[trimmedCode] = {
           should_capitalize: Boolean(data.shouldCapitalize),
-          singular_form: trimmedSingular,
-          plural_form: trimmedPlural
+          singular_form: mainSingular,
+          plural_form: mainPlural
         };
       }
     });
@@ -3857,9 +3933,7 @@ function ensurePermissionsGroupState() {
     ensureNamingFormState();
     wizardState.form.naming.rows = rowsData.map((data) => ({
       code: data.code,
-      shouldCapitalize: Boolean(data.shouldCapitalize),
-      singular: data.singular,
-      plural: data.plural
+      shouldCapitalize: Boolean(data.shouldCapitalize)
     }));
     wizardState.form.naming.rows = limitLocalizationRows(wizardState.form.naming.rows);
     wizardState.form.naming.conventions.localizations = limitLocalizationRecord(sortedRecord);
@@ -3888,8 +3962,8 @@ function ensurePermissionsGroupState() {
     const rowsForServer = rowsData.map((data) => ({
       code: data.code,
       should_capitalize: Boolean(data.shouldCapitalize),
-      singular_form: data.singular,
-      plural_form: data.plural
+      singular_form: mainSingular,
+      plural_form: mainPlural
     }));
 
     return {
@@ -3964,6 +4038,15 @@ function ensurePermissionsGroupState() {
     }
 
     wizardElement.dataset.activeStep = screenId;
+
+    // Update configuration overview when showing overview step
+    if (screenId === 'overview' || getPrimaryStepId(screenId) === 'overview') {
+      requestAnimationFrame(() => {
+        if (typeof updateConfigurationOverview === 'function') {
+          updateConfigurationOverview();
+        }
+      });
+    }
     // FIXED: Never fold sections on manual navigation - only on Continue/Back between parent steps
     const shouldFoldSections = false;  // Manual clicks don't fold anything
     const shouldAutoExpandOnSwitch = !isManualNavigation && parentStepChanged;  // Continue/Back auto-expands
@@ -4093,6 +4176,101 @@ function ensurePermissionsGroupState() {
       } else {
         jsonPreview.hidden = true;
         jsonPreviewContent.textContent = '';
+      }
+    }
+  }
+
+  function updateConfigurationOverview() {
+    // Update token name
+    const tokenNameEl = document.getElementById('overview-token-name');
+    if (tokenNameEl) {
+      const tokenName = wizardState.form.tokenName?.trim() || 'Not set';
+      tokenNameEl.textContent = tokenName;
+    }
+
+    // Update decimals
+    const decimalsEl = document.getElementById('overview-decimals');
+    if (decimalsEl) {
+      const decimals = wizardState.form.permissions?.decimals || '—';
+      decimalsEl.textContent = decimals;
+    }
+
+    // Update base supply
+    const baseSupplyEl = document.getElementById('overview-base-supply');
+    if (baseSupplyEl) {
+      const baseSupply = wizardState.form.permissions?.baseSupply || '0';
+      baseSupplyEl.textContent = parseInt(baseSupply, 10).toLocaleString();
+    }
+
+    // Update max supply
+    const maxSupplyEl = document.getElementById('overview-max-supply');
+    if (maxSupplyEl) {
+      const useMaxSupply = wizardState.form.permissions?.useMaxSupply;
+      const maxSupply = wizardState.form.permissions?.maxSupply;
+      if (useMaxSupply && maxSupply) {
+        maxSupplyEl.textContent = parseInt(maxSupply, 10).toLocaleString();
+      } else {
+        maxSupplyEl.textContent = 'Unlimited';
+      }
+    }
+
+    // Update localizations
+    const localizationsEl = document.getElementById('overview-localizations');
+    if (localizationsEl) {
+      const localizations = wizardState.form.naming?.conventions?.localizations || {};
+      const count = Object.keys(localizations).length;
+      if (count > 0) {
+        const codes = Object.keys(localizations).join(', ').toUpperCase();
+        localizationsEl.textContent = `${count} language${count !== 1 ? 's' : ''} (${codes})`;
+      } else {
+        localizationsEl.textContent = 'None';
+      }
+    }
+
+    // Update document types
+    const documentTypesEl = document.getElementById('overview-document-types');
+    if (documentTypesEl) {
+      const documentTypes = wizardState.form.documentTypes || {};
+      const count = Object.keys(documentTypes).length;
+      if (count > 0) {
+        const names = Object.keys(documentTypes).join(', ');
+        documentTypesEl.textContent = `${count} type${count !== 1 ? 's' : ''} (${names})`;
+        documentTypesEl.style.fontWeight = '700';
+        documentTypesEl.style.color = 'var(--color-success)';
+      } else {
+        documentTypesEl.textContent = 'None';
+        documentTypesEl.style.fontWeight = '';
+        documentTypesEl.style.color = '';
+      }
+    }
+
+    // Update groups
+    const groupsEl = document.getElementById('overview-groups');
+    if (groupsEl) {
+      const groupsEnabled = wizardState.form.group?.enabled;
+      const members = wizardState.form.group?.members || [];
+      const validMembers = members.filter(m => m.identityId).length;
+      if (groupsEnabled && validMembers > 0) {
+        const threshold = wizardState.form.group?.threshold || 0;
+        groupsEl.textContent = `${validMembers} member${validMembers !== 1 ? 's' : ''}, ${threshold} required`;
+      } else {
+        groupsEl.textContent = 'None';
+      }
+    }
+
+    // Update distribution
+    const distributionEl = document.getElementById('overview-distribution');
+    if (distributionEl) {
+      const emission = wizardState.form.distribution?.emission;
+      const preProgrammed = wizardState.form.distribution?.preProgrammed?.entries || [];
+
+      if (emission && emission.type) {
+        const cadence = wizardState.form.distribution?.cadence?.type || '';
+        distributionEl.textContent = `${emission.type}${cadence ? ' + ' + cadence : ''}`;
+      } else if (preProgrammed.length > 0) {
+        distributionEl.textContent = `${preProgrammed.length} pre-programmed distribution${preProgrammed.length !== 1 ? 's' : ''}`;
+      } else {
+        distributionEl.textContent = 'None';
       }
     }
   }
@@ -7652,6 +7830,33 @@ function buildManualActionRulesConfig(actionState, permissions) {
       };
     }
 
+    // Helper: Transform transfer notes configuration
+    function transformTransferNotesConfig() {
+      const transferConfig = wizardState.form.permissions;
+      if (!transferConfig.transferNotesEnabled) {
+        return null; // No transfer notes configured
+      }
+
+      const allowedTypes = [];
+      if (transferConfig.transferNoteTypes?.public) {
+        allowedTypes.push('Public');
+      }
+      if (transferConfig.transferNoteTypes?.sharedEncrypted) {
+        allowedTypes.push('SharedEncrypted');
+      }
+      if (transferConfig.transferNoteTypes?.privateEncrypted) {
+        allowedTypes.push('PrivateEncrypted');
+      }
+
+      if (allowedTypes.length === 0) {
+        return null; // No note types enabled
+      }
+
+      return {
+        allowedNoteTypes: allowedTypes
+      };
+    }
+
     // Build token configuration (to be wrapped in tokens.0)
     const tokenConfig = {
       $format_version: '0',
@@ -7703,8 +7908,17 @@ function buildManualActionRulesConfig(actionState, permissions) {
     // Add marketplace rules
     tokenConfig.marketplaceRules = transformMarketplaceRules();
 
-    // Add description if token name is available
-    if (tokenName && tokenName !== 'Unnamed Token') {
+    // Add transfer notes configuration if enabled
+    const transferNotesConfig = transformTransferNotesConfig();
+    if (transferNotesConfig) {
+      tokenConfig.transferNotesConfig = transferNotesConfig;
+    }
+
+    // Add description if user provided one, otherwise generate from token name
+    const userDescription = wizardState.form.naming.description?.trim();
+    if (userDescription && userDescription.length >= 3) {
+      tokenConfig.description = userDescription.substring(0, 100); // Max 100 chars
+    } else if (tokenName && tokenName !== 'Unnamed Token') {
       const description = `Token: ${tokenName}`;
       tokenConfig.description = description.substring(0, 100); // Max 100 chars
     }
@@ -7736,33 +7950,293 @@ function buildManualActionRulesConfig(actionState, permissions) {
       id: '<generated-by-platform>',  // Platform generates this
       ownerId: '<from-identity>',     // Comes from identity during registration
       version: 1,
-      documentSchemas: {},  // Empty for token-only contracts
+      documentSchemas: {},  // Will be populated if document types are defined
       tokens: {
         '0': tokenConfig  // Token at position 0
       }
     };
+
+    // Add document schemas if any have been defined
+    if (wizardState.form.documentTypes && Object.keys(wizardState.form.documentTypes).length > 0) {
+      platformContract.documentSchemas = wizardState.form.documentTypes;
+    }
 
     // Add groups if any
     if (Object.keys(groups).length > 0) {
       platformContract.groups = groups;
     }
 
-    // Add keywords if token name exists
-    if (tokenName && tokenName !== 'Unnamed Token') {
+    // Add keywords - use user-provided keywords if available, otherwise generate from token name
+    const userKeywords = wizardState.form.naming.keywords;
+    if (userKeywords && Array.isArray(userKeywords) && userKeywords.length > 0) {
+      platformContract.keywords = userKeywords.slice(0, 50); // Max 50 keywords
+    } else if (tokenName && tokenName !== 'Unnamed Token') {
       platformContract.keywords = [tokenName.toLowerCase()];
     }
 
-    // Add description
-    if (tokenName && tokenName !== 'Unnamed Token') {
+    // Add description - use user-provided description if available, otherwise generate from token name
+    if (userDescription && userDescription.length >= 3) {
+      platformContract.description = userDescription.substring(0, 100);
+    } else if (tokenName && tokenName !== 'Unnamed Token') {
       platformContract.description = `Data contract for ${tokenName}`;
     }
 
     return platformContract;
   }
 
+  /**
+   * Testing utility - Generate test contracts for verification
+   * Call from console: testPlatformContracts()
+   */
+  function testPlatformContracts() {
+    console.group('🧪 Platform Contract Testing');
+
+    // Test 1: Simple fixed-supply token
+    console.group('Test 1: Simple Fixed-Supply Token');
+    const test1State = createTestState({
+      tokenName: 'SimpleToken',
+      decimals: 8,
+      baseSupply: 1000000,
+      maxSupply: 10000000,
+      localizations: {
+        en: { shouldCapitalize: true, singular: 'token', plural: 'tokens' }
+      }
+    });
+    console.log('Test State:', test1State);
+    const test1Output = generateTestContract(test1State);
+    console.log('Generated Contract:', test1Output);
+    console.log('✅ Checks:');
+    console.log('- Has $format_version:', test1Output.$format_version === '1');
+    console.log('- Has tokens.0:', Boolean(test1Output.tokens['0']));
+    console.log('- baseSupply is number:', typeof test1Output.tokens['0'].baseSupply === 'number');
+    console.log('- Uses camelCase:', Boolean(test1Output.tokens['0'].conventions.localizations.en.shouldCapitalize !== undefined));
+    console.groupEnd();
+
+    // Test 2: Bitcoin-style halving token
+    console.group('Test 2: Bitcoin-Style Halving Token');
+    const test2State = createTestState({
+      tokenName: 'HalvingCoin',
+      decimals: 8,
+      baseSupply: 0,
+      maxSupply: 21000000,
+      distribution: {
+        type: 'BlockBasedDistribution',
+        intervalBlocks: 100,
+        emission: {
+          type: 'StepDecreasing',
+          stepCount: 210000,
+          decreasePerIntervalNumerator: 1,
+          decreasePerIntervalDenominator: 2,
+          distributionStartAmount: 50,
+          trailingDistributionIntervalAmount: 0
+        }
+      },
+      localizations: {
+        en: { shouldCapitalize: false, singular: 'coin', plural: 'coins' }
+      }
+    });
+    const test2Output = generateTestContract(test2State);
+    console.log('Generated Contract:', test2Output);
+    console.log('✅ Checks:');
+    console.log('- Has distributionRules:', Boolean(test2Output.tokens['0'].distributionRules));
+    console.log('- Has perpetualDistribution:', Boolean(test2Output.tokens['0'].distributionRules?.perpetualDistribution));
+    console.log('- Emission is StepDecreasing:', Boolean(test2Output.tokens['0'].distributionRules?.perpetualDistribution?.distributionType?.BlockBasedDistribution?.function?.StepDecreasing));
+    console.groupEnd();
+
+    // Test 3: Token with groups
+    console.group('Test 3: Token with Groups');
+    const test3State = createTestState({
+      tokenName: 'GroupToken',
+      decimals: 2,
+      baseSupply: 1000,
+      groups: {
+        enabled: true,
+        members: [
+          { identityId: 'identity1', power: 2 },
+          { identityId: 'identity2', power: 1 }
+        ],
+        threshold: 2
+      },
+      localizations: {
+        en: { shouldCapitalize: true, singular: 'share', plural: 'shares' }
+      }
+    });
+    const test3Output = generateTestContract(test3State);
+    console.log('Generated Contract:', test3Output);
+    console.log('✅ Checks:');
+    console.log('- Has groups at root:', Boolean(test3Output.groups));
+    console.log('- Groups has position 0:', Boolean(test3Output.groups['0']));
+    console.log('- Token references mainControlGroup:', test3Output.tokens['0'].mainControlGroup === 0);
+    console.log('- Members have power:', test3Output.groups['0'].members.every(m => typeof m.power === 'number'));
+    console.groupEnd();
+
+    // Test 4: All emission types
+    console.group('Test 4: Emission Function Types');
+    const emissionTypes = ['FixedAmount', 'Random', 'StepDecreasing', 'Linear', 'Exponential', 'Polynomial', 'Logarithmic', 'InvertedLogarithmic'];
+    emissionTypes.forEach(type => {
+      console.log(`Testing ${type}...`);
+      const testState = createTestState({
+        tokenName: `${type}Token`,
+        distribution: {
+          type: 'BlockBasedDistribution',
+          intervalBlocks: 100,
+          emission: { type }
+        }
+      });
+      const output = generateTestContract(testState);
+      const hasEmission = Boolean(output.tokens['0'].distributionRules?.perpetualDistribution?.distributionType?.BlockBasedDistribution?.function?.[type]);
+      console.log(`  ${hasEmission ? '✅' : '❌'} ${type} emission function`);
+    });
+    console.groupEnd();
+
+    // Test 5: Transfer notes
+    console.group('Test 5: Transfer Notes Configuration');
+    const test5State = createTestState({
+      tokenName: 'NotesToken',
+      transferNotes: {
+        enabled: true,
+        types: { public: true, sharedEncrypted: true, privateEncrypted: false }
+      }
+    });
+    const test5Output = generateTestContract(test5State);
+    console.log('Generated Contract:', test5Output);
+    console.log('✅ Checks:');
+    console.log('- Has transferNotesConfig:', Boolean(test5Output.tokens['0'].transferNotesConfig));
+    console.log('- Allowed types:', test5Output.tokens['0'].transferNotesConfig?.allowedNoteTypes);
+    console.groupEnd();
+
+    console.log('\n📊 Test Summary:');
+    console.log('All structural tests completed. Review console output above for details.');
+    console.groupEnd();
+  }
+
+  function createTestState(config) {
+    const defaultState = createDefaultWizardState();
+
+    // Apply test configuration
+    if (config.tokenName) {
+      defaultState.form.tokenName = config.tokenName;
+    }
+
+    if (config.decimals !== undefined) {
+      defaultState.form.permissions.decimals = config.decimals;
+    }
+
+    if (config.baseSupply !== undefined) {
+      defaultState.form.permissions.baseSupply = String(config.baseSupply);
+    }
+
+    if (config.maxSupply !== undefined) {
+      defaultState.form.permissions.useMaxSupply = true;
+      defaultState.form.permissions.maxSupply = String(config.maxSupply);
+    }
+
+    if (config.localizations) {
+      Object.keys(config.localizations).forEach(lang => {
+        const loc = config.localizations[lang];
+        defaultState.form.naming.conventions.localizations[lang] = {
+          should_capitalize: loc.shouldCapitalize,
+          singular_form: loc.singular,
+          plural_form: loc.plural
+        };
+      });
+    }
+
+    if (config.distribution) {
+      defaultState.form.distribution.cadence.type = config.distribution.type || 'BlockBasedDistribution';
+      defaultState.form.distribution.cadence.intervalBlocks = String(config.distribution.intervalBlocks || 100);
+
+      if (config.distribution.emission) {
+        const emission = config.distribution.emission;
+        defaultState.form.distribution.emission.type = emission.type;
+
+        // Add emission-specific fields
+        if (emission.type === 'FixedAmount') {
+          defaultState.form.distribution.emission.amount = String(emission.amount || 100);
+        }
+        else if (emission.type === 'Random') {
+          defaultState.form.distribution.emission.min = String(emission.min || 10);
+          defaultState.form.distribution.emission.max = String(emission.max || 100);
+        }
+        else if (emission.type === 'StepDecreasing') {
+          defaultState.form.distribution.emission.stepCount = String(emission.stepCount || 1);
+          defaultState.form.distribution.emission.decreasePerIntervalNumerator = String(emission.decreasePerIntervalNumerator || 1);
+          defaultState.form.distribution.emission.decreasePerIntervalDenominator = String(emission.decreasePerIntervalDenominator || 2);
+          defaultState.form.distribution.emission.distributionStartAmount = String(emission.distributionStartAmount || 100);
+          defaultState.form.distribution.emission.trailingDistributionIntervalAmount = String(emission.trailingDistributionIntervalAmount || 0);
+        }
+        else if (emission.type === 'Linear') {
+          defaultState.form.distribution.emission.linearStart = String(emission.linearStart || 100);
+          defaultState.form.distribution.emission.linearChange = String(emission.linearChange || 10);
+        }
+        else if (emission.type === 'Exponential') {
+          defaultState.form.distribution.emission.exponentialInitial = String(emission.exponentialInitial || 100);
+          defaultState.form.distribution.emission.exponentialRate = String(emission.exponentialRate || 0.1);
+        }
+        else if (emission.type === 'Polynomial') {
+          defaultState.form.distribution.emission.polyA = String(emission.polyA || 1);
+          defaultState.form.distribution.emission.polyM = String(emission.polyM || 2);
+          defaultState.form.distribution.emission.polyN = String(emission.polyN || 1);
+          defaultState.form.distribution.emission.polyD = String(emission.polyD || 1);
+          defaultState.form.distribution.emission.polyO = String(emission.polyO || 0);
+          defaultState.form.distribution.emission.polyB = String(emission.polyB || 0);
+        }
+        else if (emission.type === 'Logarithmic') {
+          defaultState.form.distribution.emission.logA = String(emission.logA || 1);
+          defaultState.form.distribution.emission.logD = String(emission.logD || 1);
+          defaultState.form.distribution.emission.logM = String(emission.logM || 1);
+          defaultState.form.distribution.emission.logN = String(emission.logN || 1);
+          defaultState.form.distribution.emission.logO = String(emission.logO || 0);
+          defaultState.form.distribution.emission.logB = String(emission.logB || 0);
+        }
+        else if (emission.type === 'InvertedLogarithmic') {
+          defaultState.form.distribution.emission.invlogA = String(emission.invlogA || 1000);
+          defaultState.form.distribution.emission.invlogD = String(emission.invlogD || 10);
+          defaultState.form.distribution.emission.invlogM = String(emission.invlogM || 5);
+          defaultState.form.distribution.emission.invlogN = String(emission.invlogN || 5000);
+          defaultState.form.distribution.emission.invlogO = String(emission.invlogO || 0);
+          defaultState.form.distribution.emission.invlogB = String(emission.invlogB || 10);
+        }
+        else if (emission.type === 'Stepwise') {
+          defaultState.form.distribution.emission.stepwise = emission.stepwise || [
+            { period: '0', amount: '100' },
+            { period: '1000', amount: '50' }
+          ];
+        }
+      }
+    }
+
+    if (config.groups?.enabled) {
+      defaultState.form.group.enabled = true;
+      defaultState.form.group.members = config.groups.members.map(m => ({
+        identityId: m.identityId,
+        power: String(m.power)
+      }));
+      defaultState.form.group.threshold = config.groups.threshold || 2;
+    }
+
+    if (config.transferNotes?.enabled) {
+      defaultState.form.permissions.transferNotesEnabled = true;
+      defaultState.form.permissions.transferNoteTypes = config.transferNotes.types || {};
+    }
+
+    return defaultState;
+  }
+
+  function generateTestContract(testState) {
+    const savedState = wizardState;
+    wizardState = testState;
+    const output = generatePlatformContractJSON();
+    wizardState = savedState;
+    return output;
+  }
+
   window.getRegistrationPayload = getRegistrationPayload;
   window.generatePlatformContractJSON = generatePlatformContractJSON;
   window.chunkPayloadIntoQRCodes = chunkPayloadIntoQRCodes;
+  window.testPlatformContracts = testPlatformContracts;
+  window.createTestState = createTestState;
+  window.generateTestContract = generateTestContract;
 })();
 
 /*!
@@ -8010,6 +8484,101 @@ function buildManualActionRulesConfig(actionState, permissions) {
 })();
 
 // ========================================
+// GROUP ACTION TAKER SELECTORS
+// ========================================
+
+(function initializeGroupActionTakerSelectors() {
+  // Define all group selector IDs for manual actions
+  const groupSelectors = [
+    { selectId: 'manual-mint-group-id', containerId: 'manual-mint-group-selector-container', hintId: 'manual-mint-group-hint' },
+    { selectId: 'manual-burn-group-id', containerId: 'manual-burn-group-selector-container', hintId: 'manual-burn-group-hint' },
+    { selectId: 'manual-freeze-group-id', containerId: 'manual-freeze-group-selector-container', hintId: 'manual-freeze-group-hint' },
+    { selectId: 'destroy-frozen-group-id', containerId: 'destroy-frozen-group-selector-container', hintId: 'destroy-frozen-group-hint' },
+    { selectId: 'emergency-group-id', containerId: 'emergency-group-selector-container', hintId: 'emergency-group-hint' }
+  ];
+
+  // Function to update all group selectors with current groups
+  function updateGroupSelectors() {
+    const wizardState = window.wizardState;
+    if (!wizardState || !wizardState.form || !wizardState.form.permissions) {
+      return;
+    }
+
+    const groups = wizardState.form.permissions.groups || [];
+    const hasGroups = groups.length > 0;
+
+    groupSelectors.forEach(config => {
+      const selectElement = document.getElementById(config.selectId);
+      const containerElement = document.getElementById(config.containerId);
+      const hintElement = document.getElementById(config.hintId);
+
+      if (!selectElement || !containerElement) {
+        return;
+      }
+
+      if (hasGroups) {
+        // Show select dropdown with available groups
+        selectElement.style.display = '';
+
+        // Clear existing options
+        selectElement.innerHTML = '<option value="">Select a group...</option>';
+
+        // Add option for each group
+        groups.forEach((group, index) => {
+          const option = document.createElement('option');
+          option.value = group.id;
+          option.textContent = `Group ${index}`;
+          selectElement.appendChild(option);
+        });
+
+        // Update hint text
+        if (hintElement) {
+          hintElement.textContent = 'Choose which group can perform this action';
+          hintElement.style.display = '';
+        }
+      } else {
+        // No groups exist - hide dropdown and show message
+        selectElement.style.display = 'none';
+
+        // Update hint to show "no groups" message
+        if (hintElement) {
+          hintElement.textContent = 'Group isn\'t created yet';
+          hintElement.style.display = '';
+          hintElement.style.color = 'var(--color-text-secondary)';
+          hintElement.style.fontStyle = 'italic';
+        }
+      }
+    });
+  }
+
+  // Update selectors on page load
+  updateGroupSelectors();
+
+  // Update selectors when groups change
+  // Hook into the renderPermissionGroups function
+  const originalRenderPermissionGroups = window.renderPermissionGroups;
+  if (originalRenderPermissionGroups && typeof originalRenderPermissionGroups === 'function') {
+    window.renderPermissionGroups = function() {
+      originalRenderPermissionGroups.apply(this, arguments);
+      updateGroupSelectors();
+    };
+  }
+
+  // Also update when panels are shown
+  document.addEventListener('change', function(e) {
+    if (e.target.type === 'radio' && e.target.hasAttribute('data-toggle-panel')) {
+      const panelId = e.target.getAttribute('data-toggle-panel');
+      // Check if this is a group panel
+      if (panelId && panelId.includes('-panel-group')) {
+        updateGroupSelectors();
+      }
+    }
+  });
+
+  console.log('Group action taker selectors initialized');
+})();
+
+// ========================================
 // GROUP MANAGEMENT (Group Tab)
 // ========================================
 
@@ -8209,6 +8778,257 @@ function buildManualActionRulesConfig(actionState, permissions) {
 
   let editingDocumentType = null;
 
+  // Utility buttons for JSON Schema textarea
+  const schemaSampleBtn = document.getElementById('document-schema-sample');
+  const schemaPasteBtn = document.getElementById('document-schema-paste');
+  const schemaFormatBtn = document.getElementById('document-schema-format');
+  const schemaClearBtn = document.getElementById('document-schema-clear');
+
+  // Paste from clipboard
+  if (schemaPasteBtn) {
+    schemaPasteBtn.addEventListener('click', async () => {
+      try {
+        const text = await navigator.clipboard.readText();
+        documentTypeSchemaInput.value = text;
+
+        // Try to format it automatically
+        try {
+          const parsed = JSON.parse(text);
+          documentTypeSchemaInput.value = JSON.stringify(parsed, null, 2);
+          documentTypeMessage.textContent = '✅ JSON pasted and formatted successfully!';
+          documentTypeMessage.style.color = 'var(--color-success)';
+          setTimeout(() => {
+            documentTypeMessage.textContent = '';
+          }, 3000);
+        } catch (e) {
+          documentTypeMessage.textContent = '⚠️ Pasted, but JSON is invalid. Please fix syntax errors.';
+          documentTypeMessage.style.color = 'var(--color-warning)';
+        }
+      } catch (err) {
+        documentTypeMessage.textContent = '❌ Could not read from clipboard. Please paste manually (Ctrl+V / Cmd+V).';
+        documentTypeMessage.style.color = 'var(--color-error)';
+      }
+    });
+  }
+
+  // Format JSON
+  if (schemaFormatBtn) {
+    schemaFormatBtn.addEventListener('click', () => {
+      const text = documentTypeSchemaInput.value.trim();
+      if (!text) {
+        documentTypeMessage.textContent = 'Nothing to format - textarea is empty.';
+        documentTypeMessage.style.color = 'var(--color-warning)';
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(text);
+        documentTypeSchemaInput.value = JSON.stringify(parsed, null, 2);
+        documentTypeMessage.textContent = '✅ JSON formatted successfully!';
+        documentTypeMessage.style.color = 'var(--color-success)';
+        setTimeout(() => {
+          documentTypeMessage.textContent = '';
+        }, 3000);
+      } catch (e) {
+        documentTypeMessage.textContent = '❌ Invalid JSON: ' + e.message;
+        documentTypeMessage.style.color = 'var(--color-error)';
+      }
+    });
+  }
+
+  // Clear textarea
+  if (schemaClearBtn) {
+    schemaClearBtn.addEventListener('click', () => {
+      if (documentTypeSchemaInput.value.trim()) {
+        if (confirm('Are you sure you want to clear the JSON Schema?')) {
+          documentTypeSchemaInput.value = '';
+          documentTypeMessage.textContent = '';
+        }
+      }
+    });
+  }
+
+  // Sample schema templates
+  const SAMPLE_SCHEMAS = {
+    user: {
+      type: 'object',
+      properties: {
+        username: {
+          type: 'string',
+          position: 0,
+          minLength: 3,
+          maxLength: 50,
+          pattern: '^[a-zA-Z0-9_-]+$',
+          description: 'Unique username'
+        },
+        email: {
+          type: 'string',
+          position: 1,
+          format: 'email',
+          maxLength: 100,
+          description: 'User email address'
+        },
+        displayName: {
+          type: 'string',
+          position: 2,
+          maxLength: 100,
+          description: 'Display name'
+        },
+        bio: {
+          type: 'string',
+          position: 3,
+          maxLength: 500,
+          description: 'User biography'
+        },
+        createdAt: {
+          type: 'integer',
+          position: 4,
+          minimum: 0,
+          description: 'Account creation timestamp'
+        }
+      },
+      required: ['username', 'email'],
+      additionalProperties: false
+    },
+    post: {
+      type: 'object',
+      properties: {
+        title: {
+          type: 'string',
+          position: 0,
+          minLength: 1,
+          maxLength: 200,
+          description: 'Post title'
+        },
+        content: {
+          type: 'string',
+          position: 1,
+          minLength: 1,
+          maxLength: 10000,
+          description: 'Post content'
+        },
+        authorId: {
+          type: 'string',
+          position: 2,
+          minLength: 42,
+          maxLength: 44,
+          pattern: '^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$',
+          description: 'Author identity ID'
+        },
+        createdAt: {
+          type: 'integer',
+          position: 3,
+          minimum: 0,
+          description: 'Post creation timestamp'
+        },
+        tags: {
+          type: 'array',
+          position: 4,
+          items: {
+            type: 'string',
+            maxLength: 50
+          },
+          maxItems: 10,
+          description: 'Post tags'
+        }
+      },
+      required: ['title', 'content', 'authorId'],
+      additionalProperties: false
+    },
+    nftMetadata: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          position: 0,
+          minLength: 1,
+          maxLength: 100,
+          description: 'NFT name'
+        },
+        description: {
+          type: 'string',
+          position: 1,
+          maxLength: 1000,
+          description: 'NFT description'
+        },
+        imageUrl: {
+          type: 'string',
+          position: 2,
+          format: 'uri',
+          maxLength: 500,
+          description: 'URL to NFT image'
+        },
+        attributes: {
+          type: 'array',
+          position: 3,
+          items: {
+            type: 'object',
+            properties: {
+              trait_type: {
+                type: 'string',
+                maxLength: 50
+              },
+              value: {
+                type: 'string',
+                maxLength: 100
+              }
+            },
+            additionalProperties: false
+          },
+          maxItems: 20,
+          description: 'NFT attributes/traits'
+        },
+        creatorId: {
+          type: 'string',
+          position: 4,
+          minLength: 42,
+          maxLength: 44,
+          description: 'Creator identity ID'
+        }
+      },
+      required: ['name', 'imageUrl'],
+      additionalProperties: false
+    }
+  };
+
+  // Load sample schema
+  if (schemaSampleBtn) {
+    schemaSampleBtn.addEventListener('click', () => {
+      // Create a selection modal or just cycle through samples
+      const currentText = documentTypeSchemaInput.value.trim();
+
+      // Determine which sample to show next
+      let sampleKey = 'user'; // default
+
+      if (currentText) {
+        // Try to detect which sample is currently loaded and show the next one
+        try {
+          const currentSchema = JSON.parse(currentText);
+          if (currentSchema.properties?.username) {
+            sampleKey = 'post'; // user -> post
+          } else if (currentSchema.properties?.title && currentSchema.properties?.content) {
+            sampleKey = 'nftMetadata'; // post -> nftMetadata
+          } else if (currentSchema.properties?.imageUrl) {
+            sampleKey = 'user'; // nftMetadata -> user (cycle)
+          }
+        } catch (e) {
+          // If can't parse, just use default
+        }
+      }
+
+      const sample = SAMPLE_SCHEMAS[sampleKey];
+      documentTypeSchemaInput.value = JSON.stringify(sample, null, 2);
+
+      const sampleNames = { user: 'User Profile', post: 'Blog Post', nftMetadata: 'NFT Metadata' };
+      documentTypeMessage.textContent = `✅ Loaded "${sampleNames[sampleKey]}" sample schema. Click again to cycle through examples.`;
+      documentTypeMessage.style.color = 'var(--color-success)';
+
+      setTimeout(() => {
+        documentTypeMessage.textContent = '';
+      }, 5000);
+    });
+  }
+
   // Render document types list
   function renderDocumentTypes() {
     if (!documentTypesList) return;
@@ -8311,26 +9131,33 @@ function buildManualActionRulesConfig(actionState, permissions) {
     try {
       schema = JSON.parse(schemaText);
     } catch (e) {
-      documentTypeMessage.textContent = 'Invalid JSON: ' + e.message;
+      documentTypeMessage.textContent = `❌ Invalid JSON syntax: ${e.message}. Click "Format" to check for errors.`;
       documentTypeMessage.style.color = 'var(--color-error)';
+      return;
+    }
+
+    // Check if user pasted the entire Platform contract instead of just a document schema
+    if (schema.$format_version || schema.tokens || schema.ownerId || schema.documentSchemas) {
+      documentTypeMessage.textContent = '⚠️ You pasted the entire Platform contract. Please paste ONLY the document schema (without the contract wrapper). Click "Sample" to see the correct format.';
+      documentTypeMessage.style.color = 'var(--color-warning)';
       return;
     }
 
     // Basic validation for Dash Platform requirements
     if (!schema.type || schema.type !== 'object') {
-      documentTypeMessage.textContent = 'Schema must have "type": "object"';
+      documentTypeMessage.textContent = '❌ Schema must have "type": "object" at the root level. Click "Sample" to see a valid example.';
       documentTypeMessage.style.color = 'var(--color-error)';
       return;
     }
 
     if (!schema.properties || typeof schema.properties !== 'object' || Object.keys(schema.properties).length === 0) {
-      documentTypeMessage.textContent = 'Schema must have at least one property in "properties"';
+      documentTypeMessage.textContent = '❌ Schema must have a "properties" object with at least one field. Click "Sample" to see how to define properties.';
       documentTypeMessage.style.color = 'var(--color-error)';
       return;
     }
 
     if (schema.additionalProperties !== false) {
-      documentTypeMessage.textContent = 'Schema must have "additionalProperties": false';
+      documentTypeMessage.textContent = '❌ Schema must have "additionalProperties": false (Dash Platform requirement). Click "Sample" to see the correct format.';
       documentTypeMessage.style.color = 'var(--color-error)';
       return;
     }
@@ -8340,12 +9167,12 @@ function buildManualActionRulesConfig(actionState, permissions) {
     for (const propName in properties) {
       const prop = properties[propName];
       if (!prop.type) {
-        documentTypeMessage.textContent = `Property "${propName}" must have a "type" field`;
+        documentTypeMessage.textContent = `❌ Property "${propName}" is missing the "type" field. Each property must specify a type (e.g., "string", "integer", "array").`;
         documentTypeMessage.style.color = 'var(--color-error)';
         return;
       }
       if (typeof prop.position !== 'number') {
-        documentTypeMessage.textContent = `Property "${propName}" must have a numeric "position" field`;
+        documentTypeMessage.textContent = `❌ Property "${propName}" is missing the "position" field or it's not a number. Each property must have a numeric "position" (e.g., 0, 1, 2).`;
         documentTypeMessage.style.color = 'var(--color-error)';
         return;
       }
@@ -8428,4 +9255,691 @@ function buildManualActionRulesConfig(actionState, permissions) {
   renderDocumentTypes();
 
   console.log('Document types management initialized');
+})();
+
+// ========================================
+// KEYWORDS & DESCRIPTION (Naming Metadata)
+// ========================================
+
+(function initializeNamingMetadata() {
+  const metadataForm = document.getElementById('naming-metadata-form');
+  const descriptionInput = document.getElementById('token-description');
+  const keywordsInput = document.getElementById('token-keywords');
+  const keywordsPreview = document.getElementById('keywords-preview');
+  const keywordsTagContainer = document.getElementById('keywords-tag-container');
+  const descriptionMessage = document.getElementById('token-description-message');
+  const keywordsMessage = document.getElementById('token-keywords-message');
+  const metadataNextButton = document.getElementById('naming-metadata-next');
+
+  if (!metadataForm || !descriptionInput || !keywordsInput) {
+    console.warn('Naming metadata elements not found');
+    return;
+  }
+
+  const wizardState = window.wizardState;
+  const persistState = window.persistState;
+
+  if (!wizardState || !persistState) {
+    console.error('wizardState or persistState not available for naming metadata');
+    return;
+  }
+
+  // Parse keywords from comma-separated string
+  function parseKeywords(text) {
+    if (!text || typeof text !== 'string') return [];
+    return text
+      .split(',')
+      .map(keyword => keyword.trim())
+      .filter(keyword => keyword.length > 0);
+  }
+
+  // Render keyword tags in preview
+  function renderKeywordTags(keywords) {
+    keywordsTagContainer.innerHTML = '';
+
+    if (!keywords || keywords.length === 0) {
+      const emptyTag = document.createElement('span');
+      emptyTag.className = 'keyword-tag keyword-tag--empty';
+      emptyTag.textContent = 'No keywords yet';
+      keywordsTagContainer.appendChild(emptyTag);
+      keywordsPreview.style.display = 'none';
+      return;
+    }
+
+    keywords.forEach(keyword => {
+      const tag = document.createElement('span');
+      tag.className = 'keyword-tag';
+      tag.textContent = keyword;
+      keywordsTagContainer.appendChild(tag);
+    });
+
+    keywordsPreview.style.display = 'block';
+  }
+
+  // Validate and update metadata
+  function validateMetadata() {
+    const description = descriptionInput.value.trim();
+    const keywordsText = keywordsInput.value.trim();
+    const keywords = parseKeywords(keywordsText);
+
+    let descriptionValid = true;
+    let keywordsValid = true;
+    let descriptionError = '';
+    let keywordsError = '';
+
+    // Validate description (optional, but if provided must be 3-100 chars)
+    if (description.length > 0) {
+      if (description.length < 3) {
+        descriptionError = 'Description must be at least 3 characters.';
+        descriptionValid = false;
+      } else if (description.length > 100) {
+        descriptionError = 'Description must be 100 characters or less.';
+        descriptionValid = false;
+      }
+    }
+
+    // Validate keywords (optional, but if provided max 50)
+    if (keywords.length > 50) {
+      keywordsError = 'Maximum 50 keywords allowed.';
+      keywordsValid = false;
+    }
+
+    // Update UI
+    if (descriptionMessage) {
+      descriptionMessage.textContent = descriptionError;
+      descriptionMessage.className = descriptionError ? 'wizard-field__message wizard-field__message--error' : 'wizard-field__message';
+    }
+
+    if (keywordsMessage) {
+      keywordsMessage.textContent = keywordsError;
+      keywordsMessage.className = keywordsError ? 'wizard-field__message wizard-field__message--error' : 'wizard-field__message';
+    }
+
+    // Render keyword tags
+    renderKeywordTags(keywords);
+
+    // Save to state (always valid since fields are optional)
+    wizardState.form.naming.description = description;
+    wizardState.form.naming.keywords = keywords;
+    persistState();
+
+    // Always enable next button (fields are optional)
+    if (metadataNextButton) {
+      metadataNextButton.disabled = false;
+    }
+
+    return descriptionValid && keywordsValid;
+  }
+
+  // Event listeners
+  if (descriptionInput) {
+    descriptionInput.addEventListener('input', validateMetadata);
+    descriptionInput.addEventListener('blur', validateMetadata);
+  }
+
+  if (keywordsInput) {
+    keywordsInput.addEventListener('input', validateMetadata);
+    keywordsInput.addEventListener('blur', validateMetadata);
+  }
+
+  if (metadataForm) {
+    metadataForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      validateMetadata();
+      // Navigation handled by global form handler
+    });
+  }
+
+  // Initialize from saved state
+  if (wizardState.form.naming.description) {
+    descriptionInput.value = wizardState.form.naming.description;
+  }
+  if (wizardState.form.naming.keywords && wizardState.form.naming.keywords.length > 0) {
+    keywordsInput.value = wizardState.form.naming.keywords.join(', ');
+  }
+
+  // Initial validation
+  validateMetadata();
+
+  console.log('Naming metadata (keywords & description) initialized');
+})();
+
+// ========================================
+// ACTION RULES PRESETS
+// ========================================
+
+(function initializeActionRulesPresets() {
+  const presetRadios = document.querySelectorAll('input[name="action-rules-preset"]');
+
+  if (!presetRadios || presetRadios.length === 0) {
+    console.warn('Action rules preset radios not found');
+    return;
+  }
+
+  const wizardState = window.wizardState;
+  const persistState = window.persistState;
+
+  if (!wizardState || !persistState) {
+    console.error('wizardState or persistState not available for presets');
+    return;
+  }
+
+  // Define preset configurations
+  const PRESETS = {
+    'custom': {
+      name: 'Custom',
+      description: 'Manual configuration - no automatic changes',
+      config: null // null means don't auto-configure
+    },
+    'most-restrictive': {
+      name: 'Most Restrictive',
+      description: 'All actions disabled after initialization',
+      config: {
+        manualMint: { enabled: false },
+        manualBurn: { enabled: false },
+        manualFreeze: { enabled: false },
+        destroyFrozen: { enabled: false },
+        emergency: { enabled: false },
+        changeControl: {
+          mint: false,
+          burn: false,
+          freeze: false,
+          unfreeze: false,
+          destroyFrozen: false,
+          emergency: false,
+          maxSupply: false,
+          conventions: false,
+          tradeMode: false,
+          directPurchase: false,
+          mainControlGroup: false
+        }
+      }
+    },
+    'emergency-only': {
+      name: 'Only Emergency Action',
+      description: 'Only emergency actions (pausing) permitted',
+      config: {
+        manualMint: { enabled: false },
+        manualBurn: { enabled: false },
+        manualFreeze: { enabled: false },
+        destroyFrozen: { enabled: false },
+        emergency: { enabled: true },
+        changeControl: {
+          mint: false,
+          burn: false,
+          freeze: false,
+          unfreeze: false,
+          destroyFrozen: false,
+          emergency: true,
+          maxSupply: false,
+          conventions: false,
+          tradeMode: false,
+          directPurchase: false,
+          mainControlGroup: false
+        }
+      }
+    },
+    'mint-burn': {
+      name: 'Minting and Burning',
+      description: 'Supply management through minting and burning',
+      config: {
+        manualMint: { enabled: true },
+        manualBurn: { enabled: true },
+        manualFreeze: { enabled: false },
+        destroyFrozen: { enabled: false },
+        emergency: { enabled: false },
+        changeControl: {
+          mint: true,
+          burn: true,
+          freeze: false,
+          unfreeze: false,
+          destroyFrozen: false,
+          emergency: false,
+          maxSupply: false,
+          conventions: false,
+          tradeMode: false,
+          directPurchase: false,
+          mainControlGroup: false
+        }
+      }
+    },
+    'advanced': {
+      name: 'Advanced Actions',
+      description: 'Minting, burning, and freezing capabilities',
+      config: {
+        manualMint: { enabled: true },
+        manualBurn: { enabled: true },
+        manualFreeze: { enabled: true },
+        destroyFrozen: { enabled: false },
+        emergency: { enabled: false },
+        changeControl: {
+          mint: true,
+          burn: true,
+          freeze: true,
+          unfreeze: true,
+          destroyFrozen: false,
+          emergency: false,
+          maxSupply: false,
+          conventions: false,
+          tradeMode: false,
+          directPurchase: false,
+          mainControlGroup: false
+        }
+      }
+    },
+    'all-allowed': {
+      name: 'All Allowed',
+      description: 'All actions enabled',
+      config: {
+        manualMint: { enabled: true },
+        manualBurn: { enabled: true },
+        manualFreeze: { enabled: true },
+        destroyFrozen: { enabled: true },
+        emergency: { enabled: true },
+        changeControl: {
+          mint: true,
+          burn: true,
+          freeze: true,
+          unfreeze: true,
+          destroyFrozen: true,
+          emergency: true,
+          maxSupply: true,
+          conventions: true,
+          tradeMode: true,
+          directPurchase: true,
+          mainControlGroup: true
+        }
+      }
+    }
+  };
+
+  // Apply preset configuration to wizard state
+  function applyPreset(presetKey) {
+    const preset = PRESETS[presetKey];
+    if (!preset) {
+      console.warn('Unknown preset:', presetKey);
+      return;
+    }
+
+    console.log('Applying preset:', preset.name);
+
+    // If custom, don't auto-configure
+    if (preset.config === null) {
+      console.log('Custom preset selected - no automatic configuration');
+      persistState();
+      return;
+    }
+
+    const config = preset.config;
+
+    // Ensure permissions structure exists
+    if (!wizardState.form.permissions) {
+      wizardState.form.permissions = {};
+    }
+
+    // Apply manual action configurations
+    if (config.manualMint) {
+      wizardState.form.permissions.manualMint = {
+        ...wizardState.form.permissions.manualMint,
+        enabled: config.manualMint.enabled,
+        performerType: config.manualMint.enabled ? 'owner' : 'none'
+      };
+    }
+
+    if (config.manualBurn) {
+      wizardState.form.permissions.manualBurn = {
+        ...wizardState.form.permissions.manualBurn,
+        enabled: config.manualBurn.enabled,
+        performerType: config.manualBurn.enabled ? 'owner' : 'none'
+      };
+    }
+
+    if (config.manualFreeze) {
+      wizardState.form.permissions.manualFreeze = {
+        ...wizardState.form.permissions.manualFreeze,
+        enabled: config.manualFreeze.enabled,
+        performerType: config.manualFreeze.enabled ? 'owner' : 'none'
+      };
+    }
+
+    if (config.destroyFrozen) {
+      wizardState.form.permissions.destroyFrozen = {
+        ...wizardState.form.permissions.destroyFrozen,
+        enabled: config.destroyFrozen.enabled,
+        performerType: config.destroyFrozen.enabled ? 'owner' : 'none'
+      };
+    }
+
+    if (config.emergency) {
+      wizardState.form.permissions.emergency = {
+        ...wizardState.form.permissions.emergency,
+        enabled: config.emergency.enabled,
+        performerType: config.emergency.enabled ? 'owner' : 'none'
+      };
+    }
+
+    // Ensure advanced structure exists
+    if (!wizardState.form.advanced) {
+      wizardState.form.advanced = {};
+    }
+    if (!wizardState.form.advanced.changeControl) {
+      wizardState.form.advanced.changeControl = {};
+    }
+
+    // Apply change control configurations
+    if (config.changeControl) {
+      Object.assign(wizardState.form.advanced.changeControl, config.changeControl);
+    }
+
+    // Save to localStorage
+    persistState();
+
+    console.log('✅ Preset applied:', preset.name);
+    console.log('State after preset:', {
+      manualMint: wizardState.form.permissions.manualMint?.enabled,
+      manualBurn: wizardState.form.permissions.manualBurn?.enabled,
+      manualFreeze: wizardState.form.permissions.manualFreeze?.enabled,
+      destroyFrozen: wizardState.form.permissions.destroyFrozen?.enabled,
+      emergency: wizardState.form.permissions.emergency?.enabled,
+      changeControl: wizardState.form.advanced.changeControl
+    });
+  }
+
+  // Listen for preset changes
+  presetRadios.forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        const presetKey = e.target.value;
+        applyPreset(presetKey);
+      }
+    });
+  });
+
+  console.log('Action rules presets initialized with 6 templates');
+})();
+
+// ========================================
+// PRE-PROGRAMMED DISTRIBUTION
+// ========================================
+
+(function initializePreProgrammedDistribution() {
+  const preprogrammedContainer = document.getElementById('preprogrammed-entries');
+  const addPreprogrammedBtn = document.getElementById('add-preprogrammed-entry');
+  const distributionTypeRadios = document.querySelectorAll('input[name="distribution-type"]');
+
+  if (!preprogrammedContainer || !addPreprogrammedBtn) {
+    console.warn('Pre-programmed distribution elements not found');
+    return;
+  }
+
+  const wizardState = window.wizardState;
+  const persistState = window.persistState;
+
+  if (!wizardState || !persistState) {
+    console.error('wizardState or persistState not available for preprogrammed distribution');
+    return;
+  }
+
+  // Ensure distribution.preProgrammed structure exists
+  if (!wizardState.form.distribution.preProgrammed) {
+    wizardState.form.distribution.preProgrammed = { entries: [] };
+  }
+
+  // Generate unique ID for entries
+  let entryIdCounter = 0;
+  function generateEntryId() {
+    return `preprogrammed-${Date.now()}-${entryIdCounter++}`;
+  }
+
+  // Collect data from all preprogrammed entries in the DOM
+  function collectPreProgrammedData() {
+    const entries = [];
+    const entryElements = preprogrammedContainer.querySelectorAll('.preprogrammed-entry');
+
+    entryElements.forEach((entryEl) => {
+      const timestampInput = entryEl.querySelector('input[name="preprogrammed-timestamp"]');
+      const identityInput = entryEl.querySelector('input[name="preprogrammed-identity"]');
+      const amountInput = entryEl.querySelector('input[name="preprogrammed-amount"]');
+
+      const timestamp = timestampInput ? timestampInput.value.trim() : '';
+      const identityId = identityInput ? identityInput.value.trim() : '';
+      const amount = amountInput ? amountInput.value.trim() : '';
+
+      // Only save entries with at least timestamp
+      if (timestamp) {
+        entries.push({
+          id: entryEl.getAttribute('data-entry-id') || generateEntryId(),
+          timestamp: timestamp,
+          identityId: identityId,
+          amount: amount
+        });
+      }
+    });
+
+    return entries;
+  }
+
+  // Save current preprogrammed data to state
+  function savePreProgrammedData() {
+    const entries = collectPreProgrammedData();
+    wizardState.form.distribution.preProgrammed.entries = entries;
+    persistState();
+    console.log('Saved preprogrammed entries:', entries.length);
+  }
+
+  // Validate preprogrammed entry
+  function validateEntry(entryEl) {
+    const timestampInput = entryEl.querySelector('input[name="preprogrammed-timestamp"]');
+    const identityInput = entryEl.querySelector('input[name="preprogrammed-identity"]');
+    const amountInput = entryEl.querySelector('input[name="preprogrammed-amount"]');
+
+    let isValid = true;
+
+    // Validate timestamp (required)
+    if (timestampInput) {
+      const timestamp = timestampInput.value.trim();
+      if (!timestamp) {
+        timestampInput.style.borderColor = 'var(--color-error)';
+        isValid = false;
+      } else {
+        timestampInput.style.borderColor = '';
+      }
+    }
+
+    // Validate identity ID (required, basic format check)
+    if (identityInput) {
+      const identityId = identityInput.value.trim();
+      if (!identityId || identityId.length < 20) {
+        identityInput.style.borderColor = 'var(--color-error)';
+        isValid = false;
+      } else {
+        identityInput.style.borderColor = '';
+      }
+    }
+
+    // Validate amount (required, must be positive number)
+    if (amountInput) {
+      const amount = amountInput.value.trim();
+      const numAmount = parseInt(amount, 10);
+      if (!amount || isNaN(numAmount) || numAmount <= 0) {
+        amountInput.style.borderColor = 'var(--color-error)';
+        isValid = false;
+      } else {
+        amountInput.style.borderColor = '';
+      }
+    }
+
+    return isValid;
+  }
+
+  // Create a new preprogrammed entry element
+  function createEntryElement(data = {}) {
+    const entryId = data.id || generateEntryId();
+    const entry = document.createElement('div');
+    entry.className = 'field-group preprogrammed-entry';
+    entry.setAttribute('data-entry-id', entryId);
+    entry.style.cssText = 'padding: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--border-radius-md); margin-bottom: var(--space-3);';
+
+    entry.innerHTML = `
+      <div class="field-group">
+        <label class="wizard-field__label">Release timestamp *</label>
+        <input class="wizard-field__input" type="datetime-local" name="preprogrammed-timestamp" value="${data.timestamp || ''}" required>
+        <span class="field-hint">When tokens should be available for claim</span>
+      </div>
+      <div class="field-group">
+        <label class="wizard-field__label">Recipient Identity ID *</label>
+        <input class="wizard-field__input" type="text" name="preprogrammed-identity" placeholder="e.g., 4hKFP3mFB9vku8VJKcZvwVN123..." value="${data.identityId || ''}" required>
+        <span class="field-hint">Dash Platform identity that can claim the tokens</span>
+      </div>
+      <div class="field-group">
+        <label class="wizard-field__label">Token amount *</label>
+        <input class="wizard-field__input" type="text" name="preprogrammed-amount" placeholder="e.g., 1000000" value="${data.amount || ''}" required>
+        <span class="field-hint">Number of tokens to distribute</span>
+      </div>
+      <button class="wizard-button wizard-button--danger wizard-button--small" type="button" data-remove-preprogrammed style="margin-top: var(--space-2);">Remove</button>
+    `;
+
+    // Add event listeners to inputs for auto-save
+    const inputs = entry.querySelectorAll('input');
+    inputs.forEach(input => {
+      input.addEventListener('blur', () => {
+        validateEntry(entry);
+        savePreProgrammedData();
+      });
+      input.addEventListener('change', () => {
+        savePreProgrammedData();
+      });
+    });
+
+    return entry;
+  }
+
+  // Load saved preprogrammed entries from state
+  function loadPreProgrammedEntries() {
+    const entries = wizardState.form.distribution.preProgrammed?.entries || [];
+
+    // Clear existing entries in DOM
+    preprogrammedContainer.innerHTML = '';
+
+    // If no saved entries, add one empty entry
+    if (entries.length === 0) {
+      const defaultEntry = createEntryElement();
+      preprogrammedContainer.appendChild(defaultEntry);
+    } else {
+      // Load saved entries
+      entries.forEach(data => {
+        const entryEl = createEntryElement(data);
+        preprogrammedContainer.appendChild(entryEl);
+      });
+    }
+  }
+
+  // Handle add entry button
+  addPreprogrammedBtn.addEventListener('click', () => {
+    const newEntry = createEntryElement();
+    preprogrammedContainer.appendChild(newEntry);
+    savePreProgrammedData();
+  });
+
+  // Handle remove entry button (event delegation)
+  preprogrammedContainer.addEventListener('click', (e) => {
+    if (e.target.hasAttribute('data-remove-preprogrammed')) {
+      const entry = e.target.closest('.preprogrammed-entry');
+      const entryCount = preprogrammedContainer.querySelectorAll('.preprogrammed-entry').length;
+
+      // Keep at least one entry
+      if (entryCount > 1) {
+        entry.remove();
+        savePreProgrammedData();
+      } else {
+        // Clear the last entry instead of removing
+        const inputs = entry.querySelectorAll('input');
+        inputs.forEach(input => input.value = '');
+        savePreProgrammedData();
+      }
+    }
+  });
+
+  // Load entries when distribution type changes to preprogrammed
+  if (distributionTypeRadios.length > 0) {
+    distributionTypeRadios.forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        if (e.target.value === 'preprogrammed' && e.target.checked) {
+          loadPreProgrammedEntries();
+        }
+      });
+    });
+  }
+
+  // Initial load
+  loadPreProgrammedEntries();
+
+  console.log('Pre-programmed distribution initialized');
+})();
+
+// ========================================
+// CONTROL MODEL - GROUPS INTEGRATION
+// ========================================
+
+(function initializeControlModelGroupsIntegration() {
+  const permissionsScopeRadios = document.querySelectorAll('input[name="permissions-scope"]');
+  const enableGroupCheckbox = document.getElementById('enable-group');
+
+  if (!permissionsScopeRadios || permissionsScopeRadios.length === 0) {
+    console.warn('Permissions scope radios not found');
+    return;
+  }
+
+  if (!enableGroupCheckbox) {
+    console.warn('Enable group checkbox not found');
+    return;
+  }
+
+  const wizardState = window.wizardState;
+  const persistState = window.persistState;
+
+  if (!wizardState || !persistState) {
+    console.error('wizardState or persistState not available for control model integration');
+    return;
+  }
+
+  // Handle permissions scope changes
+  permissionsScopeRadios.forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      if (!e.target.checked) return;
+
+      const selectedScope = e.target.value;
+
+      if (selectedScope === 'groups') {
+        // Enable groups when "Groups" control model is selected
+        enableGroupCheckbox.checked = true;
+
+        // Trigger change event on checkbox to show group configuration
+        const changeEvent = new Event('change', { bubbles: true });
+        enableGroupCheckbox.dispatchEvent(changeEvent);
+
+        // Save to state
+        if (wizardState.form.group) {
+          wizardState.form.group.enabled = true;
+          persistState();
+        }
+
+        console.log('Control model: Groups enabled');
+      } else if (selectedScope === 'owner') {
+        // Owner-only mode - groups are optional
+        // Don't automatically disable groups, let user decide
+        console.log('Control model: Owner-only selected');
+      }
+    });
+  });
+
+  // Sync state on load: if groups are enabled, select the groups radio
+  if (wizardState.form.group?.enabled) {
+    const groupsRadio = document.querySelector('input[name="permissions-scope"][value="groups"]');
+    if (groupsRadio) {
+      groupsRadio.checked = true;
+    }
+  }
+
+  console.log('Control model - Groups integration initialized');
 })();
