@@ -17,7 +17,7 @@
   const STATE_STORAGE_KEY = 'dashTokenWizardState';
   const THEME_STORAGE_KEY = 'ui.theme';
   // FIXED: Correct order matching sidebar navigation
-  const STEP_SEQUENCE = ['naming', 'permissions', 'advanced', 'distribution', 'overview', 'registration'];
+  const STEP_SEQUENCE = ['welcome', 'naming', 'permissions', 'advanced', 'distribution', 'overview', 'registration'];
   const INFO_STEPS = Object.freeze([
     'permissions-group',
     'permissions-manual-mint',
@@ -62,6 +62,7 @@
   // distribution: Schedule → Emission
   // registration: Register Token (no substeps)
   const SUBSTEP_SEQUENCES = Object.freeze({
+    welcome: ['welcome'],
     naming: ['naming', 'naming-localization', 'naming-metadata'],
     permissions: ['permissions', 'permissions-control', 'permissions-transfer', 'permissions-manual-mint', 'permissions-manual-burn', 'permissions-manual-freeze', 'permissions-destroy-frozen', 'permissions-emergency'],
     advanced: ['advanced', 'advanced-control'],
@@ -72,6 +73,7 @@
 
   const MAX_U32 = 4294967295;
   const STEP_LABELS = {
+    welcome: 'Welcome',
     naming: 'Naming',
     permissions: 'Permissions',
     distribution: 'Distribution',
@@ -651,8 +653,8 @@
 
   const wizardElement = document.getElementById('wizard');
   const globalLiveRegion = document.getElementById('global-live-region');
-  // FIXED: Use actual selector from HTML - .wizard-nav-item--expandable, not .wizard-path__item
-  const progressItems = Array.from(document.querySelectorAll('.wizard-nav-item--expandable'));
+  // FIXED: Use actual selector from HTML - .wizard-nav-item (includes both expandable and regular)
+  const progressItems = Array.from(document.querySelectorAll('.wizard-nav-item'));
   // FIXED: Use correct selector for substep navigation items
   const subpathItems = Array.from(document.querySelectorAll('.wizard-nav-subitem'));
   let manualNavigationActive = false;
@@ -936,10 +938,12 @@ let advancedUI = createAdvancedUI(advancedForm);
   syncRegistrationPreflightUI();
   syncWizardReadiness({ refreshStatus: true });
 
+  const welcomeScreen = document.getElementById('screen-welcome');
   const namingScreen = document.getElementById('screen-naming');
   const permissionsScreen = document.getElementById('screen-permissions');
   const distributionScreen = document.getElementById('screen-distribution');
   const advancedScreen = document.getElementById('screen-advanced');
+  const overviewScreen = document.getElementById('screen-overview');
   const registrationScreen = document.getElementById('screen-registration');
   const manualMintScreen = document.getElementById('screen-permissions-manual-mint');
   const manualBurnScreen = document.getElementById('screen-permissions-manual-burn');
@@ -977,6 +981,12 @@ let advancedUI = createAdvancedUI(advancedForm);
 
   const screenDefinitions = [
     {
+      id: 'welcome',
+      isAdvanced: false,
+      shouldSkip: () => false,
+      element: welcomeScreen
+    },
+    {
       id: 'naming',
       isAdvanced: false,
       shouldSkip: () => false,
@@ -999,6 +1009,12 @@ let advancedUI = createAdvancedUI(advancedForm);
       isAdvanced: false,
       shouldSkip: () => false,
       element: distributionScreen
+    },
+    {
+      id: 'overview',
+      isAdvanced: false,
+      shouldSkip: () => false,
+      element: overviewScreen
     },
     {
       id: 'registration',
@@ -2305,6 +2321,20 @@ let advancedUI = createAdvancedUI(advancedForm);
     refreshFlow({ suppressFocus: true });
   }
 
+  function evaluateWelcome({ touched = false, silent = false } = {}) {
+    // Welcome step is always valid - it's a template selection screen
+    const stepState = wizardState.steps.welcome;
+    stepState.touched = touched;
+    stepState.validity = 'valid';
+
+    if (!silent) {
+      updateStepStatusUI('welcome');
+      persistState();
+    }
+
+    return { valid: true, message: '' };
+  }
+
   function evaluateOverview({ touched = false, silent = false } = {}) {
     // Overview step is always valid - it's just a review screen
     const stepState = wizardState.steps.overview;
@@ -2526,6 +2556,8 @@ let advancedUI = createAdvancedUI(advancedForm);
     const parentStep = getParentStep(stepId) || stepId;
 
     switch (parentStep) {
+      case 'welcome':
+        return evaluateWelcome(options);
       case 'naming':
         return evaluateNaming(options);
       case 'permissions':
@@ -7633,7 +7665,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
             function: buildEmissionFunction(dist.emission)
           };
         } else if (cadence.type === 'TimeBasedDistribution') {
-          const interval = parseInt(cadence.intervalSeconds, 10) * 1000 || 3600000; // Convert to ms
+          const interval = parseInt(cadence.intervalSeconds, 10) || 3600; // Keep in seconds (Platform expects seconds)
           distributionType.TimeBasedDistribution = {
             interval: interval,
             function: buildEmissionFunction(dist.emission)
@@ -7821,11 +7853,22 @@ function buildManualActionRulesConfig(actionState, permissions) {
     // Helper: Transform marketplace rules
     function transformMarketplaceRules() {
       const tradeMode = wizardState.form.advanced?.tradeMode;
+
+      // Map wizard values to Platform enum values
+      let platformTradeMode;
+      if (tradeMode === 'permissionless') {
+        platformTradeMode = 'Permissionless';
+      } else if (tradeMode === 'approvalRequired') {
+        platformTradeMode = 'ApprovalRequired';
+      } else if (tradeMode === 'closed') {
+        platformTradeMode = 'NotTradeable';
+      } else {
+        platformTradeMode = 'Permissionless'; // Default to permissionless
+      }
+
       return {
         $format_version: '0',
-        tradeMode: tradeMode === 'permissionless' || tradeMode === 'committee-approved'
-          ? 'NotTradeable'  // Platform uses NotTradeable, not our custom values
-          : 'NotTradeable',
+        tradeMode: platformTradeMode,
         tradeModeChangeRules: createRuleV0(false)
       };
     }
@@ -8237,6 +8280,10 @@ function buildManualActionRulesConfig(actionState, permissions) {
   window.testPlatformContracts = testPlatformContracts;
   window.createTestState = createTestState;
   window.generateTestContract = generateTestContract;
+  window.showScreen = showScreen;
+  window.hydrateFormsFromState = hydrateFormsFromState;
+  window.announce = announce;
+  window.wizardState = wizardState;
 })();
 
 /*!
@@ -9942,4 +9989,373 @@ function buildManualActionRulesConfig(actionState, permissions) {
   }
 
   console.log('Control model - Groups integration initialized');
+})();
+
+// ═══════════════════════════════════════════════════════
+// TEMPLATE SELECTION
+// ═══════════════════════════════════════════════════════
+
+(function initializeTemplateSelection() {
+  const templateCards = document.querySelectorAll('[data-template]');
+
+  if (templateCards.length === 0) {
+    console.warn('No template cards found');
+    return;
+  }
+
+  // Note: Access window functions directly in functions below since they may not be defined yet when this IIFE runs
+
+  // Token Templates
+  const TOKEN_TEMPLATES = {
+    scratch: null, // No template, start fresh
+    
+    'simple-fixed': {
+      name: 'SimpleToken',
+      description: 'A basic fixed-supply token',
+      keywords: ['simple', 'fixed', 'basic'],
+      decimals: 8,
+      baseSupply: '1000000',
+      maxSupply: '1000000',
+      useMaxSupply: true,
+      keepsHistory: {
+        transfers: true,
+        mints: false,
+        burns: false,
+        freezes: false,
+        purchases: false
+      },
+      startAsPaused: false,
+      manualMint: { enabled: false },
+      manualBurn: { enabled: false },
+      manualFreeze: { enabled: false },
+      destroyFrozen: { enabled: false },
+      emergency: { enabled: false },
+      tradeMode: 'permissionless',
+      changeControl: {
+        mint: false,
+        burn: false,
+        freeze: false,
+        unfreeze: false,
+        destroyFrozen: false,
+        emergency: false
+      },
+      distribution: null
+    },
+
+    utility: {
+      name: 'UtilityToken',
+      description: 'Token for platform access and payments',
+      keywords: ['utility', 'platform', 'service'],
+      decimals: 2,
+      baseSupply: '10000000',
+      maxSupply: '100000000',
+      useMaxSupply: true,
+      keepsHistory: {
+        transfers: true,
+        mints: true,
+        burns: true,
+        freezes: false,
+        purchases: true
+      },
+      startAsPaused: false,
+      manualMint: { enabled: true },
+      manualBurn: { enabled: true },
+      manualFreeze: { enabled: false },
+      destroyFrozen: { enabled: false },
+      emergency: { enabled: false },
+      tradeMode: 'permissionless',
+      changeControl: {
+        mint: true,
+        burn: true,
+        freeze: false,
+        unfreeze: false,
+        destroyFrozen: false,
+        emergency: false
+      },
+      distribution: null
+    },
+
+    reward: {
+      name: 'RewardToken',
+      description: 'Continuous emission for user rewards',
+      keywords: ['reward', 'points', 'loyalty'],
+      decimals: 0,
+      baseSupply: '0',
+      maxSupply: null,
+      useMaxSupply: false,
+      keepsHistory: {
+        transfers: true,
+        mints: true,
+        burns: true,
+        freezes: false,
+        purchases: false
+      },
+      startAsPaused: false,
+      manualMint: { enabled: true },
+      manualBurn: { enabled: true },
+      manualFreeze: { enabled: false },
+      destroyFrozen: { enabled: false },
+      emergency: { enabled: false },
+      tradeMode: 'permissionless',
+      changeControl: {
+        mint: true,
+        burn: true,
+        freeze: false,
+        unfreeze: false,
+        destroyFrozen: false,
+        emergency: false
+      },
+      distribution: {
+        cadence: {
+          type: 'TimeBasedDistribution',
+          intervalSeconds: '86400'  // 24 hours = 86400 seconds
+        },
+        emission: {
+          type: 'FixedAmount',
+          amount: '1000'
+        }
+      }
+    }
+  };
+
+  function loadTemplate(templateKey) {
+    const template = TOKEN_TEMPLATES[templateKey];
+    const state = window.wizardState;
+
+    if (!state) {
+      console.error('wizardState not available');
+      return;
+    }
+
+    if (templateKey === 'scratch' || !template) {
+      // Start from scratch - just navigate to naming
+      state.activeTemplate = 'scratch';
+      updateTemplateIndicator('scratch');
+
+      // Switch to Token tab
+      if (window.switchTab) {
+        window.switchTab('token');
+      }
+
+      if (window.showScreen) {
+        window.showScreen('naming', { force: true });
+      }
+      return;
+    }
+
+    // Store active template
+    state.activeTemplate = templateKey;
+
+    // Load template into wizard state
+    // Note: Token name is intentionally NOT loaded from template - users must choose their own unique name
+    state.form.tokenName = '';
+
+    // Naming
+    state.form.naming = state.form.naming || {};
+    state.form.naming.description = template.description || '';
+    state.form.naming.keywords = template.keywords || [];
+
+    // Permissions
+    state.form.permissions = state.form.permissions || {};
+    state.form.permissions.decimals = template.decimals || 8;
+    state.form.permissions.baseSupply = template.baseSupply || '0';
+    state.form.permissions.maxSupply = template.maxSupply || '';
+    state.form.permissions.useMaxSupply = template.useMaxSupply || false;
+    state.form.permissions.keepsHistory = template.keepsHistory || {};
+    state.form.permissions.startAsPaused = template.startAsPaused || false;
+    state.form.permissions.manualMint = template.manualMint || { enabled: false };
+    state.form.permissions.manualBurn = template.manualBurn || { enabled: false };
+    state.form.permissions.manualFreeze = template.manualFreeze || { enabled: false };
+    state.form.permissions.destroyFrozen = template.destroyFrozen || { enabled: false };
+    state.form.permissions.emergency = template.emergency || { enabled: false };
+
+    // Distribution
+    if (template.distribution) {
+      state.form.distribution = state.form.distribution || {};
+      state.form.distribution.cadence = template.distribution.cadence || {};
+      state.form.distribution.emission = template.distribution.emission || {};
+    }
+
+    // Advanced
+    state.form.advanced = state.form.advanced || {};
+    state.form.advanced.tradeMode = template.tradeMode || 'permissionless';
+    state.form.advanced.changeControl = template.changeControl || {};
+
+    // Document Types
+    if (template.documentTypes) {
+      state.form.documentTypes = template.documentTypes;
+    }
+
+    // Save state
+    if (window.persistState) {
+      window.persistState();
+    }
+
+    // Update the Templates Library indicator
+    updateTemplateIndicator(templateKey);
+
+    // Sync all UI inputs with the loaded template data
+    if (window.hydrateFormsFromState) {
+      window.hydrateFormsFromState();
+    }
+
+    // Switch to Token tab (naming screen is in token tab)
+    if (window.switchTab) {
+      window.switchTab('token');
+      console.log('Switched to token tab');
+    }
+
+    // Expand the naming submenu in sidebar
+    const namingSubmenu = document.getElementById('naming-submenu');
+    const namingButton = document.querySelector('[data-toggle="naming-submenu"]');
+    if (namingSubmenu && namingButton) {
+      namingSubmenu.hidden = false;
+      namingButton.setAttribute('aria-expanded', 'true');
+    }
+
+    // Navigate to Token Name (first sub-step of naming)
+    // screen-naming has id="screen-naming" and data-substep="naming"
+    console.log('Navigating to naming screen after template load');
+    if (window.showScreen) {
+      window.showScreen('naming', { force: true });
+      console.log('Called window.showScreen with naming');
+    } else {
+      console.error('ERROR: window.showScreen not available!');
+    }
+
+    // Show success message
+    if (window.announce) {
+      window.announce(`✓ Template "${template.name}" loaded successfully! Please enter a token name to continue.`);
+    }
+  }
+
+  function updateTemplateIndicator(templateKey) {
+    const welcomePill = document.getElementById('status-welcome');
+    if (!welcomePill) return;
+
+    const templateNames = {
+      'scratch': 'Custom',
+      'simple-fixed': 'Simple',
+      'utility': 'Utility',
+      'reward': 'Reward'
+    };
+
+    const name = templateNames[templateKey] || 'Active';
+    welcomePill.textContent = name;
+    welcomePill.className = 'wizard-path__pill pill pill--valid';
+    welcomePill.style.display = 'inline-block';
+
+    // Highlight the selected template card
+    templateCards.forEach(card => {
+      const cardTemplateKey = card.getAttribute('data-template');
+      if (cardTemplateKey === templateKey) {
+        card.classList.add('template-card--selected');
+      } else {
+        card.classList.remove('template-card--selected');
+      }
+    });
+  }
+
+  // Template confirmation modal elements
+  const confirmModal = document.getElementById('template-confirmation-modal');
+  const confirmModalTitle = document.getElementById('template-modal-title');
+  const confirmModalDescription = document.getElementById('template-modal-description');
+  const confirmModalPreview = document.getElementById('template-modal-preview');
+  const confirmBtn = document.getElementById('template-confirm-btn');
+  const cancelBtn = document.getElementById('template-cancel-btn');
+  let pendingTemplateKey = null;
+
+  function showTemplateConfirmation(templateKey) {
+    const template = TOKEN_TEMPLATES[templateKey];
+
+    if (templateKey === 'scratch' || !template) {
+      // No confirmation needed for "Start from Scratch"
+      loadTemplate(templateKey);
+      return;
+    }
+
+    pendingTemplateKey = templateKey;
+
+    // Update modal content
+    confirmModalTitle.textContent = `Apply "${template.name}" Template?`;
+    confirmModalDescription.textContent = 'This will replace your current configuration with the following template settings:';
+
+    // Build preview HTML
+    const features = [];
+    if (template.decimals) features.push(`${template.decimals} decimals`);
+    if (template.baseSupply) features.push(`Base supply: ${template.baseSupply}`);
+    if (template.maxSupply) features.push(`Max supply: ${template.maxSupply}`);
+    if (template.distribution) {
+      if (template.distribution.cadence?.type) features.push(template.distribution.cadence.type.replace('BasedDistribution', ''));
+      if (template.distribution.emission?.type) features.push(`${template.distribution.emission.type} emission`);
+    }
+
+    confirmModalPreview.innerHTML = `
+      <h3>${template.name}</h3>
+      <p>${template.description || ''}</p>
+      ${features.length > 0 ? `
+        <div class="template-preview__features">
+          ${features.map(f => `<span class="template-preview__feature">✓ ${f}</span>`).join('')}
+        </div>
+      ` : ''}
+    `;
+
+    // Show modal
+    confirmModal.removeAttribute('hidden');
+    confirmBtn.focus();
+  }
+
+  function hideTemplateConfirmation() {
+    confirmModal.setAttribute('hidden', '');
+    pendingTemplateKey = null;
+  }
+
+  // Add click listeners to all template cards
+  templateCards.forEach(card => {
+    card.addEventListener('click', () => {
+      const templateKey = card.getAttribute('data-template');
+
+      // Visual feedback: highlight the clicked card immediately
+      templateCards.forEach(c => c.classList.remove('template-card--selected'));
+      card.classList.add('template-card--selected');
+
+      showTemplateConfirmation(templateKey);
+    });
+  });
+
+  // Confirm button
+  if (confirmBtn) {
+    confirmBtn.addEventListener('click', () => {
+      if (pendingTemplateKey) {
+        loadTemplate(pendingTemplateKey);
+        hideTemplateConfirmation();
+      }
+    });
+  }
+
+  // Cancel button and overlay
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', hideTemplateConfirmation);
+  }
+
+  if (confirmModal) {
+    const overlay = confirmModal.querySelector('.modal__overlay');
+    if (overlay) {
+      overlay.addEventListener('click', hideTemplateConfirmation);
+    }
+  }
+
+  // ESC key to close modal
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !confirmModal.hasAttribute('hidden')) {
+      hideTemplateConfirmation();
+    }
+  });
+
+  // Restore template indicator on page load
+  if (window.wizardState && window.wizardState.activeTemplate) {
+    updateTemplateIndicator(window.wizardState.activeTemplate);
+  }
+
+  console.log('✓ Template selection initialized with', templateCards.length, 'templates');
 })();

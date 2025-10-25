@@ -7,8 +7,8 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dash Token Wizard</title>
-  <link rel="preload" href="styles.css?v=45.0.1760866000" as="style">
-  <link rel="stylesheet" href="styles.css?v=45.0.1760866000">
+  <link rel="preload" href="styles.css?v=49.0.1760978000" as="style">
+  <link rel="stylesheet" href="styles.css?v=49.0.1760978000">
 </head>
 <body>
   <div class="wizard-shell">
@@ -17,7 +17,7 @@
       <div class="sidebar-section" data-sidebar="token">
       <!-- Sidebar Header with Branding -->
       <div class="wizard-sidebar__header">
-        <div class="brand" aria-label="Dash Token Wizard">
+        <div class="brand">
           <div class="brand__icon">
             <img src="https://media.dash.org/wp-content/uploads/dash-d-rounded-square-1000.png" alt="Dash" width="32" height="32">
           </div>
@@ -36,6 +36,20 @@
       <!-- Navigation -->
       <nav class="wizard-nav" aria-label="Wizard progress">
         <div class="wizard-nav__label">Menu</div>
+
+        <!-- Templates Library -->
+        <div class="wizard-nav-section">
+          <button class="wizard-nav-item" data-step="welcome">
+            <svg class="wizard-nav-item__icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <rect x="2" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+              <rect x="11" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+              <rect x="2" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+              <rect x="11" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            <span class="wizard-nav-item__text">Templates Library</span>
+            <span class="wizard-path__pill pill" id="status-welcome" aria-live="polite"></span>
+          </button>
+        </div>
 
         <!-- ESSENTIALS Section -->
         <div class="wizard-nav-section">
@@ -154,19 +168,6 @@
           </div>
         </div>
 
-        <!-- REVIEW Section -->
-        <div class="wizard-nav-section">
-          <div class="wizard-nav__label">Review</div>
-          <button class="wizard-nav-item" data-step="overview">
-            <svg class="wizard-nav-item__icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M10 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M2 10s3-7 8-7 8 7 8 7-3 7-8 7-8-7-8-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span class="wizard-nav-item__text">Overview</span>
-            <span class="wizard-path__pill pill" id="status-overview" aria-live="polite"></span>
-          </button>
-        </div>
-
         <!-- PUBLISH Section -->
         <div class="wizard-nav-section">
           <div class="wizard-nav__label">Publish</div>
@@ -217,12 +218,12 @@
       <div class="sidebar-section" data-sidebar="group" hidden>
         <!-- Sidebar Header with Branding -->
         <div class="wizard-sidebar__header">
-          <div class="brand" aria-label="Dash Token Wizard - Group">
+          <button class="brand" aria-label="Return to template selection" type="button" onclick="showScreen('welcome', { force: true })">
             <div class="brand__icon">
               <img src="https://media.dash.org/wp-content/uploads/dash-d-rounded-square-1000.png" alt="Dash" width="32" height="32">
             </div>
             <span class="brand__title">Group Management</span>
-          </div>
+          </button>
         </div>
 
         <!-- Search Bar -->
@@ -293,12 +294,12 @@
       <div class="sidebar-section" data-sidebar="document" hidden>
         <!-- Sidebar Header with Branding -->
         <div class="wizard-sidebar__header">
-          <div class="brand" aria-label="Dash Token Wizard - Documentation">
+          <button class="brand" aria-label="Return to template selection" type="button" onclick="showScreen('welcome', { force: true })">
             <div class="brand__icon">
               <img src="https://media.dash.org/wp-content/uploads/dash-d-rounded-square-1000.png" alt="Dash" width="32" height="32">
             </div>
             <span class="brand__title">Documentation</span>
-          </div>
+          </button>
         </div>
 
         <!-- Search Bar -->
@@ -314,16 +315,19 @@
           <div class="wizard-nav__label">Document Menu</div>
 
           <div class="wizard-nav-section">
-            <!-- Placeholder navigation items - to be filled later -->
-            <button class="wizard-nav-item" data-step="doc-overview">
+            <div class="wizard-nav__label">Review</div>
+            <button class="wizard-nav-item" data-step="overview">
               <svg class="wizard-nav-item__icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M12 2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" stroke="currentColor" stroke-width="2"/>
-                <path d="M12 2v6h6" stroke="currentColor" stroke-width="2"/>
+                <path d="M10 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 10s3-7 8-7 8 7 8 7-3 7-8 7-8-7-8-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
               <span class="wizard-nav-item__text">Overview</span>
-              <span class="wizard-path__pill pill" id="status-doc-overview" aria-live="polite"></span>
+              <span class="wizard-path__pill pill" id="status-overview" aria-live="polite"></span>
             </button>
+          </div>
 
+          <div class="wizard-nav-section">
+            <!-- Placeholder navigation items - to be filled later -->
             <button class="wizard-nav-item" data-step="doc-export">
               <svg class="wizard-nav-item__icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path d="M10 3v8M7 8l3 3 3-3M4 13v4h12v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -404,8 +408,97 @@
       </div>
 
       <div class="wizard-content">
+        <!-- Welcome/Template Selection Screen -->
+        <section class="wizard-screen wizard-screen--active" id="screen-welcome" data-step="welcome" data-tab="token">
+          <div class="wizard-screen__inner wizard-screen__inner--centered">
+            <div class="welcome-container">
+              <h1 class="welcome-title">Dash Token Wizard</h1>
+              <p class="welcome-subtitle">Create custom tokens on Dash Platform with ease</p>
+
+              <div class="template-selection">
+                <h2 class="template-selection__title">Choose a starting point</h2>
+                <p class="template-selection__description">Select a template to get started quickly, or start from scratch</p>
+
+                <div class="template-grid">
+                  <!-- Start from Scratch -->
+                  <button class="template-card" type="button" data-template="scratch">
+                    <div class="template-card__icon">✨</div>
+                    <div class="template-card__content">
+                      <h3 class="template-card__title">Start from Scratch</h3>
+                      <p class="template-card__description">Build your token step-by-step with full control over every setting</p>
+                    </div>
+                  </button>
+
+                  <!-- Simple Fixed Supply -->
+                  <button class="template-card" type="button" data-template="simple-fixed">
+                    <div class="template-card__icon">🪙</div>
+                    <div class="template-card__content">
+                      <h3 class="template-card__title">Simple Fixed Supply</h3>
+                      <p class="template-card__description">Basic token with fixed supply, no distribution, perfect for simple use cases</p>
+                      <div class="template-card__specs">
+                        <span class="spec-badge">Fixed Supply</span>
+                        <span class="spec-badge">No Emission</span>
+                        <span class="spec-badge">Owner Control</span>
+                      </div>
+                    </div>
+                  </button>
+
+                  <!-- Utility Token -->
+                  <button class="template-card" type="button" data-template="utility">
+                    <div class="template-card__icon">🔧</div>
+                    <div class="template-card__content">
+                      <h3 class="template-card__title">Utility Token</h3>
+                      <p class="template-card__description">Token for platform access, payments, and services with transfer controls</p>
+                      <div class="template-card__specs">
+                        <span class="spec-badge">Max Supply</span>
+                        <span class="spec-badge">Transferable</span>
+                        <span class="spec-badge">Burn Enabled</span>
+                      </div>
+                    </div>
+                  </button>
+
+                  <!-- Reward Token -->
+                  <button class="template-card" type="button" data-template="reward">
+                    <div class="template-card__icon">🎁</div>
+                    <div class="template-card__content">
+                      <h3 class="template-card__title">Reward/Points Token</h3>
+                      <p class="template-card__description">Continuous emission for user rewards and loyalty programs</p>
+                      <div class="template-card__specs">
+                        <span class="spec-badge">Time-Based</span>
+                        <span class="spec-badge">Fixed Emission</span>
+                        <span class="spec-badge">Burn Enabled</span>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Template Confirmation Modal -->
+        <div class="modal" id="template-confirmation-modal" hidden>
+          <div class="modal__overlay"></div>
+          <div class="modal__content">
+            <div class="modal__header">
+              <h2 class="modal__title" id="template-modal-title">Apply Template?</h2>
+            </div>
+            <div class="modal__body">
+              <p id="template-modal-description">This will replace your current configuration with the template settings.</p>
+              <div class="template-preview" id="template-modal-preview">
+                <!-- Template details will be inserted here -->
+              </div>
+              <p class="modal__warning">⚠️ Any unsaved changes will be lost.</p>
+            </div>
+            <div class="modal__footer">
+              <button class="wizard-button wizard-button--secondary" type="button" id="template-cancel-btn">Cancel</button>
+              <button class="wizard-button wizard-button--primary" type="button" id="template-confirm-btn">Apply Template</button>
+            </div>
+          </div>
+        </div>
+
         <!-- Naming: Token Name Sub-step -->
-        <section class="wizard-screen wizard-screen--active" id="screen-naming" data-step="naming" data-substep="naming" data-tab="token">
+        <section class="wizard-screen" id="screen-naming" data-step="naming" data-substep="naming" data-tab="token" hidden>
       <div class="wizard-screen__inner">
         <form class="wizard-form" id="naming-form" novalidate>
           <h1 class="wizard-screen__title" id="title-naming" tabindex="-1">What would you like to name your token?</h1>
@@ -1861,7 +1954,7 @@
     </section>
 
     <!-- Overview Screen -->
-    <section class="wizard-screen" id="screen-overview" data-step="overview" data-tab="token" hidden>
+    <section class="wizard-screen" id="screen-overview" data-step="overview" data-tab="document" hidden>
       <div class="wizard-screen__inner">
         <h1 class="wizard-screen__title" id="title-overview" tabindex="-1">Review Your Token Configuration</h1>
         <p class="wizard-screen__subtitle">Review all settings before publishing to the Dash Platform</p>
@@ -2747,7 +2840,7 @@
       (function() {
         // State memory object to track last active screen in each tab
         const tabStateMemory = {
-          token: 'screen-naming',
+          token: 'screen-welcome',  // Templates Library is the starting point
           group: 'screen-permissions-group',
           document: 'screen-document'
         };
@@ -2759,6 +2852,8 @@
 
           // Tab switching function
           function switchTab(tabName) {
+            console.log('switchTab called with:', tabName);
+
             // Update active tab button
             tabButtons.forEach(btn => {
               btn.classList.remove('wizard-tab--active');
@@ -2790,7 +2885,22 @@
 
             // Show the last active screen for this tab
             const lastActiveScreen = tabStateMemory[tabName];
-            const targetScreen = document.getElementById(lastActiveScreen);
+            let targetScreen = document.getElementById(lastActiveScreen);
+
+            // Verify the target screen belongs to this tab
+            if (targetScreen && targetScreen.getAttribute('data-tab') !== tabName) {
+              console.warn('Screen', lastActiveScreen, 'does not belong to tab', tabName);
+              targetScreen = null;
+            }
+
+            // If no valid target screen, find the first screen for this tab
+            if (!targetScreen) {
+              targetScreen = document.querySelector('.wizard-screen[data-tab="' + tabName + '"]');
+              if (targetScreen) {
+                console.log('Using first screen for tab:', targetScreen.id);
+                tabStateMemory[tabName] = targetScreen.id;
+              }
+            }
 
             if (targetScreen) {
               targetScreen.hidden = false;
@@ -2816,6 +2926,9 @@
               // Silently fail if localStorage is not available
             }
           }
+
+          // Expose switchTab to window for template navigation
+          window.switchTab = switchTab;
 
           // Tab button click handlers
           tabButtons.forEach(function(button) {
@@ -2885,6 +2998,6 @@
     })();
   </script>
 
-  <script src="app.js?v=22.0.1760857951" defer></script>
+  <script src="app.js?v=49.0.1760978000" defer></script>
 </body>
 </html>
