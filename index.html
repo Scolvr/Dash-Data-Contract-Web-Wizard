@@ -7,8 +7,8 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dash Token Wizard</title>
-  <link rel="preload" href="styles.css?v=60.0.1760980031" as="style">
-  <link rel="stylesheet" href="styles.css?v=60.0.1760980031">
+  <link rel="preload" href="styles.css?v=60.0.1760980054" as="style">
+  <link rel="stylesheet" href="styles.css?v=60.0.1760980054">
 </head>
 <body>
   <div class="wizard-shell">
@@ -132,9 +132,6 @@
           <div class="wizard-nav-submenu" id="advanced-submenu" hidden>
             <a href="#" class="wizard-nav-subitem" data-substep="advanced">
               <span class="wizard-nav-subitem__text">Trading Rules</span>
-            </a>
-            <a href="#" class="wizard-nav-subitem" data-substep="advanced-control">
-              <span class="wizard-nav-subitem__text">Change Control</span>
             </a>
           </div>
         </div>
@@ -533,26 +530,36 @@
       <!-- Right Side Guide Panel -->
       <aside class="page-guide" aria-label="Page guide">
         <div class="page-guide__content">
-          <h2 class="page-guide__title">Token Naming</h2>
-          <p class="page-guide__intro">Choose how your token will be identified across the Dash Platform.</p>
+          <h2 class="page-guide__title">Welcome to your Token Name setup!</h2>
+          <p class="page-guide__intro">Here you can define how your token will appear across your project. This name helps users recognize and interact with your token easily.</p>
 
           <div class="page-guide__section">
-            <h3 class="page-guide__section-title">Step-by-step guide</h3>
+            <h3 class="page-guide__section-title">Steps:</h3>
             <ol class="page-guide__steps">
               <li>
-                <strong>Pick a Token Name</strong>
-                <p>Choose something memorable and unique. This is what users will see (e.g., "RewardPoints", "GameGold").</p>
+                <strong>Enter your Token Name</strong>
+                <p>Choose a unique and descriptive name for your token (2–64 characters).</p>
+                <p><em>Example: Mega Awesome Token</em></p>
               </li>
               <li>
-                <strong>Create a Symbol</strong>
-                <p>2-8 character ticker (e.g., "RWD", "GOLD"). Usually uppercase. Like stock symbols.</p>
+                <strong>Define Plural Form</strong>
+                <p>Specify how multiple units of your token will be displayed.</p>
+                <p><em>Example: "Coins"</em></p>
+              </li>
+              <li>
+                <strong>Optional: Capitalize Token Name</strong>
+                <p>When enabled, your token name will always appear with an initial capital letter (e.g., "Token" instead of "token").</p>
               </li>
             </ol>
           </div>
 
           <div class="page-guide__tip">
-            <strong>💡 Pro Tip</strong>
-            Check if similar names exist first. Clear, simple names build trust faster.
+            <strong>💡 Tips:</strong>
+            <ul style="margin: var(--space-2) 0 0 0; padding-left: var(--space-5); list-style: disc;">
+              <li>Keep your name short, clear, and easy to remember.</li>
+              <li>Avoid using symbols or special characters unless necessary.</li>
+              <li>The chosen name will be visible to all users.</li>
+            </ul>
           </div>
         </div>
       </aside>
@@ -566,7 +573,7 @@
           <div class="form-card" style="max-width: 100%;">
             <div class="form-card__header">
               <h3 class="form-card__title">Token Name</h3>
-              <p class="form-card__description">Choose a unique name for your token and define how it should be displayed</p>
+              <p class="form-card__description">Choose a unique name for your token and define how it should be displayed<br>This will be your English localization which is required</p>
             </div>
             <div class="form-card__body">
               <div class="field-group">
@@ -578,21 +585,12 @@
                 <p class="wizard-field__message" id="token-name-message" role="status" aria-live="polite"></p>
               </div>
 
-              <div class="localization-row__grid">
-                <div class="wizard-field">
-                  <label class="wizard-field__label" for="token-singular">Singular form</label>
-                  <input class="wizard-field__input" id="token-singular" name="token-singular" type="text" inputmode="text" autocomplete="off" placeholder="Token" required minlength="3" maxlength="25" aria-describedby="token-singular-message">
-                  <p class="wizard-field__message" id="token-singular-message" role="status" aria-live="polite"></p>
-                </div>
-
-                <div class="wizard-field">
-                  <label class="wizard-field__label" for="token-plural">Plural form</label>
-                  <input class="wizard-field__input" id="token-plural" name="token-plural" type="text" inputmode="text" autocomplete="off" placeholder="Tokens" required minlength="3" maxlength="25" aria-describedby="token-plural-message">
-                  <p class="wizard-field__message" id="token-plural-message" role="status" aria-live="polite"></p>
-                </div>
+              <div class="field-group">
+                <label class="wizard-field__label" for="token-plural">Plural form</label>
+                <input class="wizard-field__input" id="token-plural" name="token-plural" type="text" inputmode="text" autocomplete="off" placeholder="Tokens" required minlength="3" maxlength="25" aria-describedby="token-plural-message">
+                <span class="field-hint">3-25 characters • How multiple units are displayed (e.g., "Tokens", "Coins")</span>
+                <p class="wizard-field__message" id="token-plural-message" role="status" aria-live="polite"></p>
               </div>
-
-              <span class="field-hint" style="margin-top: -0.5rem; margin-bottom: 1rem; display: block;">3-25 characters • How one unit or multiple units are displayed (e.g., "Token"/"Tokens", "Coin"/"Coins")</span>
 
               <div class="field-group">
                 <label class="wizard-checkbox" for="token-capitalize">
@@ -617,33 +615,28 @@
       <!-- Right Side Guide Panel -->
       <aside class="page-guide" aria-label="Page guide">
         <div class="page-guide__content">
-          <h2 class="page-guide__title">Localization</h2>
-          <p class="page-guide__intro">Translate your token name for global users. Optional but recommended.</p>
+          <h2 class="page-guide__title">Localization Guide</h2>
+          <p class="page-guide__intro">You can add translations to make your token accessible to users in different languages. This is optional, but helpful if you want to reach a global audience.</p>
 
           <div class="page-guide__section">
-            <h3 class="page-guide__section-title">Step-by-step guide</h3>
+            <h3 class="page-guide__section-title">How it works:</h3>
             <ol class="page-guide__steps">
-              <li>
-                <strong>Add Languages</strong>
-                <p>Click "+ Add Language" to add translations. Use 2-letter codes (en, es, fr, de, etc.).</p>
-              </li>
-              <li>
-                <strong>Provide Forms</strong>
-                <p>Singular = "Token", Plural = "Tokens". Some languages need different forms.</p>
-              </li>
+              <li>Select a language from the dropdown list.</li>
+              <li>Enter the translated name and description for your token.</li>
+              <li>Repeat the process if you want to add more languages.</li>
             </ol>
           </div>
 
           <div class="page-guide__tip">
-            <strong>💡 Pro Tip</strong>
-            Start with English. Add more languages later if you expand globally.
+            <strong>💡 Tip:</strong>
+            <p style="margin: var(--space-2) 0 0 0;">If you are not sure about the translation, you can use any online translation tool or ask a native speaker.</p>
           </div>
         </div>
       </aside>
 
       <div class="wizard-screen__inner">
         <form class="wizard-form" id="naming-localization-form" novalidate>
-          <h1 class="wizard-screen__title" id="title-naming-localization" tabindex="-1">How should your token appear in different languages?</h1>
+          <h1 class="wizard-screen__title" id="title-naming-localization" tabindex="-1">How should your token appear in other languages?</h1>
           <p class="wizard-screen__subtitle">Add translations to make your token accessible to a global audience.</p>
 
           <!-- Localization Card -->
@@ -864,23 +857,6 @@
             </div>
           </div>
 
-          <!-- Supply Amount Card -->
-          <div class="form-card">
-            <div class="form-card__header">
-              <h3 class="form-card__title">Initial Supply</h3>
-              <p class="form-card__description">How many tokens will exist when created?</p>
-            </div>
-            <div class="form-card__body">
-              <div class="field-group">
-                <label class="wizard-field__label" for="base-supply">
-                  Initial Supply *
-                </label>
-                <input class="wizard-field__input" id="base-supply" name="base-supply" type="text" inputmode="decimal" placeholder="e.g., 1000000" required aria-describedby="base-supply-hint">
-                <span class="field-hint">Examples: 1,000,000 (medium) • 100,000,000 (large) • 1,000 (limited)</span>
-              </div>
-            </div>
-          </div>
-
           <!-- Decimals Card -->
           <div class="form-card">
             <div class="form-card__header">
@@ -898,6 +874,40 @@
             </div>
           </div>
 
+          <!-- Supply Amount Card -->
+          <div class="form-card">
+            <div class="form-card__header">
+              <h3 class="form-card__title">Initial Supply</h3>
+              <p class="form-card__description">How many tokens should the creator receive after creation?</p>
+            </div>
+            <div class="form-card__body">
+              <!-- Supply Mode Selector (shown only when decimals > 0) -->
+              <div class="supply-mode-selector" id="base-supply-mode-selector" hidden>
+                <label class="wizard-radio">
+                  <input type="radio" name="base-supply-mode" value="token" id="base-supply-mode-token" checked>
+                  <span class="wizard-radio__label">Token Amount</span>
+                </label>
+                <label class="wizard-radio">
+                  <input type="radio" name="base-supply-mode" value="base" id="base-supply-mode-base">
+                  <span class="wizard-radio__label">Base Units</span>
+                </label>
+              </div>
+
+              <div class="field-group">
+                <label class="wizard-field__label" for="base-supply">
+                  <span id="base-supply-label">Initial Supply</span> *
+                </label>
+                <input class="wizard-field__input" id="base-supply" name="base-supply" type="text" inputmode="decimal" placeholder="e.g., 1000000" required aria-describedby="base-supply-hint base-supply-conversion">
+                <span class="field-hint" id="base-supply-hint">Enter the number of tokens to create</span>
+                <div class="supply-conversion" id="base-supply-conversion" hidden>
+                  <span class="supply-conversion__label">= </span>
+                  <span class="supply-conversion__value" id="base-supply-conversion-value">0</span>
+                  <span class="supply-conversion__unit" id="base-supply-conversion-unit">base units</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Supply Limits Card (Optional) -->
           <div class="form-card">
             <div class="form-card__header">
@@ -905,12 +915,30 @@
               <p class="form-card__description">Set a maximum cap on total supply</p>
             </div>
             <div class="form-card__body">
+              <!-- Supply Mode Selector (shown only when decimals > 0) -->
+              <div class="supply-mode-selector" id="max-supply-mode-selector" hidden>
+                <label class="wizard-radio">
+                  <input type="radio" name="max-supply-mode" value="token" id="max-supply-mode-token" checked>
+                  <span class="wizard-radio__label">Token Amount</span>
+                </label>
+                <label class="wizard-radio">
+                  <input type="radio" name="max-supply-mode" value="base" id="max-supply-mode-base">
+                  <span class="wizard-radio__label">Base Units</span>
+                </label>
+              </div>
+
               <div class="field-group">
                 <label class="wizard-field__label" for="max-supply">
-                  Maximum Supply (leave empty for unlimited)
+                  <span id="max-supply-label">Maximum Supply</span> (leave empty for unlimited)
                 </label>
-                <input class="wizard-field__input" id="max-supply" name="max-supply" type="text" inputmode="decimal" placeholder="e.g., 10000000" aria-describedby="max-supply-hint">
-                <span class="field-hint">Optional • Leave blank for no limit • Must be ≥ initial supply</span>
+                <input class="wizard-field__input" id="max-supply" name="max-supply" type="text" inputmode="decimal" placeholder="e.g., 10000000" aria-describedby="max-supply-hint max-supply-conversion max-supply-message">
+                <span class="field-hint" id="max-supply-hint">Optional • Leave blank for no limit • Must be ≥ initial supply</span>
+                <p class="wizard-field__message" id="max-supply-message" role="status" aria-live="polite"></p>
+                <div class="supply-conversion" id="max-supply-conversion" hidden>
+                  <span class="supply-conversion__label">= </span>
+                  <span class="supply-conversion__value" id="max-supply-conversion-value">0</span>
+                  <span class="supply-conversion__unit" id="max-supply-conversion-unit">base units</span>
+                </div>
               </div>
             </div>
           </div>
@@ -2602,6 +2630,10 @@
                 <span class="config-overview__value" id="overview-max-supply">—</span>
               </div>
               <div class="config-overview__item">
+                <span class="config-overview__label">Action Preset:</span>
+                <span class="config-overview__value" id="overview-action-preset">—</span>
+              </div>
+              <div class="config-overview__item">
                 <span class="config-overview__label">Localizations:</span>
                 <span class="config-overview__value" id="overview-localizations">—</span>
               </div>
@@ -2626,6 +2658,222 @@
           <button class="wizard-button wizard-button--secondary" type="button" id="overview-back">Back</button>
           <button class="wizard-button wizard-button--primary" type="button" id="overview-next">Continue to Registration</button>
         </div>
+      </div>
+    </section>
+
+    <!-- Review Screen -->
+    <section class="wizard-screen" id="screen-review" data-step="review" data-tab="token" hidden>
+
+      <!-- Right Side Guide Panel -->
+      <aside class="page-guide" aria-label="Page guide">
+        <div class="page-guide__content">
+          <h2 class="page-guide__title">Review & Verify</h2>
+          <p class="page-guide__intro">Carefully review all settings before deployment. Some settings cannot be changed later.</p>
+
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">What to Check</h3>
+            <ol class="page-guide__steps">
+              <li>
+                <strong>Verify Token Details</strong>
+                <p>Double-check name, symbol, and supply amounts.</p>
+              </li>
+              <li>
+                <strong>Review Permissions</strong>
+                <p>Confirm who can mint, burn, and freeze tokens.</p>
+              </li>
+              <li>
+                <strong>Check Distribution</strong>
+                <p>Verify emission schedule and recipients if enabled.</p>
+              </li>
+            </ol>
+          </div>
+
+          <div class="page-guide__tip">
+            <strong>⚠️ Important</strong>
+            Settings marked as "Permanent" cannot be changed after deployment. Review them carefully.
+          </div>
+        </div>
+      </aside>
+
+      <div class="wizard-screen__inner">
+        <h1 class="wizard-screen__title" id="title-review" tabindex="-1">Review Your Token Configuration</h1>
+        <p class="wizard-screen__subtitle">Verify all settings before deploying to Dash Platform</p>
+
+        <!-- Review Grid -->
+        <div class="review-grid">
+
+          <!-- Token Basics Card -->
+          <div class="review-card">
+            <div class="review-card__header">
+              <h3 class="review-card__title">Token Basics</h3>
+              <span class="review-card__badge review-card__badge--permanent">Permanent</span>
+            </div>
+            <dl class="review-card__list">
+              <div class="review-card__item">
+                <dt>Name:</dt>
+                <dd id="review-name">—</dd>
+              </div>
+              <div class="review-card__item">
+                <dt>Symbol:</dt>
+                <dd id="review-symbol">—</dd>
+              </div>
+              <div class="review-card__item">
+                <dt>Decimals:</dt>
+                <dd id="review-decimals">—</dd>
+              </div>
+            </dl>
+            <div class="review-annotation review-annotation--warning">
+              ⚠️ These values are <strong>permanent</strong> and cannot be changed after deployment
+            </div>
+          </div>
+
+          <!-- Supply Configuration Card -->
+          <div class="review-card">
+            <div class="review-card__header">
+              <h3 class="review-card__title">Supply Configuration</h3>
+              <span class="review-card__badge review-card__badge--permanent">Permanent</span>
+            </div>
+            <dl class="review-card__list">
+              <div class="review-card__item">
+                <dt>Initial Supply:</dt>
+                <dd id="review-base-supply">—</dd>
+              </div>
+              <div class="review-card__item">
+                <dt>Maximum Supply:</dt>
+                <dd id="review-max-supply">—</dd>
+              </div>
+              <div class="review-card__item">
+                <dt>Start Paused:</dt>
+                <dd id="review-start-paused">—</dd>
+              </div>
+            </dl>
+            <div class="review-annotation review-annotation--warning">
+              ⚠️ Maximum supply cap is <strong>permanent</strong> and cannot be increased later
+            </div>
+          </div>
+
+          <!-- Permissions Card -->
+          <div class="review-card">
+            <div class="review-card__header">
+              <h3 class="review-card__title">Token Permissions</h3>
+            </div>
+            <dl class="review-card__list">
+              <div class="review-card__item">
+                <dt>Mint Tokens:</dt>
+                <dd id="review-mint-permission">—</dd>
+              </div>
+              <div class="review-card__item">
+                <dt>Burn Tokens:</dt>
+                <dd id="review-burn-permission">—</dd>
+              </div>
+              <div class="review-card__item">
+                <dt>Freeze Balances:</dt>
+                <dd id="review-freeze-permission">—</dd>
+              </div>
+              <div class="review-card__item">
+                <dt>Emergency Pause:</dt>
+                <dd id="review-emergency-permission">—</dd>
+              </div>
+            </dl>
+          </div>
+
+          <!-- Distribution Card (Conditional) -->
+          <div class="review-card" id="review-distribution-card" hidden>
+            <div class="review-card__header">
+              <h3 class="review-card__title">Distribution Schedule</h3>
+            </div>
+            <div class="review-card__preview">
+              <div class="distribution-preview">
+                <div class="distribution-preview__item">
+                  <span class="distribution-preview__label">First Distribution:</span>
+                  <span class="distribution-preview__value" id="review-first-distribution">—</span>
+                </div>
+                <div class="distribution-preview__item">
+                  <span class="distribution-preview__label">Amount Per Release:</span>
+                  <span class="distribution-preview__value" id="review-distribution-amount">—</span>
+                </div>
+                <div class="distribution-preview__item">
+                  <span class="distribution-preview__label">Frequency:</span>
+                  <span class="distribution-preview__value" id="review-distribution-frequency">—</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Trading Rules Card -->
+          <div class="review-card">
+            <div class="review-card__header">
+              <h3 class="review-card__title">Trading & Marketplace</h3>
+            </div>
+            <dl class="review-card__list">
+              <div class="review-card__item">
+                <dt>Trading Mode:</dt>
+                <dd id="review-trade-mode">—</dd>
+              </div>
+            </dl>
+          </div>
+
+        </div>
+
+        <!-- Simulation Box -->
+        <div class="simulation-box">
+          <h3 class="simulation-box__title">📊 What will happen when you deploy?</h3>
+          <ul class="simulation-box__list" id="simulation-results">
+            <li class="simulation-item">
+              <span class="simulation-item__icon">🪙</span>
+              <span class="simulation-item__text" id="simulation-creation">—</span>
+            </li>
+            <li class="simulation-item">
+              <span class="simulation-item__icon">👤</span>
+              <span class="simulation-item__text" id="simulation-ownership">—</span>
+            </li>
+            <li class="simulation-item" id="simulation-distribution-item" hidden>
+              <span class="simulation-item__icon">📅</span>
+              <span class="simulation-item__text" id="simulation-distribution">—</span>
+            </li>
+            <li class="simulation-item">
+              <span class="simulation-item__icon">🔐</span>
+              <span class="simulation-item__text" id="simulation-permissions">—</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- JSON Preview (Collapsible) -->
+        <details class="json-preview">
+          <summary class="json-preview__summary">
+            <span class="json-preview__icon">{ }</span>
+            View Generated Contract JSON
+            <span class="json-preview__chevron">▼</span>
+          </summary>
+          <div class="json-preview__content">
+            <div class="json-preview__toolbar">
+              <button class="json-preview__copy" id="copy-json-btn" type="button">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M5 2h6a1 1 0 011 1v8a1 1 0 01-1 1H5a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M3 5v8a2 2 0 002 2h6" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                Copy JSON
+              </button>
+            </div>
+            <pre class="json-preview__code" id="contract-json-preview"></pre>
+            <div class="json-annotations">
+              <h4 class="json-annotations__title">Understanding the Contract</h4>
+              <ul class="json-annotations__list">
+                <li><code>token_configuration</code> — Core token settings (name, supply, decimals)</li>
+                <li><code>supply_rules</code> — Minting and supply control rules</li>
+                <li><code>distribution_rules</code> — Emission schedule and recipient configuration</li>
+                <li><code>marketplace_rules</code> — Trading permissions and restrictions</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <!-- Navigation Actions -->
+        <div class="wizard-actions wizard-actions--between wizard-actions--sticky">
+          <button class="wizard-button wizard-button--secondary" type="button" id="review-back">← Back to Edit</button>
+          <button class="wizard-button wizard-button--primary" id="review-continue" type="button">Continue to Registration →</button>
+        </div>
+
       </div>
     </section>
 
@@ -3648,6 +3896,6 @@
     })();
   </script>
 
-  <script src="app.js?v=60.0.1760980031" defer></script>
+  <script src="app.js?v=60.0.1760980054" defer></script>
 </body>
 </html>

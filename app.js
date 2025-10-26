@@ -556,6 +556,8 @@
   function createEmptyLocalizationRowData() {
     return {
       code: '',
+      singularForm: '',
+      pluralForm: '',
       shouldCapitalize: true
     };
   }
@@ -572,6 +574,8 @@
           : Boolean(row.should_capitalize);
     return {
       code: typeof row.code === 'string' ? row.code : '',
+      singularForm: typeof row.singularForm === 'string' ? row.singularForm : (typeof row.singular === 'string' ? row.singular : ''),
+      pluralForm: typeof row.pluralForm === 'string' ? row.pluralForm : (typeof row.plural === 'string' ? row.plural : ''),
       shouldCapitalize
     };
   }
@@ -595,8 +599,8 @@
     return {
       [code]: {
         should_capitalize: Boolean(normalized.shouldCapitalize),
-        singular_form: normalized.singular,
-        plural_form: normalized.plural
+        singular_form: normalized.singularForm || '',
+        plural_form: normalized.pluralForm || ''
       }
     };
   }
@@ -814,11 +818,11 @@
   const tokenNameInput = document.getElementById('token-name');
   const tokenNameMessage = document.getElementById('token-name-message');
   const namingNextButton = document.getElementById('naming-next');
+  const namingLocalizationNextButton = document.getElementById('naming-localization-next');
 
-  const tokenSingularInput = document.getElementById('token-singular');
+  // Removed tokenSingularInput - using tokenName as singular form
   const tokenPluralInput = document.getElementById('token-plural');
   const tokenCapitalizeInput = document.getElementById('token-capitalize');
-  const tokenSingularMessage = document.getElementById('token-singular-message');
   const tokenPluralMessage = document.getElementById('token-plural-message');
 
   const localizationWrapper = document.getElementById('localization-wrapper');
@@ -1096,9 +1100,7 @@ let advancedUI = createAdvancedUI(advancedForm);
   tokenNameInput.addEventListener('input', handleNamingInput);
   tokenNameInput.addEventListener('blur', () => evaluateNaming({ touched: true }));
 
-  // Singular/plural fields now part of naming screen
-  tokenSingularInput.addEventListener('input', handleNamingInput);
-  tokenSingularInput.addEventListener('blur', () => evaluateNaming({ touched: true }));
+  // Plural field and capitalize checkbox
   tokenPluralInput.addEventListener('input', handleNamingInput);
   tokenPluralInput.addEventListener('blur', () => evaluateNaming({ touched: true }));
   tokenCapitalizeInput.addEventListener('change', handleNamingInput);
@@ -1914,8 +1916,8 @@ let advancedUI = createAdvancedUI(advancedForm);
   }
 
   function handleNamingInput() {
-    // Save all naming fields to state
-    wizardState.form.naming.singular = tokenSingularInput.value;
+    // Save all naming fields to state (using token name as singular form)
+    wizardState.form.naming.singular = tokenNameInput.value;
     wizardState.form.naming.plural = tokenPluralInput.value;
     wizardState.form.naming.capitalize = tokenCapitalizeInput.checked;
 
@@ -1956,24 +1958,10 @@ let advancedUI = createAdvancedUI(advancedForm);
 
     wizardState.form.tokenName = rawValue;
 
-    // Validate singular and plural forms
-    const singular = tokenSingularInput.value.trim();
+    // Validate plural form (using token name as singular)
     const plural = tokenPluralInput.value.trim();
-    let singularValid = true;
     let pluralValid = true;
-    let singularError = '';
     let pluralError = '';
-
-    if (singular.length === 0) {
-      singularError = 'Enter a singular name.';
-      singularValid = false;
-    } else if (singular.length < 3 || singular.length > 25) {
-      singularError = 'Must be 3-25 characters.';
-      singularValid = false;
-    } else if (singular !== tokenSingularInput.value) {
-      singularError = 'Remove leading or trailing spaces.';
-      singularValid = false;
-    }
 
     if (plural.length === 0) {
       pluralError = 'Enter a plural name.';
@@ -1986,23 +1974,9 @@ let advancedUI = createAdvancedUI(advancedForm);
       pluralValid = false;
     }
 
-    // Update singular/plural UI
+    // Update plural UI
     if (touched || !silent) {
-      tokenSingularMessage.textContent = singularError;
       tokenPluralMessage.textContent = pluralError;
-
-      // Visual feedback for singular
-      if (singular.length > 0) {
-        if (singularValid) {
-          tokenSingularInput.classList.remove('wizard-field__input--error');
-          tokenSingularInput.classList.add('wizard-field__input--valid');
-        } else {
-          tokenSingularInput.classList.remove('wizard-field__input--valid');
-          tokenSingularInput.classList.add('wizard-field__input--error');
-        }
-      } else {
-        tokenSingularInput.classList.remove('wizard-field__input--valid', 'wizard-field__input--error');
-      }
 
       // Visual feedback for plural
       if (plural.length > 0) {
@@ -2018,15 +1992,20 @@ let advancedUI = createAdvancedUI(advancedForm);
       }
     }
 
-    // Save singular/plural/capitalize to state
-    wizardState.form.naming.singular = tokenSingularInput.value;
+    // Save singular/plural/capitalize to state (using token name as singular)
+    wizardState.form.naming.singular = tokenNameInput.value;
     wizardState.form.naming.plural = tokenPluralInput.value;
     wizardState.form.naming.capitalize = tokenCapitalizeInput.checked;
 
     const localizationResult = validateLocalizationRows({ touched, silent });
-    const isValid = nameResult.valid && singularValid && pluralValid && localizationResult.valid;
+    const isValid = nameResult.valid && pluralValid && localizationResult.valid;
 
     namingNextButton.disabled = !isValid;
+
+    // Also control the localization substep Continue button
+    if (namingLocalizationNextButton) {
+      namingLocalizationNextButton.disabled = !localizationResult.valid;
+    }
 
     updateStepStatusFromValidation('naming', { valid: isValid }, touched);
 
@@ -2068,17 +2047,17 @@ let advancedUI = createAdvancedUI(advancedForm);
       valid = false;
     }
 
-    const normalizedBase = valid ? normalizeTokenAmount(values.baseSupply) : null;
+    const normalizedBase = valid ? normalizeTokenAmount(values.baseSupply, decimals) : null;
     if (valid && normalizedBase === null) {
-      message = 'Enter a numeric base supply.';
+      message = 'Enter a numeric base supply (decimals allowed based on token decimals setting).';
       valid = false;
     }
 
     let normalizedMax = null;
     if (valid && values.useMaxSupply) {
-      normalizedMax = normalizeTokenAmount(values.maxSupply);
+      normalizedMax = normalizeTokenAmount(values.maxSupply, decimals);
       if (normalizedMax === null) {
-        message = 'Enter a numeric max supply or disable the limit.';
+        message = 'Enter a numeric max supply or disable the limit (decimals allowed).';
         valid = false;
       }
     }
@@ -2105,6 +2084,7 @@ let advancedUI = createAdvancedUI(advancedForm);
     const decimalsInput = document.getElementById('decimals');
     const baseSupplyInput = document.getElementById('base-supply');
     const maxSupplyInput = document.getElementById('max-supply');
+    const maxSupplyMessage = document.getElementById('max-supply-message');
 
     // Decimals validation feedback
     if (decimalsInput) {
@@ -2140,11 +2120,34 @@ let advancedUI = createAdvancedUI(advancedForm);
       }
     }
 
-    // Max supply validation feedback (only if enabled)
-    if (maxSupplyInput && values.useMaxSupply) {
-      const maxSupplyValid = normalizedMax !== null && (normalizedBase === null || BigInt(normalizedMax) >= BigInt(normalizedBase));
+    // Max supply validation feedback (only if value is entered)
+    let maxSupplyErrorMessage = '';
+    if (maxSupplyInput) {
       const maxSupplyHasValue = values.maxSupply && values.maxSupply.trim().length > 0;
+
       if (maxSupplyHasValue) {
+        let maxSupplyValid = true;
+
+        // Check if max supply is a valid number
+        if (normalizedMax === null) {
+          maxSupplyValid = false;
+          maxSupplyErrorMessage = 'Enter a valid numeric value.';
+        }
+        // Check if max supply >= initial supply
+        else if (normalizedBase !== null) {
+          try {
+            const comparison = safeBigIntCompare(normalizedMax, normalizedBase);
+            if (comparison < 0) {
+              maxSupplyValid = false;
+              maxSupplyErrorMessage = 'Maximum supply must be greater than or equal to initial supply.';
+            }
+          } catch (error) {
+            maxSupplyValid = false;
+            maxSupplyErrorMessage = 'Unable to compare supply values.';
+          }
+        }
+
+        // Apply visual feedback
         if (maxSupplyValid) {
           maxSupplyInput.classList.remove('wizard-field__input--error');
           maxSupplyInput.classList.add('wizard-field__input--valid');
@@ -2153,11 +2156,14 @@ let advancedUI = createAdvancedUI(advancedForm);
           maxSupplyInput.classList.add('wizard-field__input--error');
         }
       } else {
+        // No value entered - clear validation classes
         maxSupplyInput.classList.remove('wizard-field__input--valid', 'wizard-field__input--error');
       }
-    } else if (maxSupplyInput) {
-      // Clear validation classes when max supply is disabled
-      maxSupplyInput.classList.remove('wizard-field__input--valid', 'wizard-field__input--error');
+    }
+
+    // Display max supply error message
+    if (maxSupplyMessage) {
+      maxSupplyMessage.textContent = touched ? maxSupplyErrorMessage : '';
     }
 
     permissionsMessage.textContent = touched && !result.valid ? result.message : '';
@@ -2195,9 +2201,10 @@ let advancedUI = createAdvancedUI(advancedForm);
     const values = cloneDistributionValues(distributionUI.getValues());
     const currentSubstep = wizardState.active;
     const isScheduleSubstep = currentSubstep === 'distribution';
+    const decimals = typeof wizardState.form.permissions?.decimals === 'number' ? wizardState.form.permissions.decimals : 0;
 
     // Validate Schedule only (always required)
-    const scheduleValidation = validateDistributionValues(values, { skipEmissionValidation: true });
+    const scheduleValidation = validateDistributionValues(values, { skipEmissionValidation: true, decimals });
 
     if (isScheduleSubstep) {
       // ===== SCHEDULE SUBSTEP =====
@@ -2230,7 +2237,7 @@ let advancedUI = createAdvancedUI(advancedForm);
 
       if (emissionType && emissionType !== '') {
         // User selected an emission type - validate it
-        emissionValidation = validateDistributionValues(values, { skipEmissionValidation: false });
+        emissionValidation = validateDistributionValues(values, { skipEmissionValidation: false, decimals });
       }
 
       // Update Emission button and message
@@ -2943,8 +2950,8 @@ let advancedUI = createAdvancedUI(advancedForm);
         return normalizeLocalizationRowData({
           code: firstCode,
           shouldCapitalize: entry?.should_capitalize,
-          singular: entry?.singular_form,
-          plural: entry?.plural_form
+          singularForm: entry?.singular_form,
+          pluralForm: entry?.plural_form
         });
       })();
       naming.rows = nextRow ? [nextRow] : [];
@@ -3681,59 +3688,49 @@ function ensurePermissionsGroupState() {
     codeLabel.className = 'wizard-field__label';
     codeLabel.setAttribute('for', `${rowId}-code`);
     codeLabel.textContent = 'Language code';
-    const codeInput = document.createElement('select');
+
+    // Use input with datalist for selecting or typing custom language codes
+    const codeInput = document.createElement('input');
     codeInput.className = 'wizard-field__input';
     codeInput.id = `${rowId}-code`;
     codeInput.name = `${rowId}-code`;
+    codeInput.type = 'text';
+    codeInput.setAttribute('list', `${rowId}-languages`);
+    codeInput.placeholder = 'Select or type code (e.g., en, es, fr)';
+    codeInput.maxLength = 2;
+    codeInput.value = data.code || '';
+    codeInput.pattern = '[a-z]{2}';
 
-    // Add language options
+    // Create datalist with most common languages
+    const datalist = document.createElement('datalist');
+    datalist.id = `${rowId}-languages`;
+
     const languages = [
-      { code: '', name: 'Select language...' },
-      { code: 'en', name: 'English' },
-      { code: 'ar', name: 'Arabic (العربية)' },
-      { code: 'zh', name: 'Chinese (中文)' },
-      { code: 'de', name: 'German (Deutsch)' },
       { code: 'es', name: 'Spanish (Español)' },
+      { code: 'zh', name: 'Chinese (中文)' },
       { code: 'fr', name: 'French (Français)' },
-      { code: 'it', name: 'Italian (Italiano)' },
-      { code: 'ja', name: 'Japanese (日本語)' },
-      { code: 'ru', name: 'Russian (Русский)' },
+      { code: 'de', name: 'German (Deutsch)' },
       { code: 'pt', name: 'Portuguese (Português)' },
+      { code: 'ru', name: 'Russian (Русский)' },
+      { code: 'ja', name: 'Japanese (日本語)' },
+      { code: 'ar', name: 'Arabic (العربية)' },
       { code: 'hi', name: 'Hindi (हिन्दी)' },
-      { code: 'bn', name: 'Bengali (বাংলা)' },
-      { code: 'ko', name: 'Korean (한국어)' },
-      { code: 'tr', name: 'Turkish (Türkçe)' },
-      { code: 'vi', name: 'Vietnamese (Tiếng Việt)' },
-      { code: 'pl', name: 'Polish (Polski)' },
-      { code: 'uk', name: 'Ukrainian (Українська)' },
-      { code: 'nl', name: 'Dutch (Nederlands)' },
-      { code: 'el', name: 'Greek (Ελληνικά)' },
-      { code: 'sv', name: 'Swedish (Svenska)' },
-      { code: 'cs', name: 'Czech (Čeština)' },
-      { code: 'ro', name: 'Romanian (Română)' },
-      { code: 'hu', name: 'Hungarian (Magyar)' },
-      { code: 'th', name: 'Thai (ไทย)' },
-      { code: 'id', name: 'Indonesian (Bahasa Indonesia)' },
-      { code: 'he', name: 'Hebrew (עברית)' },
-      { code: 'da', name: 'Danish (Dansk)' },
-      { code: 'fi', name: 'Finnish (Suomi)' },
-      { code: 'no', name: 'Norwegian (Norsk)' }
+      { code: 'it', name: 'Italian (Italiano)' }
     ];
 
     languages.forEach(lang => {
       const option = document.createElement('option');
       option.value = lang.code;
       option.textContent = lang.name;
-      if (lang.code === (data.code || '').toLowerCase()) {
-        option.selected = true;
-      }
-      codeInput.appendChild(option);
+      datalist.appendChild(option);
     });
+
+    codeField.appendChild(datalist);
 
     const codeHint = document.createElement('p');
     codeHint.className = 'wizard-field__hint';
     codeHint.id = `${rowId}-code-hint`;
-    codeHint.textContent = 'Select a language from the list.';
+    codeHint.textContent = '2-letter ISO 639-1 code • Select from list or type your own (e.g., ko, tr, nl)';
     const codeMessage = document.createElement('p');
     codeMessage.className = 'wizard-field__message';
     codeMessage.id = `${rowId}-code-message`;
@@ -3743,6 +3740,76 @@ function ensurePermissionsGroupState() {
     codeField.append(codeLabel, codeInput, codeHint, codeMessage);
 
     header.append(codeField);
+
+    // Translation fields container (shown when language is selected)
+    const translationFields = document.createElement('div');
+    translationFields.className = 'localization-row__fields';
+    translationFields.id = `${rowId}-fields`;
+    translationFields.hidden = !data.code; // Hide if no language selected
+
+    // Singular form field
+    const singularField = document.createElement('div');
+    singularField.className = 'wizard-field';
+    const singularLabel = document.createElement('label');
+    singularLabel.className = 'wizard-field__label';
+    singularLabel.setAttribute('for', `${rowId}-singular`);
+    singularLabel.textContent = 'Singular form';
+    const singularInput = document.createElement('input');
+    singularInput.className = 'wizard-field__input';
+    singularInput.type = 'text';
+    singularInput.id = `${rowId}-singular`;
+    singularInput.name = `${rowId}-singular`;
+    singularInput.placeholder = 'Token';
+    singularInput.value = data.singularForm || '';
+    singularInput.maxLength = 25;
+    const singularMessage = document.createElement('p');
+    singularMessage.className = 'wizard-field__message';
+    singularMessage.id = `${rowId}-singular-message`;
+    singularMessage.setAttribute('role', 'status');
+    singularMessage.setAttribute('aria-live', 'polite');
+    singularField.append(singularLabel, singularInput, singularMessage);
+
+    // Plural form field
+    const pluralField = document.createElement('div');
+    pluralField.className = 'wizard-field';
+    const pluralLabel = document.createElement('label');
+    pluralLabel.className = 'wizard-field__label';
+    pluralLabel.setAttribute('for', `${rowId}-plural`);
+    pluralLabel.textContent = 'Plural form';
+    const pluralInput = document.createElement('input');
+    pluralInput.className = 'wizard-field__input';
+    pluralInput.type = 'text';
+    pluralInput.id = `${rowId}-plural`;
+    pluralInput.name = `${rowId}-plural`;
+    pluralInput.placeholder = 'Tokens';
+    pluralInput.value = data.pluralForm || '';
+    pluralInput.maxLength = 25;
+    const pluralMessage = document.createElement('p');
+    pluralMessage.className = 'wizard-field__message';
+    pluralMessage.id = `${rowId}-plural-message`;
+    pluralMessage.setAttribute('role', 'status');
+    pluralMessage.setAttribute('aria-live', 'polite');
+    pluralField.append(pluralLabel, pluralInput, pluralMessage);
+
+    // Capitalize checkbox field
+    const capitalizeField = document.createElement('div');
+    capitalizeField.className = 'wizard-field';
+    const capitalizeLabel = document.createElement('label');
+    capitalizeLabel.className = 'wizard-checkbox';
+    capitalizeLabel.setAttribute('for', `${rowId}-capitalize`);
+    const capitalizeInput = document.createElement('input');
+    capitalizeInput.className = 'wizard-checkbox__input';
+    capitalizeInput.type = 'checkbox';
+    capitalizeInput.id = `${rowId}-capitalize`;
+    capitalizeInput.name = `${rowId}-capitalize`;
+    capitalizeInput.checked = data.shouldCapitalize !== false;
+    const capitalizeLabelText = document.createElement('span');
+    capitalizeLabelText.className = 'wizard-checkbox__label';
+    capitalizeLabelText.textContent = 'Capitalize';
+    capitalizeLabel.append(capitalizeInput, capitalizeLabelText);
+    capitalizeField.append(capitalizeLabel);
+
+    translationFields.append(singularField, pluralField, capitalizeField);
 
     // ADDED: Remove button for each localization row
     const removeButton = document.createElement('button');
@@ -3755,7 +3822,7 @@ function ensurePermissionsGroupState() {
     const langLabel = data.code ? ` (${data.code})` : '';
     removeButton.setAttribute('aria-label', `Remove localization${langLabel}`);
 
-    container.append(header, removeButton);
+    container.append(header, translationFields, removeButton);
 
     const row = {
       id: rowId,
@@ -3763,15 +3830,28 @@ function ensurePermissionsGroupState() {
         container,
         codeInput,
         codeMessage,
+        translationFields,
+        singularInput,
+        singularMessage,
+        pluralInput,
+        pluralMessage,
+        capitalizeInput,
         removeButton
       },
       data: {
         code: codeInput.value,
-        shouldCapitalize: true
+        singularForm: singularInput.value,
+        pluralForm: pluralInput.value,
+        shouldCapitalize: capitalizeInput.checked
       }
     };
 
+    // Event listeners
+    codeInput.addEventListener('input', () => handleLocalizationFieldInput(row, 'code', codeInput.value));
     codeInput.addEventListener('change', () => handleLocalizationFieldInput(row, 'code', codeInput.value));
+    singularInput.addEventListener('input', () => handleLocalizationFieldInput(row, 'singular', singularInput.value));
+    pluralInput.addEventListener('input', () => handleLocalizationFieldInput(row, 'plural', pluralInput.value));
+    capitalizeInput.addEventListener('change', () => handleLocalizationFieldInput(row, 'capitalize', capitalizeInput.checked));
 
     return row;
   }
@@ -3831,10 +3911,16 @@ function ensurePermissionsGroupState() {
       if (row.elements.codeInput.value !== normalized) {
         row.elements.codeInput.value = normalized;
       }
+      // Show/hide translation fields based on whether a language is selected
+      if (row.elements.translationFields) {
+        row.elements.translationFields.hidden = !normalized;
+      }
     } else if (field === 'singular') {
-      row.data.singular = value;
+      row.data.singularForm = value;
     } else if (field === 'plural') {
-      row.data.plural = value;
+      row.data.pluralForm = value;
+    } else if (field === 'capitalize') {
+      row.data.shouldCapitalize = Boolean(value);
     }
     evaluateNaming({ touched: true });
   }
@@ -3888,7 +3974,9 @@ function ensurePermissionsGroupState() {
     let rowsData = localizationRows.map((row) => {
       const data = {
         code: row.elements.codeInput.value || '',
-        shouldCapitalize: true
+        singularForm: row.elements.singularInput?.value || '',
+        pluralForm: row.elements.pluralInput?.value || '',
+        shouldCapitalize: row.elements.capitalizeInput?.checked !== false
       };
       row.data = data;
       return data;
@@ -3912,9 +4000,12 @@ function ensurePermissionsGroupState() {
         return;
       }
       const trimmedCode = data.code.trim();
-      const errors = { code: '' };
+      const trimmedSingular = (data.singularForm || '').trim();
+      const trimmedPlural = (data.pluralForm || '').trim();
+      const errors = { code: '', singular: '', plural: '' };
       const showRowErrors = touched || hasAnyInput;
 
+      // Validate language code
       if (trimmedCode.length === 0) {
         if (showRowErrors) {
           errors.code = 'Select a language code.';
@@ -3924,18 +4015,48 @@ function ensurePermissionsGroupState() {
         reasons.push(`Localization ${index + 1} language code: Select a valid ISO 639-1 language.`);
       }
 
+      // If language code is entered, validate singular and plural forms
+      if (trimmedCode.length > 0 && LANGUAGE_CODE_PATTERN.test(trimmedCode)) {
+        if (trimmedSingular.length === 0) {
+          errors.singular = 'Enter singular form.';
+          if (showRowErrors) {
+            reasons.push(`Localization ${index + 1}: Enter a singular form.`);
+          }
+        } else if (trimmedSingular.length < 3 || trimmedSingular.length > 25) {
+          errors.singular = 'Must be 3-25 characters.';
+          if (showRowErrors) {
+            reasons.push(`Localization ${index + 1}: Singular form must be 3-25 characters.`);
+          }
+        }
+
+        if (trimmedPlural.length === 0) {
+          errors.plural = 'Enter plural form.';
+          if (showRowErrors) {
+            reasons.push(`Localization ${index + 1}: Enter a plural form.`);
+          }
+        } else if (trimmedPlural.length < 3 || trimmedPlural.length > 25) {
+          errors.plural = 'Must be 3-25 characters.';
+          if (showRowErrors) {
+            reasons.push(`Localization ${index + 1}: Plural form must be 3-25 characters.`);
+          }
+        }
+      }
+
       if (!silent) {
         applyLocalizationRowErrors(row, errors, {
-          showCode: showRowErrors
+          showCode: showRowErrors,
+          showSingular: showRowErrors,
+          showPlural: showRowErrors
         });
       }
 
-      if (!errors.code) {
+      // Only add to record if all fields are valid
+      if (!errors.code && !errors.singular && !errors.plural && trimmedCode.length > 0) {
         hasValidEntry = true;
         record[trimmedCode] = {
           should_capitalize: Boolean(data.shouldCapitalize),
-          singular_form: mainSingular,
-          plural_form: mainPlural
+          singular_form: trimmedSingular,
+          plural_form: trimmedPlural
         };
       }
     });
@@ -3950,6 +4071,8 @@ function ensurePermissionsGroupState() {
     ensureNamingFormState();
     wizardState.form.naming.rows = rowsData.map((data) => ({
       code: data.code,
+      singularForm: data.singularForm || '',
+      pluralForm: data.pluralForm || '',
       shouldCapitalize: Boolean(data.shouldCapitalize)
     }));
     wizardState.form.naming.rows = limitLocalizationRows(wizardState.form.naming.rows);
@@ -3979,8 +4102,8 @@ function ensurePermissionsGroupState() {
     const rowsForServer = rowsData.map((data) => ({
       code: data.code,
       should_capitalize: Boolean(data.shouldCapitalize),
-      singular_form: mainSingular,
-      plural_form: mainPlural
+      singular_form: data.singularForm || '',
+      plural_form: data.pluralForm || ''
     }));
 
     return {
@@ -4061,6 +4184,15 @@ function ensurePermissionsGroupState() {
       requestAnimationFrame(() => {
         if (typeof updateConfigurationOverview === 'function') {
           updateConfigurationOverview();
+        }
+      });
+    }
+
+    // Restore preset selection when showing permissions screen
+    if (screenId === 'permissions' || getPrimaryStepId(screenId) === 'permissions') {
+      requestAnimationFrame(() => {
+        if (typeof window.restorePresetSelection === 'function') {
+          window.restorePresetSelection();
         }
       });
     }
@@ -4228,6 +4360,26 @@ function ensurePermissionsGroupState() {
         maxSupplyEl.textContent = parseInt(maxSupply, 10).toLocaleString();
       } else {
         maxSupplyEl.textContent = 'Unlimited';
+      }
+    }
+
+    // Update action preset
+    const actionPresetEl = document.getElementById('overview-action-preset');
+    if (actionPresetEl) {
+      const selectedPreset = wizardState.form.permissions?.selectedPreset;
+      if (selectedPreset) {
+        // Map preset keys to human-readable names
+        const presetNames = {
+          'custom': 'Custom',
+          'most-restrictive': 'Most Restrictive',
+          'emergency-only': 'Only Emergency Action',
+          'mint-burn': 'Minting and Burning',
+          'advanced': 'Advanced Actions',
+          'all-allowed': 'All Allowed'
+        };
+        actionPresetEl.textContent = presetNames[selectedPreset] || selectedPreset;
+      } else {
+        actionPresetEl.textContent = 'Custom';
       }
     }
 
@@ -5064,16 +5216,220 @@ function ensurePermissionsGroupState() {
       return null;
     }
 
+    // Get supply mode elements
+    const baseSupplyModeSelector = document.getElementById('base-supply-mode-selector');
+    const baseSupplyModeToken = document.getElementById('base-supply-mode-token');
+    const baseSupplyModeBase = document.getElementById('base-supply-mode-base');
+    const baseSupplyLabel = document.getElementById('base-supply-label');
+    const baseSupplyHint = document.getElementById('base-supply-hint');
+    const baseSupplyConversion = document.getElementById('base-supply-conversion');
+    const baseSupplyConversionValue = document.getElementById('base-supply-conversion-value');
+    const baseSupplyConversionUnit = document.getElementById('base-supply-conversion-unit');
+
+    const maxSupplyModeSelector = document.getElementById('max-supply-mode-selector');
+    const maxSupplyModeToken = document.getElementById('max-supply-mode-token');
+    const maxSupplyModeBase = document.getElementById('max-supply-mode-base');
+    const maxSupplyLabel = document.getElementById('max-supply-label');
+    const maxSupplyHint = document.getElementById('max-supply-hint');
+    const maxSupplyConversion = document.getElementById('max-supply-conversion');
+    const maxSupplyConversionValue = document.getElementById('max-supply-conversion-value');
+    const maxSupplyConversionUnit = document.getElementById('max-supply-conversion-unit');
+
+    // Store current supply mode in state
+    if (!wizardState.form.permissions.baseSupplyMode) {
+      wizardState.form.permissions.baseSupplyMode = 'token';
+    }
+    if (!wizardState.form.permissions.maxSupplyMode) {
+      wizardState.form.permissions.maxSupplyMode = 'token';
+    }
+
+    // Function to update supply UI based on decimals
+    function updateSupplyUI() {
+      const decimals = parseInt(decimalsInput.value, 10);
+      const hasDecimals = Number.isInteger(decimals) && decimals > 0;
+
+      // Show/hide mode selectors
+      if (baseSupplyModeSelector) {
+        baseSupplyModeSelector.hidden = !hasDecimals;
+      }
+      if (maxSupplyModeSelector) {
+        maxSupplyModeSelector.hidden = !hasDecimals;
+      }
+
+      // Update base supply
+      updateSupplyConversion('base', decimals);
+      // Update max supply
+      updateSupplyConversion('max', decimals);
+    }
+
+    // Function to convert and display supply values
+    function updateSupplyConversion(type, decimals) {
+      const isBase = type === 'base';
+      const input = isBase ? baseSupplyInput : maxSupplyInput;
+      const modeToken = isBase ? baseSupplyModeToken : maxSupplyModeToken;
+      const modeBase = isBase ? baseSupplyModeBase : maxSupplyModeBase;
+      const label = isBase ? baseSupplyLabel : maxSupplyLabel;
+      const hint = isBase ? baseSupplyHint : maxSupplyHint;
+      const conversion = isBase ? baseSupplyConversion : maxSupplyConversion;
+      const conversionValue = isBase ? baseSupplyConversionValue : maxSupplyConversionValue;
+      const conversionUnit = isBase ? baseSupplyConversionUnit : maxSupplyConversionUnit;
+
+      if (!input) return;
+
+      const value = input.value.trim();
+      const hasDecimals = Number.isInteger(decimals) && decimals > 0;
+      const isTokenMode = modeToken && modeToken.checked;
+
+      // Update labels and hints based on mode
+      if (label) {
+        label.textContent = isBase ? 'Initial Supply' : 'Maximum Supply';
+      }
+
+      if (!hasDecimals) {
+        // No decimals - hide conversion, simple mode
+        if (conversion) conversion.hidden = true;
+        if (hint) {
+          hint.textContent = isBase
+            ? 'Enter the number of tokens to create'
+            : 'Optional • Leave blank for no limit • Must be ≥ initial supply';
+        }
+        return;
+      }
+
+      // Has decimals - show conversion
+      if (value === '') {
+        if (conversion) conversion.hidden = true;
+        return;
+      }
+
+      try {
+        let displayValue, displayUnit;
+
+        if (isTokenMode) {
+          // Token mode: show base units
+          if (!/^\d+(\.\d+)?$/.test(value)) {
+            if (conversion) conversion.hidden = true;
+            return;
+          }
+
+          const parts = value.split('.');
+          const integerPart = parts[0] || '0';
+          const decimalPart = parts[1] || '';
+
+          if (decimalPart.length > decimals) {
+            if (conversion) conversion.hidden = true;
+            return;
+          }
+
+          const paddedDecimal = decimalPart.padEnd(decimals, '0');
+          const baseValue = integerPart + paddedDecimal;
+          const stripped = baseValue.replace(/^0+(?=\d)/, '');
+          displayValue = stripped || '0';
+          displayUnit = 'base units';
+
+          if (hint) {
+            hint.textContent = `Enter token amount (up to ${decimals} decimal places)`;
+          }
+        } else {
+          // Base mode: show token amount
+          if (!/^\d+$/.test(value)) {
+            if (conversion) conversion.hidden = true;
+            return;
+          }
+
+          const baseValueBig = BigInt(value);
+          const divisor = BigInt(10) ** BigInt(decimals);
+          const wholePart = baseValueBig / divisor;
+          const fractionalPart = baseValueBig % divisor;
+
+          if (fractionalPart === 0n) {
+            displayValue = wholePart.toString();
+          } else {
+            const fractionalStr = fractionalPart.toString().padStart(decimals, '0');
+            const trimmed = fractionalStr.replace(/0+$/, '');
+            displayValue = `${wholePart}.${trimmed}`;
+          }
+          displayUnit = 'tokens';
+
+          if (hint) {
+            hint.textContent = 'Enter base units (smallest indivisible unit)';
+          }
+        }
+
+        if (conversionValue) conversionValue.textContent = displayValue;
+        if (conversionUnit) conversionUnit.textContent = displayUnit;
+        if (conversion) conversion.hidden = false;
+
+      } catch (e) {
+        if (conversion) conversion.hidden = true;
+      }
+    }
+
     // Add event listeners for validation
     [decimalsInput, baseSupplyInput, maxSupplyInput].forEach((input) => {
       if (!input) return;
       input.addEventListener('input', () => {
+        updateSupplyUI();
         evaluatePermissions({ touched: true });
       });
     });
 
-    // FIXED: Trigger validation immediately after a short delay to ensure values are loaded
+    // Add event listeners for decimals changes
+    if (decimalsInput) {
+      decimalsInput.addEventListener('change', () => {
+        updateSupplyUI();
+      });
+    }
+
+    // Add event listeners for mode switches
+    if (baseSupplyModeToken) {
+      baseSupplyModeToken.addEventListener('change', () => {
+        if (baseSupplyModeToken.checked) {
+          wizardState.form.permissions.baseSupplyMode = 'token';
+          updateSupplyUI();
+        }
+      });
+    }
+    if (baseSupplyModeBase) {
+      baseSupplyModeBase.addEventListener('change', () => {
+        if (baseSupplyModeBase.checked) {
+          wizardState.form.permissions.baseSupplyMode = 'base';
+          updateSupplyUI();
+        }
+      });
+    }
+    if (maxSupplyModeToken) {
+      maxSupplyModeToken.addEventListener('change', () => {
+        if (maxSupplyModeToken.checked) {
+          wizardState.form.permissions.maxSupplyMode = 'token';
+          updateSupplyUI();
+        }
+      });
+    }
+    if (maxSupplyModeBase) {
+      maxSupplyModeBase.addEventListener('change', () => {
+        if (maxSupplyModeBase.checked) {
+          wizardState.form.permissions.maxSupplyMode = 'base';
+          updateSupplyUI();
+        }
+      });
+    }
+
+    // Initialize UI
     setTimeout(() => {
+      // Restore mode from state
+      if (baseSupplyModeToken && wizardState.form.permissions.baseSupplyMode === 'token') {
+        baseSupplyModeToken.checked = true;
+      } else if (baseSupplyModeBase && wizardState.form.permissions.baseSupplyMode === 'base') {
+        baseSupplyModeBase.checked = true;
+      }
+      if (maxSupplyModeToken && wizardState.form.permissions.maxSupplyMode === 'token') {
+        maxSupplyModeToken.checked = true;
+      } else if (maxSupplyModeBase && wizardState.form.permissions.maxSupplyMode === 'base') {
+        maxSupplyModeBase.checked = true;
+      }
+
+      updateSupplyUI();
       evaluatePermissions({ touched: false });
     }, 100);
 
@@ -5091,11 +5447,12 @@ function ensurePermissionsGroupState() {
         }
       },
       getValues() {
+        const maxSupplyValue = maxSupplyInput ? maxSupplyInput.value.trim() : '';
         return {
           decimals: decimalsInput ? decimalsInput.value : '',
           baseSupply: baseSupplyInput ? baseSupplyInput.value.trim() : '',
-          useMaxSupply: false, // HTML doesn't have toggle yet
-          maxSupply: maxSupplyInput ? maxSupplyInput.value.trim() : '',
+          useMaxSupply: maxSupplyValue.length > 0, // True if user entered a value
+          maxSupply: maxSupplyValue,
           keepsHistory: { transfers: false, mints: false, burns: false, freezes: false },
           startAsPaused: false,
           allowTransferToFrozenBalance: false
@@ -6447,7 +6804,7 @@ function syncManualActionUIs({ announce = false } = {}) {
     };
   }
 
-  function normalizeTokenAmount(value) {
+  function normalizeTokenAmount(value, decimals = 0) {
     if (value === null || value === undefined) {
       return null;
     }
@@ -6455,9 +6812,45 @@ function syncManualActionUIs({ announce = false } = {}) {
     if (!normalized) {
       return null;
     }
-    if (!/^\d+$/.test(normalized)) {
+
+    // Allow decimal notation (e.g., "5.5")
+    if (!/^\d+(\.\d+)?$/.test(normalized)) {
       return null;
     }
+
+    // If decimals are allowed and value contains a decimal point
+    if (decimals > 0 && normalized.includes('.')) {
+      const parts = normalized.split('.');
+      const integerPart = parts[0];
+      const decimalPart = parts[1] || '';
+
+      // Check if decimal part exceeds allowed decimals
+      if (decimalPart.length > decimals) {
+        return null;
+      }
+
+      // Convert to smallest unit: e.g., "5.5" with 8 decimals becomes "550000000"
+      const paddedDecimal = decimalPart.padEnd(decimals, '0');
+      const combined = integerPart + paddedDecimal;
+      const stripped = combined.replace(/^0+(?=\d)/, '');
+      return stripped.length ? stripped : '0';
+    }
+
+    // If no decimals or value is a whole number, treat as smallest unit
+    // e.g., "1000000" with decimals=8 stays as "1000000" (represents 0.01000000 tokens)
+    // But if user enters "5", it should be treated as 5 whole tokens = 500000000 (if decimals=8)
+    if (decimals > 0 && !normalized.includes('.')) {
+      // Multiply by 10^decimals to convert whole tokens to smallest unit
+      const multiplier = '1' + '0'.repeat(decimals);
+      try {
+        const result = (BigInt(normalized) * BigInt(multiplier)).toString();
+        return result;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    // No decimals, return as-is (whole number)
     const stripped = normalized.replace(/^0+(?=\d)/, '');
     return stripped.length ? stripped : '0';
   }
@@ -6537,7 +6930,7 @@ function syncManualActionUIs({ announce = false } = {}) {
     return number;
   }
 
-  function validateDistributionValues(values, { skipEmissionValidation = false } = {}) {
+  function validateDistributionValues(values, { skipEmissionValidation = false, decimals = 0 } = {}) {
     if (!values || typeof values !== 'object') {
       return { valid: false, message: 'Configure distribution settings.' };
     }
@@ -6594,14 +6987,14 @@ function syncManualActionUIs({ announce = false } = {}) {
     }
 
     if (functionType === 'FixedAmount') {
-      if (normalizeTokenAmount(values.emission.amount) === null) {
+      if (normalizeTokenAmount(values.emission.amount, decimals) === null) {
         return { valid: false, message: 'Enter an emission amount.' };
       }
     }
 
     if (functionType === 'Random') {
-      const min = normalizeTokenAmount(values.emission.min);
-      const max = normalizeTokenAmount(values.emission.max);
+      const min = normalizeTokenAmount(values.emission.min, decimals);
+      const max = normalizeTokenAmount(values.emission.max, decimals);
       if (min === null || max === null) {
         return { valid: false, message: 'Enter minimum and maximum emission amounts.' };
       }
@@ -6624,10 +7017,10 @@ function syncManualActionUIs({ announce = false } = {}) {
       if (parsePositiveInt(values.emission.decreasePerIntervalDenominator) === null) {
         return { valid: false, message: 'Enter a decrease denominator greater than zero.' };
       }
-      if (normalizeTokenAmount(values.emission.distributionStartAmount) === null) {
+      if (normalizeTokenAmount(values.emission.distributionStartAmount, decimals) === null) {
         return { valid: false, message: 'Enter a starting distribution amount.' };
       }
-      if (normalizeTokenAmount(values.emission.trailingDistributionIntervalAmount) === null) {
+      if (normalizeTokenAmount(values.emission.trailingDistributionIntervalAmount, decimals) === null) {
         return { valid: false, message: 'Enter a trailing interval amount.' };
       }
       if (values.emission.startDecreasingOffset && parseNonNegativeInt(values.emission.startDecreasingOffset) === null) {
@@ -6649,14 +7042,14 @@ function syncManualActionUIs({ announce = false } = {}) {
         if (parseNonNegativeInt(entry.interval) === null) {
           return { valid: false, message: 'All stepwise intervals must be non-negative integers.' };
         }
-        if (normalizeTokenAmount(entry.amount) === null) {
+        if (normalizeTokenAmount(entry.amount, decimals) === null) {
           return { valid: false, message: 'All stepwise amounts must be valid token amounts.' };
         }
       }
     }
 
     if (functionType === 'Linear') {
-      if (normalizeTokenAmount(values.emission.linearStart) === null) {
+      if (normalizeTokenAmount(values.emission.linearStart, decimals) === null) {
         return { valid: false, message: 'Enter a starting amount for linear emission.' };
       }
       if (!values.emission.linearChange || values.emission.linearChange.trim() === '') {
@@ -6665,7 +7058,7 @@ function syncManualActionUIs({ announce = false } = {}) {
     }
 
     if (functionType === 'Exponential') {
-      if (normalizeTokenAmount(values.emission.exponentialInitial) === null) {
+      if (normalizeTokenAmount(values.emission.exponentialInitial, decimals) === null) {
         return { valid: false, message: 'Enter an initial amount for exponential emission.' };
       }
       if (!values.emission.exponentialRate || isNaN(parseFloat(values.emission.exponentialRate))) {
@@ -6689,7 +7082,7 @@ function syncManualActionUIs({ announce = false } = {}) {
       if (!values.emission.polyO || isNaN(parseInt(values.emission.polyO))) {
         return { valid: false, message: 'Enter divisor o for polynomial.' };
       }
-      if (normalizeTokenAmount(values.emission.polyB) === null) {
+      if (normalizeTokenAmount(values.emission.polyB, decimals) === null) {
         return { valid: false, message: 'Enter base amount b for polynomial.' };
       }
     }
@@ -6710,7 +7103,7 @@ function syncManualActionUIs({ announce = false } = {}) {
       if (!values.emission.logO || isNaN(parseInt(values.emission.logO))) {
         return { valid: false, message: 'Enter divisor o for logarithmic.' };
       }
-      if (normalizeTokenAmount(values.emission.logB) === null) {
+      if (normalizeTokenAmount(values.emission.logB, decimals) === null) {
         return { valid: false, message: 'Enter base amount b for logarithmic.' };
       }
     }
@@ -6731,7 +7124,7 @@ function syncManualActionUIs({ announce = false } = {}) {
       if (!values.emission.invlogO || isNaN(parseInt(values.emission.invlogO))) {
         return { valid: false, message: 'Enter divisor o for inverted logarithmic.' };
       }
-      if (normalizeTokenAmount(values.emission.invlogB) === null) {
+      if (normalizeTokenAmount(values.emission.invlogB, decimals) === null) {
         return { valid: false, message: 'Enter base amount b for inverted logarithmic.' };
       }
     }
@@ -6773,13 +7166,14 @@ function syncManualActionUIs({ announce = false } = {}) {
 
   function buildPermissionsValidationPayload() {
     const permissions = wizardState.form.permissions || {};
-    const baseSupply = normalizeTokenAmount(permissions.baseSupply);
+    const decimals = typeof permissions.decimals === 'number' ? permissions.decimals : 0;
+    const baseSupply = normalizeTokenAmount(permissions.baseSupply, decimals);
     if (baseSupply === null) {
       return null;
     }
     const payload = { baseSupply };
     if (permissions.useMaxSupply) {
-      const maxSupply = normalizeTokenAmount(permissions.maxSupply);
+      const maxSupply = normalizeTokenAmount(permissions.maxSupply, decimals);
       if (maxSupply === null) {
         return null;
       }
@@ -6801,8 +7195,9 @@ function syncManualActionUIs({ announce = false } = {}) {
     if (!distribution) {
       return null;
     }
+    const decimals = typeof wizardState.form.permissions?.decimals === 'number' ? wizardState.form.permissions.decimals : 0;
     const cadence = buildCadencePayload(distribution.cadence);
-    const emission = buildEmissionPayload(distribution.emission);
+    const emission = buildEmissionPayload(distribution.emission, decimals);
     if (!cadence || !emission) {
       return null;
     }
@@ -6857,21 +7252,21 @@ function syncManualActionUIs({ announce = false } = {}) {
     }
   }
 
-  function buildEmissionPayload(emission) {
+  function buildEmissionPayload(emission, decimals = 0) {
     if (!emission || typeof emission !== 'object') {
       return null;
     }
     switch (emission.type) {
       case 'FixedAmount': {
-        const amount = normalizeTokenAmount(emission.amount);
+        const amount = normalizeTokenAmount(emission.amount, decimals);
         if (amount === null) {
           return null;
         }
         return { type: 'FixedAmount', amount };
       }
       case 'Random': {
-        const min = normalizeTokenAmount(emission.min);
-        const max = normalizeTokenAmount(emission.max);
+        const min = normalizeTokenAmount(emission.min, decimals);
+        const max = normalizeTokenAmount(emission.max, decimals);
         if (min === null || max === null) {
           return null;
         }
@@ -6888,8 +7283,8 @@ function syncManualActionUIs({ announce = false } = {}) {
         const stepCount = parsePositiveInt(emission.stepCount);
         const numerator = parseNonNegativeInt(emission.decreasePerIntervalNumerator);
         const denominator = parsePositiveInt(emission.decreasePerIntervalDenominator);
-        const distributionStartAmount = normalizeTokenAmount(emission.distributionStartAmount);
-        const trailingAmount = normalizeTokenAmount(emission.trailingDistributionIntervalAmount);
+        const distributionStartAmount = normalizeTokenAmount(emission.distributionStartAmount, decimals);
+        const trailingAmount = normalizeTokenAmount(emission.trailingDistributionIntervalAmount, decimals);
         if (stepCount === null || numerator === null || denominator === null || distributionStartAmount === null || trailingAmount === null) {
           return null;
         }
@@ -7092,20 +7487,19 @@ function buildManualActionRulesConfig(actionState, permissions) {
   function buildAdvancedConfiguration() {
     const permissions = wizardState.form.permissions || {};
     const advanced = wizardState.form.advanced || {};
+    const decimals = Number.isInteger(permissions.decimals) ? permissions.decimals : 2;
     const distributionRules = buildDistributionRulesForConfiguration();
-    const baseSupply = normalizeTokenAmount(permissions.baseSupply);
+    const baseSupply = normalizeTokenAmount(permissions.baseSupply, decimals);
     if (!distributionRules || baseSupply === null) {
       return null;
     }
     let maxSupply = null;
     if (permissions.useMaxSupply) {
-      maxSupply = normalizeTokenAmount(permissions.maxSupply);
+      maxSupply = normalizeTokenAmount(permissions.maxSupply, decimals);
       if (maxSupply === null) {
         return null;
       }
     }
-
-    const decimals = Number.isInteger(permissions.decimals) ? permissions.decimals : 2;
     const keepsHistory = normalizeKeepsHistory(permissions.keepsHistory);
     const changeControl = normalizeChangeControl(advanced.changeControl);
     const tradeMode = typeof advanced.tradeMode === 'string' ? advanced.tradeMode : 'permissionless';
@@ -9788,6 +10182,14 @@ function buildManualActionRulesConfig(actionState, permissions) {
 
     console.log('Applying preset:', preset.name);
 
+    // Ensure permissions structure exists
+    if (!wizardState.form.permissions) {
+      wizardState.form.permissions = {};
+    }
+
+    // Save the selected preset key
+    wizardState.form.permissions.selectedPreset = presetKey;
+
     // If custom, don't auto-configure
     if (preset.config === null) {
       console.log('Custom preset selected - no automatic configuration');
@@ -9796,11 +10198,6 @@ function buildManualActionRulesConfig(actionState, permissions) {
     }
 
     const config = preset.config;
-
-    // Ensure permissions structure exists
-    if (!wizardState.form.permissions) {
-      wizardState.form.permissions = {};
-    }
 
     // Apply manual action configurations
     if (config.manualMint) {
@@ -9879,6 +10276,25 @@ function buildManualActionRulesConfig(actionState, permissions) {
       }
     });
   });
+
+  // Restore previously selected preset from state
+  function restoreSelectedPreset() {
+    const savedPreset = wizardState.form.permissions?.selectedPreset;
+    if (savedPreset) {
+      // Find and check the corresponding radio button
+      const radioToCheck = Array.from(presetRadios).find(radio => radio.value === savedPreset);
+      if (radioToCheck && !radioToCheck.checked) {
+        radioToCheck.checked = true;
+        console.log('Restored preset selection:', savedPreset);
+      }
+    }
+  }
+
+  // Restore on initialization
+  restoreSelectedPreset();
+
+  // Expose function to restore preset when returning to this screen
+  window.restorePresetSelection = restoreSelectedPreset;
 
   console.log('Action rules presets initialized with 6 templates');
 })();
