@@ -3742,20 +3742,7 @@ function ensurePermissionsGroupState() {
     codeInput.setAttribute('aria-describedby', `${codeHint.id} ${codeMessage.id}`);
     codeField.append(codeLabel, codeInput, codeHint, codeMessage);
 
-    const capitalizeLabel = document.createElement('label');
-    capitalizeLabel.className = 'wizard-checkbox localization-row__checkbox';
-    capitalizeLabel.setAttribute('for', `${rowId}-capitalize`);
-    const capitalizeInput = document.createElement('input');
-    capitalizeInput.className = 'wizard-checkbox__input';
-    capitalizeInput.type = 'checkbox';
-    capitalizeInput.id = `${rowId}-capitalize`;
-    capitalizeInput.checked = data.shouldCapitalize !== false;
-    const capitalizeText = document.createElement('span');
-    capitalizeText.className = 'wizard-checkbox__label';
-    capitalizeText.textContent = 'Capitalize name?';
-    capitalizeLabel.append(capitalizeInput, capitalizeText);
-
-    header.append(codeField, capitalizeLabel);
+    header.append(codeField);
 
     // ADDED: Remove button for each localization row
     const removeButton = document.createElement('button');
@@ -3776,17 +3763,15 @@ function ensurePermissionsGroupState() {
         container,
         codeInput,
         codeMessage,
-        capitalizeInput,
         removeButton
       },
       data: {
         code: codeInput.value,
-        shouldCapitalize: capitalizeInput.checked
+        shouldCapitalize: true
       }
     };
 
     codeInput.addEventListener('change', () => handleLocalizationFieldInput(row, 'code', codeInput.value));
-    capitalizeInput.addEventListener('change', () => handleLocalizationCheckboxChange(row, capitalizeInput.checked));
 
     return row;
   }
@@ -3903,7 +3888,7 @@ function ensurePermissionsGroupState() {
     let rowsData = localizationRows.map((row) => {
       const data = {
         code: row.elements.codeInput.value || '',
-        shouldCapitalize: row.elements.capitalizeInput.checked
+        shouldCapitalize: true
       };
       row.data = data;
       return data;
@@ -8492,13 +8477,11 @@ function buildManualActionRulesConfig(actionState, permissions) {
 
   // Panel toggle functionality for radio buttons with data-toggle-panel
   document.addEventListener('change', function(e) {
-    if (e.target.type === 'radio' && e.target.hasAttribute('data-toggle-panel')) {
-      const panelId = e.target.getAttribute('data-toggle-panel');
-      const panel = document.getElementById(panelId);
-
-      // Hide all panels in the same group
+    if (e.target.type === 'radio') {
       const radioName = e.target.name;
       const allRadios = document.querySelectorAll(`input[name="${radioName}"]`);
+
+      // First, hide all panels in the same radio group
       allRadios.forEach(radio => {
         const otherPanelId = radio.getAttribute('data-toggle-panel');
         if (otherPanelId) {
@@ -8509,9 +8492,13 @@ function buildManualActionRulesConfig(actionState, permissions) {
         }
       });
 
-      // Show the selected panel
-      if (panel) {
-        panel.hidden = !e.target.checked;
+      // Then, if the selected radio has a panel, show it
+      if (e.target.hasAttribute('data-toggle-panel')) {
+        const panelId = e.target.getAttribute('data-toggle-panel');
+        const panel = document.getElementById(panelId);
+        if (panel) {
+          panel.hidden = !e.target.checked;
+        }
       }
     }
   });
@@ -8537,11 +8524,11 @@ function buildManualActionRulesConfig(actionState, permissions) {
 (function initializeGroupActionTakerSelectors() {
   // Define all group selector IDs for manual actions
   const groupSelectors = [
-    { selectId: 'manual-mint-group-id', containerId: 'manual-mint-group-selector-container', hintId: 'manual-mint-group-hint' },
-    { selectId: 'manual-burn-group-id', containerId: 'manual-burn-group-selector-container', hintId: 'manual-burn-group-hint' },
-    { selectId: 'manual-freeze-group-id', containerId: 'manual-freeze-group-selector-container', hintId: 'manual-freeze-group-hint' },
-    { selectId: 'destroy-frozen-group-id', containerId: 'destroy-frozen-group-selector-container', hintId: 'destroy-frozen-group-hint' },
-    { selectId: 'emergency-group-id', containerId: 'emergency-group-selector-container', hintId: 'emergency-group-hint' }
+    { selectId: 'manual-mint-group-id', containerId: 'manual-mint-group-selector-container', hintId: 'manual-mint-group-hint', noGroupsMessageId: 'manual-mint-no-groups-message' },
+    { selectId: 'manual-burn-group-id', containerId: 'manual-burn-group-selector-container', hintId: 'manual-burn-group-hint', noGroupsMessageId: 'manual-burn-no-groups-message' },
+    { selectId: 'manual-freeze-group-id', containerId: 'manual-freeze-group-selector-container', hintId: 'manual-freeze-group-hint', noGroupsMessageId: 'manual-freeze-no-groups-message' },
+    { selectId: 'destroy-frozen-group-id', containerId: 'destroy-frozen-group-selector-container', hintId: 'destroy-frozen-group-hint', noGroupsMessageId: 'destroy-frozen-no-groups-message' },
+    { selectId: 'emergency-group-id', containerId: 'emergency-group-selector-container', hintId: 'emergency-group-hint', noGroupsMessageId: 'emergency-no-groups-message' }
   ];
 
   // Function to update all group selectors with current groups
@@ -8558,6 +8545,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
       const selectElement = document.getElementById(config.selectId);
       const containerElement = document.getElementById(config.containerId);
       const hintElement = document.getElementById(config.hintId);
+      const noGroupsMessageElement = document.getElementById(config.noGroupsMessageId);
 
       if (!selectElement || !containerElement) {
         return;
@@ -8565,6 +8553,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
 
       if (hasGroups) {
         // Show select dropdown with available groups
+        containerElement.hidden = false;
         selectElement.style.display = '';
 
         // Clear existing options
@@ -8574,25 +8563,27 @@ function buildManualActionRulesConfig(actionState, permissions) {
         groups.forEach((group, index) => {
           const option = document.createElement('option');
           option.value = group.id;
-          option.textContent = `Group ${index}`;
+          option.textContent = `Group ${index + 1}`;
           selectElement.appendChild(option);
         });
 
-        // Update hint text
+        // Show hint text
         if (hintElement) {
           hintElement.textContent = 'Choose which group can perform this action';
           hintElement.style.display = '';
         }
+
+        // Hide "no groups" message
+        if (noGroupsMessageElement) {
+          noGroupsMessageElement.hidden = true;
+        }
       } else {
         // No groups exist - hide dropdown and show message
-        selectElement.style.display = 'none';
+        containerElement.hidden = true;
 
-        // Update hint to show "no groups" message
-        if (hintElement) {
-          hintElement.textContent = 'Group isn\'t created yet';
-          hintElement.style.display = '';
-          hintElement.style.color = 'var(--color-text-secondary)';
-          hintElement.style.fontStyle = 'italic';
+        // Show "no groups" message
+        if (noGroupsMessageElement) {
+          noGroupsMessageElement.hidden = false;
         }
       }
     });
@@ -8623,6 +8614,193 @@ function buildManualActionRulesConfig(actionState, permissions) {
   });
 
   console.log('Group action taker selectors initialized');
+})();
+
+// ========================================
+// CREATE GROUP BUTTON HANDLERS
+// ========================================
+
+(function initializeCreateGroupButtons() {
+  // Define all "Create Group" button IDs
+  const createGroupButtonIds = [
+    'manual-mint-create-group-btn',
+    'manual-burn-create-group-btn',
+    'manual-freeze-create-group-btn',
+    'destroy-frozen-create-group-btn',
+    'emergency-create-group-btn'
+  ];
+
+  // Add click handlers to all buttons
+  createGroupButtonIds.forEach(buttonId => {
+    const button = document.getElementById(buttonId);
+    if (button) {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        // Navigate to the group creation page (permissions-group substep on group tab)
+        // First switch to the group tab
+        if (typeof window.switchTab === 'function') {
+          window.switchTab('group');
+        }
+        // Then navigate to the permissions-group screen
+        if (typeof window.showScreen === 'function') {
+          setTimeout(() => {
+            window.showScreen('permissions-group', { force: true });
+          }, 100);
+        }
+      });
+    }
+  });
+
+  console.log('Create Group button handlers initialized');
+})();
+
+// ========================================
+// SEARCH FUNCTIONALITY
+// ========================================
+
+(function initializeSearchFunctionality() {
+  // Get all search inputs (one for each tab)
+  const searchInputs = document.querySelectorAll('.wizard-sidebar__search-input');
+
+  searchInputs.forEach(searchInput => {
+    if (!searchInput) return;
+
+    // Get the sidebar section this search belongs to
+    const sidebarSection = searchInput.closest('.sidebar-section');
+    if (!sidebarSection) return;
+
+    // Get all navigation items in this sidebar
+    const navItems = sidebarSection.querySelectorAll('.wizard-nav-item');
+    const subItems = sidebarSection.querySelectorAll('.wizard-nav-subitem');
+
+    // Build search index
+    const searchIndex = [];
+
+    // Index main navigation items
+    navItems.forEach(navItem => {
+      const text = navItem.querySelector('.wizard-nav-item__text')?.textContent || '';
+      const step = navItem.getAttribute('data-step');
+      const toggle = navItem.getAttribute('data-toggle');
+
+      if (text && step) {
+        searchIndex.push({
+          type: 'main',
+          text: text.toLowerCase(),
+          element: navItem,
+          step: step,
+          toggle: toggle,
+          submenu: toggle ? document.getElementById(toggle) : null
+        });
+      }
+    });
+
+    // Index sub-navigation items
+    subItems.forEach(subItem => {
+      const text = subItem.querySelector('.wizard-nav-subitem__text')?.textContent || '';
+      const substep = subItem.getAttribute('data-substep');
+
+      if (text && substep) {
+        // Find parent main nav item
+        const submenu = subItem.closest('.wizard-nav-submenu');
+        const parentNavItem = submenu ? sidebarSection.querySelector(`[data-toggle="${submenu.id}"]`) : null;
+
+        searchIndex.push({
+          type: 'sub',
+          text: text.toLowerCase(),
+          element: subItem,
+          substep: substep,
+          submenu: submenu,
+          parentNavItem: parentNavItem
+        });
+      }
+    });
+
+    // Handle search input
+    searchInput.addEventListener('input', function(e) {
+      const query = e.target.value.toLowerCase().trim();
+
+      if (query === '') {
+        // Reset: show all items
+        searchIndex.forEach(item => {
+          item.element.style.display = '';
+          if (item.submenu) {
+            item.submenu.style.display = '';
+          }
+        });
+        return;
+      }
+
+      // Search and filter
+      let hasResults = false;
+
+      searchIndex.forEach(item => {
+        if (item.text.includes(query)) {
+          // Show matching item
+          item.element.style.display = '';
+          hasResults = true;
+
+          // If it's a sub-item, make sure parent and submenu are visible
+          if (item.type === 'sub' && item.parentNavItem && item.submenu) {
+            item.parentNavItem.style.display = '';
+            item.submenu.style.display = '';
+            item.submenu.hidden = false;
+
+            // Expand parent if collapsed
+            if (item.parentNavItem.classList.contains('wizard-nav-item--expandable')) {
+              item.parentNavItem.setAttribute('aria-expanded', 'true');
+            }
+          }
+
+          // If it's a main item with submenu, show the submenu
+          if (item.type === 'main' && item.submenu) {
+            item.submenu.style.display = '';
+            item.submenu.hidden = false;
+            item.element.setAttribute('aria-expanded', 'true');
+          }
+        } else {
+          // Hide non-matching item
+          item.element.style.display = 'none';
+        }
+      });
+
+      // Handle sub-items visibility: hide submenu if no children match
+      const submenus = sidebarSection.querySelectorAll('.wizard-nav-submenu');
+      submenus.forEach(submenu => {
+        const visibleSubItems = Array.from(submenu.querySelectorAll('.wizard-nav-subitem')).filter(
+          item => item.style.display !== 'none'
+        );
+
+        if (visibleSubItems.length === 0) {
+          submenu.style.display = 'none';
+
+          // Also hide parent nav item if submenu is hidden
+          const parentNavItem = sidebarSection.querySelector(`[data-toggle="${submenu.id}"]`);
+          if (parentNavItem) {
+            parentNavItem.style.display = 'none';
+          }
+        }
+      });
+    });
+
+    // Handle clicking on search results
+    subItems.forEach(subItem => {
+      subItem.addEventListener('click', function(e) {
+        e.preventDefault();
+        const substep = this.getAttribute('data-substep');
+
+        if (substep && typeof window.showScreen === 'function') {
+          // Clear search
+          searchInput.value = '';
+          searchInput.dispatchEvent(new Event('input'));
+
+          // Navigate to the substep
+          window.showScreen(substep, { force: true });
+        }
+      });
+    });
+  });
+
+  console.log('Search functionality initialized');
 })();
 
 // ========================================
@@ -10358,4 +10536,295 @@ function buildManualActionRulesConfig(actionState, permissions) {
   }
 
   console.log('✓ Template selection initialized with', templateCards.length, 'templates');
+})();
+
+// ═══════════════════════════════════════════════════════
+// INLINE HELP SYSTEM
+// ═══════════════════════════════════════════════════════
+
+(function initializeHelpSystem() {
+  // Help content database
+  const HELP_CONTENT = {
+    'token-name': {
+      title: 'Token Name',
+      content: `
+        <p>Choose a unique, memorable name for your token that users will recognize.</p>
+        <div class="help-tooltip-example">
+          <strong>Examples:</strong>
+          <p>"RewardPoints", "PlatformCredits", "GameGold"</p>
+        </div>
+        <p>Must be 2-64 characters. Can include letters, numbers, spaces, and basic punctuation.</p>
+        <div class="help-tooltip-permanent">
+          Cannot be changed after token is registered
+        </div>
+      `
+    },
+    
+    'decimals': {
+      title: 'Decimals',
+      content: `
+        <p>Controls how divisible your token is. Similar to how dollars have 2 decimals ($1.25).</p>
+        <p><strong>Examples:</strong></p>
+        <ul style="margin: 8px 0; padding-left: 20px;">
+          <li><strong>0 decimals:</strong> Whole units only (voting rights, membership)</li>
+          <li><strong>2 decimals:</strong> Like currency (1.25 tokens)</li>
+          <li><strong>8 decimals:</strong> Maximum precision (0.00000001 tokens)</li>
+        </ul>
+        <div class="help-tooltip-permanent">
+          Cannot be changed after token is registered
+        </div>
+      `
+    },
+    
+    'base-supply': {
+      title: 'Base Supply',
+      content: `
+        <p>The initial amount of tokens created when you register your token.</p>
+        <p><strong>These tokens are created immediately</strong> and sent to your wallet.</p>
+        <div class="help-tooltip-example">
+          <strong>Example:</strong>
+          <p>Base supply of 1,000,000 means you start with 1 million tokens</p>
+        </div>
+        <p><strong>Tip:</strong> Consider your total planned supply and distribution schedule when setting this.</p>
+      `
+    },
+    
+    'max-supply': {
+      title: 'Maximum Supply',
+      content: `
+        <p>The total amount of tokens that can ever exist. This is a hard cap.</p>
+        <p><strong>If enabled:</strong></p>
+        <ul style="margin: 8px 0; padding-left: 20px;">
+          <li>No more tokens can be created once this limit is reached</li>
+          <li>Provides scarcity and predictability</li>
+          <li>Popular for governance and store-of-value tokens</li>
+        </ul>
+        <p><strong>If disabled:</strong></p>
+        <ul style="margin: 8px 0; padding-left: 20px;">
+          <li>Unlimited supply - can mint forever</li>
+          <li>Good for reward systems and utility tokens</li>
+        </ul>
+        <div class="help-tooltip-permanent">
+          Cannot be changed after token is registered
+        </div>
+      `
+    },
+    
+    'keeps-history': {
+      title: 'History Tracking',
+      content: `
+        <p>Choose which token operations to record on the blockchain.</p>
+        <p><strong>Tracked operations appear in:</strong></p>
+        <ul style="margin: 8px 0; padding-left: 20px;">
+          <li>Token explorer views</li>
+          <li>Wallet transaction history</li>
+          <li>Audit trails</li>
+        </ul>
+        <p><strong>⚠️ Warning:</strong> Tracking uses more blockchain space and costs more in fees.</p>
+        <p><strong>Tip:</strong> Most tokens track transfers at minimum.</p>
+      `
+    },
+    
+    'trade-mode': {
+      title: 'Marketplace Trade Mode',
+      content: `
+        <p>Controls who can trade your token on decentralized exchanges.</p>
+        <p><strong>Permissionless:</strong> Anyone can buy/sell freely (most common)</p>
+        <p><strong>Approval Required:</strong> Trades need approval from token owner/committee</p>
+        <p><strong>Not Tradeable:</strong> Token cannot be traded on markets (like membership badges)</p>
+        <p><strong>Tip:</strong> Use "Not Tradeable" for non-transferable rewards or credentials.</p>
+      `
+    },
+    
+    'distribution-type': {
+      title: 'Distribution Schedule',
+      content: `
+        <p>Automatically create new tokens on a schedule.</p>
+        <p><strong>Time-Based:</strong> Create tokens every X hours/days (e.g., daily rewards)</p>
+        <p><strong>Block-Based:</strong> Create tokens every X blocks (more predictable on-chain)</p>
+        <p><strong>Epoch-Based:</strong> Create tokens at Dash Platform epoch boundaries</p>
+        <p><strong>⚠️ Important:</strong> Distribution runs automatically once enabled. Make sure you control the destination address!</p>
+      `
+    },
+    
+    'emission-type': {
+      title: 'Emission Function',
+      content: `
+        <p>How many tokens are created each time distribution runs.</p>
+        <p><strong>Fixed Amount:</strong> Same amount every time (e.g., 1000 tokens daily)</p>
+        <p><strong>Exponential:</strong> Decreases over time (like Bitcoin halving)</p>
+        <p><strong>Linear:</strong> Gradually increases or decreases</p>
+        <p><strong>Step Function:</strong> Different amounts at different stages</p>
+        <div class="help-tooltip-example">
+          <strong>Example:</strong>
+          <p>Fixed 100 tokens per day = predictable, steady rewards</p>
+        </div>
+      `
+    },
+    
+    'manual-mint': {
+      title: 'Manual Minting',
+      content: `
+        <p>Allows creating new tokens manually at any time.</p>
+        <p><strong>When enabled:</strong></p>
+        <ul style="margin: 8px 0; padding-left: 20px;">
+          <li>Token owner can create new tokens on demand</li>
+          <li>Still respects max supply limit if set</li>
+          <li>Useful for rewards, airdrops, or flexible supply</li>
+        </ul>
+        <p><strong>⚠️ Warning:</strong> Users may be concerned about inflation. Consider enabling change control to require community approval.</p>
+      `
+    },
+    
+    'manual-burn': {
+      title: 'Manual Burning',
+      content: `
+        <p>Allows permanently destroying tokens.</p>
+        <p><strong>Common uses:</strong></p>
+        <ul style="margin: 8px 0; padding-left: 20px;">
+          <li>Reduce supply to increase scarcity</li>
+          <li>"Burn to redeem" mechanics (burn tokens for items/services)</li>
+          <li>Correct mistakes or remove tokens from circulation</li>
+        </ul>
+        <p><strong>Tip:</strong> Burned tokens are gone forever and cannot be recovered.</p>
+      `
+    },
+    
+    'start-paused': {
+      title: 'Start Paused',
+      content: `
+        <p>Whether your token starts in a paused state.</p>
+        <p><strong>When paused:</strong></p>
+        <ul style="margin: 8px 0; padding-left: 20px;">
+          <li>No transfers allowed</li>
+          <li>No minting or burning</li>
+          <li>Token is "frozen" until unpaused</li>
+        </ul>
+        <p><strong>Use case:</strong> Pause until you're ready to officially launch (prepare marketing, set up pools, etc.)</p>
+        <p><strong>⚠️ Important:</strong> You need unpause permissions enabled to resume operations.</p>
+      `
+    }
+  };
+
+  // Create and position tooltip
+  function showHelpTooltip(helpIcon, contentKey) {
+    // Hide any existing tooltips
+    hideAllTooltips();
+    
+    const content = HELP_CONTENT[contentKey];
+    if (!content) {
+      console.warn('No help content found for:', contentKey);
+      return;
+    }
+
+    // Create tooltip element
+    const tooltip = document.createElement('div');
+    tooltip.className = 'help-tooltip';
+    tooltip.id = `tooltip-${contentKey}`;
+    tooltip.innerHTML = content.content;
+
+    // Add to body
+    document.body.appendChild(tooltip);
+
+    // Position tooltip below the help icon
+    const iconRect = helpIcon.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    
+    let left = iconRect.left;
+    let top = iconRect.bottom + 8;
+
+    // Adjust if tooltip would go off screen
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    if (left + tooltipRect.width > viewportWidth - 20) {
+      left = viewportWidth - tooltipRect.width - 20;
+    }
+
+    if (top + tooltipRect.height > viewportHeight - 20) {
+      // Show above instead
+      top = iconRect.top - tooltipRect.height - 8;
+      tooltip.classList.add('help-tooltip--above');
+    }
+
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${top}px`;
+    tooltip.removeAttribute('hidden');
+
+    // Store reference to close later
+    helpIcon._activeTooltip = tooltip;
+
+    // Close on click outside
+    setTimeout(() => {
+      document.addEventListener('click', closeTooltipOnClickOutside);
+    }, 10);
+  }
+
+  function hideAllTooltips() {
+    document.querySelectorAll('.help-tooltip').forEach(tooltip => {
+      tooltip.remove();
+    });
+    document.removeEventListener('click', closeTooltipOnClickOutside);
+  }
+
+  function closeTooltipOnClickOutside(e) {
+    if (!e.target.closest('.help-icon') && !e.target.closest('.help-tooltip')) {
+      hideAllTooltips();
+    }
+  }
+
+  // Initialize help icons
+  function initializeHelpIcons() {
+    document.querySelectorAll('.help-icon').forEach(icon => {
+      icon.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const contentKey = icon.getAttribute('data-help');
+        
+        // Toggle tooltip
+        if (icon._activeTooltip) {
+          hideAllTooltips();
+        } else {
+          showHelpTooltip(icon, contentKey);
+        }
+      });
+    });
+  }
+
+  // Close tooltips on ESC key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      hideAllTooltips();
+    }
+  });
+
+  // Initialize on DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeHelpIcons);
+  } else {
+    initializeHelpIcons();
+  }
+
+  // Re-initialize when new help icons are added dynamically
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === 1) { // Element node
+          if (node.classList && node.classList.contains('help-icon')) {
+            initializeHelpIcons();
+          } else if (node.querySelector && node.querySelector('.help-icon')) {
+            initializeHelpIcons();
+          }
+        }
+      });
+    });
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+
+  console.log('✓ Inline help system initialized');
 })();

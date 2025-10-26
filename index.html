@@ -7,8 +7,8 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dash Token Wizard</title>
-  <link rel="preload" href="styles.css?v=49.0.1760978000" as="style">
-  <link rel="stylesheet" href="styles.css?v=49.0.1760978000">
+  <link rel="preload" href="styles.css?v=60.0.1760980031" as="style">
+  <link rel="stylesheet" href="styles.css?v=60.0.1760980031">
 </head>
 <body>
   <div class="wizard-shell">
@@ -410,6 +410,36 @@
       <div class="wizard-content">
         <!-- Welcome/Template Selection Screen -->
         <section class="wizard-screen wizard-screen--active" id="screen-welcome" data-step="welcome" data-tab="token">
+
+          <!-- Right Side Guide Panel -->
+          <aside class="page-guide" aria-label="Page guide">
+            <div class="page-guide__content">
+              <h2 class="page-guide__title">Getting Started</h2>
+              <p class="page-guide__intro">The Dash Token Wizard helps you create your own digital tokens easily — no advanced technical knowledge needed.</p>
+
+              <div class="page-guide__section">
+                <h3 class="page-guide__section-title">How It Works</h3>
+
+                <h4 class="page-guide__step-heading">Choose a starting point</h4>
+                <p><strong>Start from Scratch</strong> – Build your token completely your way. You decide how it works and who controls it.</p>
+                <p><strong>Simple Fixed Supply</strong> – A basic token with a set amount that never changes. Perfect for simple use cases or small projects.</p>
+                <p><strong>Utility Token</strong> – A token used for access, payments, or services within an app or platform.</p>
+                <p><strong>Reward/Points Token</strong> – A token that can be given out regularly as rewards or points, for example in loyalty programs.</p>
+
+                <h4 class="page-guide__step-heading">Customize your token</h4>
+                <p>After choosing a template, you can adjust settings like how many tokens exist, whether they can be transferred, or if new ones can be created later.</p>
+
+                <h4 class="page-guide__step-heading">Deploy your token</h4>
+                <p>When you're happy with your setup, you can publish (or "deploy") your token to the Dash Platform so it becomes active and ready to use.</p>
+              </div>
+
+              <div class="page-guide__tip">
+                <strong>💡 Pro Tip</strong>
+                Templates can save time, but you can customize everything later. Start with what's closest to your needs.
+              </div>
+            </div>
+          </aside>
+
           <div class="wizard-screen__inner wizard-screen__inner--centered">
             <div class="welcome-container">
               <h1 class="welcome-title">Dash Token Wizard</h1>
@@ -499,6 +529,34 @@
 
         <!-- Naming: Token Name Sub-step -->
         <section class="wizard-screen" id="screen-naming" data-step="naming" data-substep="naming" data-tab="token" hidden>
+
+      <!-- Right Side Guide Panel -->
+      <aside class="page-guide" aria-label="Page guide">
+        <div class="page-guide__content">
+          <h2 class="page-guide__title">Token Naming</h2>
+          <p class="page-guide__intro">Choose how your token will be identified across the Dash Platform.</p>
+
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Step-by-step guide</h3>
+            <ol class="page-guide__steps">
+              <li>
+                <strong>Pick a Token Name</strong>
+                <p>Choose something memorable and unique. This is what users will see (e.g., "RewardPoints", "GameGold").</p>
+              </li>
+              <li>
+                <strong>Create a Symbol</strong>
+                <p>2-8 character ticker (e.g., "RWD", "GOLD"). Usually uppercase. Like stock symbols.</p>
+              </li>
+            </ol>
+          </div>
+
+          <div class="page-guide__tip">
+            <strong>💡 Pro Tip</strong>
+            Check if similar names exist first. Clear, simple names build trust faster.
+          </div>
+        </div>
+      </aside>
+
       <div class="wizard-screen__inner">
         <form class="wizard-form" id="naming-form" novalidate>
           <h1 class="wizard-screen__title" id="title-naming" tabindex="-1">What would you like to name your token?</h1>
@@ -512,7 +570,9 @@
             </div>
             <div class="form-card__body">
               <div class="field-group">
-                <label class="wizard-field__label" for="token-name">Token Name *</label>
+                <label class="wizard-field__label" for="token-name">
+                  Token Name *
+                </label>
                 <input class="wizard-field__input" id="token-name" name="token-name" type="text" inputmode="text" autocomplete="off" placeholder="e.g., Mega Awesome Token" required maxlength="64" aria-describedby="token-name-message">
                 <span class="field-hint">2-64 characters • This is what users will see</span>
                 <p class="wizard-field__message" id="token-name-message" role="status" aria-live="polite"></p>
@@ -553,6 +613,34 @@
 
     <!-- Naming: Localization Sub-step -->
     <section class="wizard-screen" id="screen-naming-localization" data-step="naming" data-substep="naming-localization" data-tab="token" hidden>
+
+      <!-- Right Side Guide Panel -->
+      <aside class="page-guide" aria-label="Page guide">
+        <div class="page-guide__content">
+          <h2 class="page-guide__title">Localization</h2>
+          <p class="page-guide__intro">Translate your token name for global users. Optional but recommended.</p>
+
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Step-by-step guide</h3>
+            <ol class="page-guide__steps">
+              <li>
+                <strong>Add Languages</strong>
+                <p>Click "+ Add Language" to add translations. Use 2-letter codes (en, es, fr, de, etc.).</p>
+              </li>
+              <li>
+                <strong>Provide Forms</strong>
+                <p>Singular = "Token", Plural = "Tokens". Some languages need different forms.</p>
+              </li>
+            </ol>
+          </div>
+
+          <div class="page-guide__tip">
+            <strong>💡 Pro Tip</strong>
+            Start with English. Add more languages later if you expand globally.
+          </div>
+        </div>
+      </aside>
+
       <div class="wizard-screen__inner">
         <form class="wizard-form" id="naming-localization-form" novalidate>
           <h1 class="wizard-screen__title" id="title-naming-localization" tabindex="-1">How should your token appear in different languages?</h1>
@@ -589,6 +677,34 @@
 
     <!-- Naming: Keywords & Description Sub-step -->
     <section class="wizard-screen" id="screen-naming-metadata" data-step="naming" data-substep="naming-metadata" data-tab="token" hidden>
+
+      <!-- Right Side Guide Panel -->
+      <aside class="page-guide" aria-label="Page guide">
+        <div class="page-guide__content">
+          <h2 class="page-guide__title">Keywords & Description</h2>
+          <p class="page-guide__intro">Help users find and understand your token.</p>
+
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Step-by-step guide</h3>
+            <ol class="page-guide__steps">
+              <li>
+                <strong>Write a Description</strong>
+                <p>3-100 characters explaining what your token does. Keep it clear and simple.</p>
+              </li>
+              <li>
+                <strong>Add Keywords (Optional)</strong>
+                <p>Tags for search/discovery. Example: "rewards", "gaming", "loyalty".</p>
+              </li>
+            </ol>
+          </div>
+
+          <div class="page-guide__tip">
+            <strong>💡 Pro Tip</strong>
+            Focus on benefits, not features. "Earn rewards for shopping" beats "Loyalty point system".
+          </div>
+        </div>
+      </aside>
+
       <div class="wizard-screen__inner">
         <form class="wizard-form" id="naming-metadata-form" novalidate>
           <h1 class="wizard-screen__title" id="title-naming-metadata" tabindex="-1">How would you describe your token?</h1>
@@ -640,6 +756,46 @@
 
         <!-- Permissions: Token Supply Sub-step -->
         <section class="wizard-screen" id="screen-permissions" data-step="permissions" data-substep="permissions" data-tab="token" hidden>
+
+      <!-- Right Side Guide Panel -->
+      <aside class="page-guide" aria-label="Page guide">
+        <div class="page-guide__content">
+          <h2 class="page-guide__title">Token Supply Settings</h2>
+          <p class="page-guide__intro">Configure your token's economic foundation. These settings are permanent and cannot be changed.</p>
+
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Step-by-step guide</h3>
+            <ol class="page-guide__steps">
+              <li>
+                <strong>Choose an Action Preset</strong>
+                <p>Quick setup: "Owner Only" gives full control, "Restricted" balances security, "All Allowed" maximizes flexibility.</p>
+              </li>
+              <li>
+                <strong>Set Initial Supply</strong>
+                <p>How many tokens at launch? Examples: 1M for loyalty programs, 100 for limited editions.</p>
+              </li>
+              <li>
+                <strong>Choose Decimals</strong>
+                <p>8 decimals = standard (like Bitcoin). 0 decimals = whole units only (tickets, memberships).</p>
+              </li>
+              <li>
+                <strong>Set Maximum Supply</strong>
+                <p>Optional: Add a cap for scarcity (like Bitcoin's 21M). Leave empty for unlimited.</p>
+              </li>
+              <li>
+                <strong>Launch Paused?</strong>
+                <p>Recommended: Start paused to test safely before enabling transfers.</p>
+              </li>
+            </ol>
+          </div>
+
+          <div class="page-guide__tip">
+            <strong>💡 Pro Tip</strong>
+            Most tokens use 8 decimals with a maximum supply cap. Starting paused is recommended for security.
+          </div>
+        </div>
+      </aside>
+
       <div class="wizard-screen__inner">
         <form class="wizard-form" id="permissions-form" novalidate>
           <h1 class="wizard-screen__title" id="title-permissions" tabindex="-1">How do you want to manage your token supply?</h1>
@@ -716,7 +872,9 @@
             </div>
             <div class="form-card__body">
               <div class="field-group">
-                <label class="wizard-field__label" for="base-supply">Initial Supply *</label>
+                <label class="wizard-field__label" for="base-supply">
+                  Initial Supply *
+                </label>
                 <input class="wizard-field__input" id="base-supply" name="base-supply" type="text" inputmode="decimal" placeholder="e.g., 1000000" required aria-describedby="base-supply-hint">
                 <span class="field-hint">Examples: 1,000,000 (medium) • 100,000,000 (large) • 1,000 (limited)</span>
               </div>
@@ -731,7 +889,9 @@
             </div>
             <div class="form-card__body">
               <div class="field-group">
-                <label class="wizard-field__label" for="decimals">Decimals *</label>
+                <label class="wizard-field__label" for="decimals">
+                  Decimals *
+                </label>
                 <input class="wizard-field__input" id="decimals" name="decimals" type="number" min="0" max="16" value="8" required aria-describedby="decimals-hint">
                 <span class="field-hint">8 decimals (like Bitcoin) is standard • 0 for whole units only • Max: 16</span>
               </div>
@@ -746,7 +906,9 @@
             </div>
             <div class="form-card__body">
               <div class="field-group">
-                <label class="wizard-field__label" for="max-supply">Maximum Supply (leave empty for unlimited)</label>
+                <label class="wizard-field__label" for="max-supply">
+                  Maximum Supply (leave empty for unlimited)
+                </label>
                 <input class="wizard-field__input" id="max-supply" name="max-supply" type="text" inputmode="decimal" placeholder="e.g., 10000000" aria-describedby="max-supply-hint">
                 <span class="field-hint">Optional • Leave blank for no limit • Must be ≥ initial supply</span>
               </div>
@@ -763,7 +925,9 @@
               <div class="field-group">
                 <label class="wizard-checkbox" for="permissions-start-paused">
                   <input class="wizard-checkbox__input" type="checkbox" id="permissions-start-paused" name="permissions-start-paused">
-                  <span class="wizard-checkbox__label">Start as paused</span>
+                  <span class="wizard-checkbox__label">
+                    Start as paused
+                  </span>
                 </label>
                 <span class="field-hint" style="margin-top: 0.5rem; display: block;">When enabled, all token transfers will be frozen immediately after creation. This gives you time to verify everything is working correctly before allowing trading. You can unpause the token later using emergency controls. <strong>Recommended for security:</strong> Launch paused, test thoroughly, then enable transfers.</span>
               </div>
@@ -781,6 +945,34 @@
 
     <!-- Permissions: Control Model Sub-step -->
     <section class="wizard-screen" id="screen-permissions-control" data-step="permissions" data-substep="permissions-control" data-tab="token" hidden>
+
+      <!-- Right Side Guide Panel -->
+      <aside class="page-guide" aria-label="Page guide">
+        <div class="page-guide__content">
+          <h2 class="page-guide__title">Control Model</h2>
+          <p class="page-guide__intro">Who can manage and update your token settings.</p>
+
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Step-by-step guide</h3>
+            <ol class="page-guide__steps">
+              <li>
+                <strong>Choose Control Type</strong>
+                <p>Owner-only = You control everything. Committee = Group approval needed for changes.</p>
+              </li>
+              <li>
+                <strong>Set Permissions</strong>
+                <p>Decide what actions require owner vs committee approval.</p>
+              </li>
+            </ol>
+          </div>
+
+          <div class="page-guide__tip">
+            <strong>💡 Pro Tip</strong>
+            Start with owner-only. You can add committee governance later as your project grows.
+          </div>
+        </div>
+      </aside>
+
       <div class="wizard-screen__inner">
         <form class="wizard-form" id="permissions-control-form" novalidate>
           <h1 class="wizard-screen__title" id="title-permissions-control" tabindex="-1">Who should control your token?</h1>
@@ -824,6 +1016,34 @@
 
     <!-- Permissions: Transfer Settings Sub-step -->
     <section class="wizard-screen" id="screen-permissions-transfer" data-step="permissions" data-substep="permissions-transfer" data-tab="token" hidden>
+
+      <!-- Right Side Guide Panel -->
+      <aside class="page-guide" aria-label="Page guide">
+        <div class="page-guide__content">
+          <h2 class="page-guide__title">Transfer Settings</h2>
+          <p class="page-guide__intro">Configure how users can send tokens to each other.</p>
+
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Step-by-step guide</h3>
+            <ol class="page-guide__steps">
+              <li>
+                <strong>Track Transfer History</strong>
+                <p>Enable to keep a permanent record of all transfers on the blockchain.</p>
+              </li>
+              <li>
+                <strong>Allow Memos (Optional)</strong>
+                <p>Let users add notes to transfers (like payment references).</p>
+              </li>
+            </ol>
+          </div>
+
+          <div class="page-guide__tip">
+            <strong>💡 Pro Tip</strong>
+            Enable history tracking for transparency. Memos are useful for payment reconciliation.
+          </div>
+        </div>
+      </aside>
+
       <div class="wizard-screen__inner">
         <form class="wizard-form" id="permissions-transfer-form" novalidate>
           <h1 class="wizard-screen__title" id="title-permissions-transfer" tabindex="-1">How should token transfers work?</h1>
@@ -909,6 +1129,34 @@
 
     <!-- Permissions: Manual Mint Sub-step -->
     <section class="wizard-screen" id="screen-permissions-manual-mint" data-step="permissions" data-substep="permissions-manual-mint" data-tab="token" hidden>
+
+      <!-- Right Side Guide Panel -->
+      <aside class="page-guide" aria-label="Page guide">
+        <div class="page-guide__content">
+          <h2 class="page-guide__title">Manual Mint</h2>
+          <p class="page-guide__intro">Who can create new tokens on demand.</p>
+
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Step-by-step guide</h3>
+            <ol class="page-guide__steps">
+              <li>
+                <strong>Enable Manual Minting</strong>
+                <p>Turn on to allow creating new tokens after launch. Good for rewards programs.</p>
+              </li>
+              <li>
+                <strong>Set Who Can Mint</strong>
+                <p>Owner only, committee approval, or no one. Consider your trust model.</p>
+              </li>
+            </ol>
+          </div>
+
+          <div class="page-guide__tip">
+            <strong>💡 Pro Tip</strong>
+            Disable if you want fixed supply. Enable for flexible reward systems.
+          </div>
+        </div>
+      </aside>
+
       <div class="wizard-screen__inner">
         <form class="wizard-form" id="permissions-manual-mint-form" novalidate>
           <h1 class="wizard-screen__title" id="title-permissions-manual-mint" tabindex="-1">Who can manually mint new tokens? <span class="wizard-badge wizard-badge--optional">Optional</span></h1>
@@ -933,6 +1181,22 @@
                   </span>
                 </label>
 
+                <!-- Specific Identity Option -->
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="manual-mint-permission" value="specific-identity" data-toggle-panel="manual-mint-panel-identity">
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">Specific Identity</span>
+                    <span class="wizard-choice__hint">Only a designated identity can mint tokens</span>
+                  </span>
+                </label>
+                <div class="distribution-inline-panel" id="manual-mint-panel-identity" hidden>
+                  <div class="field-group">
+                    <label class="wizard-field__label" for="manual-mint-identity-id">Identity ID</label>
+                    <input class="wizard-field__input" type="text" id="manual-mint-identity-id" name="manual-mint-identity-id" placeholder="e.g., 4hKFP3mFB9vku8VJKcZvwVN123...">
+                    <span class="field-hint">Enter the Dash Platform identity ID that can mint tokens</span>
+                  </div>
+                </div>
+
                 <!-- Group Option -->
                 <label class="wizard-choice">
                   <input class="wizard-choice__input" type="radio" name="manual-mint-permission" value="group" data-toggle-panel="manual-mint-panel-group">
@@ -948,6 +1212,10 @@
                       <option value="">Select a group...</option>
                     </select>
                     <span class="field-hint" id="manual-mint-group-hint">Choose which group can perform this action</span>
+                  </div>
+                  <div class="field-message field-message--info" id="manual-mint-no-groups-message" hidden>
+                    <p>No group has been created yet.</p>
+                    <button class="wizard-button wizard-button--secondary wizard-button--small" type="button" id="manual-mint-create-group-btn">Create Group</button>
                   </div>
                 </div>
               </fieldset>
@@ -994,6 +1262,34 @@
 
     <!-- Permissions: Manual Burn Sub-step -->
     <section class="wizard-screen" id="screen-permissions-manual-burn" data-step="permissions" data-substep="permissions-manual-burn" data-tab="token" hidden>
+
+      <!-- Right Side Guide Panel -->
+      <aside class="page-guide" aria-label="Page guide">
+        <div class="page-guide__content">
+          <h2 class="page-guide__title">Manual Burn</h2>
+          <p class="page-guide__intro">Who can permanently destroy tokens to reduce supply.</p>
+
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Step-by-step guide</h3>
+            <ol class="page-guide__steps">
+              <li>
+                <strong>Enable Burning</strong>
+                <p>Allow tokens to be permanently destroyed. Useful for buybacks or deflationary economics.</p>
+              </li>
+              <li>
+                <strong>Set Burn Permissions</strong>
+                <p>Who can burn: owner, committee, or anyone from their own balance.</p>
+              </li>
+            </ol>
+          </div>
+
+          <div class="page-guide__tip">
+            <strong>💡 Pro Tip</strong>
+            Burning creates scarcity. Common for deflationary tokens or buyback programs.
+          </div>
+        </div>
+      </aside>
+
       <div class="wizard-screen__inner">
         <form class="wizard-form" id="permissions-manual-burn-form" novalidate>
           <h1 class="wizard-screen__title" id="title-permissions-manual-burn" tabindex="-1">Who can manually burn tokens? <span class="wizard-badge wizard-badge--optional">Optional</span></h1>
@@ -1018,6 +1314,22 @@
                   </span>
                 </label>
 
+                <!-- Specific Identity Option -->
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="manual-burn-permission" value="specific-identity" data-toggle-panel="manual-burn-panel-identity">
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">Specific Identity</span>
+                    <span class="wizard-choice__hint">Only a designated identity can burn tokens</span>
+                  </span>
+                </label>
+                <div class="distribution-inline-panel" id="manual-burn-panel-identity" hidden>
+                  <div class="field-group">
+                    <label class="wizard-field__label" for="manual-burn-identity-id">Identity ID</label>
+                    <input class="wizard-field__input" type="text" id="manual-burn-identity-id" name="manual-burn-identity-id" placeholder="e.g., 4hKFP3mFB9vku8VJKcZvwVN123...">
+                    <span class="field-hint">Enter the Dash Platform identity ID that can burn tokens</span>
+                  </div>
+                </div>
+
                 <!-- Group Option -->
                 <label class="wizard-choice">
                   <input class="wizard-choice__input" type="radio" name="manual-burn-permission" value="group" data-toggle-panel="manual-burn-panel-group">
@@ -1033,6 +1345,10 @@
                       <option value="">Select a group...</option>
                     </select>
                     <span class="field-hint" id="manual-burn-group-hint">Choose which group can perform this action</span>
+                  </div>
+                  <div class="field-message field-message--info" id="manual-burn-no-groups-message" hidden>
+                    <p>No group has been created yet.</p>
+                    <button class="wizard-button wizard-button--secondary wizard-button--small" type="button" id="manual-burn-create-group-btn">Create Group</button>
                   </div>
                 </div>
 
@@ -1059,6 +1375,34 @@
 
     <!-- Permissions: Manual Freeze Sub-step -->
     <section class="wizard-screen" id="screen-permissions-manual-freeze" data-step="permissions" data-substep="permissions-manual-freeze" data-tab="token" hidden>
+
+      <!-- Right Side Guide Panel -->
+      <aside class="page-guide" aria-label="Page guide">
+        <div class="page-guide__content">
+          <h2 class="page-guide__title">Freeze & Unfreeze</h2>
+          <p class="page-guide__intro">Block or allow token transfers for specific accounts.</p>
+
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Step-by-step guide</h3>
+            <ol class="page-guide__steps">
+              <li>
+                <strong>Enable Freeze Powers</strong>
+                <p>Turn on to allow blocking suspicious accounts or enforcing compliance.</p>
+              </li>
+              <li>
+                <strong>Set Freeze Permissions</strong>
+                <p>Who can freeze/unfreeze accounts. Important for security and compliance.</p>
+              </li>
+            </ol>
+          </div>
+
+          <div class="page-guide__tip">
+            <strong>💡 Pro Tip</strong>
+            Only enable if you need compliance controls. Can be controversial for decentralized tokens.
+          </div>
+        </div>
+      </aside>
+
       <div class="wizard-screen__inner">
         <form class="wizard-form" id="permissions-manual-freeze-form" novalidate>
           <h1 class="wizard-screen__title" id="title-permissions-manual-freeze" tabindex="-1">Who can freeze/unfreeze token balances? <span class="wizard-badge wizard-badge--optional">Optional</span></h1>
@@ -1092,6 +1436,22 @@
                   </span>
                 </label>
 
+                <!-- Specific Identity Option -->
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="manual-freeze-permission" value="specific-identity" data-toggle-panel="manual-freeze-panel-identity">
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">Specific Identity</span>
+                    <span class="wizard-choice__hint">Only a designated identity can freeze/unfreeze balances</span>
+                  </span>
+                </label>
+                <div class="distribution-inline-panel" id="manual-freeze-panel-identity" hidden>
+                  <div class="field-group">
+                    <label class="wizard-field__label" for="manual-freeze-identity-id">Identity ID</label>
+                    <input class="wizard-field__input" type="text" id="manual-freeze-identity-id" name="manual-freeze-identity-id" placeholder="e.g., 4hKFP3mFB9vku8VJKcZvwVN123...">
+                    <span class="field-hint">Enter the Dash Platform identity ID that can freeze/unfreeze balances</span>
+                  </div>
+                </div>
+
                 <!-- Group Option -->
                 <label class="wizard-choice">
                   <input class="wizard-choice__input" type="radio" name="manual-freeze-permission" value="group" data-toggle-panel="manual-freeze-panel-group">
@@ -1107,6 +1467,10 @@
                       <option value="">Select a group...</option>
                     </select>
                     <span class="field-hint" id="manual-freeze-group-hint">Choose which group can perform this action</span>
+                  </div>
+                  <div class="field-message field-message--info" id="manual-freeze-no-groups-message" hidden>
+                    <p>No group has been created yet.</p>
+                    <button class="wizard-button wizard-button--secondary wizard-button--small" type="button" id="manual-freeze-create-group-btn">Create Group</button>
                   </div>
                 </div>
               </fieldset>
@@ -1124,6 +1488,34 @@
 
     <!-- Permissions: Destroy Frozen Funds Sub-step -->
     <section class="wizard-screen" id="screen-permissions-destroy-frozen" data-step="permissions" data-substep="permissions-destroy-frozen" data-tab="token" hidden>
+
+      <!-- Right Side Guide Panel -->
+      <aside class="page-guide" aria-label="Page guide">
+        <div class="page-guide__content">
+          <h2 class="page-guide__title">Destroy Frozen Funds</h2>
+          <p class="page-guide__intro">Permanently remove tokens from frozen accounts.</p>
+
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Step-by-step guide</h3>
+            <ol class="page-guide__steps">
+              <li>
+                <strong>Enable Destruction</strong>
+                <p>Allow burning tokens from frozen accounts. Extreme measure for compliance.</p>
+              </li>
+              <li>
+                <strong>Set Permissions</strong>
+                <p>Who can destroy frozen funds. Should require high authority.</p>
+              </li>
+            </ol>
+          </div>
+
+          <div class="page-guide__tip">
+            <strong>💡 Pro Tip</strong>
+            Very powerful control. Only enable if legally required for sanctions compliance.
+          </div>
+        </div>
+      </aside>
+
       <div class="wizard-screen__inner">
         <form class="wizard-form" id="permissions-destroy-frozen-form" novalidate>
           <h1 class="wizard-screen__title" id="title-permissions-destroy-frozen" tabindex="-1">Who can destroy frozen funds? <span class="wizard-badge wizard-badge--optional">Optional</span></h1>
@@ -1157,6 +1549,22 @@
                   </span>
                 </label>
 
+                <!-- Specific Identity Option -->
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="destroy-frozen-permission" value="specific-identity" data-toggle-panel="destroy-frozen-panel-identity">
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">Specific Identity</span>
+                    <span class="wizard-choice__hint">Only a designated identity can destroy frozen funds</span>
+                  </span>
+                </label>
+                <div class="distribution-inline-panel" id="destroy-frozen-panel-identity" hidden>
+                  <div class="field-group">
+                    <label class="wizard-field__label" for="destroy-frozen-identity-id">Identity ID</label>
+                    <input class="wizard-field__input" type="text" id="destroy-frozen-identity-id" name="destroy-frozen-identity-id" placeholder="e.g., 4hKFP3mFB9vku8VJKcZvwVN123...">
+                    <span class="field-hint">Enter the Dash Platform identity ID that can destroy frozen funds</span>
+                  </div>
+                </div>
+
                 <!-- Group Option -->
                 <label class="wizard-choice">
                   <input class="wizard-choice__input" type="radio" name="destroy-frozen-permission" value="group" data-toggle-panel="destroy-frozen-panel-group">
@@ -1172,6 +1580,10 @@
                       <option value="">Select a group...</option>
                     </select>
                     <span class="field-hint" id="destroy-frozen-group-hint">Choose which group can perform this action</span>
+                  </div>
+                  <div class="field-message field-message--info" id="destroy-frozen-no-groups-message" hidden>
+                    <p>No group has been created yet.</p>
+                    <button class="wizard-button wizard-button--secondary wizard-button--small" type="button" id="destroy-frozen-create-group-btn">Create Group</button>
                   </div>
                 </div>
               </fieldset>
@@ -1189,6 +1601,34 @@
 
     <!-- Permissions: Emergency Actions Sub-step -->
     <section class="wizard-screen" id="screen-permissions-emergency" data-step="permissions" data-substep="permissions-emergency" data-tab="token" hidden>
+
+      <!-- Right Side Guide Panel -->
+      <aside class="page-guide" aria-label="Page guide">
+        <div class="page-guide__content">
+          <h2 class="page-guide__title">Emergency Actions</h2>
+          <p class="page-guide__intro">Pause all transfers in case of security issues.</p>
+
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Step-by-step guide</h3>
+            <ol class="page-guide__steps">
+              <li>
+                <strong>Enable Emergency Pause</strong>
+                <p>Turn on to allow freezing ALL transfers globally in case of bugs or attacks.</p>
+              </li>
+              <li>
+                <strong>Set Pause Permissions</strong>
+                <p>Who can pause/unpause. Critical security control - choose carefully.</p>
+              </li>
+            </ol>
+          </div>
+
+          <div class="page-guide__tip">
+            <strong>💡 Pro Tip</strong>
+            Recommended for new tokens. Safety net for bugs. Can unpause once confident.
+          </div>
+        </div>
+      </aside>
+
       <div class="wizard-screen__inner">
         <form class="wizard-form" id="permissions-emergency-form" novalidate>
           <h1 class="wizard-screen__title" id="title-permissions-emergency" tabindex="-1">Who can perform emergency actions? <span class="wizard-badge wizard-badge--optional">Optional</span></h1>
@@ -1222,6 +1662,22 @@
                   </span>
                 </label>
 
+                <!-- Specific Identity Option -->
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="emergency-permission" value="specific-identity" data-toggle-panel="emergency-panel-identity">
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">Specific Identity</span>
+                    <span class="wizard-choice__hint">Only a designated identity can trigger emergency pause/resume</span>
+                  </span>
+                </label>
+                <div class="distribution-inline-panel" id="emergency-panel-identity" hidden>
+                  <div class="field-group">
+                    <label class="wizard-field__label" for="emergency-identity-id">Identity ID</label>
+                    <input class="wizard-field__input" type="text" id="emergency-identity-id" name="emergency-identity-id" placeholder="e.g., 4hKFP3mFB9vku8VJKcZvwVN123...">
+                    <span class="field-hint">Enter the Dash Platform identity ID that can perform emergency actions</span>
+                  </div>
+                </div>
+
                 <!-- Group Option -->
                 <label class="wizard-choice">
                   <input class="wizard-choice__input" type="radio" name="emergency-permission" value="group" data-toggle-panel="emergency-panel-group">
@@ -1237,6 +1693,10 @@
                       <option value="">Select a group...</option>
                     </select>
                     <span class="field-hint" id="emergency-group-hint">Choose which group can perform this action</span>
+                  </div>
+                  <div class="field-message field-message--info" id="emergency-no-groups-message" hidden>
+                    <p>No group has been created yet.</p>
+                    <button class="wizard-button wizard-button--secondary wizard-button--small" type="button" id="emergency-create-group-btn">Create Group</button>
                   </div>
                 </div>
               </fieldset>
@@ -1254,6 +1714,38 @@
 
     <!-- Permissions: Group Sub-step -->
     <section class="wizard-screen" id="screen-permissions-group" data-step="permissions" data-substep="permissions-group" data-tab="group" hidden>
+
+      <!-- Right Side Guide Panel -->
+      <aside class="page-guide" aria-label="Page guide">
+        <div class="page-guide__content">
+          <h2 class="page-guide__title">Multi-Signature Groups</h2>
+          <p class="page-guide__intro">Share token control with multiple people for enhanced security.</p>
+
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Step-by-step guide</h3>
+            <ol class="page-guide__steps">
+              <li>
+                <strong>Enable Group Control</strong>
+                <p>Turn on to create a multi-sig wallet. Multiple people must approve critical actions.</p>
+              </li>
+              <li>
+                <strong>Set Approval Threshold</strong>
+                <p>How many members must approve? Example: 2 of 3 members = any 2 can approve.</p>
+              </li>
+              <li>
+                <strong>Add Group Members</strong>
+                <p>Enter Dash Platform identity IDs for each member. They'll all share control.</p>
+              </li>
+            </ol>
+          </div>
+
+          <div class="page-guide__tip">
+            <strong>💡 Pro Tip</strong>
+            Groups prevent single point of failure. Recommended for valuable tokens or DAOs.
+          </div>
+        </div>
+      </aside>
+
       <div class="wizard-screen__inner">
         <form class="wizard-form" id="permissions-group-form" novalidate>
           <h1 class="wizard-screen__title" id="title-permissions-group" tabindex="-1">Would you like to create a group for multi-signature control?</h1>
@@ -1320,16 +1812,44 @@
           </div>
 
           <p class="wizard-field__message" id="permissions-group-message" role="status" aria-live="polite"></p>
-          <div class="wizard-actions wizard-actions--between wizard-actions--sticky">
-            <button class="wizard-button wizard-button--secondary" type="button" data-step-back="permissions-group">← Back</button>
-            <button class="wizard-button wizard-button--primary" id="permissions-group-next" type="submit">Continue →</button>
-          </div>
         </form>
       </div>
     </section>
 
         <!-- Distribution: Schedule Sub-step -->
         <section class="wizard-screen" id="screen-distribution" data-step="distribution" data-substep="distribution" data-tab="token" hidden>
+
+      <!-- Right Side Guide Panel -->
+      <aside class="page-guide" aria-label="Page guide">
+        <div class="page-guide__content">
+          <h2 class="page-guide__title">Token Distribution</h2>
+          <p class="page-guide__intro">Set up automatic token release over time. This is optional.</p>
+
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Step-by-step guide</h3>
+            <ol class="page-guide__steps">
+              <li>
+                <strong>Enable Distribution</strong>
+                <p>Turn on if you want tokens released automatically over time (like mining).</p>
+              </li>
+              <li>
+                <strong>Choose Cadence Type</strong>
+                <p>Block-based = every X blocks. Time-based = every X seconds. Epoch-based = per era.</p>
+              </li>
+              <li>
+                <strong>Set Interval</strong>
+                <p>How often tokens are released. Example: Every 100 blocks.</p>
+              </li>
+            </ol>
+          </div>
+
+          <div class="page-guide__tip">
+            <strong>💡 Pro Tip</strong>
+            Skip this if you don't need automatic distribution. You can manually mint instead.
+          </div>
+        </div>
+      </aside>
+
       <div class="wizard-screen__inner">
         <form class="wizard-form" id="distribution-form" novalidate>
           <h1 class="wizard-screen__title" id="title-distribution" tabindex="-1">How should tokens be distributed over time? <span class="wizard-badge wizard-badge--optional">Optional</span></h1>
@@ -1435,6 +1955,42 @@
 
     <!-- Distribution: Emission Sub-step -->
     <section class="wizard-screen" id="screen-distribution-emission" data-step="distribution" data-substep="distribution-emission" data-tab="token" hidden>
+
+      <!-- Right Side Guide Panel -->
+      <aside class="page-guide" aria-label="Page guide">
+        <div class="page-guide__content">
+          <h2 class="page-guide__title">Emission Function</h2>
+          <p class="page-guide__intro">How many tokens are released at each interval.</p>
+
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Emission Types</h3>
+            <ol class="page-guide__steps">
+              <li>
+                <strong>Fixed Amount</strong>
+                <p>Same number every time. Simple and predictable. Example: 100 tokens per day.</p>
+              </li>
+              <li>
+                <strong>Exponential Decay</strong>
+                <p>Decreases over time (like Bitcoin halving). Reduces inflation gradually.</p>
+              </li>
+              <li>
+                <strong>Linear</strong>
+                <p>Increases or decreases steadily. Example: Start at 100, add 10 each period.</p>
+              </li>
+              <li>
+                <strong>Step Function</strong>
+                <p>Different amounts for different time periods. Most flexible option.</p>
+              </li>
+            </ol>
+          </div>
+
+          <div class="page-guide__tip">
+            <strong>💡 Pro Tip</strong>
+            Fixed is simplest. Exponential creates scarcity over time. Step gives maximum control.
+          </div>
+        </div>
+      </aside>
+
       <div class="wizard-screen__inner">
         <form class="wizard-form" id="distribution-emission-form" novalidate>
           <h1 class="wizard-screen__title" id="title-distribution-emission" tabindex="-1">How much should be released each time?</h1>
@@ -1754,6 +2310,34 @@
 
         <!-- Advanced: Trading Rules Sub-step -->
         <section class="wizard-screen" id="screen-advanced" data-step="advanced" data-substep="advanced" data-tab="token" hidden>
+
+      <!-- Right Side Guide Panel -->
+      <aside class="page-guide" aria-label="Page guide">
+        <div class="page-guide__content">
+          <h2 class="page-guide__title">Trading & Marketplace</h2>
+          <p class="page-guide__intro">Control how users can transfer and trade your tokens.</p>
+
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Step-by-step guide</h3>
+            <ol class="page-guide__steps">
+              <li>
+                <strong>Choose Trade Mode</strong>
+                <p>Permissionless = anyone can trade freely. Approval required = you approve each trade.</p>
+              </li>
+              <li>
+                <strong>Set Marketplace Rules</strong>
+                <p>Allow or restrict trading on decentralized exchanges.</p>
+              </li>
+            </ol>
+          </div>
+
+          <div class="page-guide__tip">
+            <strong>💡 Pro Tip</strong>
+            Most tokens use permissionless trading. Only restrict if you have regulatory or security needs.
+          </div>
+        </div>
+      </aside>
+
       <div class="wizard-screen__inner">
         <form class="wizard-form" id="advanced-form" novalidate>
           <h1 class="wizard-screen__title" id="title-advanced" tabindex="-1">How would you like users to trade your token?</h1>
@@ -1767,7 +2351,9 @@
             </div>
             <div class="form-card__body">
               <fieldset class="wizard-fieldset">
-                <legend class="wizard-field__label">Who can trade this token? *</legend>
+                <legend class="wizard-field__label">
+                  Who can trade this token? *
+                </legend>
                 <label class="wizard-choice">
                   <input class="wizard-choice__input" type="radio" name="trade-mode" id="advanced-trade-mode-permissionless" value="permissionless" checked>
                   <span class="wizard-choice__content">
@@ -1805,6 +2391,38 @@
 
     <!-- Advanced: Change Control Sub-step -->
     <section class="wizard-screen" id="screen-advanced-control" data-step="advanced" data-substep="advanced-control" data-tab="token" hidden>
+
+      <!-- Right Side Guide Panel -->
+      <aside class="page-guide" aria-label="Page guide">
+        <div class="page-guide__content">
+          <h2 class="page-guide__title">Change Control</h2>
+          <p class="page-guide__intro">What can be modified after your token launches.</p>
+
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Step-by-step guide</h3>
+            <ol class="page-guide__steps">
+              <li>
+                <strong>Review Changeable Settings</strong>
+                <p>See which token properties can be updated after creation (freeze, mint, burn, etc.).</p>
+              </li>
+              <li>
+                <strong>Enable/Disable Changes</strong>
+                <p>Turn off changes to lock settings forever. Turn on to keep flexibility.</p>
+              </li>
+              <li>
+                <strong>Set Who Can Change</strong>
+                <p>For enabled changes: owner-only or committee approval required.</p>
+              </li>
+            </ol>
+          </div>
+
+          <div class="page-guide__tip">
+            <strong>💡 Pro Tip</strong>
+            Lock settings for trust. Keep flexibility for new projects. You decide the balance.
+          </div>
+        </div>
+      </aside>
+
       <div class="wizard-screen__inner">
         <form class="wizard-form" id="advanced-control-form" novalidate>
           <h1 class="wizard-screen__title" id="title-advanced-control" tabindex="-1">What changes should be allowed after creation?</h1>
@@ -2012,6 +2630,38 @@
     </section>
 
         <section class="wizard-screen" id="screen-registration" data-step="registration" data-tab="token" hidden>
+
+      <!-- Right Side Guide Panel -->
+      <aside class="page-guide" aria-label="Page guide">
+        <div class="page-guide__content">
+          <h2 class="page-guide__title">Register Your Token</h2>
+          <p class="page-guide__intro">Publish your token to the Dash Platform blockchain.</p>
+
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Registration Methods</h3>
+            <ol class="page-guide__steps">
+              <li>
+                <strong>Mobile (QR Code)</strong>
+                <p>Scan QR with Dash mobile wallet. Easiest for mobile users.</p>
+              </li>
+              <li>
+                <strong>DET (Dash Evo Tool)</strong>
+                <p>Export JSON config for command-line tool. For developers.</p>
+              </li>
+              <li>
+                <strong>Self-Service (Browser)</strong>
+                <p>Import wallet and register directly. Fastest but requires your recovery phrase.</p>
+              </li>
+            </ol>
+          </div>
+
+          <div class="page-guide__tip">
+            <strong>💡 Pro Tip</strong>
+            Mobile QR is safest - never enter your recovery phrase in a web browser if possible.
+          </div>
+        </div>
+      </aside>
+
       <div class="wizard-screen__inner">
         <form class="wizard-form" id="registration-form" novalidate>
           <h1 class="wizard-screen__title" id="title-registration" tabindex="-1">How would you like to register your token?</h1>
@@ -2998,6 +3648,6 @@
     })();
   </script>
 
-  <script src="app.js?v=49.0.1760978000" defer></script>
+  <script src="app.js?v=60.0.1760980031" defer></script>
 </body>
 </html>

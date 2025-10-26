@@ -122,8 +122,8 @@
   /* Layout */
   --header-height: 72px;
   --page-gutter: 48px;
-  --content-max-width: 800px;
-  --actions-max-width: 800px;
+  --content-max-width: 680px;
+  --actions-max-width: 680px;
   --bp-xs: 480px;
   --bp-sm: 600px;
   --bp-md: 900px;
@@ -859,6 +859,34 @@ img {
     margin-bottom: var(--space-4);
   }
 }
+
+/* Field Messages */
+.field-message {
+  margin-top: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  justify-content: space-between;
+}
+
+.field-message--info {
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  color: var(--color-muted);
+}
+
+.field-message p {
+  margin: 0;
+  flex: 1;
+}
+
+.field-message button {
+  flex-shrink: 0;
+}
   padding-left: 1.25rem;
   display: grid;
   gap: var(--space-2xs);
@@ -1549,6 +1577,17 @@ html[data-theme='light'] .wizard-nav-item .wizard-path__pill {
   flex: 1;
   display: flex;
   flex-direction: column;
+  /* Reserve space on the right for help tooltips */
+  max-width: calc(100% - 420px);
+  margin-right: 420px;
+}
+
+/* On smaller screens, use full width */
+@media (max-width: 1400px) {
+  .wizard-content {
+    max-width: 100%;
+    margin-right: 0;
+  }
 }
 
 /* Wizard Tabs */
@@ -1556,6 +1595,8 @@ html[data-theme='light'] .wizard-nav-item .wizard-path__pill {
   display: flex;
   gap: 8px;
   margin-bottom: 32px;
+  margin-left: 140px;
+  margin-right: auto;
   padding: 6px;
   background: var(--color-smoke);
   border-radius: 12px;
@@ -3031,7 +3072,7 @@ textarea.wizard-field__input {
   position: fixed !important;
   bottom: 0 !important;
   left: 280px !important;
-  right: 0 !important;
+  right: 420px !important;
   width: auto !important;
   max-width: calc(1200px - 280px) !important;
   margin-left: auto !important;
@@ -4182,5 +4223,326 @@ html[data-theme="dark"] .document-type-item__btn {
   
   .modal__footer .wizard-button {
     width: 100%;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   INLINE HELP SYSTEM
+   ═══════════════════════════════════════════════════════ */
+
+/* Page Guide Panel - Right Side */
+.page-guide {
+  position: fixed;
+  right: 30px;
+  top: 45px;
+  width: 360px;
+  max-height: calc(100vh - 65px);
+  overflow-y: auto;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.page-guide__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.page-guide__title {
+  font-size: 1.375rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--color-text);
+  line-height: 1.3;
+}
+
+.page-guide__intro {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: var(--color-muted);
+}
+
+.page-guide__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.page-guide__section-title {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--color-text);
+}
+
+.page-guide__step-heading {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: var(--space-4) 0 var(--space-2) 0;
+  color: var(--color-primary);
+}
+
+.page-guide__section p {
+  margin: 0 0 var(--space-3) 0;
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--color-text);
+}
+
+.page-guide__section p strong {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.page-guide__list {
+  margin: 0;
+  padding-left: var(--space-5);
+  font-size: 0.9375rem;
+  line-height: 1.8;
+  color: var(--color-text);
+}
+
+.page-guide__list li {
+  margin-bottom: var(--space-3);
+}
+
+.page-guide__list strong {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.page-guide__steps {
+  margin: 0;
+  padding-left: var(--space-5);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--color-text);
+  counter-reset: step-counter;
+}
+
+.page-guide__steps li {
+  margin-bottom: var(--space-5);
+  position: relative;
+}
+
+.page-guide__steps li strong {
+  display: block;
+  color: var(--color-primary);
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+  font-size: 1rem;
+}
+
+.page-guide__steps li p {
+  margin: 0;
+  color: var(--color-muted);
+  line-height: 1.7;
+}
+
+.page-guide__tip {
+  padding: var(--space-4);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--color-text);
+}
+
+.page-guide__tip strong {
+  color: var(--color-primary);
+  display: block;
+  margin-bottom: var(--space-2);
+  font-size: 1rem;
+}
+
+/* Hide guide on smaller screens */
+@media (max-width: 1400px) {
+  .page-guide {
+    display: none;
+  }
+
+  .wizard-actions--sticky {
+    right: 0 !important;
+  }
+}
+
+/* Help Icon Button */
+.help-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-left: 6px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-primary);
+  cursor: help;
+  transition: all 0.2s ease;
+  vertical-align: middle;
+  position: relative;
+  opacity: 0.7;
+}
+
+.help-icon:hover {
+  opacity: 1;
+  transform: scale(1.15);
+}
+
+.help-icon:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 50%;
+  opacity: 1;
+}
+
+.help-icon svg {
+  width: 20px;
+  height: 20px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+/* Help Tooltip - Appears on RIGHT side */
+.help-tooltip {
+  position: fixed;
+  z-index: 10000;
+  right: 30px;
+  width: 360px;
+  max-width: 360px;
+  padding: var(--space-5);
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.1);
+  font-size: var(--font-size-sm);
+  line-height: 1.6;
+  color: var(--color-text);
+  animation: slideInRight 0.2s ease-out;
+}
+
+/* On smaller screens, adjust tooltip */
+@media (max-width: 1400px) {
+  .help-tooltip {
+    width: 380px;
+    max-width: calc(100vw - 40px);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.help-tooltip[hidden] {
+  display: none;
+}
+
+/* Arrow pointing LEFT (from tooltip to icon) */
+.help-tooltip::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 20px;
+  width: 12px;
+  height: 12px;
+  background: var(--color-bg-primary);
+  border-left: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  transform: rotate(45deg);
+}
+
+.help-tooltip p {
+  margin: 0 0 var(--space-2) 0;
+}
+
+.help-tooltip p:last-child {
+  margin-bottom: 0;
+}
+
+.help-tooltip strong {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.help-tooltip code {
+  padding: 2px 6px;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-sm);
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  font-size: 0.9em;
+}
+
+.help-tooltip-permanent {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding: var(--space-2);
+  background: color-mix(in srgb, var(--color-warning) 10%, transparent);
+  border-left: 3px solid var(--color-warning);
+  border-radius: var(--radius-sm);
+  font-size: 0.9em;
+}
+
+.help-tooltip-permanent::before {
+  content: '🔒';
+  font-size: 1.2em;
+}
+
+.help-tooltip-example {
+  margin-top: var(--space-2);
+  padding: var(--space-2);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--color-primary);
+}
+
+.help-tooltip-example strong {
+  display: block;
+  margin-bottom: var(--space-1);
+  color: var(--color-primary);
+  font-size: 0.9em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Label with help icon */
+label.with-help {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .help-tooltip {
+    width: 340px;
+  }
+}
+
+@media (max-width: 600px) {
+  .help-tooltip {
+    position: fixed;
+    left: 10px;
+    right: 10px;
+    width: auto;
+    max-width: none;
+  }
+
+  .help-tooltip::before {
+    display: none; /* Hide arrow on mobile */
   }
 }
