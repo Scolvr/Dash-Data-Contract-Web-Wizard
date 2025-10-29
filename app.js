@@ -17,7 +17,7 @@
   const STATE_STORAGE_KEY = 'dashTokenWizardState';
   const THEME_STORAGE_KEY = 'ui.theme';
   // FIXED: Correct order matching sidebar navigation
-  const STEP_SEQUENCE = ['welcome', 'naming', 'permissions', 'advanced', 'distribution', 'overview', 'registration'];
+  const STEP_SEQUENCE = ['welcome', 'naming', 'permissions', 'advanced', 'distribution', 'search', 'overview', 'registration'];
   const INFO_STEPS = Object.freeze([
     'permissions-group',
     'permissions-manual-mint',
@@ -38,36 +38,58 @@
     { key: 'manualBurn', stepId: 'permissions-manual-burn', domPrefix: 'manual-burn' },
     { key: 'manualFreeze', stepId: 'permissions-manual-freeze', domPrefix: 'manual-freeze' },
     { key: 'destroyFrozen', stepId: 'permissions-destroy-frozen', domPrefix: 'destroy-frozen' },
-    { key: 'emergencyAction', stepId: 'permissions-emergency', domPrefix: 'emergency' }
+    { key: 'emergencyAction', stepId: 'permissions-emergency', domPrefix: 'emergency' },
+    { key: 'conventionsChange', stepId: 'permissions-conventions-change', domPrefix: 'conventions-change' },
+    { key: 'marketplaceTradeMode', stepId: 'permissions-marketplace-trade-mode-change', domPrefix: 'marketplace-trade-mode' },
+    { key: 'directPricing', stepId: 'permissions-direct-pricing-change', domPrefix: 'direct-pricing' },
+    { key: 'mainControl', stepId: 'permissions-main-control-change', domPrefix: 'main-control' }
   ]);
   const INFO_STEP_PARENT = Object.freeze({
+    // Naming substeps
+    'naming-localization': 'naming',
+    'naming-update': 'naming',
+    // Permissions substeps
     'permissions-group': 'permissions',
     'permissions-manual-mint': 'permissions',
     'permissions-manual-burn': 'permissions',
+    'permissions-manual-freeze': 'permissions',
     'permissions-freeze': 'permissions',
     'permissions-unfreeze': 'permissions',
     'permissions-destroy-frozen': 'permissions',
+    'permissions-emergency': 'permissions',
     'permissions-emergency-action': 'permissions',
+    'permissions-conventions-change': 'permissions',
+    'permissions-marketplace-trade-mode-change': 'permissions',
+    'permissions-direct-pricing-change': 'permissions',
+    'permissions-main-control-change': 'permissions',
     'permissions-max-supply': 'permissions',
     'permissions-conventions': 'permissions',
     'permissions-marketplace-trade-mode': 'permissions',
     'permissions-direct-pricing': 'permissions',
-    'permissions-main-control': 'permissions'
+    'permissions-main-control': 'permissions',
+    // Advanced substeps
+    'advanced-history': 'advanced',
+    'advanced-launch': 'advanced',
+    // Distribution substeps
+    'distribution-preprogrammed': 'distribution',
+    'distribution-perpetual': 'distribution'
   });
 
   // FIXED: Substep sequences matching the actual sidebar navigation
-  // naming: Token Name → Localization
-  // permissions: Token Supply → Control Model → Manual Mint → Manual Burn → Manual Freeze → Destroy Frozen → Emergency Actions
-  // advanced (displayed as "Usage"): Trading Rules → Change Control
+  // naming: Token Name → Localization → Update
+  // permissions: Token Supply → Minting → Burning → Freezing → Emergency Actions
+  // advanced (displayed as "Usage"): History → Trading Rules → Launch Settings
   // distribution: Schedule → Emission
+  // search: Keywords & Description (single screen)
   // registration: Register Token (no substeps)
   const SUBSTEP_SEQUENCES = Object.freeze({
     welcome: ['welcome'],
-    naming: ['naming', 'naming-localization', 'naming-metadata'],
-    permissions: ['permissions', 'permissions-control', 'permissions-transfer', 'permissions-manual-mint', 'permissions-manual-burn', 'permissions-manual-freeze', 'permissions-destroy-frozen', 'permissions-emergency'],
-    advanced: ['advanced', 'advanced-control'],
-    distribution: ['distribution', 'distribution-emission'],
+    naming: ['naming', 'naming-localization', 'naming-update'],
+    permissions: ['permissions', 'permissions-manual-mint', 'permissions-manual-burn', 'permissions-manual-freeze', 'permissions-emergency', 'permissions-conventions-change', 'permissions-marketplace-trade-mode-change', 'permissions-direct-pricing-change', 'permissions-main-control-change'],
+    advanced: ['advanced-history', 'advanced', 'advanced-launch'],
+    distribution: ['distribution-preprogrammed', 'distribution-perpetual'],
     overview: ['overview'],
+    search: ['search'],
     registration: ['registration']
   });
 
@@ -363,7 +385,10 @@
     ruleChangerReference: '',
     allowChangeAuthorizedToNone: false,
     allowChangeAdminToNone: false,
-    allowSelfChangeAdmin: false
+    allowSelfChangeAdmin: false,
+    destinationType: 'contract-owner',
+    destinationIdentity: '',
+    allowCustomDestination: false
   });
 
   const DEFAULT_FREEZE_RULES_STATE = Object.freeze({
@@ -459,6 +484,8 @@
           ...manualActionsDefaults
         },
         distribution: {
+          enablePreProgrammed: false,
+          enablePerpetual: false,
           cadence: {
             type: 'BlockBasedDistribution',
             intervalBlocks: '10',
@@ -538,6 +565,10 @@
         advanced: {
           tradeMode: 'permissionless',
           changeControl: { ...DEFAULT_CHANGE_CONTROL_FLAGS }
+        },
+        search: {
+          keywords: '',
+          description: ''
         },
         registration: {
           method: null,
@@ -848,11 +879,13 @@ const distributionEmissionMessage = document.getElementById('distribution-emissi
 
 const advancedMessage = document.getElementById('advanced-message');
 const advancedNextButton = document.getElementById('advanced-next');
-// FIXED: Add reference to advanced-control substep Continue button
-const advancedControlNextButton = document.getElementById('advanced-control-next');
-
 const overviewNextButton = document.getElementById('overview-next');
 const overviewBackButton = document.getElementById('overview-back');
+
+const searchMessage = document.getElementById('search-message');
+const searchNextButton = document.getElementById('search-next');
+const searchKeywordsInput = document.getElementById('search-keywords');
+const searchDescriptionInput = document.getElementById('search-description');
 
 // FIXED: Use existing HTML inputs instead of creating new ones
 let permissionsUI = createPermissionsUIFromHTML(permissionsForm);
@@ -947,6 +980,7 @@ let advancedUI = createAdvancedUI(advancedForm);
   const permissionsScreen = document.getElementById('screen-permissions');
   const distributionScreen = document.getElementById('screen-distribution');
   const advancedScreen = document.getElementById('screen-advanced');
+  const searchScreen = document.getElementById('screen-search');
   const overviewScreen = document.getElementById('screen-overview');
   const registrationScreen = document.getElementById('screen-registration');
   const manualMintScreen = document.getElementById('screen-permissions-manual-mint');
@@ -954,6 +988,10 @@ let advancedUI = createAdvancedUI(advancedForm);
   const manualFreezeScreen = document.getElementById('screen-permissions-manual-freeze');
   const destroyFrozenScreen = document.getElementById('screen-permissions-destroy-frozen');
   const emergencyActionScreen = document.getElementById('screen-permissions-emergency');
+  const conventionsChangeScreen = document.getElementById('screen-permissions-conventions-change');
+  const marketplaceTradeModeScreen = document.getElementById('screen-permissions-marketplace-trade-mode-change');
+  const directPricingScreen = document.getElementById('screen-permissions-direct-pricing-change');
+  const mainControlScreen = document.getElementById('screen-permissions-main-control-change');
   const freezeForm = document.getElementById('freeze-form');
   const infoScreenEntries = INFO_STEPS.map((id) => ({
     id,
@@ -1015,6 +1053,12 @@ let advancedUI = createAdvancedUI(advancedForm);
       element: distributionScreen
     },
     {
+      id: 'search',
+      isAdvanced: false,
+      shouldSkip: () => false,
+      element: searchScreen
+    },
+    {
       id: 'overview',
       isAdvanced: false,
       shouldSkip: () => false,
@@ -1067,6 +1111,18 @@ let advancedUI = createAdvancedUI(advancedForm);
       case 'emergencyAction':
         screen = emergencyActionScreen;
         break;
+      case 'conventionsChange':
+        screen = conventionsChangeScreen;
+        break;
+      case 'marketplaceTradeMode':
+        screen = marketplaceTradeModeScreen;
+        break;
+      case 'directPricing':
+        screen = directPricingScreen;
+        break;
+      case 'mainControl':
+        screen = mainControlScreen;
+        break;
       default:
         screen = null;
     }
@@ -1084,6 +1140,8 @@ let advancedUI = createAdvancedUI(advancedForm);
   initialisePermissionGroupsUI();
   initialiseLocalizationUI();
   initialiseUI();
+  initialisePerpetualDistributionUI();
+  initialisePreprogrammedDistributionUI();
 
   if (walletFileInput) {
     walletFileInput.addEventListener('change', handleWalletFileSelection);
@@ -1136,6 +1194,85 @@ let advancedUI = createAdvancedUI(advancedForm);
       showScreen(nextStep, { force: true });
     });
   }
+
+  // Add event listener for Pre-Programmed distribution radio buttons
+  const preprogrammedRadios = document.querySelectorAll('input[name="preprogrammed-enable"]');
+  const preprogrammedEntriesContainer = document.getElementById('preprogrammed-entries-container');
+
+  preprogrammedRadios.forEach(radio => {
+    radio.addEventListener('change', (event) => {
+      const enabled = event.target.value === 'yes';
+      wizardState.form.distribution.enablePreProgrammed = enabled;
+
+      // Show/hide the entries container
+      if (preprogrammedEntriesContainer) {
+        if (enabled) {
+          // Remove collapsing class and hidden attribute
+          preprogrammedEntriesContainer.classList.remove('collapsing');
+          preprogrammedEntriesContainer.removeAttribute('hidden');
+          // Add first entry if enabling and no entries exist
+          if (!wizardState.form.distribution.preProgrammed) {
+            wizardState.form.distribution.preProgrammed = { entries: [] };
+          }
+          if (wizardState.form.distribution.preProgrammed.entries.length === 0) {
+            addPreProgrammedEntry();
+          }
+        } else {
+          // Add collapsing class for smooth animation
+          preprogrammedEntriesContainer.classList.add('collapsing');
+          // Wait for animation to complete before hiding
+          setTimeout(() => {
+            preprogrammedEntriesContainer.setAttribute('hidden', '');
+            preprogrammedEntriesContainer.classList.remove('collapsing');
+          }, 250);
+        }
+      }
+
+      persistState();
+      console.log('✓ Pre-Programmed distribution enabled:', enabled);
+    });
+  });
+
+  // Add event listener for Add Distribution Entry button
+  const addPreProgrammedEntryBtn = document.getElementById('add-preprogrammed-entry-btn');
+  if (addPreProgrammedEntryBtn) {
+    addPreProgrammedEntryBtn.addEventListener('click', () => {
+      addPreProgrammedEntry();
+    });
+  }
+
+  // Add event listener for Perpetual distribution radio buttons
+  const perpetualRadios = document.querySelectorAll('input[name="perpetual-enable"]');
+  const perpetualConfigContainer = document.getElementById('perpetual-config-container');
+
+  perpetualRadios.forEach(radio => {
+    radio.addEventListener('change', (event) => {
+      const enabled = event.target.value === 'yes';
+      wizardState.form.distribution.enablePerpetual = enabled;
+
+      // Show/hide the config container with smooth animation
+      if (perpetualConfigContainer) {
+        if (enabled) {
+          // Remove collapsing class and hidden attribute
+          perpetualConfigContainer.classList.remove('collapsing');
+          perpetualConfigContainer.removeAttribute('hidden');
+          // Force reflow to ensure animation plays
+          void perpetualConfigContainer.offsetHeight;
+        } else {
+          // Add collapsing class for smooth animation
+          perpetualConfigContainer.classList.add('collapsing');
+          // Wait for animation to complete before hiding
+          setTimeout(() => {
+            perpetualConfigContainer.setAttribute('hidden', '');
+            perpetualConfigContainer.classList.remove('collapsing');
+          }, 250);
+        }
+      }
+
+      persistState();
+      console.log('✓ Perpetual distribution enabled:', enabled);
+    });
+  });
 
   // PROFESSIONAL REWRITE: Use event delegation on the wizard container to handle ALL form submissions
   const wizardContainer = document.querySelector('.wizard-shell');
@@ -1313,6 +1450,25 @@ let advancedUI = createAdvancedUI(advancedForm);
     overviewBackButton.addEventListener('click', () => goToPreviousScreen('overview'));
   }
 
+  if (searchNextButton) {
+    searchNextButton.addEventListener('click', () => handleStepAdvance('search'));
+  }
+
+  if (searchKeywordsInput) {
+    searchKeywordsInput.addEventListener('input', () => {
+      wizardState.form.search.keywords = searchKeywordsInput.value.trim();
+      evaluateSearch({ touched: true });
+      updateKeywordsPreview();
+    });
+  }
+
+  if (searchDescriptionInput) {
+    searchDescriptionInput.addEventListener('input', () => {
+      wizardState.form.search.description = searchDescriptionInput.value.trim();
+      evaluateSearch({ touched: true });
+    });
+  }
+
   const readinessEvents = [
     [
       'qr:generated',
@@ -1399,6 +1555,198 @@ let advancedUI = createAdvancedUI(advancedForm);
   document.addEventListener('keydown', handleEscapeShortcut);
   window.addEventListener('unhandledrejection', handleChunkLoadRejection);
   window.addEventListener('error', handleChunkLoadError, true);
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Pre-Programmed Distribution UI
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  let preprogrammedEntryIdCounter = 0;
+  const preprogrammedEntries = [];
+
+  function initialisePerpetualDistributionUI() {
+    // Sync UI with state on initialization
+    const yesRadio = document.querySelector('input[name="perpetual-enable"][value="yes"]');
+    const noRadio = document.querySelector('input[name="perpetual-enable"][value="no"]');
+    const configContainer = document.getElementById('perpetual-config-container');
+
+    // Only run if the elements exist on the page
+    if (!yesRadio || !noRadio || !configContainer) {
+      return;
+    }
+
+    // Default to "No" (disabled) unless explicitly enabled in state
+    if (wizardState.form.distribution.enablePerpetual) {
+      yesRadio.checked = true;
+      configContainer.removeAttribute('hidden');
+    } else {
+      noRadio.checked = true;
+      configContainer.setAttribute('hidden', '');
+    }
+  }
+
+  function initialisePreprogrammedDistributionUI() {
+    // Sync UI with state on initialization
+    const enabledRadio = document.querySelector('input[name="preprogrammed-enable"][value="yes"]');
+    const disabledRadio = document.querySelector('input[name="preprogrammed-enable"][value="no"]');
+    const entriesContainer = document.getElementById('preprogrammed-entries-container');
+
+    // Only run if the elements exist on the page
+    if (!enabledRadio || !disabledRadio || !entriesContainer) {
+      return;
+    }
+
+    if (wizardState.form.distribution.enablePreProgrammed) {
+      if (enabledRadio) {
+        enabledRadio.checked = true;
+      }
+      if (entriesContainer) {
+        entriesContainer.removeAttribute('hidden');
+      }
+      // Restore entries from state
+      if (wizardState.form.distribution.preProgrammed && wizardState.form.distribution.preProgrammed.entries) {
+        wizardState.form.distribution.preProgrammed.entries.forEach(entry => {
+          addPreProgrammedEntry(entry);
+        });
+      }
+    } else {
+      if (disabledRadio) {
+        disabledRadio.checked = true;
+      }
+      if (entriesContainer) {
+        entriesContainer.setAttribute('hidden', '');
+      }
+    }
+  }
+
+  function addPreProgrammedEntry(initialData = null) {
+    const entriesList = document.getElementById('preprogrammed-entries-list');
+    if (!entriesList) return;
+
+    preprogrammedEntryIdCounter += 1;
+    const entryId = `preprogrammed-entry-${preprogrammedEntryIdCounter}`;
+
+    const entry = {
+      id: entryId,
+      days: initialData?.days || 0,
+      hours: initialData?.hours || 0,
+      minutes: initialData?.minutes || 0,
+      identity: initialData?.identity || '',
+      amount: initialData?.amount || ''
+    };
+
+    const entryElement = createPreProgrammedEntryElement(entry);
+    preprogrammedEntries.push({ id: entryId, element: entryElement, data: entry });
+    entriesList.appendChild(entryElement);
+
+    // Add to state
+    if (!initialData) {
+      if (!wizardState.form.distribution.preProgrammed) {
+        wizardState.form.distribution.preProgrammed = { entries: [] };
+      }
+      wizardState.form.distribution.preProgrammed.entries.push(entry);
+      persistState();
+    }
+  }
+
+  function createPreProgrammedEntryElement(entry) {
+    const container = document.createElement('div');
+    container.className = 'preprogrammed-entry';
+    container.dataset.entryId = entry.id;
+    container.style.cssText = 'border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-4); margin-bottom: var(--space-3); background: var(--color-surface);';
+
+    const entryNumber = preprogrammedEntries.length + 1;
+
+    container.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3);">
+        <h4 style="margin: 0; font-size: 1rem; font-weight: 600;">Timestamp #${entryNumber}</h4>
+        <button type="button" class="wizard-button wizard-button--secondary wizard-button--sm remove-preprogrammed-entry" data-entry-id="${entry.id}" style="padding: var(--space-1) var(--space-3);">Remove</button>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); margin-bottom: var(--space-3);">
+        <div class="field-group">
+          <label class="wizard-field__label" for="${entry.id}-days">Days</label>
+          <input class="wizard-field__input" type="number" id="${entry.id}-days" value="${entry.days}" min="0" placeholder="0">
+        </div>
+        <div class="field-group">
+          <label class="wizard-field__label" for="${entry.id}-hours">Hours</label>
+          <input class="wizard-field__input" type="number" id="${entry.id}-hours" value="${entry.hours}" min="0" max="23" placeholder="0">
+        </div>
+        <div class="field-group">
+          <label class="wizard-field__label" for="${entry.id}-minutes">Minutes</label>
+          <input class="wizard-field__input" type="number" id="${entry.id}-minutes" value="${entry.minutes}" min="0" max="59" placeholder="0">
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: var(--space-3);">
+        <div class="field-group">
+          <label class="wizard-field__label" for="${entry.id}-identity">Identity</label>
+          <input class="wizard-field__input" type="text" id="${entry.id}-identity" value="${entry.identity}" placeholder="Identity ID">
+        </div>
+        <div class="field-group">
+          <label class="wizard-field__label" for="${entry.id}-amount">Amount</label>
+          <input class="wizard-field__input" type="text" id="${entry.id}-amount" value="${entry.amount}" placeholder="Token amount">
+        </div>
+      </div>
+    `;
+
+    // Add event listeners for inputs
+    const daysInput = container.querySelector(`#${entry.id}-days`);
+    const hoursInput = container.querySelector(`#${entry.id}-hours`);
+    const minutesInput = container.querySelector(`#${entry.id}-minutes`);
+    const identityInput = container.querySelector(`#${entry.id}-identity`);
+    const amountInput = container.querySelector(`#${entry.id}-amount`);
+    const removeBtn = container.querySelector('.remove-preprogrammed-entry');
+
+    [daysInput, hoursInput, minutesInput, identityInput, amountInput].forEach(input => {
+      input.addEventListener('input', () => {
+        updatePreProgrammedEntryData(entry.id, {
+          days: parseInt(daysInput.value) || 0,
+          hours: parseInt(hoursInput.value) || 0,
+          minutes: parseInt(minutesInput.value) || 0,
+          identity: identityInput.value,
+          amount: amountInput.value
+        });
+      });
+    });
+
+    removeBtn.addEventListener('click', () => {
+      removePreProgrammedEntry(entry.id);
+    });
+
+    return container;
+  }
+
+  function updatePreProgrammedEntryData(entryId, data) {
+    if (!wizardState.form.distribution.preProgrammed) {
+      wizardState.form.distribution.preProgrammed = { entries: [] };
+    }
+    const entryIndex = wizardState.form.distribution.preProgrammed.entries.findIndex(e => e.id === entryId);
+    if (entryIndex !== -1) {
+      wizardState.form.distribution.preProgrammed.entries[entryIndex] = {
+        ...wizardState.form.distribution.preProgrammed.entries[entryIndex],
+        ...data
+      };
+      persistState();
+    }
+  }
+
+  function removePreProgrammedEntry(entryId) {
+    const entryIndex = preprogrammedEntries.findIndex(e => e.id === entryId);
+    if (entryIndex !== -1) {
+      const entry = preprogrammedEntries[entryIndex];
+      if (entry.element && entry.element.parentNode) {
+        entry.element.parentNode.removeChild(entry.element);
+      }
+      preprogrammedEntries.splice(entryIndex, 1);
+    }
+
+    // Remove from state
+    if (wizardState.form.distribution.preProgrammed) {
+      const stateIndex = wizardState.form.distribution.preProgrammed.entries.findIndex(e => e.id === entryId);
+      if (stateIndex !== -1) {
+        wizardState.form.distribution.preProgrammed.entries.splice(stateIndex, 1);
+        persistState();
+      }
+    }
+  }
 
   function initialiseUI() {
     hydrateFormsFromState();
@@ -2271,8 +2619,8 @@ let advancedUI = createAdvancedUI(advancedForm);
 
     const values = advancedUI.getValues();
     const changeControl = normalizeChangeControl(values.changeControl);
-    const tradeMode = typeof values.tradeMode === 'string' ? values.tradeMode : 'permissionless';
-    const allowedTradeModes = ['permissionless', 'approvalRequired', 'closed'];
+    // Keep existing tradeMode or default to permissionless (UI for tradeMode removed)
+    const tradeMode = wizardState.form.advanced?.tradeMode || 'permissionless';
 
     wizardState.form.advanced = {
       tradeMode,
@@ -2280,11 +2628,7 @@ let advancedUI = createAdvancedUI(advancedForm);
     };
 
     let message = '';
-    let valid = allowedTradeModes.includes(tradeMode);
-
-    if (!valid) {
-      message = 'Select a trade mode.';
-    }
+    let valid = true; // Always valid since change control toggles are all we validate now
 
     // FIXED: Don't require full configuration validation (which depends on distribution)
     // The advanced step should only validate its own fields
@@ -2292,10 +2636,6 @@ let advancedUI = createAdvancedUI(advancedForm);
 
     advancedMessage.textContent = touched && !result.valid ? result.message : '';
     advancedNextButton.disabled = !result.valid;
-    // FIXED: Also enable/disable the Change Control substep button
-    if (advancedControlNextButton) {
-      advancedControlNextButton.disabled = !result.valid;
-    }
 
     updateStepStatusFromValidation('advanced', result, touched);
     persistState();
@@ -2354,6 +2694,29 @@ let advancedUI = createAdvancedUI(advancedForm);
     }
 
     return { valid: true, message: '' };
+  }
+
+  function evaluateSearch({ touched = false, silent = false } = {}) {
+    // Search step is always valid - all fields are optional
+    const stepState = wizardState.steps.search;
+    stepState.touched = touched;
+    stepState.validity = 'valid';
+
+    const result = { valid: true, message: '' };
+
+    if (searchMessage) {
+      searchMessage.textContent = '';
+    }
+    if (searchNextButton) {
+      searchNextButton.disabled = !result.valid;
+    }
+
+    if (!silent) {
+      updateStepStatusUI('search');
+      persistState();
+    }
+
+    return result;
   }
 
   function evaluateRegistration({ touched = false, silent = false } = {}) {
@@ -2575,6 +2938,8 @@ let advancedUI = createAdvancedUI(advancedForm);
         return evaluateAdvanced(options);
       case 'overview':
         return evaluateOverview(options);
+      case 'search':
+        return evaluateSearch(options);
       case 'registration':
         return evaluateRegistration(options);
       default:
@@ -2624,6 +2989,14 @@ let advancedUI = createAdvancedUI(advancedForm);
         validation = evaluateOverview({ touched: true });
         if (!validation.valid) {
           announce(validation.message || 'Review your configuration to continue.');
+          return;
+        }
+        goToNextScreen(substepId);
+        break;
+      case 'search':
+        validation = evaluateSearch({ touched: true });
+        if (!validation.valid) {
+          announce(validation.message || 'Complete the search configuration to continue.');
           return;
         }
         goToNextScreen(substepId);
@@ -3118,6 +3491,7 @@ function ensurePermissionsGroupState() {
   function createPermissionGroup(overrides = {}) {
     return {
       id: generateId('group'),
+      name: '',
       requiredPower: '',
       members: [],
       ...overrides
@@ -3207,7 +3581,7 @@ function ensurePermissionsGroupState() {
     summary.className = 'wizard-group-card__summary';
     const title = document.createElement('span');
     title.className = 'wizard-group-card__title';
-    title.textContent = `Group ${index}`;
+    title.textContent = buildGroupLabel(group, index);
     summary.appendChild(title);
     if (isPrimary) {
       const badge = document.createElement('span');
@@ -3223,6 +3597,25 @@ function ensurePermissionsGroupState() {
 
     const body = document.createElement('div');
     body.className = 'wizard-group-card__body';
+
+    // Group Name Field
+    const nameField = document.createElement('div');
+    nameField.className = 'wizard-field';
+    const nameLabel = document.createElement('label');
+    nameLabel.className = 'wizard-field__label';
+    nameLabel.setAttribute('for', `group-name-${group.id}`);
+    nameLabel.textContent = 'Group Name:';
+    nameField.appendChild(nameLabel);
+    const nameInput = document.createElement('input');
+    nameInput.className = 'wizard-field__input';
+    nameInput.id = `group-name-${group.id}`;
+    nameInput.type = 'text';
+    nameInput.placeholder = 'e.g., Treasury Committee';
+    nameInput.value = group.name || '';
+    nameInput.dataset.groupAction = 'group-name';
+    nameInput.dataset.groupId = group.id;
+    nameField.appendChild(nameInput);
+    body.appendChild(nameField);
 
     const requiredField = document.createElement('div');
     requiredField.className = 'wizard-field';
@@ -3479,6 +3872,10 @@ function ensurePermissionsGroupState() {
     const memberId = input.dataset.memberId;
 
     switch (action) {
+      case 'group-name': {
+        updateGroupName(groupId, input.value);
+        break;
+      }
       case 'required-power': {
         updateGroupRequiredPower(groupId, input.value);
         input.value = normaliseUnsignedValue(input.value);
@@ -3551,6 +3948,18 @@ function ensurePermissionsGroupState() {
     group.members.splice(index, 1);
     renderPermissionGroups();
     persistState();
+  }
+
+  function updateGroupName(groupId, value) {
+    ensurePermissionsGroupState();
+    const group = wizardState.form.permissions.groups.find((entry) => entry.id === groupId);
+    if (!group) {
+      return;
+    }
+    group.name = typeof value === 'string' ? value : '';
+    persistState();
+    // Re-render groups to update the card title with the new name
+    renderPermissionGroups();
   }
 
   function updateGroupRequiredPower(groupId, value) {
@@ -4196,6 +4605,48 @@ function ensurePermissionsGroupState() {
         }
       });
     }
+
+    // Sync search form when showing search screen
+    if (screenId === 'search' || getPrimaryStepId(screenId) === 'search') {
+      requestAnimationFrame(() => {
+        syncSearchUI();
+      });
+    }
+
+    // Sync preprogrammed distribution form when showing preprogrammed screen
+    if (screenId === 'distribution-preprogrammed' || getPrimaryStepId(screenId) === 'distribution') {
+      requestAnimationFrame(() => {
+        const yesRadio = document.querySelector('input[name="preprogrammed-enable"][value="yes"]');
+        const noRadio = document.querySelector('input[name="preprogrammed-enable"][value="no"]');
+        const container = document.getElementById('preprogrammed-entries-container');
+
+        if (wizardState.form.distribution.enablePreProgrammed) {
+          if (yesRadio) yesRadio.checked = true;
+          if (container) container.removeAttribute('hidden');
+        } else {
+          if (noRadio) noRadio.checked = true;
+          if (container) container.setAttribute('hidden', '');
+        }
+      });
+    }
+
+    // Sync perpetual distribution form when showing perpetual screen
+    if (screenId === 'distribution-perpetual' || getPrimaryStepId(screenId) === 'distribution') {
+      requestAnimationFrame(() => {
+        const yesRadio = document.querySelector('input[name="perpetual-enable"][value="yes"]');
+        const noRadio = document.querySelector('input[name="perpetual-enable"][value="no"]');
+        const container = document.getElementById('perpetual-config-container');
+
+        if (wizardState.form.distribution.enablePerpetual) {
+          if (yesRadio) yesRadio.checked = true;
+          if (container) container.removeAttribute('hidden');
+        } else {
+          if (noRadio) noRadio.checked = true;
+          if (container) container.setAttribute('hidden', '');
+        }
+      });
+    }
+
     // FIXED: Never fold sections on manual navigation - only on Continue/Back between parent steps
     const shouldFoldSections = false;  // Manual clicks don't fold anything
     const shouldAutoExpandOnSwitch = !isManualNavigation && parentStepChanged;  // Continue/Back auto-expands
@@ -4224,13 +4675,16 @@ function ensurePermissionsGroupState() {
       item.classList.remove('is-active', 'is-complete', 'is-future');
 
       if (hasChildren) {
-        // FIXED: Auto-expand on Continue/Back when switching to different parent step
+        // FIXED: Auto-expand on Continue/Back when switching to new parent step
+        // Keep all previously visited sections expanded
         if (shouldAutoExpandOnSwitch && shouldOpen) {
-          // Continue/Back switched to different parent step - auto-expand it
+          // Continue/Back switched to this parent step - auto-expand it
           item.classList.add('is-open');
           delete item.dataset.userCollapsed;
+        } else if (shouldOpen && !userCollapsed) {
+          // Navigating within same section or manual click - keep current section open
+          item.classList.add('is-open');
         }
-        // Otherwise maintain current state (manual clicks or navigating within same section)
 
         const isOpen = item.classList.contains('is-open');
         item.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
@@ -4274,15 +4728,24 @@ function ensurePermissionsGroupState() {
       const submenu = submenuId ? document.getElementById(submenuId) : null;
       const shouldExpand = step === resolvedActiveId;
 
-      // FIXED: Only auto-expand on Continue/Back between different sections
+      // FIXED: Auto-expand on Continue/Back when switching to new section
+      // Keep all previously visited sections expanded
       if (shouldAutoExpandOnSwitch && shouldExpand) {
-        // Continue/Back switched to different parent step - auto-expand it
+        // Continue/Back switched to this parent step - auto-expand it
         button.setAttribute('aria-expanded', 'true');
         if (submenu) {
           submenu.hidden = false;
         }
+      } else if (shouldExpand) {
+        // Navigating within same section - keep current section open
+        const currentExpanded = button.getAttribute('aria-expanded') === 'true';
+        if (!currentExpanded) {
+          button.setAttribute('aria-expanded', 'true');
+          if (submenu) {
+            submenu.hidden = false;
+          }
+        }
       }
-      // Otherwise maintain current state (manual clicks or navigating within same section)
     });
   }
 
@@ -4300,6 +4763,46 @@ function ensurePermissionsGroupState() {
       label.classList.toggle('wizard-option--selected', isSelected);
       label.setAttribute('aria-checked', String(isSelected));
     });
+  }
+
+  function syncSearchUI() {
+    if (searchKeywordsInput) {
+      searchKeywordsInput.value = wizardState.form.search.keywords || '';
+    }
+    if (searchDescriptionInput) {
+      searchDescriptionInput.value = wizardState.form.search.description || '';
+    }
+    updateKeywordsPreview();
+  }
+
+  function updateKeywordsPreview() {
+    const previewContainer = document.getElementById('search-keywords-preview');
+    const tagContainer = document.getElementById('search-keywords-tag-container');
+
+    if (!searchKeywordsInput || !previewContainer || !tagContainer) {
+      return;
+    }
+
+    const keywords = searchKeywordsInput.value.trim();
+
+    if (!keywords) {
+      previewContainer.style.display = 'none';
+      tagContainer.innerHTML = '';
+      return;
+    }
+
+    const tags = keywords.split(',').map(k => k.trim()).filter(k => k.length > 0);
+
+    if (tags.length === 0) {
+      previewContainer.style.display = 'none';
+      tagContainer.innerHTML = '';
+      return;
+    }
+
+    previewContainer.style.display = 'block';
+    tagContainer.innerHTML = tags.map(tag => `
+      <span class="keyword-tag">${tag}</span>
+    `).join('');
   }
 
   function updateRegistrationPreviewVisibility() {
@@ -6043,6 +6546,10 @@ function ensurePermissionsGroupState() {
   }
 
   function buildGroupLabel(group, index) {
+    // Use custom name if provided, otherwise use default "Group N" format
+    if (group.name && group.name.trim()) {
+      return group.name.trim();
+    }
     return `Group ${index + 1}`;
   }
 
@@ -6317,6 +6824,49 @@ function ensurePermissionsGroupState() {
       commit({ allowSelfChangeAdmin: Boolean(allowSelfChangeInput.checked) }, { silent: true });
       applyValidation(actionState(), { silent: true });
     });
+  }
+
+  // Special handling for manualMint destination fields
+  if (key === 'manualMint') {
+    const destinationRadios = Array.from(form.querySelectorAll('input[name="manual-mint-destination"]'));
+    const destinationIdentityInput = form.querySelector('#manual-mint-destination-id');
+    const allowCustomDestinationCheckbox = form.querySelector('#manual-mint-allow-custom-destination');
+
+    if (destinationRadios.length > 0) {
+      destinationRadios.forEach((radio) => {
+        radio.addEventListener('change', () => {
+          const destinationType = radio.value; // 'contract-owner' or 'default-identity'
+          commit({ destinationType }, { silent: true });
+        });
+      });
+    }
+
+    if (destinationIdentityInput) {
+      destinationIdentityInput.addEventListener('input', () => {
+        commit({ destinationIdentity: destinationIdentityInput.value.trim() });
+      });
+    }
+
+    if (allowCustomDestinationCheckbox) {
+      allowCustomDestinationCheckbox.addEventListener('change', () => {
+        commit({ allowCustomDestination: Boolean(allowCustomDestinationCheckbox.checked) }, { silent: true });
+      });
+    }
+
+    // Sync destination fields to UI
+    const state = actionState();
+    if (state.destinationType) {
+      const destinationRadio = destinationRadios.find(r => r.value === state.destinationType);
+      if (destinationRadio) {
+        destinationRadio.checked = true;
+      }
+    }
+    if (destinationIdentityInput && state.destinationIdentity) {
+      destinationIdentityInput.value = state.destinationIdentity;
+    }
+    if (allowCustomDestinationCheckbox) {
+      allowCustomDestinationCheckbox.checked = Boolean(state.allowCustomDestination);
+    }
   }
 
   return {
@@ -6693,115 +7243,8 @@ function syncManualActionUIs({ announce = false } = {}) {
   }
 
   function createAdvancedUI(form) {
-    if (!form) {
-      return null;
-    }
-
-    const existingField = form.querySelector('.wizard-field');
-    if (existingField) {
-      existingField.remove();
-    }
-
-    const container = document.createElement('div');
-    container.className = 'advanced-fields';
-    container.innerHTML = `
-      <div class="wizard-field">
-        <label class="wizard-field__label" for="advanced-trade-mode">Marketplace mode</label>
-        <select class="wizard-field__input" id="advanced-trade-mode" name="advanced-trade-mode">
-          <option value="permissionless">Permissionless</option>
-          <option value="approvalRequired">Approval required</option>
-          <option value="closed">Not tradeable</option>
-        </select>
-      </div>
-      <fieldset class="wizard-fieldset wizard-fieldset--nested" id="advanced-change-control">
-        <legend class="wizard-field__label">Change-control toggles</legend>
-        <div class="wizard-field wizard-field--checkbox">
-          <label class="wizard-checkbox" for="advanced-ctrl-freeze">
-            <input class="wizard-checkbox__input" id="advanced-ctrl-freeze" type="checkbox" checked>
-            <span class="wizard-checkbox__label">Allow freezing</span>
-          </label>
-        </div>
-        <div class="wizard-field wizard-field--checkbox">
-          <label class="wizard-checkbox" for="advanced-ctrl-unfreeze">
-            <input class="wizard-checkbox__input" id="advanced-ctrl-unfreeze" type="checkbox" checked>
-            <span class="wizard-checkbox__label">Allow unfreezing</span>
-          </label>
-        </div>
-        <div class="wizard-field wizard-field--checkbox">
-          <label class="wizard-checkbox" for="advanced-ctrl-destroy">
-            <input class="wizard-checkbox__input" id="advanced-ctrl-destroy" type="checkbox">
-            <span class="wizard-checkbox__label">Allow destroying frozen balances</span>
-          </label>
-        </div>
-        <div class="wizard-field wizard-field--checkbox">
-          <label class="wizard-checkbox" for="advanced-ctrl-emergency">
-            <input class="wizard-checkbox__input" id="advanced-ctrl-emergency" type="checkbox">
-            <span class="wizard-checkbox__label">Allow emergency actions</span>
-          </label>
-        </div>
-        <div class="wizard-field wizard-field--checkbox">
-          <label class="wizard-checkbox" for="advanced-ctrl-direct-purchase">
-            <input class="wizard-checkbox__input" id="advanced-ctrl-direct-purchase" type="checkbox">
-            <span class="wizard-checkbox__label">
-              Allow direct purchase pricing changes
-              <span class="wizard-badge" style="background: var(--color-warning); color: var(--color-ink); margin-left: var(--space-2);">Coming Soon</span>
-            </span>
-          </label>
-        </div>
-        <div class="wizard-field wizard-field--checkbox">
-          <label class="wizard-checkbox" for="advanced-ctrl-admin">
-            <input class="wizard-checkbox__input" id="advanced-ctrl-admin" type="checkbox" checked>
-            <span class="wizard-checkbox__label">Admin overrides enabled</span>
-          </label>
-        </div>
-      </fieldset>
-    `;
-
-    const referenceNode = advancedMessage ? advancedMessage : form.querySelector('.wizard-field__message');
-    form.insertBefore(container, referenceNode || form.lastElementChild);
-
-    const tradeModeSelect = form.querySelector('#advanced-trade-mode');
-    const changeControlInputs = {
-      freeze: form.querySelector('#advanced-ctrl-freeze'),
-      unfreeze: form.querySelector('#advanced-ctrl-unfreeze'),
-      destroyFrozen: form.querySelector('#advanced-ctrl-destroy'),
-      emergency: form.querySelector('#advanced-ctrl-emergency'),
-      directPurchase: form.querySelector('#advanced-ctrl-direct-purchase'),
-      admin: form.querySelector('#advanced-ctrl-admin')
-    };
-
-    if (tradeModeSelect) {
-      tradeModeSelect.addEventListener('change', () => evaluateAdvanced({ touched: true }));
-    }
-
-    Object.values(changeControlInputs).forEach((input) => {
-      if (!input) return;
-      input.addEventListener('change', () => evaluateAdvanced({ touched: true }));
-    });
-
-    return {
-      setValues(values = {}) {
-        if (tradeModeSelect && typeof values.tradeMode === 'string') {
-          tradeModeSelect.value = values.tradeMode;
-        }
-        const normalized = normalizeChangeControl(values.changeControl);
-        Object.entries(changeControlInputs).forEach(([key, input]) => {
-          if (input) {
-            input.checked = Boolean(normalized[key]);
-          }
-        });
-      },
-      getValues() {
-        const changeControl = {};
-        Object.entries(changeControlInputs).forEach(([key, input]) => {
-          changeControl[key] = Boolean(input && input.checked);
-        });
-        return {
-          tradeMode: tradeModeSelect ? tradeModeSelect.value : 'permissionless',
-          changeControl
-        };
-      }
-    };
+    // REMOVED: Change-control toggles section - functionality moved to dedicated permission screens
+    return null;
   }
 
   function normalizeTokenAmount(value, decimals = 0) {
@@ -7785,7 +8228,14 @@ function buildManualActionRulesConfig(actionState, permissions) {
       resolvedIndex = maxAccessibleIndex;
     }
 
-    return STEP_SEQUENCE[resolvedIndex] || defaultStep;
+    const resolvedStepId = STEP_SEQUENCE[resolvedIndex] || defaultStep;
+
+    // FIXED: Return first substep if the resolved step has substeps
+    if (SUBSTEP_SEQUENCES[resolvedStepId] && SUBSTEP_SEQUENCES[resolvedStepId].length > 0) {
+      return SUBSTEP_SEQUENCES[resolvedStepId][0];
+    }
+
+    return resolvedStepId;
   }
 
   function getFirstInvalidStepId() {
@@ -8016,15 +8466,21 @@ function buildManualActionRulesConfig(actionState, permissions) {
         return null;
       }
 
+      // Get minting destination configuration
+      const manualMint = wizardState.form.permissions?.manualMint;
+      const mintDestinationType = manualMint?.destinationType || 'contract-owner';
+      const mintDestinationIdentity = manualMint?.destinationIdentity || '';
+      const allowCustomDestination = Boolean(manualMint?.allowCustomDestination);
+
       const distributionRules = {
         $format_version: '0',
         perpetualDistribution: null,
         perpetualDistributionRules: createRuleV0(false),
         preProgrammedDistribution: null,
         preProgrammedDistributionRules: createRuleV0(false),
-        newTokensDestinationIdentity: null,
+        newTokensDestinationIdentity: mintDestinationType === 'default-identity' && mintDestinationIdentity ? mintDestinationIdentity : null,
         newTokensDestinationIdentityRules: createRuleV0(true),
-        mintingAllowChoosingDestination: true,
+        mintingAllowChoosingDestination: allowCustomDestination,
         mintingAllowChoosingDestinationRules: createRuleV0(true),
         changeDirectPurchasePricingRules: createRuleV0(
           Boolean(wizardState.form.advanced?.changeControl?.directPurchase)
@@ -8119,93 +8575,150 @@ function buildManualActionRulesConfig(actionState, permissions) {
 
       // StepDecreasing: Bitcoin-style halving
       else if (type === 'StepDecreasing') {
-        return {
-          StepDecreasing: {
-            stepCount: parseInt(emission.stepCount, 10) || 1,
-            decreasePerInterval: {
-              numerator: parseInt(emission.decreasePerIntervalNumerator, 10) || 1,
-              denominator: parseInt(emission.decreasePerIntervalDenominator, 10) || 2
-            },
-            distributionStartAmount: parseInt(emission.distributionStartAmount, 10) || 100,
-            trailingDistributionIntervalAmount: parseInt(emission.trailingDistributionIntervalAmount, 10) || 0
-          }
+        const stepObj = {
+          stepCount: parseInt(emission.stepCount, 10) || 1,
+          decreasePerInterval: {
+            numerator: parseInt(emission.decreasePerIntervalNumerator, 10) || 1,
+            denominator: parseInt(emission.decreasePerIntervalDenominator, 10) || 2
+          },
+          distributionStartAmount: emission.distributionStartAmount ? BigInt(emission.distributionStartAmount) : BigInt(100),
+          trailingDistributionIntervalAmount: emission.trailingDistributionIntervalAmount ? BigInt(emission.trailingDistributionIntervalAmount) : BigInt(0)
         };
+
+        // Add optional fields if provided
+        if (emission.stepOffset && emission.stepOffset !== '' && emission.stepOffset !== 'None') {
+          stepObj.startPeriodOffset = BigInt(emission.stepOffset);
+        }
+        if (emission.stepMinValue && emission.stepMinValue !== '' && emission.stepMinValue !== 'None') {
+          stepObj.minValue = BigInt(emission.stepMinValue);
+        }
+        if (emission.stepMaxInterval && emission.stepMaxInterval !== '' && emission.stepMaxInterval !== 'None') {
+          stepObj.maxIntervalCount = BigInt(emission.stepMaxInterval);
+        }
+
+        return { StepDecreasing: stepObj };
       }
 
       // Linear: f(x) = (a * (x - s) / d) + b
       else if (type === 'Linear') {
-        return {
-          Linear: {
-            a: parseInt(emission.linearChange, 10) || 1,
-            d: 1,
-            s: 0,
-            b: parseInt(emission.linearStart, 10) || 0,
-            minValue: null,
-            maxValue: null
-          }
+        const linearObj = {
+          a: parseInt(emission.linearSlopeNumerator, 10) || 0,
+          d: emission.linearSlopeDivisor ? BigInt(emission.linearSlopeDivisor) : BigInt(1),
+          b: emission.linearStartingAmount ? BigInt(emission.linearStartingAmount) : BigInt(0)
         };
+
+        // Add optional fields if provided
+        if (emission.linearStartStep && emission.linearStartStep !== '' && emission.linearStartStep !== 'None') {
+          linearObj.s = BigInt(emission.linearStartStep);
+        }
+        if (emission.linearMinValue && emission.linearMinValue !== '' && emission.linearMinValue !== 'None') {
+          linearObj.minValue = BigInt(emission.linearMinValue);
+        }
+        if (emission.linearMaxValue && emission.linearMaxValue !== '' && emission.linearMaxValue !== 'None') {
+          linearObj.maxValue = BigInt(emission.linearMaxValue);
+        }
+
+        return { Linear: linearObj };
       }
 
-      // Exponential: f(x) = a * e^(b * x) + c
+      // Exponential: f(x) = (a * (x - s + o)^(m / n)) / d + b
       else if (type === 'Exponential') {
-        return {
-          Exponential: {
-            a: parseInt(emission.exponentialInitial, 10) || 100,
-            b: parseFloat(emission.exponentialRate) || 0.1,
-            c: 0
-          }
+        const expObj = {
+          a: parseInt(emission.expA, 10) || 0,
+          m: parseInt(emission.expM, 10) || 2,
+          n: parseInt(emission.expN, 10) || 1,
+          d: emission.expD ? BigInt(emission.expD) : BigInt(1),
+          o: emission.expO ? BigInt(emission.expO) : BigInt(0),
+          b: emission.expB ? BigInt(emission.expB) : BigInt(0)
         };
+
+        // Add optional fields if provided
+        if (emission.expS && emission.expS !== '' && emission.expS !== 'None') {
+          expObj.s = BigInt(emission.expS);
+        }
+        if (emission.expMinValue && emission.expMinValue !== '' && emission.expMinValue !== 'None') {
+          expObj.minValue = BigInt(emission.expMinValue);
+        }
+        if (emission.expMaxValue && emission.expMaxValue !== '' && emission.expMaxValue !== 'None') {
+          expObj.maxValue = BigInt(emission.expMaxValue);
+        }
+
+        return { Exponential: expObj };
       }
 
       // Polynomial: f(x) = (a * (x - s + o)^(m / n)) / d + b
       else if (type === 'Polynomial') {
-        return {
-          Polynomial: {
-            a: parseInt(emission.polyA, 10) || 1,
-            m: parseInt(emission.polyM, 10) || 2,
-            n: parseInt(emission.polyN, 10) || 1,
-            d: parseInt(emission.polyD, 10) || 1,
-            o: parseInt(emission.polyO, 10) || 0,
-            s: 0,
-            b: parseInt(emission.polyB, 10) || 0,
-            minValue: null,
-            maxValue: null
-          }
+        const polyObj = {
+          a: parseInt(emission.polyA, 10) || 0,
+          m: parseInt(emission.polyM, 10) || 2,
+          n: parseInt(emission.polyN, 10) || 1,
+          d: emission.polyD ? BigInt(emission.polyD) : BigInt(1),
+          o: emission.polyO ? BigInt(emission.polyO) : BigInt(0),
+          b: emission.polyB ? BigInt(emission.polyB) : BigInt(0)
         };
+
+        // Add optional fields if provided
+        if (emission.polyS && emission.polyS !== '' && emission.polyS !== 'None') {
+          polyObj.s = BigInt(emission.polyS);
+        }
+        if (emission.polyMinValue && emission.polyMinValue !== '' && emission.polyMinValue !== 'None') {
+          polyObj.minValue = BigInt(emission.polyMinValue);
+        }
+        if (emission.polyMaxValue && emission.polyMaxValue !== '' && emission.polyMaxValue !== 'None') {
+          polyObj.maxValue = BigInt(emission.polyMaxValue);
+        }
+
+        return { Polynomial: polyObj };
       }
 
-      // Logarithmic: f(x) = a * log_b(x) + c
+      // Logarithmic: f(x) = (a * ln((m * (x - s + o)) / n)) / d + b
       else if (type === 'Logarithmic') {
-        return {
-          Logarithmic: {
-            a: parseInt(emission.logA, 10) || 1,
-            d: parseInt(emission.logD, 10) || 1,
-            m: parseInt(emission.logM, 10) || 1,
-            n: parseInt(emission.logN, 10) || 1,
-            o: parseInt(emission.logO, 10) || 0,
-            s: 0,
-            b: parseInt(emission.logB, 10) || 0,
-            minValue: null,
-            maxValue: null
-          }
+        const logObj = {
+          a: parseInt(emission.logA, 10) || 0,
+          d: emission.logD ? BigInt(emission.logD) : BigInt(1),
+          m: emission.logM ? BigInt(emission.logM) : BigInt(1),
+          n: emission.logN ? BigInt(emission.logN) : BigInt(1),
+          o: emission.logO ? BigInt(emission.logO) : BigInt(0),
+          b: emission.logB ? BigInt(emission.logB) : BigInt(0)
         };
+
+        // Add optional fields if provided
+        if (emission.logS && emission.logS !== '' && emission.logS !== 'None') {
+          logObj.s = BigInt(emission.logS);
+        }
+        if (emission.logMinValue && emission.logMinValue !== '' && emission.logMinValue !== 'None') {
+          logObj.minValue = BigInt(emission.logMinValue);
+        }
+        if (emission.logMaxValue && emission.logMaxValue !== '' && emission.logMaxValue !== 'None') {
+          logObj.maxValue = BigInt(emission.logMaxValue);
+        }
+
+        return { Logarithmic: logObj };
       }
 
-      // InvertedLogarithmic: f(x) = (a * log(n / (m * (x - s + o)))) / d + b
+      // InvertedLogarithmic: f(x) = (a * ln(n / (m * (x - s + o)))) / d + b
       else if (type === 'InvertedLogarithmic') {
-        return {
-          InvertedLogarithmic: {
-            a: parseInt(emission.invlogA, 10) || 1000,
-            d: parseInt(emission.invlogD, 10) || 10,
-            m: parseInt(emission.invlogM, 10) || 5,
-            n: parseInt(emission.invlogN, 10) || 5000,
-            o: parseInt(emission.invlogO, 10) || 0,
-            s: 0,
-            b: parseInt(emission.invlogB, 10) || 10,
-            minValue: null,
-            maxValue: null
-          }
+        const invlogObj = {
+          a: parseInt(emission.invlogA, 10) || 0,
+          d: emission.invlogD ? BigInt(emission.invlogD) : BigInt(1),
+          m: emission.invlogM ? BigInt(emission.invlogM) : BigInt(1),
+          n: emission.invlogN ? BigInt(emission.invlogN) : BigInt(1),
+          o: emission.invlogO ? BigInt(emission.invlogO) : BigInt(0),
+          b: emission.invlogB ? BigInt(emission.invlogB) : BigInt(0)
         };
+
+        // Add optional fields if provided
+        if (emission.invlogS && emission.invlogS !== '' && emission.invlogS !== 'None') {
+          invlogObj.s = BigInt(emission.invlogS);
+        }
+        if (emission.invlogMinValue && emission.invlogMinValue !== '' && emission.invlogMinValue !== 'None') {
+          invlogObj.minValue = BigInt(emission.invlogMinValue);
+        }
+        if (emission.invlogMaxValue && emission.invlogMaxValue !== '' && emission.invlogMaxValue !== 'None') {
+          invlogObj.maxValue = BigInt(emission.invlogMaxValue);
+        }
+
+        return { InvertedLogarithmic: invlogObj };
       }
 
       // Stepwise: Custom step-based schedule
@@ -8337,9 +8850,9 @@ function buildManualActionRulesConfig(actionState, permissions) {
     }
 
     // Add description if user provided one, otherwise generate from token name
-    const userDescription = wizardState.form.naming.description?.trim();
+    const userDescription = wizardState.form.search.description?.trim();
     if (userDescription && userDescription.length >= 3) {
-      tokenConfig.description = userDescription.substring(0, 100); // Max 100 chars
+      tokenConfig.description = userDescription.substring(0, 200); // Max 200 chars
     } else if (tokenName && tokenName !== 'Unnamed Token') {
       const description = `Token: ${tokenName}`;
       tokenConfig.description = description.substring(0, 100); // Max 100 chars
@@ -8389,8 +8902,9 @@ function buildManualActionRulesConfig(actionState, permissions) {
     }
 
     // Add keywords - use user-provided keywords if available, otherwise generate from token name
-    const userKeywords = wizardState.form.naming.keywords;
-    if (userKeywords && Array.isArray(userKeywords) && userKeywords.length > 0) {
+    const userKeywordsText = wizardState.form.search.keywords?.trim();
+    const userKeywords = userKeywordsText ? userKeywordsText.split(',').map(k => k.trim()).filter(k => k.length > 0) : [];
+    if (userKeywords && userKeywords.length > 0) {
       platformContract.keywords = userKeywords.slice(0, 50); // Max 50 keywords
     } else if (tokenName && tokenName !== 'Unnamed Token') {
       platformContract.keywords = [tokenName.toLowerCase()];
@@ -8584,40 +9098,63 @@ function buildManualActionRulesConfig(actionState, permissions) {
           defaultState.form.distribution.emission.stepCount = String(emission.stepCount || 1);
           defaultState.form.distribution.emission.decreasePerIntervalNumerator = String(emission.decreasePerIntervalNumerator || 1);
           defaultState.form.distribution.emission.decreasePerIntervalDenominator = String(emission.decreasePerIntervalDenominator || 2);
+          defaultState.form.distribution.emission.stepOffset = String(emission.stepOffset || '');
           defaultState.form.distribution.emission.distributionStartAmount = String(emission.distributionStartAmount || 100);
+          defaultState.form.distribution.emission.stepMinValue = String(emission.stepMinValue || '');
+          defaultState.form.distribution.emission.stepMaxInterval = String(emission.stepMaxInterval || '');
           defaultState.form.distribution.emission.trailingDistributionIntervalAmount = String(emission.trailingDistributionIntervalAmount || 0);
         }
         else if (emission.type === 'Linear') {
-          defaultState.form.distribution.emission.linearStart = String(emission.linearStart || 100);
-          defaultState.form.distribution.emission.linearChange = String(emission.linearChange || 10);
+          defaultState.form.distribution.emission.linearSlopeNumerator = String(emission.linearSlopeNumerator || 0);
+          defaultState.form.distribution.emission.linearSlopeDivisor = String(emission.linearSlopeDivisor || 1);
+          defaultState.form.distribution.emission.linearStartStep = String(emission.linearStartStep || '');
+          defaultState.form.distribution.emission.linearStartingAmount = String(emission.linearStartingAmount || 0);
+          defaultState.form.distribution.emission.linearMinValue = String(emission.linearMinValue || '');
+          defaultState.form.distribution.emission.linearMaxValue = String(emission.linearMaxValue || '');
         }
         else if (emission.type === 'Exponential') {
-          defaultState.form.distribution.emission.exponentialInitial = String(emission.exponentialInitial || 100);
-          defaultState.form.distribution.emission.exponentialRate = String(emission.exponentialRate || 0.1);
+          defaultState.form.distribution.emission.expA = String(emission.expA || 0);
+          defaultState.form.distribution.emission.expM = String(emission.expM || 2);
+          defaultState.form.distribution.emission.expN = String(emission.expN || 1);
+          defaultState.form.distribution.emission.expD = String(emission.expD || 1);
+          defaultState.form.distribution.emission.expS = String(emission.expS || '');
+          defaultState.form.distribution.emission.expO = String(emission.expO || 0);
+          defaultState.form.distribution.emission.expB = String(emission.expB || 0);
+          defaultState.form.distribution.emission.expMinValue = String(emission.expMinValue || '');
+          defaultState.form.distribution.emission.expMaxValue = String(emission.expMaxValue || '');
         }
         else if (emission.type === 'Polynomial') {
-          defaultState.form.distribution.emission.polyA = String(emission.polyA || 1);
+          defaultState.form.distribution.emission.polyA = String(emission.polyA || 0);
           defaultState.form.distribution.emission.polyM = String(emission.polyM || 2);
           defaultState.form.distribution.emission.polyN = String(emission.polyN || 1);
           defaultState.form.distribution.emission.polyD = String(emission.polyD || 1);
+          defaultState.form.distribution.emission.polyS = String(emission.polyS || '');
           defaultState.form.distribution.emission.polyO = String(emission.polyO || 0);
           defaultState.form.distribution.emission.polyB = String(emission.polyB || 0);
+          defaultState.form.distribution.emission.polyMinValue = String(emission.polyMinValue || '');
+          defaultState.form.distribution.emission.polyMaxValue = String(emission.polyMaxValue || '');
         }
         else if (emission.type === 'Logarithmic') {
-          defaultState.form.distribution.emission.logA = String(emission.logA || 1);
+          defaultState.form.distribution.emission.logA = String(emission.logA || 0);
           defaultState.form.distribution.emission.logD = String(emission.logD || 1);
           defaultState.form.distribution.emission.logM = String(emission.logM || 1);
           defaultState.form.distribution.emission.logN = String(emission.logN || 1);
+          defaultState.form.distribution.emission.logS = String(emission.logS || '');
           defaultState.form.distribution.emission.logO = String(emission.logO || 0);
           defaultState.form.distribution.emission.logB = String(emission.logB || 0);
+          defaultState.form.distribution.emission.logMinValue = String(emission.logMinValue || '');
+          defaultState.form.distribution.emission.logMaxValue = String(emission.logMaxValue || '');
         }
         else if (emission.type === 'InvertedLogarithmic') {
-          defaultState.form.distribution.emission.invlogA = String(emission.invlogA || 1000);
-          defaultState.form.distribution.emission.invlogD = String(emission.invlogD || 10);
-          defaultState.form.distribution.emission.invlogM = String(emission.invlogM || 5);
-          defaultState.form.distribution.emission.invlogN = String(emission.invlogN || 5000);
+          defaultState.form.distribution.emission.invlogA = String(emission.invlogA || 0);
+          defaultState.form.distribution.emission.invlogD = String(emission.invlogD || 1);
+          defaultState.form.distribution.emission.invlogM = String(emission.invlogM || 1);
+          defaultState.form.distribution.emission.invlogN = String(emission.invlogN || 1);
+          defaultState.form.distribution.emission.invlogS = String(emission.invlogS || '');
           defaultState.form.distribution.emission.invlogO = String(emission.invlogO || 0);
-          defaultState.form.distribution.emission.invlogB = String(emission.invlogB || 10);
+          defaultState.form.distribution.emission.invlogB = String(emission.invlogB || 0);
+          defaultState.form.distribution.emission.invlogMinValue = String(emission.invlogMinValue || '');
+          defaultState.form.distribution.emission.invlogMaxValue = String(emission.invlogMaxValue || '');
         }
         else if (emission.type === 'Stepwise') {
           defaultState.form.distribution.emission.stepwise = emission.stepwise || [
@@ -9877,156 +10414,16 @@ function buildManualActionRulesConfig(actionState, permissions) {
 })();
 
 // ========================================
-// KEYWORDS & DESCRIPTION (Naming Metadata)
+// KEYWORDS & DESCRIPTION (Search Metadata)
 // ========================================
-
-(function initializeNamingMetadata() {
-  const metadataForm = document.getElementById('naming-metadata-form');
-  const descriptionInput = document.getElementById('token-description');
-  const keywordsInput = document.getElementById('token-keywords');
-  const keywordsPreview = document.getElementById('keywords-preview');
-  const keywordsTagContainer = document.getElementById('keywords-tag-container');
-  const descriptionMessage = document.getElementById('token-description-message');
-  const keywordsMessage = document.getElementById('token-keywords-message');
-  const metadataNextButton = document.getElementById('naming-metadata-next');
-
-  if (!metadataForm || !descriptionInput || !keywordsInput) {
-    console.warn('Naming metadata elements not found');
-    return;
-  }
-
-  const wizardState = window.wizardState;
-  const persistState = window.persistState;
-
-  if (!wizardState || !persistState) {
-    console.error('wizardState or persistState not available for naming metadata');
-    return;
-  }
-
-  // Parse keywords from comma-separated string
-  function parseKeywords(text) {
-    if (!text || typeof text !== 'string') return [];
-    return text
-      .split(',')
-      .map(keyword => keyword.trim())
-      .filter(keyword => keyword.length > 0);
-  }
-
-  // Render keyword tags in preview
-  function renderKeywordTags(keywords) {
-    keywordsTagContainer.innerHTML = '';
-
-    if (!keywords || keywords.length === 0) {
-      const emptyTag = document.createElement('span');
-      emptyTag.className = 'keyword-tag keyword-tag--empty';
-      emptyTag.textContent = 'No keywords yet';
-      keywordsTagContainer.appendChild(emptyTag);
-      keywordsPreview.style.display = 'none';
-      return;
-    }
-
-    keywords.forEach(keyword => {
-      const tag = document.createElement('span');
-      tag.className = 'keyword-tag';
-      tag.textContent = keyword;
-      keywordsTagContainer.appendChild(tag);
-    });
-
-    keywordsPreview.style.display = 'block';
-  }
-
-  // Validate and update metadata
-  function validateMetadata() {
-    const description = descriptionInput.value.trim();
-    const keywordsText = keywordsInput.value.trim();
-    const keywords = parseKeywords(keywordsText);
-
-    let descriptionValid = true;
-    let keywordsValid = true;
-    let descriptionError = '';
-    let keywordsError = '';
-
-    // Validate description (optional, but if provided must be 3-100 chars)
-    if (description.length > 0) {
-      if (description.length < 3) {
-        descriptionError = 'Description must be at least 3 characters.';
-        descriptionValid = false;
-      } else if (description.length > 100) {
-        descriptionError = 'Description must be 100 characters or less.';
-        descriptionValid = false;
-      }
-    }
-
-    // Validate keywords (optional, but if provided max 50)
-    if (keywords.length > 50) {
-      keywordsError = 'Maximum 50 keywords allowed.';
-      keywordsValid = false;
-    }
-
-    // Update UI
-    if (descriptionMessage) {
-      descriptionMessage.textContent = descriptionError;
-      descriptionMessage.className = descriptionError ? 'wizard-field__message wizard-field__message--error' : 'wizard-field__message';
-    }
-
-    if (keywordsMessage) {
-      keywordsMessage.textContent = keywordsError;
-      keywordsMessage.className = keywordsError ? 'wizard-field__message wizard-field__message--error' : 'wizard-field__message';
-    }
-
-    // Render keyword tags
-    renderKeywordTags(keywords);
-
-    // Save to state (always valid since fields are optional)
-    wizardState.form.naming.description = description;
-    wizardState.form.naming.keywords = keywords;
-    persistState();
-
-    // Always enable next button (fields are optional)
-    if (metadataNextButton) {
-      metadataNextButton.disabled = false;
-    }
-
-    return descriptionValid && keywordsValid;
-  }
-
-  // Event listeners
-  if (descriptionInput) {
-    descriptionInput.addEventListener('input', validateMetadata);
-    descriptionInput.addEventListener('blur', validateMetadata);
-  }
-
-  if (keywordsInput) {
-    keywordsInput.addEventListener('input', validateMetadata);
-    keywordsInput.addEventListener('blur', validateMetadata);
-  }
-
-  if (metadataForm) {
-    metadataForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      validateMetadata();
-      // Navigation handled by global form handler
-    });
-  }
-
-  // Initialize from saved state
-  if (wizardState.form.naming.description) {
-    descriptionInput.value = wizardState.form.naming.description;
-  }
-  if (wizardState.form.naming.keywords && wizardState.form.naming.keywords.length > 0) {
-    keywordsInput.value = wizardState.form.naming.keywords.join(', ');
-  }
-
-  // Initial validation
-  validateMetadata();
-
-  console.log('Naming metadata (keywords & description) initialized');
-})();
+// Moved from naming to search step
+// Event listeners and state management handled in main wizard code above
 
 // ========================================
 // ACTION RULES PRESETS
 // ========================================
-
+// REMOVED: Action rules presets functionality - no longer used
+/*
 (function initializeActionRulesPresets() {
   const presetRadios = document.querySelectorAll('input[name="action-rules-preset"]');
 
@@ -10298,6 +10695,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
 
   console.log('Action rules presets initialized with 6 templates');
 })();
+*/
 
 // ========================================
 // PRE-PROGRAMMED DISTRIBUTION
@@ -10521,7 +10919,8 @@ function buildManualActionRulesConfig(actionState, permissions) {
 // ========================================
 // CONTROL MODEL - GROUPS INTEGRATION
 // ========================================
-
+// REMOVED: Permissions scope radios functionality - no longer used
+/*
 (function initializeControlModelGroupsIntegration() {
   const permissionsScopeRadios = document.querySelectorAll('input[name="permissions-scope"]');
   const enableGroupCheckbox = document.getElementById('enable-group');
@@ -10584,6 +10983,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
 
   console.log('Control model - Groups integration initialized');
 })();
+*/
 
 // ═══════════════════════════════════════════════════════
 // TEMPLATE SELECTION
@@ -10744,10 +11144,10 @@ function buildManualActionRulesConfig(actionState, permissions) {
     // Note: Token name is intentionally NOT loaded from template - users must choose their own unique name
     state.form.tokenName = '';
 
-    // Naming
-    state.form.naming = state.form.naming || {};
-    state.form.naming.description = template.description || '';
-    state.form.naming.keywords = template.keywords || [];
+    // Search metadata
+    state.form.search = state.form.search || {};
+    state.form.search.description = template.description || '';
+    state.form.search.keywords = template.keywords && Array.isArray(template.keywords) ? template.keywords.join(', ') : '';
 
     // Permissions
     state.form.permissions = state.form.permissions || {};
