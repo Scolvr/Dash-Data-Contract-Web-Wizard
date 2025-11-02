@@ -1606,7 +1606,7 @@ html[data-theme='light'] .wizard-nav-item .wizard-path__pill {
   display: flex;
   gap: 8px;
   margin-bottom: 32px;
-  margin-left: 140px;
+  margin-left: 200px;
   margin-right: auto;
   padding: 6px;
   background: var(--color-smoke);
@@ -2146,6 +2146,56 @@ html[data-theme='auto'] .wizard-tab--active {
 .form-card--highlight {
   border-color: var(--color-primary);
   background: var(--color-primary-light);
+}
+
+/* Export Options */
+.export-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-background);
+  transition: all 0.2s ease;
+}
+
+.export-option:hover {
+  border-color: var(--color-primary);
+  background: var(--color-surface);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.export-option + .export-option {
+  margin-top: var(--space-4);
+}
+
+.export-option__header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  flex: 1;
+}
+
+.export-option__icon {
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+
+.export-option__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 var(--space-1) 0;
+}
+
+.export-option__description {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin: 0;
+  line-height: 1.5;
 }
 
 /* Grid layout for cards */

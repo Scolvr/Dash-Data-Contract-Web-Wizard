@@ -7,8 +7,8 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dash Token Wizard</title>
-  <link rel="preload" href="styles.css?v=71.0.1760980124" as="style">
-  <link rel="stylesheet" href="styles.css?v=71.0.1760980124">
+  <link rel="preload" href="styles.css?v=86" as="style">
+  <link rel="stylesheet" href="styles.css?v=86">
 </head>
 <body>
   <div class="wizard-shell">
@@ -316,96 +316,6 @@
       </div>
       <!-- End Group Sidebar -->
 
-      <!-- Document Sidebar -->
-      <div class="sidebar-section" data-sidebar="document" hidden>
-        <!-- Sidebar Header with Branding -->
-        <div class="wizard-sidebar__header">
-          <button class="brand" aria-label="Return to template selection" type="button" onclick="showScreen('welcome', { force: true })">
-            <div class="brand__icon">
-              <img src="https://media.dash.org/wp-content/uploads/dash-d-rounded-square-1000.png" alt="Dash" width="32" height="32">
-            </div>
-            <span class="brand__title">Documentation</span>
-          </button>
-        </div>
-
-        <!-- Search Bar -->
-        <div class="wizard-sidebar__search">
-          <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM18 18l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <input type="text" class="wizard-sidebar__search-input" placeholder="Search..." aria-label="Search navigation">
-        </div>
-
-        <!-- Navigation -->
-        <nav class="wizard-nav" aria-label="Documentation navigation">
-          <div class="wizard-nav__label">Document Menu</div>
-
-          <div class="wizard-nav-section">
-            <div class="wizard-nav__label">Review</div>
-            <button class="wizard-nav-item" data-step="overview">
-              <svg class="wizard-nav-item__icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M10 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M2 10s3-7 8-7 8 7 8 7-3 7-8 7-8-7-8-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <span class="wizard-nav-item__text">Overview</span>
-              <span class="wizard-path__pill pill" id="status-overview" aria-live="polite"></span>
-            </button>
-          </div>
-
-          <div class="wizard-nav-section">
-            <!-- Placeholder navigation items - to be filled later -->
-            <button class="wizard-nav-item" data-step="doc-export">
-              <svg class="wizard-nav-item__icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M10 3v8M7 8l3 3 3-3M4 13v4h12v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <span class="wizard-nav-item__text">Export</span>
-              <span class="wizard-path__pill pill" id="status-doc-export" aria-live="polite"></span>
-            </button>
-
-            <button class="wizard-nav-item" data-step="doc-share">
-              <svg class="wizard-nav-item__icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <circle cx="15" cy="5" r="3" stroke="currentColor" stroke-width="2"/>
-                <circle cx="5" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
-                <circle cx="15" cy="15" r="3" stroke="currentColor" stroke-width="2"/>
-                <path d="M7.5 11.5l5 2M7.5 8.5l5-2" stroke="currentColor" stroke-width="2"/>
-              </svg>
-              <span class="wizard-nav-item__text">Share</span>
-              <span class="wizard-path__pill pill" id="status-doc-share" aria-live="polite"></span>
-            </button>
-          </div>
-        </nav>
-
-        <!-- Footer with Theme Toggle -->
-        <div class="wizard-sidebar__footer">
-          <button class="wizard-nav-item">
-            <svg class="wizard-nav-item__icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
-              <path d="M10 1v2M10 17v2M18.5 10h-2M3.5 10h-2M15.5 4.5l-1.4 1.4M5.9 14.1l-1.4 1.4M15.5 15.5l-1.4-1.4M5.9 5.9L4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-            <span class="wizard-nav-item__text">Appearance</span>
-          </button>
-          <div class="theme-toggle-box">
-            <div class="theme-toggle" role="radiogroup" aria-labelledby="theme-toggle-label-doc">
-              <span id="theme-toggle-label-doc" class="sr-only">Appearance</span>
-              <div class="theme-toggle__options">
-                <label class="theme-toggle__option">
-                  <input type="radio" name="ui-theme-doc" value="auto" aria-label="Use system appearance" checked>
-                  <span>Auto</span>
-                </label>
-                <label class="theme-toggle__option">
-                  <input type="radio" name="ui-theme-doc" value="light" aria-label="Use light theme">
-                  <span>Light</span>
-                </label>
-                <label class="theme-toggle__option">
-                  <input type="radio" name="ui-theme-doc" value="dark" aria-label="Use dark theme">
-                  <span>Dark</span>
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- End Document Sidebar -->
     </aside>
 
     <main class="wizard-main wizard-container" id="wizard" data-active-step="naming" data-active-tab="token">
@@ -424,13 +334,6 @@
           </svg>
           <span class="wizard-tab__text">Group</span>
         </button>
-        <button class="wizard-tab" role="tab" aria-selected="false" aria-controls="tab-panel-document" id="tab-document" data-tab="document">
-          <svg class="wizard-tab__icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M12 2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M12 2v6h6M6 11h8M6 14h8M6 8h2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span class="wizard-tab__text">Document</span>
-        </button>
       </div>
 
       <div class="wizard-content">
@@ -440,28 +343,21 @@
           <!-- Right Side Guide Panel -->
           <aside class="page-guide" aria-label="Page guide">
             <div class="page-guide__content">
-              <h2 class="page-guide__title">Getting Started</h2>
-              <p class="page-guide__intro">The Dash Token Wizard helps you create your own digital tokens easily — no advanced technical knowledge needed.</p>
+              <h2 class="page-guide__title">Templates Library</h2>
+              <p class="page-guide__intro">Start by choosing a base template that defines your token's starting structure. You can also begin from scratch for full customization.</p>
 
               <div class="page-guide__section">
-                <h3 class="page-guide__section-title">How It Works</h3>
+                <h3 class="page-guide__section-title">Guide</h3>
+                <p>Select a pre-made template like Simple Token, Halving Coin, Group Token, or Notes Token. Or choose Start from Scratch for a blank setup. Then click Continue to begin naming your token.</p>
 
-                <h4 class="page-guide__step-heading">Choose a starting point</h4>
+                <h4 class="page-guide__step-heading">Available Templates</h4>
                 <p><strong>Start from Scratch</strong> – Build your token completely your way. You decide how it works and who controls it.</p>
                 <p><strong>Simple Fixed Supply</strong> – A basic token with a set amount that never changes. Perfect for simple use cases or small projects.</p>
                 <p><strong>Utility Token</strong> – A token used for access, payments, or services within an app or platform.</p>
                 <p><strong>Reward/Points Token</strong> – A token that can be given out regularly as rewards or points, for example in loyalty programs.</p>
 
-                <h4 class="page-guide__step-heading">Customize your token</h4>
-                <p>After choosing a template, you can adjust settings like how many tokens exist, whether they can be transferred, or if new ones can be created later.</p>
-
-                <h4 class="page-guide__step-heading">Deploy your token</h4>
-                <p>When you're happy with your setup, you can publish (or "deploy") your token to the Dash Platform so it becomes active and ready to use.</p>
-              </div>
-
-              <div class="page-guide__tip">
-                <strong>💡 Pro Tip</strong>
-                Templates can save time, but you can customize everything later. Start with what's closest to your needs.
+                <h4 class="page-guide__step-heading">What Happens Next</h4>
+                <p>After choosing a template, you will customize your token's name, supply settings, permissions, distribution rules, and more. Each template provides sensible defaults that you can adjust to match your specific needs.</p>
               </div>
             </div>
           </aside>
@@ -559,35 +455,39 @@
       <!-- Right Side Guide Panel -->
       <aside class="page-guide" aria-label="Page guide">
         <div class="page-guide__content">
-          <h2 class="page-guide__title">Welcome to your Token Name setup!</h2>
-          <p class="page-guide__intro">Here you can define how your token will appear across your project. This name helps users recognize and interact with your token easily.</p>
+          <h2 class="page-guide__title">Basic Token Name</h2>
+          <p class="page-guide__intro">Give your token its main identity — this is the name others will see and recognize.</p>
 
           <div class="page-guide__section">
-            <h3 class="page-guide__section-title">Steps:</h3>
+            <h3 class="page-guide__section-title">Guide</h3>
+            <p>Enter a clear and professional name (e.g. MyToken). Avoid special characters. Then click Continue to set up localizations.</p>
+
+            <h4 class="page-guide__step-heading">What to Enter</h4>
             <ol class="page-guide__steps">
               <li>
-                <strong>Enter your Token Name</strong>
-                <p>Choose a unique and descriptive name for your token (2–64 characters).</p>
-                <p><em>Example: Mega Awesome Token</em></p>
+                <strong>Token Name</strong>
+                <p>Choose a unique and descriptive name for your token (2–64 characters). This is the primary identifier that users will see across all platforms and interfaces.</p>
+                <p><em>Example: "Mega Awesome Token" or "MyProject Coin"</em></p>
               </li>
               <li>
-                <strong>Define Plural Form</strong>
-                <p>Specify how multiple units of your token will be displayed.</p>
-                <p><em>Example: "Coins"</em></p>
+                <strong>Plural Form</strong>
+                <p>Specify how multiple units of your token will be displayed in user interfaces.</p>
+                <p><em>Example: If token name is "Token", plural could be "Tokens" or "Coins"</em></p>
               </li>
               <li>
-                <strong>Optional: Capitalize Token Name</strong>
-                <p>When enabled, your token name will always appear with an initial capital letter (e.g., "Token" instead of "token").</p>
+                <strong>Capitalization</strong>
+                <p>When enabled, your token name will always appear with an initial capital letter in displays (e.g., "Token" instead of "token").</p>
               </li>
             </ol>
           </div>
 
-          <div class="page-guide__tip">
-            <strong>💡 Tips:</strong>
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Best Practices</h3>
             <ul style="margin: var(--space-2) 0 0 0; padding-left: var(--space-5); list-style: disc;">
               <li>Keep your name short, clear, and easy to remember.</li>
               <li>Avoid using symbols or special characters unless necessary.</li>
-              <li>The chosen name will be visible to all users.</li>
+              <li>The chosen name will be visible to all users and cannot be easily changed after deployment.</li>
+              <li>Consider how the name sounds when spoken and how it appears in different contexts.</li>
             </ul>
           </div>
         </div>
@@ -644,21 +544,45 @@
       <!-- Right Side Guide Panel -->
       <aside class="page-guide" aria-label="Page guide">
         <div class="page-guide__content">
-          <h2 class="page-guide__title">Localization Guide</h2>
-          <p class="page-guide__intro">You can add translations to make your token accessible to users in different languages. This is optional, but helpful if you want to reach a global audience.</p>
+          <h2 class="page-guide__title">Name Localization</h2>
+          <p class="page-guide__intro">Add translations for your token's name across different languages.</p>
 
           <div class="page-guide__section">
-            <h3 class="page-guide__section-title">How it works:</h3>
-            <ol class="page-guide__steps">
-              <li>Select a language from the dropdown list.</li>
-              <li>Enter the translated name and description for your token.</li>
-              <li>Repeat the process if you want to add more languages.</li>
-            </ol>
+            <h3 class="page-guide__section-title">Guide</h3>
+            <p><strong>Note:</strong> The basic token name you entered in the previous step automatically serves as the English (en) localization. Use this screen to add additional language translations beyond English.</p>
+
+            <p>For each additional language, define:</p>
+            <ul style="margin: var(--space-2) 0; padding-left: var(--space-5); list-style: disc;">
+              <li>Two-letter language code (e.g., es, fr, de).</li>
+              <li>Singular and plural forms (e.g., Token / Tokens).</li>
+              <li>Capitalization preference (for UI display).</li>
+            </ul>
+            <p>This helps make your token multilingual-ready. Click Continue when done.</p>
+
+            <h4 class="page-guide__step-heading">Language Codes</h4>
+            <p>Use standard ISO 639-1 two-letter language codes:</p>
+            <ul style="margin: var(--space-2) 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>en</strong> - English (already set from basic token name)</li>
+              <li><strong>es</strong> - Spanish</li>
+              <li><strong>fr</strong> - French</li>
+              <li><strong>de</strong> - German</li>
+              <li><strong>zh</strong> - Chinese</li>
+              <li><strong>ja</strong> - Japanese</li>
+              <li><strong>pt</strong> - Portuguese</li>
+              <li><strong>ru</strong> - Russian</li>
+            </ul>
+
+            <h4 class="page-guide__step-heading">Why Localization Matters</h4>
+            <p>Supporting multiple languages makes your token more accessible to international users and demonstrates professionalism. Proper localization can significantly increase adoption in non-English speaking markets.</p>
           </div>
 
-          <div class="page-guide__tip">
-            <strong>💡 Tip:</strong>
-            <p style="margin: var(--space-2) 0 0 0;">If you are not sure about the translation, you can use any online translation tool or ask a native speaker.</p>
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Best Practices</h3>
+            <ul style="margin: var(--space-2) 0 0 0; padding-left: var(--space-5); list-style: disc;">
+              <li>Work with native speakers for accurate translations.</li>
+              <li>Keep singular and plural forms grammatically correct for each language.</li>
+              <li>Consider your target markets when choosing which languages to support.</li>
+            </ul>
           </div>
         </div>
       </aside>
@@ -704,26 +628,44 @@
       <!-- Right Side Guide Panel -->
       <aside class="page-guide" aria-label="Page guide">
         <div class="page-guide__content">
-          <h2 class="page-guide__title">Update Names</h2>
-          <p class="page-guide__intro">Control whether token names can be modified after deployment.</p>
+          <h2 class="page-guide__title">Name Updates</h2>
+          <p class="page-guide__intro">Control whether your token's name or conventions can be modified after launch.</p>
 
           <div class="page-guide__section">
-            <h3 class="page-guide__section-title">Step-by-step guide</h3>
-            <ol class="page-guide__steps">
-              <li>
-                <strong>Enable Name Updates</strong>
-                <p>Turn on to allow changing token names after the token is created.</p>
-              </li>
-              <li>
-                <strong>Set Update Permissions</strong>
-                <p>Who can update the token names. This could be the owner, a specific identity, or a group.</p>
-              </li>
-            </ol>
+            <h3 class="page-guide__section-title">Guide</h3>
+            <p>Choose who can change naming rules:</p>
+            <ul style="margin: var(--space-2) 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>Contract Owner (you)</strong> - Only you can make changes</li>
+              <li><strong>Specific Identity (ID-based)</strong> - Delegate to another trusted identity</li>
+              <li><strong>Group (shared control)</strong> - Multi-signature governance</li>
+              <li><strong>No One (fully locked)</strong> - Names cannot be changed by anyone, ever</li>
+            </ul>
+            <p>If enabled, decide who can change this rule in the future. Click Continue to define permissions.</p>
+
+            <h4 class="page-guide__step-heading">What This Controls</h4>
+            <p>This permission determines whether your token's display conventions can be updated after deployment, including:</p>
+            <ul style="margin: var(--space-2) 0; padding-left: var(--space-5); list-style: disc;">
+              <li>Token name (singular and plural forms)</li>
+              <li>Localization strings for different languages</li>
+              <li>Capitalization preferences</li>
+              <li>Decimals display (in some configurations)</li>
+            </ul>
           </div>
 
-          <div class="page-guide__tip">
-            <strong>💡 Pro Tip</strong>
-            Keeping names fixed provides consistency, but allowing updates can be useful for rebranding or correcting errors.
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Best Practices</h3>
+            <ul style="margin: var(--space-2) 0 0 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>Early-stage projects:</strong> Enable changes with Owner or Group control for flexibility during development.</li>
+              <li><strong>Mature projects:</strong> Lock changes (set to "No One") after establishing brand identity and listings.</li>
+              <li><strong>DAO tokens:</strong> Use Group control for community governance over naming decisions.</li>
+              <li><strong>Enterprise tokens:</strong> Assign to Specific Identity for compliance or regulatory control.</li>
+            </ul>
+          </div>
+
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Important Notes</h3>
+            <p><strong>Warning:</strong> Setting this to "No One" is permanent and cannot be reversed. Your token's name will be locked forever.</p>
+            <p><strong>Rebranding:</strong> If you anticipate potential rebranding, keep this permission enabled with appropriate controls.</p>
           </div>
         </div>
       </aside>
@@ -787,7 +729,7 @@
                 <div class="distribution-inline-panel" id="update-names-panel-identity" hidden>
                   <div class="field-group">
                     <label class="wizard-field__label" for="update-names-identity-id">Identity ID</label>
-                    <input class="wizard-field__input" type="text" id="update-names-identity-id" name="update-names-identity-id" placeholder="e.g., 4hKFP3mFB9vku8VJKcZvwVN123...">
+                    <input class="wizard-field__input" type="text" id="update-names-identity-id" name="update-names-identity-id" placeholder="Enter the Base58 ID">
                     <span class="field-hint">Enter the Dash Platform identity ID that can change token names</span>
                   </div>
                 </div>
@@ -834,38 +776,41 @@
       <!-- Right Side Guide Panel -->
       <aside class="page-guide" aria-label="Page guide">
         <div class="page-guide__content">
-          <h2 class="page-guide__title">Token Supply Settings</h2>
-          <p class="page-guide__intro">Configure your token's economic foundation. These settings are permanent and cannot be changed.</p>
+          <h2 class="page-guide__title">Supply & Basics</h2>
+          <p class="page-guide__intro">Set your token's base parameters — supply, decimals, and activity tracking.</p>
 
           <div class="page-guide__section">
-            <h3 class="page-guide__section-title">Step-by-step guide</h3>
-            <ol class="page-guide__steps">
-              <li>
-                <strong>Choose an Action Preset</strong>
-                <p>Quick setup: "Owner Only" gives full control, "Restricted" balances security, "All Allowed" maximizes flexibility.</p>
-              </li>
-              <li>
-                <strong>Set Initial Supply</strong>
-                <p>How many tokens at launch? Examples: 1M for loyalty programs, 100 for limited editions.</p>
-              </li>
-              <li>
-                <strong>Choose Decimals</strong>
-                <p>8 decimals = standard (like Bitcoin). 0 decimals = whole units only (tickets, memberships).</p>
-              </li>
-              <li>
-                <strong>Set Maximum Supply</strong>
-                <p>Optional: Add a cap for scarcity (like Bitcoin's 21M). Leave empty for unlimited.</p>
-              </li>
-              <li>
-                <strong>Launch Paused?</strong>
-                <p>Recommended: Start paused to test safely before enabling transfers.</p>
-              </li>
-            </ol>
+            <h3 class="page-guide__section-title">Detailed Guide</h3>
+
+            <h4 class="page-guide__step-heading">Decimals</h4>
+            <p>Defines how divisible your token is.</p>
+            <p><strong>Example:</strong> 2 decimals → smallest unit = 0.01. 18 decimals (common for ERC-20 style tokens) → very fine granularity.</p>
+            <p><strong>What it means:</strong> More decimals = smoother user experience for micro-transactions but slightly higher computational precision cost.</p>
+
+            <h4 class="page-guide__step-heading">Base Supply</h4>
+            <p>The amount of tokens created at launch. You can later mint more if minting is enabled.</p>
+
+            <h4 class="page-guide__step-heading">Max Supply</h4>
+            <p>Hard cap for total possible tokens. If enabled, no minting can exceed this cap.</p>
+            <p><strong>Warning:</strong> Irreversible once deployed if you lock rules.</p>
+
+            <h4 class="page-guide__step-heading">History Tracking</h4>
+            <p>Enables on-chain event logging for transfers, mints, burns, freezes, or purchases. More tracking = better transparency, but uses more storage.</p>
+
+            <h4 class="page-guide__step-heading">Start as Paused</h4>
+            <p>If checked, no one can transfer tokens until you unpause. Useful for pre-launch or staged rollouts.</p>
+
+            <h4 class="page-guide__step-heading">Allow Transfer to Frozen Balances</h4>
+            <p>Lets users send tokens even to frozen accounts (receiver cannot spend them). Usually used for compliance or escrow-like systems.</p>
           </div>
 
-          <div class="page-guide__tip">
-            <strong>💡 Pro Tip</strong>
-            Most tokens use 8 decimals with a maximum supply cap. Starting paused is recommended for security.
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Best Practice</h3>
+            <ul style="margin: var(--space-2) 0 0 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>For public tokens:</strong> decimals 8–18, enable history tracking for at least transfers and mints.</li>
+              <li><strong>For internal or test tokens:</strong> 2–6 decimals, history off for simplicity.</li>
+              <li>Always verify your base supply before launch — this sets your economy's starting point.</li>
+            </ul>
           </div>
         </div>
       </aside>
@@ -1015,7 +960,7 @@
                 <div class="distribution-inline-panel" id="change-max-supply-panel-identity" hidden>
                   <div class="field-group">
                     <label class="wizard-field__label" for="change-max-supply-identity-id">Identity ID</label>
-                    <input class="wizard-field__input" type="text" id="change-max-supply-identity-id" name="change-max-supply-identity-id" placeholder="e.g., 4hKFP3mFB9vku8VJKcZvwVN123...">
+                    <input class="wizard-field__input" type="text" id="change-max-supply-identity-id" name="change-max-supply-identity-id" placeholder="Enter the Base58 ID">
                     <span class="field-hint">Enter the Dash Platform identity ID that can change the max supply</span>
                   </div>
                 </div>
@@ -1062,26 +1007,35 @@
       <!-- Right Side Guide Panel -->
       <aside class="page-guide" aria-label="Page guide">
         <div class="page-guide__content">
-          <h2 class="page-guide__title">Minting</h2>
-          <p class="page-guide__intro">Who can create new tokens on demand.</p>
+          <h2 class="page-guide__title">Manual Mint Permission</h2>
+          <p class="page-guide__intro">Control who can create new tokens after launch.</p>
 
           <div class="page-guide__section">
-            <h3 class="page-guide__section-title">Step-by-step guide</h3>
-            <ol class="page-guide__steps">
-              <li>
-                <strong>Enable Minting</strong>
-                <p>Turn on to allow creating new tokens after launch. Good for rewards programs.</p>
-              </li>
-              <li>
-                <strong>Set Who Can Mint</strong>
-                <p>Owner only, committee approval, or no one. Consider your trust model.</p>
-              </li>
-            </ol>
+            <h3 class="page-guide__section-title">Detailed Guide</h3>
+
+            <h4 class="page-guide__step-heading">Enable Manual Minting</h4>
+            <p><strong>If enabled:</strong> New tokens can be added post-launch.</p>
+            <p><strong>If disabled:</strong> Supply stays fixed forever.</p>
+
+            <h4 class="page-guide__step-heading">Mint Destination</h4>
+            <ul style="margin: var(--space-2) 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>Contract Owner:</strong> Tokens go to your wallet</li>
+              <li><strong>Default Identity:</strong> A specific identity (e.g., treasury account)</li>
+              <li><strong>Custom per Mint:</strong> Allows flexible destinations every time</li>
+            </ul>
+            <p><strong>What it means:</strong> Granting "custom destination" opens potential for misuse if not restricted by trusted identities.</p>
+
+            <h4 class="page-guide__step-heading">Who Can Change This Rule</h4>
+            <p>Define if future edits (to who can mint) are possible. "No One" = immutable rule, best for deflationary tokens.</p>
           </div>
 
-          <div class="page-guide__tip">
-            <strong>💡 Pro Tip</strong>
-            Disable if you want fixed supply. Enable for flexible reward systems.
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Best Practice</h3>
+            <ul style="margin: var(--space-2) 0 0 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>Fixed-supply coins:</strong> disable minting.</li>
+              <li><strong>DAO or project tokens:</strong> allow Group-based minting (multi-sig style).</li>
+              <li><strong>For compliance tokens:</strong> allow an admin identity to mint under audit.</li>
+            </ul>
           </div>
         </div>
       </aside>
@@ -1145,7 +1099,7 @@
                   <div class="distribution-inline-panel" id="manual-mint-panel-identity" hidden>
                     <div class="field-group">
                       <label class="wizard-field__label" for="manual-mint-identity-id">Identity ID</label>
-                      <input class="wizard-field__input" type="text" id="manual-mint-identity-id" name="manual-mint-identity-id" placeholder="e.g., 4hKFP3mFB9vku8VJKcZvwVN123...">
+                      <input class="wizard-field__input" type="text" id="manual-mint-identity-id" name="manual-mint-identity-id" placeholder="Enter the Base58 ID">
                       <span class="field-hint">Enter the Dash Platform identity ID that can mint tokens</span>
                     </div>
                   </div>
@@ -1236,26 +1190,35 @@
       <!-- Right Side Guide Panel -->
       <aside class="page-guide" aria-label="Page guide">
         <div class="page-guide__content">
-          <h2 class="page-guide__title">Burning</h2>
-          <p class="page-guide__intro">Who can permanently destroy tokens to reduce supply.</p>
+          <h2 class="page-guide__title">Manual Burn Permission</h2>
+          <p class="page-guide__intro">Define how tokens can be permanently destroyed.</p>
 
           <div class="page-guide__section">
-            <h3 class="page-guide__section-title">Step-by-step guide</h3>
-            <ol class="page-guide__steps">
-              <li>
-                <strong>Enable Burning</strong>
-                <p>Allow tokens to be permanently destroyed. Useful for buybacks or deflationary economics.</p>
-              </li>
-              <li>
-                <strong>Set Burn Permissions</strong>
-                <p>Who can burn: owner, committee, or anyone from their own balance.</p>
-              </li>
-            </ol>
+            <h3 class="page-guide__section-title">Detailed Guide</h3>
+
+            <h4 class="page-guide__step-heading">Enable Manual Burning</h4>
+            <p><strong>If enabled:</strong> Tokens can be removed from circulation. Useful for deflation, refunds, or correcting mistakes.</p>
+            <p><strong>If disabled:</strong> Tokens cannot be destroyed, supply remains permanent.</p>
+
+            <h4 class="page-guide__step-heading">Burn Source</h4>
+            <ul style="margin: var(--space-2) 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>Owner-only:</strong> Centralized control</li>
+              <li><strong>Any Holder:</strong> Allows users to burn their own tokens voluntarily</li>
+              <li><strong>Specific Identity / Group:</strong> Shared or delegated burn authority</li>
+            </ul>
+            <p><strong>What it means:</strong> Allowing anyone to burn adds transparency but can't reverse accidental burns.</p>
+
+            <h4 class="page-guide__step-heading">Who Can Change This Rule</h4>
+            <p>Lock it ("No One") for irreversible supply behavior, or allow updates for governance flexibility.</p>
           </div>
 
-          <div class="page-guide__tip">
-            <strong>💡 Pro Tip</strong>
-            Burning creates scarcity. Common for deflationary tokens or buyback programs.
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Best Practice</h3>
+            <ul style="margin: var(--space-2) 0 0 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>Public, deflationary tokens:</strong> allow any holder to burn.</li>
+              <li><strong>Treasury tokens:</strong> restrict to Owner or Group for control.</li>
+              <li>Avoid giving burn power to arbitrary identities — it can break supply integrity.</li>
+            </ul>
           </div>
         </div>
       </aside>
@@ -1319,7 +1282,7 @@
                   <div class="distribution-inline-panel" id="manual-burn-panel-identity" hidden>
                     <div class="field-group">
                       <label class="wizard-field__label" for="manual-burn-identity-id">Identity ID</label>
-                      <input class="wizard-field__input" type="text" id="manual-burn-identity-id" name="manual-burn-identity-id" placeholder="e.g., 4hKFP3mFB9vku8VJKcZvwVN123...">
+                      <input class="wizard-field__input" type="text" id="manual-burn-identity-id" name="manual-burn-identity-id" placeholder="Enter the Base58 ID">
                       <span class="field-hint">Enter the Dash Platform identity ID that can burn tokens</span>
                     </div>
                   </div>
@@ -1366,26 +1329,35 @@
       <!-- Right Side Guide Panel -->
       <aside class="page-guide" aria-label="Page guide">
         <div class="page-guide__content">
-          <h2 class="page-guide__title">Freezing</h2>
-          <p class="page-guide__intro">Block or allow token transfers for specific accounts.</p>
+          <h2 class="page-guide__title">Manual Freeze Permission</h2>
+          <p class="page-guide__intro">Decide if token balances can be frozen (temporarily locked).</p>
 
           <div class="page-guide__section">
-            <h3 class="page-guide__section-title">Step-by-step guide</h3>
-            <ol class="page-guide__steps">
-              <li>
-                <strong>Enable Freeze Powers</strong>
-                <p>Turn on to allow blocking suspicious accounts or enforcing compliance.</p>
-              </li>
-              <li>
-                <strong>Set Freeze Permissions</strong>
-                <p>Who can freeze/unfreeze accounts. Important for security and compliance.</p>
-              </li>
-            </ol>
+            <h3 class="page-guide__section-title">Detailed Guide</h3>
+
+            <h4 class="page-guide__step-heading">Enable Freezing</h4>
+            <p><strong>If enabled:</strong> Allows blocking a wallet's transfers (balance stays visible but unusable).</p>
+            <p><strong>If disabled:</strong> Ensures full decentralization — no one can stop transfers.</p>
+
+            <h4 class="page-guide__step-heading">Who Can Freeze</h4>
+            <ul style="margin: var(--space-2) 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>Owner:</strong> Central authority (admin-style)</li>
+              <li><strong>Specific Identity:</strong> Targeted compliance officer or regulator</li>
+              <li><strong>Group:</strong> Multi-party governance (recommended for fairness)</li>
+              <li><strong>No One:</strong> Fully decentralized — tokens cannot be frozen</li>
+            </ul>
+
+            <h4 class="page-guide__step-heading">Who Can Change This Rule</h4>
+            <p>If set to "No One," even you cannot restore freeze authority later.</p>
           </div>
 
-          <div class="page-guide__tip">
-            <strong>💡 Pro Tip</strong>
-            Only enable if you need compliance controls. Can be controversial for decentralized tokens.
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Best Practice</h3>
+            <ul style="margin: var(--space-2) 0 0 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>Regulated tokens (e.g., stablecoins):</strong> enable freeze with Group authority.</li>
+              <li><strong>Fully decentralized assets:</strong> disable freezing entirely.</li>
+              <li>If used, always publish freeze policy in your documentation.</li>
+            </ul>
           </div>
         </div>
       </aside>
@@ -1449,7 +1421,7 @@
                 <div class="distribution-inline-panel" id="manual-freeze-panel-identity" hidden>
                   <div class="field-group">
                     <label class="wizard-field__label" for="manual-freeze-identity-id">Identity ID</label>
-                    <input class="wizard-field__input" type="text" id="manual-freeze-identity-id" name="manual-freeze-identity-id" placeholder="e.g., 4hKFP3mFB9vku8VJKcZvwVN123...">
+                    <input class="wizard-field__input" type="text" id="manual-freeze-identity-id" name="manual-freeze-identity-id" placeholder="Enter the Base58 ID">
                     <span class="field-hint">Enter the Dash Platform identity ID that can freeze balances</span>
                   </div>
                 </div>
@@ -1526,7 +1498,7 @@
                 <div class="distribution-inline-panel" id="manual-unfreeze-panel-identity" hidden>
                   <div class="field-group">
                     <label class="wizard-field__label" for="manual-unfreeze-identity-id">Identity ID</label>
-                    <input class="wizard-field__input" type="text" id="manual-unfreeze-identity-id" name="manual-unfreeze-identity-id" placeholder="e.g., 4hKFP3mFB9vku8VJKcZvwVN123...">
+                    <input class="wizard-field__input" type="text" id="manual-unfreeze-identity-id" name="manual-unfreeze-identity-id" placeholder="Enter the Base58 ID">
                     <span class="field-hint">Enter the Dash Platform identity ID that can unfreeze balances</span>
                   </div>
                 </div>
@@ -1602,7 +1574,7 @@
                   <div class="distribution-inline-panel" id="destroy-frozen-panel-identity" hidden>
                     <div class="field-group">
                       <label class="wizard-field__label" for="destroy-frozen-identity-id">Identity ID</label>
-                      <input class="wizard-field__input" type="text" id="destroy-frozen-identity-id" name="destroy-frozen-identity-id" placeholder="e.g., 4hKFP3mFB9vku8VJKcZvwVN123...">
+                      <input class="wizard-field__input" type="text" id="destroy-frozen-identity-id" name="destroy-frozen-identity-id" placeholder="Enter the Base58 ID">
                       <span class="field-hint">Enter the Dash Platform identity ID that can destroy frozen funds</span>
                     </div>
                   </div>
@@ -1651,25 +1623,31 @@
       <aside class="page-guide" aria-label="Page guide">
         <div class="page-guide__content">
           <h2 class="page-guide__title">Emergency Actions</h2>
-          <p class="page-guide__intro">Pause all transfers in case of security issues.</p>
+          <p class="page-guide__intro">Grant or restrict the ability to pause/unpause the entire token.</p>
 
           <div class="page-guide__section">
-            <h3 class="page-guide__section-title">Step-by-step guide</h3>
-            <ol class="page-guide__steps">
-              <li>
-                <strong>Enable Emergency Pause</strong>
-                <p>Turn on to allow freezing ALL transfers globally in case of bugs or attacks.</p>
-              </li>
-              <li>
-                <strong>Set Pause Permissions</strong>
-                <p>Who can pause/unpause. Critical security control - choose carefully.</p>
-              </li>
-            </ol>
+            <h3 class="page-guide__section-title">Detailed Guide</h3>
+
+            <h4 class="page-guide__step-heading">Emergency Pause</h4>
+            <p>Allows immediate suspension of all token operations (transfers, mints, burns). Critical for handling exploits or attacks.</p>
+
+            <h4 class="page-guide__step-heading">Who Can Pause</h4>
+            <ul style="margin: var(--space-2) 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>Owner / Identity / Group / No One</strong> (same logic as other permissions)</li>
+            </ul>
+            <p><strong>What it means:</strong> "No One" = no safety switch — pure decentralization.</p>
+
+            <h4 class="page-guide__step-heading">Who Can Change This Rule</h4>
+            <p>You may allow governance votes or permanent immutability.</p>
           </div>
 
-          <div class="page-guide__tip">
-            <strong>💡 Pro Tip</strong>
-            Recommended for new tokens. Safety net for bugs. Can unpause once confident.
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Best Practice</h3>
+            <ul style="margin: var(--space-2) 0 0 0; padding-left: var(--space-5); list-style: disc;">
+              <li>Always assign emergency control to a multi-sig group, not one individual.</li>
+              <li>For final, public launches, disable or lock this after testing and audit.</li>
+              <li>Document your emergency response procedures for transparency.</li>
+            </ul>
           </div>
         </div>
       </aside>
@@ -1733,7 +1711,7 @@
                   <div class="distribution-inline-panel" id="emergency-panel-identity" hidden>
                     <div class="field-group">
                       <label class="wizard-field__label" for="emergency-identity-id">Identity ID</label>
-                      <input class="wizard-field__input" type="text" id="emergency-identity-id" name="emergency-identity-id" placeholder="e.g., 4hKFP3mFB9vku8VJKcZvwVN123...">
+                      <input class="wizard-field__input" type="text" id="emergency-identity-id" name="emergency-identity-id" placeholder="Enter the Base58 ID">
                       <span class="field-hint">Enter the Dash Platform identity ID that can perform emergency actions</span>
                     </div>
                   </div>
@@ -1780,53 +1758,30 @@
       <!-- Right Side Guide Panel -->
       <aside class="page-guide" aria-label="Page guide">
         <div class="page-guide__content">
-          <h2 class="page-guide__title">Conventions Change</h2>
-          <p class="page-guide__intro">Control who can modify token conventions and rules.</p>
+          <h2 class="page-guide__title">Conventions Change Permission</h2>
+          <p class="page-guide__intro">Control whether display conventions (name, decimals, localizations) can ever be updated.</p>
 
           <div class="page-guide__section">
-            <h3 class="page-guide__section-title">Understanding Conventions Change in Crypto Tokens</h3>
-            <p>A conventions change in crypto tokens refers to a significant alteration in the rules or standards governing how tokens operate within a blockchain ecosystem. This can include changes in token functionality, governance, or the underlying technology that supports the token.</p>
+            <h3 class="page-guide__section-title">Detailed Guide</h3>
+
+            <h4 class="page-guide__step-heading">Enable Change</h4>
+            <p><strong>If enabled:</strong> Allows updating UI-friendly values (e.g., rename after a rebrand).</p>
+            <p><strong>If disabled:</strong> Locks your token's visual identity forever.</p>
+
+            <h4 class="page-guide__step-heading">Who Can Change</h4>
+            <p>Assign limited, trusted access — typically the Owner or Group.</p>
+
+            <h4 class="page-guide__step-heading">Who Can Update Rules</h4>
+            <p>If locked, no one can ever modify even the permissions for updates.</p>
           </div>
 
           <div class="page-guide__section">
-            <h3 class="page-guide__section-title">Types of Conventions Changes</h3>
-            <ul class="page-guide__steps">
-              <li>
-                <strong>Token Migration</strong>
-                <p>Moving a token from one blockchain to another. May happen when a project transitions to its own blockchain or improves its technology.</p>
-              </li>
-              <li>
-                <strong>Token Swaps</strong>
-                <p>Exchanging one token for another, often during a migration. Can happen on the same blockchain or across different blockchains using bridges.</p>
-              </li>
-              <li>
-                <strong>Protocol Upgrades</strong>
-                <p>Changes in the underlying protocol that affect how tokens function, including updates to smart contracts or consensus mechanisms.</p>
-              </li>
+            <h3 class="page-guide__section-title">Best Practice</h3>
+            <ul style="margin: var(--space-2) 0 0 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>Early projects:</strong> allow rebranding flexibility.</li>
+              <li><strong>Mature projects:</strong> lock conventions after listing for consistency.</li>
+              <li>Consider your long-term branding strategy before locking.</li>
             </ul>
-          </div>
-
-          <div class="page-guide__section">
-            <h3 class="page-guide__section-title">Implications</h3>
-            <ul class="page-guide__steps">
-              <li>
-                <strong>Investor Impact</strong>
-                <p>Changes can affect the value and utility of tokens. Stay informed about conventions changes to understand their impact on holdings.</p>
-              </li>
-              <li>
-                <strong>Regulatory Considerations</strong>
-                <p>Regulatory bodies may scrutinize conventions changes, especially if they affect how tokens are classified or traded.</p>
-              </li>
-              <li>
-                <strong>Technical Adjustments</strong>
-                <p>May require technical adjustments from users, such as migrating tokens to new wallets or participating in swaps.</p>
-              </li>
-            </ul>
-          </div>
-
-          <div class="page-guide__tip">
-            <strong>💡 Important</strong>
-            Understanding these changes is crucial for anyone involved in the crypto space, as they can significantly influence the market and individual investments.
           </div>
         </div>
       </aside>
@@ -1901,7 +1856,7 @@
                     <div class="distribution-inline-panel" id="conventions-perform-identity-panel" hidden>
                       <div class="field-group">
                         <label class="wizard-field__label" for="conventions-perform-identity-id">Identity ID</label>
-                        <input class="wizard-field__input" type="text" id="conventions-perform-identity-id" placeholder="e.g., 4hKFP3mFB9vku8VJKcZvwVN123...">
+                        <input class="wizard-field__input" type="text" id="conventions-perform-identity-id" placeholder="Enter the Base58 ID">
                         <span class="field-hint">Enter the Dash Platform identity ID</span>
                       </div>
                     </div>
@@ -1950,7 +1905,7 @@
                     <div class="distribution-inline-panel" id="conventions-rules-identity-panel" hidden>
                       <div class="field-group">
                         <label class="wizard-field__label" for="conventions-rules-identity-id">Identity ID</label>
-                        <input class="wizard-field__input" type="text" id="conventions-rules-identity-id" placeholder="e.g., 4hKFP3mFB9vku8VJKcZvwVN123...">
+                        <input class="wizard-field__input" type="text" id="conventions-rules-identity-id" placeholder="Enter the Base58 ID">
                         <span class="field-hint">Enter the Dash Platform identity ID</span>
                       </div>
                     </div>
@@ -1997,52 +1952,31 @@
       <aside class="page-guide" aria-label="Page guide">
         <div class="page-guide__content">
           <h2 class="page-guide__title">Marketplace Trade Mode Change</h2>
-          <p class="page-guide__intro">Control adjustments to trading mechanisms and policies.</p>
+          <p class="page-guide__intro">Allow or restrict who can modify your token's trading mode in the marketplace.</p>
 
           <div class="page-guide__section">
-            <h3 class="page-guide__section-title">Introduction</h3>
-            <p>A Marketplace Trade Mode Change refers to adjustments in the trading mechanisms or policies on cryptocurrency platforms. These changes can significantly influence how tokens are traded, impacting both user experience and market behavior.</p>
-          </div>
+            <h3 class="page-guide__section-title">Detailed Guide</h3>
 
-          <div class="page-guide__section">
-            <h3 class="page-guide__section-title">Key Concepts to Understand</h3>
-            <ul class="page-guide__steps">
-              <li>
-                <strong>Order Types</strong>
-                <p><strong>Market Order:</strong> This order type allows you to buy or sell a token immediately at the current market price, ensuring quick execution.</p>
-                <p><strong>Limit Order:</strong> With this type of order, you set a specific price at which you want to buy or sell. The transaction will only execute when the market reaches this price.</p>
-              </li>
-              <li>
-                <strong>Trading Pairs</strong>
-                <p>The availability of trading pairs indicates which tokens can be exchanged for each other. Changes may involve the introduction of new pairs or the removal of existing ones, affecting trading options and liquidity.</p>
-              </li>
-              <li>
-                <strong>Transaction Fees</strong>
-                <p>Platforms may adjust their transaction fees to either encourage trading or enhance profitability. Being aware of these changes is critical, as they can influence your overall trading costs.</p>
-              </li>
-              <li>
-                <strong>Liquidity Modes</strong>
-                <p>Adjustments in liquidity models, such as the introduction of liquidity pools, can affect how easily tokens are traded. Better liquidity generally leads to smoother transactions.</p>
-              </li>
-              <li>
-                <strong>Staking Mechanisms</strong>
-                <p>Some changes may also involve options for staking, allowing users to earn rewards over time by locking their tokens within the platform. This change can lead to different ways of utilizing tokens beyond trading.</p>
-              </li>
+            <h4 class="page-guide__step-heading">Trade Mode</h4>
+            <ul style="margin: var(--space-2) 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>Permissionless:</strong> Anyone can trade freely</li>
+              <li><strong>Approval Required:</strong> Only approved traders can interact</li>
+              <li><strong>Not Tradeable:</strong> Transfers limited or disabled</li>
             </ul>
+
+            <h4 class="page-guide__step-heading">Who Can Modify</h4>
+            <p>Assign Owner, Identity, or Group — avoid "anyone."</p>
+
+            <h4 class="page-guide__step-heading">Impact</h4>
+            <p>Changing trade mode affects liquidity and marketplace availability.</p>
           </div>
 
           <div class="page-guide__section">
-            <h3 class="page-guide__section-title">Implications of Trade Mode Changes</h3>
-            <ul class="page-guide__steps">
-              <li>
-                <strong>User Experience:</strong> Changes can simplify or complicate the trading process. It's important to stay informed to make effective trading decisions.
-              </li>
-              <li>
-                <strong>Market Liquidity:</strong> Adjustments can lead to more or less liquidity for specific tokens. High liquidity generally stabilizes the price and improves trading conditions.
-              </li>
-              <li>
-                <strong>Volatility:</strong> Changes in trading modes can lead to increased volatility, particularly if they alter user behavior significantly.
-              </li>
+            <h3 class="page-guide__section-title">Best Practice</h3>
+            <ul style="margin: var(--space-2) 0 0 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>Governance tokens:</strong> Permissionless.</li>
+              <li><strong>Security or compliance tokens:</strong> Approval Required.</li>
+              <li>Lock trade mode after deployment to avoid confusion in listings.</li>
             </ul>
           </div>
         </div>
@@ -2107,7 +2041,7 @@
                     <div class="distribution-inline-panel" id="marketplace-trade-mode-perform-identity-panel" hidden>
                       <div class="field-group">
                         <label class="wizard-field__label" for="marketplace-trade-mode-perform-identity-id">Identity ID</label>
-                        <input class="wizard-field__input" type="text" id="marketplace-trade-mode-perform-identity-id" placeholder="e.g., 4hKFP3mFB9vku8VJKcZvwVN123...">
+                        <input class="wizard-field__input" type="text" id="marketplace-trade-mode-perform-identity-id" placeholder="Enter the Base58 ID">
                         <span class="field-hint">Enter the Dash Platform identity ID</span>
                       </div>
                     </div>
@@ -2156,7 +2090,7 @@
                     <div class="distribution-inline-panel" id="marketplace-trade-mode-rules-identity-panel" hidden>
                       <div class="field-group">
                         <label class="wizard-field__label" for="marketplace-trade-mode-rules-identity-id">Identity ID</label>
-                        <input class="wizard-field__input" type="text" id="marketplace-trade-mode-rules-identity-id" placeholder="e.g., 4hKFP3mFB9vku8VJKcZvwVN123...">
+                        <input class="wizard-field__input" type="text" id="marketplace-trade-mode-rules-identity-id" placeholder="Enter the Base58 ID">
                         <span class="field-hint">Enter the Dash Platform identity ID</span>
                       </div>
                     </div>
@@ -2203,41 +2137,30 @@
       <aside class="page-guide" aria-label="Page guide">
         <div class="page-guide__content">
           <h2 class="page-guide__title">Direct Purchase Pricing Change</h2>
-          <p class="page-guide__intro">Control modifications to direct purchase pricing mechanisms.</p>
+          <p class="page-guide__intro">Define if and who can adjust your token's direct purchase price.</p>
 
           <div class="page-guide__section">
-            <h3 class="page-guide__section-title">Understanding Direct Purchase Pricing in Cryptocurrency</h3>
-            <p><strong>What is Direct Purchase Pricing?</strong></p>
-            <p>Direct purchase pricing refers to the method of buying cryptocurrencies at a set price without intermediaries. This pricing model allows users to buy coins directly from exchanges or platforms at the current market rate.</p>
+            <h3 class="page-guide__section-title">Detailed Guide</h3>
+
+            <h4 class="page-guide__step-heading">Enable Price Changes</h4>
+            <p><strong>If enabled:</strong> Allows dynamic pricing for sales.</p>
+            <p><strong>If disabled:</strong> Locks price permanently after launch.</p>
+
+            <h4 class="page-guide__step-heading">Who Can Change Price</h4>
+            <p>Owner / Identity / Group / No One.</p>
+            <p><strong>What it means:</strong> Giving this to a group allows DAO-style dynamic pricing.</p>
+
+            <h4 class="page-guide__step-heading">Who Can Modify Rules</h4>
+            <p>Decide if the pricing rights can ever change later.</p>
           </div>
 
           <div class="page-guide__section">
-            <h3 class="page-guide__section-title">How Token Consumption Works</h3>
-            <p>Token consumption in cryptocurrency involves using digital tokens for transactions, fees, or access to services. Each action, like buying or selling, consumes a certain number of tokens based on the complexity of the transaction. This model helps track usage and manage costs effectively.</p>
-          </div>
-
-          <div class="page-guide__section">
-            <h3 class="page-guide__section-title">Factors Influencing Pricing Changes</h3>
-            <p>Several factors can lead to changes in direct purchase pricing for cryptocurrencies:</p>
-            <ul class="page-guide__steps">
-              <li>
-                <strong>Supply and Demand:</strong> Prices fluctuate based on how many people want to buy a coin versus how many are available. High demand with limited supply typically drives prices up.
-              </li>
-              <li>
-                <strong>Market Sentiment:</strong> News, trends, and public perception can significantly impact prices. Positive developments can lead to price increases, while negative news can cause declines.
-              </li>
-              <li>
-                <strong>Liquidity:</strong> The ease with which a cryptocurrency can be bought or sold affects its price stability. Higher liquidity usually results in more stable prices, while lower liquidity can lead to greater volatility.
-              </li>
-              <li>
-                <strong>Production Costs:</strong> The cost of mining or producing a cryptocurrency can also influence its price. If production costs rise, the price may increase to maintain profitability.
-              </li>
+            <h3 class="page-guide__section-title">Best Practice</h3>
+            <ul style="margin: var(--space-2) 0 0 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>For stable tokens:</strong> lock price change permissions.</li>
+              <li><strong>For DAO tokens:</strong> allow group-managed pricing.</li>
+              <li>For long-term predictability, document your pricing policy.</li>
             </ul>
-          </div>
-
-          <div class="page-guide__tip">
-            <strong>💡 Conclusion</strong>
-            Direct purchase pricing in cryptocurrency is influenced by various factors, including market dynamics, token consumption, and external events. Understanding these elements can help users navigate the complexities of cryptocurrency pricing.
           </div>
         </div>
       </aside>
@@ -2301,7 +2224,7 @@
                     <div class="distribution-inline-panel" id="direct-pricing-perform-identity-panel" hidden>
                       <div class="field-group">
                         <label class="wizard-field__label" for="direct-pricing-perform-identity-id">Identity ID</label>
-                        <input class="wizard-field__input" type="text" id="direct-pricing-perform-identity-id" placeholder="e.g., 4hKFP3mFB9vku8VJKcZvwVN123...">
+                        <input class="wizard-field__input" type="text" id="direct-pricing-perform-identity-id" placeholder="Enter the Base58 ID">
                         <span class="field-hint">Enter the Dash Platform identity ID</span>
                       </div>
                     </div>
@@ -2350,7 +2273,7 @@
                     <div class="distribution-inline-panel" id="direct-pricing-rules-identity-panel" hidden>
                       <div class="field-group">
                         <label class="wizard-field__label" for="direct-pricing-rules-identity-id">Identity ID</label>
-                        <input class="wizard-field__input" type="text" id="direct-pricing-rules-identity-id" placeholder="e.g., 4hKFP3mFB9vku8VJKcZvwVN123...">
+                        <input class="wizard-field__input" type="text" id="direct-pricing-rules-identity-id" placeholder="Enter the Base58 ID">
                         <span class="field-hint">Enter the Dash Platform identity ID</span>
                       </div>
                     </div>
@@ -2397,54 +2320,29 @@
       <aside class="page-guide" aria-label="Page guide">
         <div class="page-guide__content">
           <h2 class="page-guide__title">Main Control Group Change</h2>
-          <p class="page-guide__intro">Manage the primary administrative entity that governs your token.</p>
+          <p class="page-guide__intro">Determine if your token's primary governance group can be modified in the future.</p>
 
           <div class="page-guide__section">
-            <h3 class="page-guide__section-title">Overview</h3>
-            <p>The Main Control Group refers to the primary administrative entity that holds governance or management privileges over a crypto token or smart contract.</p>
-            <p>This group can consist of one or multiple blockchain addresses (e.g. a multi-signature wallet, DAO contract, or project owner).</p>
-            <p>Changing the Main Control Group updates who has authority over the token's core functions and configuration.</p>
+            <h3 class="page-guide__section-title">Detailed Guide</h3>
+
+            <h4 class="page-guide__step-heading">Enable Group Change</h4>
+            <p><strong>If enabled:</strong> Lets you replace members (e.g., new team, DAO members).</p>
+            <p><strong>If disabled:</strong> Makes governance structure permanent.</p>
+
+            <h4 class="page-guide__step-heading">Who Can Change the Group</h4>
+            <p>Owner, Identity, Group, or lock forever.</p>
+
+            <h4 class="page-guide__step-heading">Impact</h4>
+            <p>This is the highest-level permission — losing access may mean total loss of control.</p>
           </div>
 
           <div class="page-guide__section">
-            <h3 class="page-guide__section-title">Purpose</h3>
-            <p>A Main Control Group Change is typically performed when:</p>
-            <ul class="page-guide__steps">
-              <li>Ownership or governance of the token is being transferred (e.g. from developers to a DAO).</li>
-              <li>Security upgrades are implemented, such as moving control from a single owner to a multi-signature wallet.</li>
-              <li>Project management responsibilities are handed over to a new team or entity.</li>
+            <h3 class="page-guide__section-title">Best Practice</h3>
+            <ul style="margin: var(--space-2) 0 0 0; padding-left: var(--space-5); list-style: disc;">
+              <li>Always assign this to a secure Group with multi-signature control.</li>
+              <li>Lock only after governance systems (votes or proposals) are fully decentralized.</li>
+              <li><strong>Warning:</strong> This controls who can manage all other permissions.</li>
             </ul>
-          </div>
-
-          <div class="page-guide__section">
-            <h3 class="page-guide__section-title">Effects of a Control Group Change</h3>
-            <p>After the change:</p>
-            <ul class="page-guide__steps">
-              <li>The new control group gains full or partial administrative rights.</li>
-              <li>The previous control group may lose access to token management features.</li>
-              <li>
-                Depending on the smart contract logic, this may include permissions to:
-                <ul style="margin-top: var(--space-2); margin-left: var(--space-4);">
-                  <li>Mint or burn tokens</li>
-                  <li>Pause or resume transfers</li>
-                  <li>Update configuration parameters</li>
-                  <li>Manage whitelists, blacklists, or fees</li>
-                </ul>
-              </li>
-            </ul>
-            <p style="margin-top: var(--space-3);">It's essential to verify the new control group addresses to ensure the change is legitimate and aligns with the project's governance policy.</p>
-          </div>
-
-          <div class="page-guide__tip">
-            <strong>🔒 Security Note</strong>
-            Always treat a Main Control Group Change as a significant governance event.
-            Users, investors, and auditors should:
-            <ul style="margin-top: var(--space-2);">
-              <li>Review the transaction on-chain,</li>
-              <li>Confirm the authenticity of the new controlling addresses,</li>
-              <li>And monitor for any unusual activity following the change.</li>
-            </ul>
-            <p style="margin-top: var(--space-2);"><strong>Warning:</strong> Improper or malicious control changes can lead to unauthorized actions, including minting or fund withdrawals.</p>
           </div>
         </div>
       </aside>
@@ -2508,7 +2406,7 @@
                     <div class="distribution-inline-panel" id="main-control-perform-identity-panel" hidden>
                       <div class="field-group">
                         <label class="wizard-field__label" for="main-control-perform-identity-id">Identity ID</label>
-                        <input class="wizard-field__input" type="text" id="main-control-perform-identity-id" placeholder="e.g., 4hKFP3mFB9vku8VJKcZvwVN123...">
+                        <input class="wizard-field__input" type="text" id="main-control-perform-identity-id" placeholder="Enter the Base58 ID">
                         <span class="field-hint">Enter the Dash Platform identity ID</span>
                       </div>
                     </div>
@@ -3275,30 +3173,36 @@
       <!-- Right Side Guide Panel -->
       <aside class="page-guide" aria-label="Page guide">
         <div class="page-guide__content">
-          <h2 class="page-guide__title">Token Distribution</h2>
-          <p class="page-guide__intro">Set up automatic token release over time. This is optional.</p>
+          <h2 class="page-guide__title">Distribution Schedule</h2>
+          <p class="page-guide__intro">Define how and when your token distributes new supply.</p>
 
           <div class="page-guide__section">
-            <h3 class="page-guide__section-title">Step-by-step guide</h3>
-            <ol class="page-guide__steps">
-              <li>
-                <strong>Enable Distribution</strong>
-                <p>Turn on if you want tokens released automatically over time (like mining).</p>
-              </li>
-              <li>
-                <strong>Choose Cadence Type</strong>
-                <p>Block-based = every X blocks. Time-based = every X seconds. Epoch-based = per era.</p>
-              </li>
-              <li>
-                <strong>Set Interval</strong>
-                <p>How often tokens are released. Example: Every 100 blocks.</p>
-              </li>
-            </ol>
-          </div>
+            <h3 class="page-guide__section-title">Guide</h3>
+            <p>Choose a type: Pre-programmed, Perpetual, or None. If active, set cadence — by blocks, time, or epoch. This controls the rhythm of emission or rewards. Click Continue to the emission curve.</p>
 
-          <div class="page-guide__tip">
-            <strong>💡 Pro Tip</strong>
-            Skip this if you don't need automatic distribution. You can manually mint instead.
+            <h4 class="page-guide__step-heading">Distribution Types</h4>
+            <ul style="margin: var(--space-2) 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>Pre-programmed:</strong> Fixed schedule, set it and forget it</li>
+              <li><strong>Perpetual:</strong> Ongoing emission based on rules</li>
+              <li><strong>None:</strong> No automatic distribution</li>
+            </ul>
+
+            <h4 class="page-guide__step-heading">Cadence Types</h4>
+            <ul style="margin: var(--space-2) 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>Block-Based:</strong> Every N blocks (e.g., every 100 blocks)</li>
+              <li><strong>Time-Based:</strong> Every N seconds/minutes/hours (e.g., 3600 = 1 hour)</li>
+              <li><strong>Epoch-Based:</strong> Per epoch period (daily, weekly, monthly, quarterly, yearly)</li>
+            </ul>
+
+            <h4 class="page-guide__step-heading">Emission Function</h4>
+            <p>Set the mathematical rule that determines emission over time. Pick a model that matches your economics:</p>
+            <ul style="margin: var(--space-2) 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>Fixed:</strong> Constant output</li>
+              <li><strong>Step:</strong> Halving or tiered steps</li>
+              <li><strong>Linear:</strong> Smooth growth or reduction</li>
+              <li><strong>Exponential / Polynomial / Logarithmic:</strong> Advanced curves for adaptive or decreasing emissions</li>
+            </ul>
+            <p>Define your parameters carefully — this shapes your token's inflation model.</p>
           </div>
         </div>
       </aside>
@@ -3821,7 +3725,7 @@
                 <div class="distribution-inline-panel" id="recipient-panel-identity" hidden>
                   <div class="field-group">
                     <label class="wizard-field__label" for="recipient-identity-id">Identity ID</label>
-                    <input class="wizard-field__input" type="text" id="recipient-identity-id" placeholder="e.g., 4hKFP3mFB9vku8VJKcZvwVN123...">
+                    <input class="wizard-field__input" type="text" id="recipient-identity-id" placeholder="Enter the Base58 ID">
                     <span class="field-hint">The Dash Platform identity that will receive tokens</span>
                   </div>
                 </div>
@@ -3846,25 +3750,24 @@
       <aside class="page-guide" aria-label="Page guide">
         <div class="page-guide__content">
           <h2 class="page-guide__title">History Tracking</h2>
-          <p class="page-guide__intro">Configure which token operations should be tracked and queryable.</p>
+          <p class="page-guide__intro">Choose which token events are recorded on-chain.</p>
 
           <div class="page-guide__section">
-            <h3 class="page-guide__section-title">Step-by-step guide</h3>
-            <ol class="page-guide__steps">
-              <li>
-                <strong>Choose What to Track</strong>
-                <p>Select which operations you want to maintain a permanent, searchable history for.</p>
-              </li>
-              <li>
-                <strong>Consider Storage Costs</strong>
-                <p>More tracking means more on-chain data storage requirements.</p>
-              </li>
-            </ol>
-          </div>
+            <h3 class="page-guide__section-title">Guide</h3>
+            <p>Enable tracking for transparency and auditing — Transfers, Mints, Burns, Freezes, Purchases. Keep off for privacy or storage optimization. Click Continue for marketplace options.</p>
 
-          <div class="page-guide__tip">
-            <strong>💡 Pro Tip</strong>
-            Tracking transfers and mints is recommended for transparency and auditing purposes.
+            <h4 class="page-guide__step-heading">What Can Be Tracked</h4>
+            <ul style="margin: var(--space-2) 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>Transfers:</strong> Record when tokens move between addresses</li>
+              <li><strong>Mints:</strong> Record when new tokens are created</li>
+              <li><strong>Burns:</strong> Record when tokens are destroyed</li>
+              <li><strong>Freezes:</strong> Record when addresses are frozen/unfrozen</li>
+              <li><strong>Purchases:</strong> Record direct purchase transactions</li>
+            </ul>
+
+            <h4 class="page-guide__step-heading">Trade-offs</h4>
+            <p><strong>More tracking:</strong> Better transparency and audit trails, but uses more on-chain storage.</p>
+            <p><strong>Less tracking:</strong> Lower costs and more privacy, but harder to audit or verify activity.</p>
           </div>
         </div>
       </aside>
@@ -3960,25 +3863,26 @@
       <aside class="page-guide" aria-label="Page guide">
         <div class="page-guide__content">
           <h2 class="page-guide__title">Trading & Marketplace</h2>
-          <p class="page-guide__intro">Control how users can transfer and trade your tokens.</p>
+          <p class="page-guide__intro">Control how your token behaves in trading environments.</p>
 
           <div class="page-guide__section">
-            <h3 class="page-guide__section-title">Step-by-step guide</h3>
-            <ol class="page-guide__steps">
-              <li>
-                <strong>Choose Trade Mode</strong>
-                <p>Permissionless = anyone can trade freely. Approval required = you approve each trade.</p>
-              </li>
-              <li>
-                <strong>Set Marketplace Rules</strong>
-                <p>Allow or restrict trading on decentralized exchanges.</p>
-              </li>
-            </ol>
-          </div>
+            <h3 class="page-guide__section-title">Guide</h3>
+            <p>Choose Trade Mode: open, approval-based, or closed. Enable Transfer Notes to attach data or messages to transfers. You can allow public or encrypted note types for user flexibility. Click Continue for launch settings.</p>
 
-          <div class="page-guide__tip">
-            <strong>💡 Pro Tip</strong>
-            Most tokens use permissionless trading. Only restrict if you have regulatory or security needs.
+            <h4 class="page-guide__step-heading">Trade Modes</h4>
+            <ul style="margin: var(--space-2) 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>Permissionless:</strong> Anyone can trade freely</li>
+              <li><strong>Approval Required:</strong> Trades need authorization</li>
+              <li><strong>Closed:</strong> No trading allowed</li>
+            </ul>
+
+            <h4 class="page-guide__step-heading">Transfer Notes</h4>
+            <p>Allow users to attach messages or data to token transfers:</p>
+            <ul style="margin: var(--space-2) 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>Public notes:</strong> Visible to everyone</li>
+              <li><strong>Shared encrypted notes:</strong> Encrypted for sender and receiver</li>
+              <li><strong>Private encrypted notes:</strong> Encrypted for sender only</li>
+            </ul>
           </div>
         </div>
       </aside>
@@ -4042,25 +3946,25 @@
       <aside class="page-guide" aria-label="Page guide">
         <div class="page-guide__content">
           <h2 class="page-guide__title">Launch Settings</h2>
-          <p class="page-guide__intro">Control the initial state of your token when it's deployed.</p>
+          <p class="page-guide__intro">Set your token's behavior at deployment.</p>
 
           <div class="page-guide__section">
-            <h3 class="page-guide__section-title">Step-by-step guide</h3>
-            <ol class="page-guide__steps">
-              <li>
-                <strong>Choose Initial State</strong>
-                <p>Decide if your token should start in a paused state or be active immediately.</p>
-              </li>
-              <li>
-                <strong>Review Implications</strong>
-                <p>Starting paused gives you time to verify everything before activation.</p>
-              </li>
-            </ol>
-          </div>
+            <h3 class="page-guide__section-title">Guide</h3>
+            <p>Decide if it launches paused and whether transfers to frozen balances are allowed. Enable advanced permissions: Freeze, Unfreeze, Destroy Frozen, Emergency Actions. Click Continue to plan token distribution.</p>
 
-          <div class="page-guide__tip">
-            <strong>💡 Pro Tip</strong>
-            Starting paused is recommended for complex tokens to ensure all settings are correct before activation.
+            <h4 class="page-guide__step-heading">Start as Paused</h4>
+            <p>If enabled, no one can transfer tokens until you manually unpause the token. This is useful for:</p>
+            <ul style="margin: var(--space-2) 0; padding-left: var(--space-5); list-style: disc;">
+              <li>Pre-launch testing and verification</li>
+              <li>Staged rollouts where you want control over when trading begins</li>
+              <li>Ensuring all integrations are ready before enabling transfers</li>
+            </ul>
+
+            <h4 class="page-guide__step-heading">Allow Transfer to Frozen Balances</h4>
+            <p>If enabled, users can send tokens to frozen addresses (receiver cannot spend them). Useful for compliance or escrow scenarios.</p>
+
+            <h4 class="page-guide__step-heading">Change Control</h4>
+            <p>Enable granular permissions for freeze, unfreeze, destroy frozen funds, and emergency actions.</p>
           </div>
         </div>
       </aside>
@@ -4096,154 +4000,6 @@
             <button class="wizard-button wizard-button--primary" id="advanced-launch-next" type="submit">Continue →</button>
           </div>
         </form>
-      </div>
-    </section>
-
-        <!-- Document Tab Screen -->
-        <section class="wizard-screen" id="screen-document" data-step="document" data-tab="document" hidden>
-      <div class="wizard-screen__inner">
-        <div class="wizard-form">
-          <h1 class="wizard-screen__title" id="title-document" tabindex="-1">Document Types</h1>
-          <p class="wizard-screen__subtitle">Define custom document types for your token's data contract.</p>
-
-          <!-- Info Card -->
-          <div class="form-card form-card--highlight">
-            <div class="form-card__body">
-              <p><strong>What are document types?</strong></p>
-              <p>Document types define the structure of data that can be stored with your token on the Dash Platform. Each document type is a JSON Schema that specifies the fields and their properties.</p>
-              <p style="margin-bottom: 0;"><strong>Examples:</strong> NFT metadata • User profiles • Transaction records • Custom data structures</p>
-            </div>
-          </div>
-
-          <!-- Document Types List -->
-          <div class="form-card">
-            <div class="form-card__header">
-              <h3 class="form-card__title">Defined Document Types</h3>
-              <p class="form-card__description">Manage your custom document schemas</p>
-            </div>
-            <div class="form-card__body">
-              <div id="document-types-list" class="document-types-list">
-                <p class="wizard-subsection__hint" id="document-types-empty">No document types defined yet. Click "Add Document Type" to create one.</p>
-              </div>
-              <button class="wizard-button wizard-button--secondary" type="button" id="document-type-add" style="margin-top: var(--space-4);">+ Add Document Type</button>
-            </div>
-          </div>
-
-          <!-- Add/Edit Document Type Modal -->
-          <div class="document-modal" id="document-type-modal" hidden>
-            <div class="document-modal__overlay"></div>
-            <div class="document-modal__content">
-              <div class="document-modal__header">
-                <h2 class="document-modal__title" id="document-modal-title">Add Document Type</h2>
-                <button class="document-modal__close" type="button" id="document-modal-close" aria-label="Close modal">×</button>
-              </div>
-              <div class="document-modal__body">
-                <form id="document-type-form">
-                  <!-- Document Type Name -->
-                  <div class="field-group">
-                    <label class="wizard-field__label" for="document-type-name">Document Type Name *</label>
-                    <input class="wizard-field__input" id="document-type-name" name="document-type-name" type="text" placeholder="e.g., nftMetadata" pattern="[a-zA-Z][a-zA-Z0-9_]*" required>
-                    <span class="field-hint">Must start with a letter, can contain letters, numbers, and underscores</span>
-                  </div>
-
-                  <!-- JSON Schema -->
-                  <div class="field-group">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
-                      <label class="wizard-field__label" for="document-type-schema" style="margin-bottom: 0;">JSON Schema *</label>
-                      <div style="display: flex; gap: var(--space-2);">
-                        <button class="wizard-button wizard-button--text wizard-button--small" type="button" id="document-schema-sample">📄 Sample</button>
-                        <button class="wizard-button wizard-button--text wizard-button--small" type="button" id="document-schema-paste">📋 Paste</button>
-                        <button class="wizard-button wizard-button--text wizard-button--small" type="button" id="document-schema-format">✨ Format</button>
-                        <button class="wizard-button wizard-button--text wizard-button--small" type="button" id="document-schema-clear">🗑️ Clear</button>
-                      </div>
-                    </div>
-                    <textarea class="wizard-field__input wizard-field__input--code" id="document-type-schema" name="document-type-schema" rows="16" placeholder='Paste a document schema here or click "Sample" for an example...' required></textarea>
-                    <div class="field-hint" style="background: var(--color-info-light); padding: var(--space-3); border-radius: var(--radius-sm); border-left: 3px solid var(--color-info);">
-                      <strong>📝 Document Schema Requirements:</strong>
-                      <ul style="margin: var(--space-2) 0 0 var(--space-4); padding: 0;">
-                        <li>Must have <code>"type": "object"</code> at the root</li>
-                        <li>Must have a <code>"properties"</code> object with at least one field</li>
-                        <li>Each property needs <code>"type"</code> and <code>"position"</code> (number)</li>
-                        <li>Must set <code>"additionalProperties": false</code></li>
-                      </ul>
-                      <p style="margin: var(--space-2) 0 0 0; font-style: italic;">💡 Tip: Click "Sample" to see a complete example, or paste only the document schema (not the entire contract).</p>
-                    </div>
-                  </div>
-
-                  <p class="wizard-field__message" id="document-type-message" role="status" aria-live="polite"></p>
-                </form>
-              </div>
-              <div class="document-modal__footer">
-                <button class="wizard-button wizard-button--secondary" type="button" id="document-modal-cancel">Cancel</button>
-                <button class="wizard-button wizard-button--primary" type="button" id="document-modal-save">Save Document Type</button>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-    <!-- Overview Screen -->
-    <section class="wizard-screen" id="screen-overview" data-step="overview" data-tab="document" hidden>
-      <div class="wizard-screen__inner">
-        <h1 class="wizard-screen__title" id="title-overview" tabindex="-1">Review Your Token Configuration</h1>
-        <p class="wizard-screen__subtitle">Review all settings before publishing to the Dash Platform</p>
-
-        <!-- Configuration Overview -->
-        <div class="form-card">
-          <div class="form-card__header">
-            <h3 class="form-card__title">Configuration Summary</h3>
-            <p class="form-card__description">All your token settings at a glance</p>
-          </div>
-          <div class="form-card__body">
-            <div class="config-overview" id="config-overview">
-              <div class="config-overview__item">
-                <span class="config-overview__label">Token Name:</span>
-                <span class="config-overview__value" id="overview-token-name">—</span>
-              </div>
-              <div class="config-overview__item">
-                <span class="config-overview__label">Decimals:</span>
-                <span class="config-overview__value" id="overview-decimals">—</span>
-              </div>
-              <div class="config-overview__item">
-                <span class="config-overview__label">Base Supply:</span>
-                <span class="config-overview__value" id="overview-base-supply">—</span>
-              </div>
-              <div class="config-overview__item">
-                <span class="config-overview__label">Max Supply:</span>
-                <span class="config-overview__value" id="overview-max-supply">—</span>
-              </div>
-              <div class="config-overview__item">
-                <span class="config-overview__label">Action Preset:</span>
-                <span class="config-overview__value" id="overview-action-preset">—</span>
-              </div>
-              <div class="config-overview__item">
-                <span class="config-overview__label">Localizations:</span>
-                <span class="config-overview__value" id="overview-localizations">—</span>
-              </div>
-              <div class="config-overview__item">
-                <span class="config-overview__label">Document Types:</span>
-                <span class="config-overview__value" id="overview-document-types">—</span>
-              </div>
-              <div class="config-overview__item">
-                <span class="config-overview__label">Groups:</span>
-                <span class="config-overview__value" id="overview-groups">—</span>
-              </div>
-              <div class="config-overview__item">
-                <span class="config-overview__label">Distribution:</span>
-                <span class="config-overview__value" id="overview-distribution">—</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Navigation Buttons -->
-        <div class="wizard-actions wizard-actions--between wizard-actions--sticky">
-          <button class="wizard-button wizard-button--secondary" type="button" id="overview-back" data-step-back="overview">← Back</button>
-          <button class="wizard-button wizard-button--secondary" type="button" id="contract-preview-btn">📄 Contract Preview</button>
-          <button class="wizard-button wizard-button--primary" type="button" id="overview-next">Continue →</button>
-        </div>
       </div>
     </section>
 
@@ -4470,25 +4226,24 @@
       <aside class="page-guide" aria-label="Page guide">
         <div class="page-guide__content">
           <h2 class="page-guide__title">Keywords & Description</h2>
-          <p class="page-guide__intro">Help users find and understand your token.</p>
+          <p class="page-guide__intro">Help others find and understand your token.</p>
 
           <div class="page-guide__section">
-            <h3 class="page-guide__section-title">Step-by-step guide</h3>
-            <ol class="page-guide__steps">
-              <li>
-                <strong>Write a Description</strong>
-                <p>3-200 characters explaining what your token does. Keep it clear and simple.</p>
-              </li>
-              <li>
-                <strong>Add Keywords (Optional)</strong>
-                <p>Tags for search/discovery. Example: "rewards", "gaming", "loyalty".</p>
-              </li>
-            </ol>
-          </div>
+            <h3 class="page-guide__section-title">Guide</h3>
+            <p>Add short keywords and a concise description explaining your token's use or category. This metadata appears in search and dashboards. Click Continue to registration.</p>
 
-          <div class="page-guide__tip">
-            <strong>💡 Pro Tip</strong>
-            Focus on benefits, not features. "Earn rewards for shopping" beats "Loyalty point system".
+            <h4 class="page-guide__step-heading">Description (Optional)</h4>
+            <p>Write a brief explanation (3-200 characters) of what your token does. Keep it clear, simple, and focused on the purpose or use case.</p>
+            <p><strong>Examples:</strong></p>
+            <ul style="margin: var(--space-2) 0; padding-left: var(--space-5); list-style: disc;">
+              <li>"Reward token for community contributors"</li>
+              <li>"Utility token for accessing premium features"</li>
+              <li>"Governance token for platform decisions"</li>
+            </ul>
+
+            <h4 class="page-guide__step-heading">Keywords (Optional)</h4>
+            <p>Add comma-separated tags for searchability. Example: "stablecoin, payment, utility"</p>
+            <p>Good keywords describe: category, use case, industry, or features.</p>
           </div>
         </div>
       </aside>
@@ -4549,29 +4304,52 @@
       <aside class="page-guide" aria-label="Page guide">
         <div class="page-guide__content">
           <h2 class="page-guide__title">Register Your Token</h2>
-          <p class="page-guide__intro">Publish your token to the Dash Platform blockchain.</p>
+          <p class="page-guide__intro">Finalize and register your token on the Dash Platform.</p>
 
           <div class="page-guide__section">
-            <h3 class="page-guide__section-title">Registration Methods</h3>
-            <ol class="page-guide__steps">
-              <li>
-                <strong>Mobile (QR Code)</strong>
-                <p>Scan QR with Dash mobile wallet. Easiest for mobile users.</p>
-              </li>
-              <li>
-                <strong>DET (Dash Evo Tool)</strong>
-                <p>Export JSON config for command-line tool. For developers.</p>
-              </li>
-              <li>
-                <strong>Self-Service (Browser)</strong>
-                <p>Import wallet and register directly. Fastest but requires your recovery phrase.</p>
-              </li>
-            </ol>
+            <h3 class="page-guide__section-title">Guide</h3>
+            <p>Choose how to deploy:</p>
+            <ul style="margin: var(--space-2) 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>Mobile (QR):</strong> Scan with Dash Wallet.</li>
+              <li><strong>DET Tool:</strong> Copy JSON to CLI for manual setup.</li>
+              <li><strong>Self-Service:</strong> Register directly via mnemonic import.</li>
+            </ul>
+            <p>Follow the step-by-step prompts to complete identity creation and contract submission. Your token goes live once registration completes.</p>
           </div>
 
-          <div class="page-guide__tip">
-            <strong>💡 Pro Tip</strong>
-            Mobile QR is safest - never enter your recovery phrase in a web browser if possible.
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Registration Methods Explained</h3>
+
+            <h4 class="page-guide__step-heading">Mobile (QR Code)</h4>
+            <p>This is the recommended method for most users. The wizard generates a series of QR codes containing your token configuration. You scan these codes using the Dash mobile wallet app, which handles the identity creation and contract submission automatically.</p>
+            <p><strong>Best for:</strong> Users who prefer mobile-first workflows and want a simple, secure process without exposing their recovery phrase to a web browser.</p>
+
+            <h4 class="page-guide__step-heading">DET (Dash Evo Tool)</h4>
+            <p>This method exports your token configuration as a JSON file that can be used with the Dash Evo Tool command-line interface. This is ideal for developers who want full control over the registration process or need to integrate token creation into automated workflows.</p>
+            <p><strong>Best for:</strong> Developers, advanced users, and those integrating with custom tooling.</p>
+
+            <h4 class="page-guide__step-heading">Self-Service (Manual Registration)</h4>
+            <p>Import your wallet mnemonic directly into the browser to register your identity and submit the contract in one flow. This is the fastest method but requires you to enter your recovery phrase into a web application.</p>
+            <p><strong>Best for:</strong> Technical users who understand the security implications and want immediate registration.</p>
+            <p><strong>Security Note:</strong> Only use this method if you understand the risks of entering your recovery phrase in a browser environment.</p>
+          </div>
+
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">What Happens During Registration</h3>
+            <ol class="page-guide__steps">
+              <li>
+                <strong>Identity Creation</strong>
+                <p>A unique identity is created on the Dash Platform that will own your token contract.</p>
+              </li>
+              <li>
+                <strong>Contract Submission</strong>
+                <p>Your token configuration is submitted as a data contract to the blockchain. This includes all naming, permissions, distribution, and advanced settings you configured.</p>
+              </li>
+              <li>
+                <strong>Confirmation</strong>
+                <p>Once confirmed by the network, your token is live and ready to use. The contract becomes immutable (unless you configured change permissions).</p>
+              </li>
+            </ol>
           </div>
         </div>
       </aside>
@@ -4709,6 +4487,51 @@
             </div>
           </section>
 
+          <!-- Export Configuration Section -->
+          <div class="form-card" style="margin-top: var(--space-6);">
+            <div class="form-card__header">
+              <h3 class="form-card__title">Export Configuration</h3>
+              <p class="form-card__description">Download your token configuration before or after registration</p>
+            </div>
+            <div class="form-card__body">
+              <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+                <!-- Export Contract JSON -->
+                <div class="export-option">
+                  <div class="export-option__header">
+                    <svg class="export-option__icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M14 2v6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M10 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <div>
+                      <h4 class="export-option__title">Dash Platform Contract</h4>
+                      <p class="export-option__description">Export production-ready contract JSON for Dash Platform deployment</p>
+                    </div>
+                  </div>
+                  <button class="wizard-button wizard-button--primary" type="button" id="export-contract-json-btn">
+                    📥 Download Contract
+                  </button>
+                </div>
+
+                <!-- Export Full Configuration -->
+                <div class="export-option">
+                  <div class="export-option__header">
+                    <svg class="export-option__icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <div>
+                      <h4 class="export-option__title">Full Configuration</h4>
+                      <p class="export-option__description">Export complete wizard state (all forms, settings, and data)</p>
+                    </div>
+                  </div>
+                  <button class="wizard-button wizard-button--secondary" type="button" id="export-full-config-btn">
+                    📥 Download JSON
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <p class="wizard-field__message wizard-status-banner" id="registration-message" role="status" aria-live="polite"></p>
           <div class="wizard-actions wizard-actions--between wizard-actions--sticky">
             <button class="wizard-button wizard-button--secondary" type="button" data-step-back="registration">Back</button>
@@ -4822,7 +4645,7 @@
                 <select class="wizard-field__input" id="manual-mint-performer"></select>
                 <div class="wizard-field wizard-field--stacked" data-manual-mint-identity="performer" hidden>
                   <label class="wizard-field__label wizard-field__label--secondary" for="manual-mint-performer-identity">Identity ID</label>
-                  <input class="wizard-field__input wizard-field__input--condensed" id="manual-mint-performer-identity" type="text" placeholder="identity-id">
+                  <input class="wizard-field__input wizard-field__input--condensed" id="manual-mint-performer-identity" type="text" placeholder="Enter the Base58 ID">
                   <p class="wizard-field__hint">Provide the Dash Platform identity ID allowed to mint.</p>
                 </div>
                 <p class="wizard-field__hint" id="manual-mint-performer-hint">Choose <strong>No one</strong> to block minting entirely, or assign the contract owner, main group, or a specific group. Select <strong>Specific Identity</strong> to target a single identity ID.</p>
@@ -4846,7 +4669,7 @@
                 <select class="wizard-field__input" id="manual-mint-rule-changer"></select>
                 <div class="wizard-field wizard-field--stacked" data-manual-mint-identity="changer" hidden>
                   <label class="wizard-field__label wizard-field__label--secondary" for="manual-mint-rule-changer-identity">Identity ID</label>
-                  <input class="wizard-field__input wizard-field__input--condensed" id="manual-mint-rule-changer-identity" type="text" placeholder="identity-id">
+                  <input class="wizard-field__input wizard-field__input--condensed" id="manual-mint-rule-changer-identity" type="text" placeholder="Enter the Base58 ID">
                   <p class="wizard-field__hint">Enter the identity ID that will control future updates to minting.</p>
                 </div>
               </div>
@@ -4948,7 +4771,7 @@
                 <select class="wizard-field__input" id="manual-burn-performer"></select>
                 <div class="wizard-field wizard-field--stacked" data-manual-burn-identity="performer" hidden>
                   <label class="wizard-field__label wizard-field__label--secondary" for="manual-burn-performer-identity">Identity ID</label>
-                  <input class="wizard-field__input wizard-field__input--condensed" id="manual-burn-performer-identity" type="text" placeholder="identity-id">
+                  <input class="wizard-field__input wizard-field__input--condensed" id="manual-burn-performer-identity" type="text" placeholder="Enter the Base58 ID">
                   <p class="wizard-field__hint">Provide the Dash Platform identity ID allowed to burn tokens.</p>
                 </div>
                 <p class="wizard-field__hint">Select <strong>No one</strong> to prevent burns, or delegate the capability to the contract owner, a group, or the Specific Identity option. Choose <strong>Specific Identity</strong> to target a single identity ID.</p>
@@ -4972,7 +4795,7 @@
                 <select class="wizard-field__input" id="manual-burn-rule-changer"></select>
                 <div class="wizard-field wizard-field--stacked" data-manual-burn-identity="changer" hidden>
                   <label class="wizard-field__label wizard-field__label--secondary" for="manual-burn-rule-changer-identity">Identity ID</label>
-                  <input class="wizard-field__input wizard-field__input--condensed" id="manual-burn-rule-changer-identity" type="text" placeholder="identity-id">
+                  <input class="wizard-field__input wizard-field__input--condensed" id="manual-burn-rule-changer-identity" type="text" placeholder="Enter the Base58 ID">
                   <p class="wizard-field__hint">Enter the identity ID that manages future updates to burning.</p>
                 </div>
               </div>
@@ -5078,7 +4901,7 @@
                 </select>
                 <div class="wizard-field wizard-field--stacked" data-freeze-identity="perform" hidden>
                   <label class="wizard-field__label wizard-field__label--secondary" for="freeze-performer-identity">Identity ID</label>
-                  <input class="wizard-field__input wizard-field__input--condensed" id="freeze-performer-identity" type="text" autocomplete="off" placeholder="identity-id">
+                  <input class="wizard-field__input wizard-field__input--condensed" id="freeze-performer-identity" type="text" autocomplete="off" placeholder="Enter the Base58 ID">
                   <p class="wizard-field__hint">Enter the identity ID permitted to freeze accounts.</p>
                 </div>
                 <p class="wizard-field__hint" id="freeze-performer-hint">Choose <strong>No one</strong> to keep freezing unavailable, or delegate the authority to the contract owner or the Specific Identity option.</p>
@@ -5106,7 +4929,7 @@
                 </select>
                 <div class="wizard-field wizard-field--stacked" data-freeze-identity="rules" hidden>
                   <label class="wizard-field__label wizard-field__label--secondary" for="freeze-rule-identity">Identity ID</label>
-                  <input class="wizard-field__input wizard-field__input--condensed" id="freeze-rule-identity" type="text" autocomplete="off" placeholder="identity-id">
+                  <input class="wizard-field__input wizard-field__input--condensed" id="freeze-rule-identity" type="text" autocomplete="off" placeholder="Enter the Base58 ID">
                   <p class="wizard-field__hint">Enter the identity ID that can change freezing rules.</p>
                 </div>
                 <p class="wizard-field__hint" id="freeze-rule-hint">Select who can adjust freezing permissions later. Use <strong>Specific Identity</strong> to assign a single identity ID.</p>
@@ -5278,9 +5101,8 @@
     </div>
   </div>
 
-  <!-- SECURITY: Added SRI integrity hash and crossorigin for CDN security -->
+  <!-- Load Dash SDK from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/dash@5/dist/dash.min.js"
-          integrity="sha384-pcOfMRg4VebRsQejHO7OMSm8DAB1qu7rCEnXfT6r9cZLj91MtsP4SfSNqpHpf+KW"
           crossorigin="anonymous"
           defer></script>
   <script>
@@ -5930,6 +5752,87 @@
     })();
   </script>
 
-  <script src="app.js?v=71.0.1760980124" defer></script>
+  <!-- Export Functionality Script -->
+  <script>
+    (function() {
+      'use strict';
+
+      document.addEventListener('DOMContentLoaded', function() {
+        const exportDocTypesBtn = document.getElementById('export-document-types-btn');
+        const exportFullConfigBtn = document.getElementById('export-full-config-btn');
+        const exportContractJsonBtn = document.getElementById('export-contract-json-btn');
+
+        // Helper: Download JSON file
+        function downloadJSON(data, filename) {
+          const json = JSON.stringify(data, null, 2);
+          const blob = new Blob([json], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }
+
+        // Helper: Get token name for filename
+        function getTokenName() {
+          if (window.wizardState && window.wizardState.form && window.wizardState.form.tokenName) {
+            return window.wizardState.form.tokenName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+          }
+          return 'token';
+        }
+
+        // Export Document Types Only
+        if (exportDocTypesBtn) {
+          exportDocTypesBtn.addEventListener('click', function() {
+            if (window.wizardState && window.wizardState.form) {
+              const documentTypes = window.wizardState.form.documentTypes || {};
+              const tokenName = getTokenName();
+              downloadJSON(documentTypes, `${tokenName}_document_types.json`);
+            } else {
+              alert('No document types to export');
+            }
+          });
+        }
+
+        // Export Full Configuration
+        if (exportFullConfigBtn) {
+          exportFullConfigBtn.addEventListener('click', function() {
+            if (window.wizardState) {
+              const config = {
+                active: window.wizardState.active,
+                furthestValidIndex: window.wizardState.furthestValidIndex,
+                form: window.wizardState.form,
+                steps: window.wizardState.steps
+              };
+              const tokenName = getTokenName();
+              downloadJSON(config, `${tokenName}_full_config.json`);
+            } else {
+              alert('No configuration to export');
+            }
+          });
+        }
+
+        // Export Contract JSON
+        if (exportContractJsonBtn) {
+          exportContractJsonBtn.addEventListener('click', function() {
+            if (typeof window.generatePlatformContractJSON === 'function') {
+              const contract = window.generatePlatformContractJSON();
+              const tokenName = getTokenName();
+              downloadJSON(contract, `${tokenName}_contract.json`);
+            } else {
+              alert('Contract generation function not available');
+            }
+          });
+        }
+
+        console.log('Export functionality initialized');
+      });
+    })();
+  </script>
+
+  <script src="app.js?v=86" defer></script>
 </body>
 </html>
