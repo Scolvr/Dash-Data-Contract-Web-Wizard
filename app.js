@@ -1190,6 +1190,47 @@ let advancedUI = createAdvancedUI(advancedForm);
   tokenPluralInput.addEventListener('blur', () => evaluateNaming({ touched: true }));
   tokenCapitalizeInput.addEventListener('change', handleNamingInput);
 
+  // Auto-sync: Update English localization when token name fields change
+  function syncToEnglishLocalization() {
+    const singular = tokenNameInput ? tokenNameInput.value.trim() : '';
+    const plural = tokenPluralInput ? tokenPluralInput.value.trim() : '';
+    const shouldCapitalize = tokenCapitalizeInput ? tokenCapitalizeInput.checked : false;
+
+    // Only sync if we have at least singular form
+    if (singular) {
+      // Ensure naming structure exists
+      if (!wizardState.form.naming) {
+        wizardState.form.naming = { conventions: { localizations: {} }, rows: [] };
+      }
+      if (!wizardState.form.naming.conventions) {
+        wizardState.form.naming.conventions = { localizations: {} };
+      }
+      if (!wizardState.form.naming.conventions.localizations) {
+        wizardState.form.naming.conventions.localizations = {};
+      }
+
+      // Auto-update English localization
+      wizardState.form.naming.conventions.localizations.en = {
+        singular_form: singular,
+        plural_form: plural || singular + 's', // Default plural if not provided
+        should_capitalize: shouldCapitalize
+      };
+
+      console.log('✅ Auto-synced to English localization:', wizardState.form.naming.conventions.localizations);
+      console.log('📋 Full naming state:', wizardState.form.naming);
+
+      // Persist the state
+      if (typeof persistState === 'function') {
+        persistState();
+      }
+    }
+  }
+
+  // Add auto-sync to all three fields
+  tokenNameInput.addEventListener('input', syncToEnglishLocalization);
+  tokenPluralInput.addEventListener('input', syncToEnglishLocalization);
+  tokenCapitalizeInput.addEventListener('change', syncToEnglishLocalization);
+
   if (registrationMethodsContainer) {
     registrationMethodsContainer.addEventListener('change', handleRegistrationSelection);
   }
@@ -9441,6 +9482,189 @@ function buildManualActionRulesConfig(actionState, permissions) {
   window.hydrateFormsFromState = hydrateFormsFromState;
   window.announce = announce;
   window.wizardState = wizardState;
+
+  // ========================================
+  // Live Contract Preview System
+  // ========================================
+
+  /**
+   * Updates the contract preview JSON AND features in real-time
+   * Called automatically when the preview modal is open and form changes occur
+   */
+  function updateLiveContractPreview() {
+    const jsonElement = document.getElementById('contract-preview-json');
+    const featuresElement = document.getElementById('contract-preview-features');
+    const modal = document.getElementById('contract-preview-modal');
+
+    // Only update if modal is visible
+    if (!modal || modal.hasAttribute('hidden')) {
+      return;
+    }
+
+    try {
+      // Update JSON
+      if (jsonElement && typeof generatePlatformContractJSON === 'function') {
+        const contract = generatePlatformContractJSON();
+        jsonElement.textContent = JSON.stringify(contract, null, 2);
+      }
+
+      // Update features checklist
+      if (featuresElement && typeof window.wizardState !== 'undefined') {
+        const state = JSON.parse(JSON.stringify(window.wizardState.form));
+        featuresElement.innerHTML = generateFeaturesHTML(state);
+      }
+
+      console.log('Live preview updated (JSON + features)');
+    } catch (error) {
+      console.error('Error updating live preview:', error);
+      if (jsonElement) {
+        jsonElement.textContent = `Error generating contract: ${error.message}`;
+      }
+    }
+  }
+
+  /**
+   * Generate features checklist HTML from wizard state
+   */
+  function generateFeaturesHTML(state) {
+    const categories = [];
+
+    // Token Name
+    const tokenName = [];
+    if (state.tokenName) {
+      tokenName.push({ name: 'Token Name', value: state.tokenName });
+    }
+    if (state.permissions?.decimals !== undefined) {
+      tokenName.push({ name: 'Decimals', value: state.permissions.decimals });
+    }
+    if (tokenName.length > 0) {
+      categories.push({ title: '📋 Token Name', items: tokenName, type: 'info' });
+    }
+
+    // Token Supply
+    const tokenSupply = [];
+    if (state.permissions?.baseSupply) {
+      tokenSupply.push({ name: 'Base Supply', value: state.permissions.baseSupply });
+    }
+    if (state.permissions?.maxSupply) {
+      tokenSupply.push({ name: 'Max Supply', value: state.permissions.maxSupply });
+    }
+    if (tokenSupply.length > 0) {
+      categories.push({ title: '💰 Token Supply', items: tokenSupply, type: 'info' });
+    }
+
+    // Minting
+    if (state.permissions?.manualMint?.enabled) {
+      categories.push({ title: '🔨 Minting', items: [{ name: 'Minting Enabled', enabled: true }], type: 'toggle' });
+    }
+
+    // Burning
+    if (state.permissions?.manualBurn?.enabled) {
+      categories.push({ title: '🔥 Burning', items: [{ name: 'Burning Enabled', enabled: true }], type: 'toggle' });
+    }
+
+    // Freezing
+    if (state.permissions?.manualFreeze?.enabled) {
+      categories.push({ title: '❄️ Freezing', items: [{ name: 'Freezing Enabled', enabled: true }], type: 'toggle' });
+    }
+
+    // Launch Settings
+    if (state.permissions?.startAsPaused) {
+      categories.push({ title: '🚀 Launch Settings', items: [{ name: 'Start as Paused', enabled: true }], type: 'toggle' });
+    }
+
+    // Distribution
+    if (state.distribution?.emission?.type) {
+      categories.push({ title: '💨 Emission', items: [{ name: 'Emission Type', value: state.distribution.emission.type }], type: 'info' });
+    }
+
+    // Render categories
+    return categories.map(category => {
+      let itemsHTML = '';
+
+      if (category.type === 'info') {
+        itemsHTML = category.items.map(item => `
+          <div style="display: flex; justify-content: space-between; padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border-light);">
+            <span style="color: var(--color-text-secondary); font-size: 0.9375rem;">${item.name}</span>
+            <span style="color: var(--color-text); font-weight: 500; font-size: 0.9375rem;">${item.value}</span>
+          </div>
+        `).join('');
+      } else {
+        itemsHTML = category.items.map(item => `
+          <div style="display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) 0;">
+            <span style="font-size: 1rem; color: #10b981; font-weight: bold; width: 20px;">✓</span>
+            <span style="color: var(--color-text); font-size: 0.9375rem;">${item.name}</span>
+          </div>
+        `).join('');
+      }
+
+      return `
+        <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-4); margin-bottom: var(--space-3);">
+          <h4 style="font-size: 1rem; font-weight: 600; margin: 0 0 var(--space-3) 0; color: var(--color-text); display: flex; align-items: center; gap: var(--space-2);">
+            ${category.title}
+          </h4>
+          <div style="margin: 0;">
+            ${itemsHTML}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Debounce function to limit update frequency
+  let livePreviewDebounceTimer = null;
+  function debouncedLivePreviewUpdate() {
+    if (livePreviewDebounceTimer) {
+      clearTimeout(livePreviewDebounceTimer);
+    }
+    livePreviewDebounceTimer = setTimeout(updateLiveContractPreview, 300); // 300ms delay
+  }
+
+  // Watch for changes to any form input across the entire wizard
+  function initializeLivePreview() {
+    console.log('Initializing live contract preview...');
+
+    // Listen to all input changes globally
+    document.addEventListener('input', function(event) {
+      const target = event.target;
+
+      // Check if the input is part of a wizard form
+      if (target.matches('input, select, textarea')) {
+        const isWizardInput = target.closest('.wizard-form') !== null;
+
+        if (isWizardInput) {
+          // Trigger debounced preview update
+          debouncedLivePreviewUpdate();
+        }
+      }
+    });
+
+    // Also listen to change events for checkboxes and radios
+    document.addEventListener('change', function(event) {
+      const target = event.target;
+
+      if (target.matches('input[type="checkbox"], input[type="radio"]')) {
+        const isWizardInput = target.closest('.wizard-form') !== null;
+
+        if (isWizardInput) {
+          // Immediate update for toggle changes
+          debouncedLivePreviewUpdate();
+        }
+      }
+    });
+
+    console.log('Live contract preview initialized');
+  }
+
+  // Initialize on DOMContentLoaded
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeLivePreview);
+  } else {
+    initializeLivePreview();
+  }
+
+  // Expose the update function globally for manual triggers
+  window.updateLiveContractPreview = updateLiveContractPreview;
 })();
 
 /*!
