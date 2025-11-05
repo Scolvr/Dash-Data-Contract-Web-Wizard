@@ -9411,10 +9411,23 @@ function buildManualActionRulesConfig(actionState, permissions) {
   }
 
   function generateTestContract(testState) {
-    const savedState = wizardState;
-    wizardState = testState;
+    // Create a temporary test function that uses the test state
+    const originalState = {
+      active: wizardState.active,
+      furthestValidIndex: wizardState.furthestValidIndex,
+      steps: {...wizardState.steps},
+      form: {...wizardState.form},
+      runtime: {...wizardState.runtime}
+    };
+
+    // Temporarily replace wizardState properties
+    Object.assign(wizardState, testState);
+
     const output = generatePlatformContractJSON();
-    wizardState = savedState;
+
+    // Restore original state
+    Object.assign(wizardState, originalState);
+
     return output;
   }
 
