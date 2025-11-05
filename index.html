@@ -985,8 +985,79 @@
                     <p>No group has been created yet.</p>
                     <button class="wizard-button wizard-button--secondary wizard-button--small" type="button" id="change-max-supply-create-group-btn">Create Group</button>
                   </div>
+                </div>
+
+                <!-- No One Option -->
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="change-max-supply-permission" value="no-one">
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">No One</span>
+                    <span class="wizard-choice__hint">Max supply changes are disabled (can be enabled later by rule changer)</span>
+                  </span>
+                </label>
+              </fieldset>
+
+              <!-- Rule Change Authorization Section (inside max supply permissions panel) -->
+              <fieldset class="wizard-fieldset" style="margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
+                <legend class="wizard-field__label">Who can change max supply rules?</legend>
+                <p class="wizard-subsection__body" style="margin-bottom: var(--space-4);">Define who has authority to modify max supply change permissions after deployment</p>
+
+                <!-- Owner Only Option -->
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="change-max-supply-rule-changer" value="owner-only" checked>
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">Owner Only</span>
+                    <span class="wizard-choice__hint">Only the contract owner can modify max supply rules</span>
+                  </span>
+                </label>
+
+                <!-- Specific Identity Option -->
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="change-max-supply-rule-changer" value="specific-identity" data-toggle-panel="change-max-supply-rule-panel-identity">
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">Specific Identity</span>
+                    <span class="wizard-choice__hint">Only a designated identity can change max supply rules</span>
+                  </span>
+                </label>
+                <div class="distribution-inline-panel" id="change-max-supply-rule-panel-identity" hidden>
+                  <div class="field-group">
+                    <label class="wizard-field__label" for="change-max-supply-rule-identity-id">Identity ID</label>
+                    <input class="wizard-field__input" type="text" id="change-max-supply-rule-identity-id" name="change-max-supply-rule-identity-id" placeholder="Enter the Base58 ID">
+                    <span class="field-hint">Enter the Dash Platform identity ID that can modify max supply rules</span>
                   </div>
-                </fieldset>
+                </div>
+
+                <!-- Group Option -->
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="change-max-supply-rule-changer" value="group" data-toggle-panel="change-max-supply-rule-panel-group">
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">Group</span>
+                    <span class="wizard-choice__hint">Members of a designated group can change max supply rules</span>
+                  </span>
+                </label>
+                <div class="distribution-inline-panel" id="change-max-supply-rule-panel-group" hidden>
+                  <div class="field-group" id="change-max-supply-rule-group-selector-container">
+                    <label class="wizard-field__label" for="change-max-supply-rule-group-id">Select group</label>
+                    <select class="wizard-field__input" id="change-max-supply-rule-group-id" name="change-max-supply-rule-group-id">
+                      <option value="">Select a group...</option>
+                    </select>
+                    <span class="field-hint" id="change-max-supply-rule-group-hint">Choose which group can modify max supply rules</span>
+                  </div>
+                  <div class="field-message field-message--info" id="change-max-supply-rule-no-groups-message" hidden>
+                    <p>No group has been created yet.</p>
+                    <button class="wizard-button wizard-button--secondary wizard-button--small" type="button" id="change-max-supply-rule-create-group-btn">Create Group</button>
+                  </div>
+                </div>
+
+                <!-- No One Option -->
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="change-max-supply-rule-changer" value="no-one">
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">No One</span>
+                    <span class="wizard-choice__hint">Max supply rules are immutable and cannot be changed</span>
+                  </span>
+                </label>
+              </fieldset>
               </div>
             </div>
           </div>
@@ -1961,6 +2032,30 @@
                 </fieldset>
               </fieldset>
               </div>
+
+              <!-- Allow Transfer to Frozen Balance Configuration -->
+              <fieldset class="wizard-fieldset" style="margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
+                <legend class="wizard-field__label">Frozen balance behavior</legend>
+                <p class="wizard-subsection__body" style="margin-bottom: var(--space-4);">
+                  Control whether tokens can be sent to addresses that have frozen balances
+                </p>
+
+                <div class="wizard-field wizard-field--checkbox">
+                  <label class="wizard-checkbox">
+                    <input
+                      class="wizard-checkbox__input"
+                      type="checkbox"
+                      id="permissions-allow-frozen"
+                      name="permissions-allow-frozen">
+                    <span class="wizard-checkbox__label">
+                      <span class="wizard-checkbox__title">Allow transfers to frozen balances</span>
+                      <span class="wizard-checkbox__hint" style="display: block; margin-top: var(--space-2xs);">
+                        When enabled, tokens can be sent to addresses with frozen balances. The frozen balance cannot spend the tokens, but can receive them. Typically disabled for compliance tokens, enabled for utility tokens.
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </fieldset>
             </div>
           </div>
 
@@ -3463,9 +3558,14 @@
                           <span class="field-hint">Optional minimum emission value</span>
                         </div>
                         <div class="field-group">
-                          <label class="wizard-field__label" for="emission-step-max-interval">Maximum Interval Count (optional)</label>
-                          <input class="wizard-field__input" type="text" id="emission-step-max-interval" placeholder="None">
-                          <span class="field-hint">Optional maximum number of intervals</span>
+                          <label class="wizard-field__label" for="emission-step-max-interval">
+                            Maximum Interval Count
+                            <span style="color: var(--color-error); font-weight: 600;">⚠️ IMPORTANT</span>
+                          </label>
+                          <input class="wizard-field__input" type="number" id="emission-step-max-interval" placeholder="128" min="1" max="1024" value="128">
+                          <span class="field-hint" style="color: var(--color-warning);">
+                            <strong>Maximum number of emission intervals (1-1024).</strong> After this many intervals, the trailing amount is distributed perpetually. Defaults to 128 if not set. For Bitcoin-style halving over 100+ years, set this to a higher value (e.g., 500).
+                          </span>
                         </div>
                         <div class="field-group">
                           <label class="wizard-field__label" for="emission-step-trailing">Trailing Distribution Interval Token Amount</label>
@@ -4007,9 +4107,14 @@
                     <span class="field-hint">Optional minimum emission value</span>
                   </div>
                   <div class="field-group">
-                    <label class="wizard-field__label" for="emission-step-max-interval">Maximum Interval Count (optional)</label>
-                    <input class="wizard-field__input" type="text" id="emission-step-max-interval" placeholder="None">
-                    <span class="field-hint">Optional maximum number of intervals</span>
+                    <label class="wizard-field__label" for="emission-step-max-interval">
+                      Maximum Interval Count
+                      <span style="color: var(--color-error); font-weight: 600;">⚠️ IMPORTANT</span>
+                    </label>
+                    <input class="wizard-field__input" type="number" id="emission-step-max-interval" placeholder="128" min="1" max="1024" value="128">
+                    <span class="field-hint" style="color: var(--color-warning);">
+                      <strong>Maximum number of emission intervals (1-1024).</strong> After this many intervals, the trailing amount is distributed perpetually. Defaults to 128 if not set. For Bitcoin-style halving over 100+ years, set this to a higher value (e.g., 500).
+                    </span>
                   </div>
                   <div class="field-group">
                     <label class="wizard-field__label" for="emission-step-trailing">Trailing Distribution Interval Token Amount</label>
