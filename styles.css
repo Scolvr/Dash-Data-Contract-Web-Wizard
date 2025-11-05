@@ -4494,7 +4494,7 @@ html[data-theme="dark"] .document-type-item__btn {
 }
 
 /* Hide guide on smaller screens */
-@media (max-width: 1400px) {
+@media (max-width: 1200px) {
   .page-guide {
     display: none;
   }

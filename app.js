@@ -17,7 +17,8 @@
   const STATE_STORAGE_KEY = 'dashTokenWizardState';
   const THEME_STORAGE_KEY = 'ui.theme';
   // FIXED: Correct order matching sidebar navigation
-  const STEP_SEQUENCE = ['welcome', 'naming', 'permissions', 'advanced', 'distribution', 'search', 'overview', 'registration'];
+  // Note: 'overview' removed from sequence - accessible only from Document tab
+  const STEP_SEQUENCE = ['welcome', 'naming', 'permissions', 'advanced', 'distribution', 'search', 'registration'];
   const INFO_STEPS = Object.freeze([
     'permissions-group',
     'permissions-manual-mint',
@@ -88,7 +89,6 @@
     permissions: ['permissions', 'permissions-manual-mint', 'permissions-manual-burn', 'permissions-manual-freeze', 'permissions-emergency', 'permissions-conventions-change', 'permissions-marketplace-trade-mode-change', 'permissions-direct-pricing-change', 'permissions-main-control-change'],
     advanced: ['advanced-history', 'advanced', 'advanced-launch'],
     distribution: ['distribution-preprogrammed', 'distribution-perpetual'],
-    overview: ['overview'],
     search: ['search'],
     registration: ['registration']
   });
@@ -1093,6 +1093,32 @@ let advancedUI = createAdvancedUI(advancedForm);
   wizardState.active = currentScreenId;
   let lastSkippedSignature = null;
 
+  // Initialize activeScreens early to prevent "No active screens available!" error
+  function computeActiveScreens() {
+    const skipped = [];
+    const active = screenDefinitions.filter((definition) => {
+      const skip = definition.shouldSkip(wizardState);
+      const include = (!definition.isAdvanced || developerMode) && !skip;
+      if (!include && developerMode && (definition.isAdvanced || skip)) {
+        skipped.push(definition.id);
+      }
+      return include;
+    });
+
+    if (developerMode) {
+      const signature = skipped.join('|');
+      if (signature !== lastSkippedSignature) {
+        lastSkippedSignature = signature;
+        console.info('[Dash Token Wizard][dev] Skipped screens:', skipped);
+      }
+    }
+
+    return active;
+  }
+
+  // Populate activeScreens immediately after screenDefinitions is ready
+  activeScreens = computeActiveScreens();
+
   MANUAL_ACTION_DEFINITIONS.forEach((definition) => {
     let screen = null;
     switch (definition.key) {
@@ -1344,7 +1370,10 @@ let advancedUI = createAdvancedUI(advancedForm);
       }
 
       // Find next substep
-      const nextSubstep = getNextSubstep(currentSubstep);
+      // Use currentStep as fallback if currentSubstep is not set
+      const substepToUse = currentSubstep || currentStep;
+      console.log('🔍 Using substep for navigation:', substepToUse);
+      const nextSubstep = getNextSubstep(substepToUse);
       console.log('➡️  Next substep calculated:', nextSubstep);
 
       if (!nextSubstep) {
@@ -2614,7 +2643,11 @@ let advancedUI = createAdvancedUI(advancedForm);
 
   function evaluateAdvanced({ touched = false } = {}) {
     if (!advancedUI || typeof advancedUI.getValues !== 'function') {
-      return { valid: true, message: '' };
+      // UI removed - functionality moved to dedicated permission screens
+      // Mark step as valid since there's nothing to validate here
+      const result = { valid: true, message: '' };
+      updateStepStatusFromValidation('advanced', result, touched);
+      return result;
     }
 
     const values = advancedUI.getValues();
@@ -5123,8 +5156,17 @@ function ensurePermissionsGroupState() {
       let storedFurthestIndex = null;
 
       if (parsed && typeof parsed === 'object') {
-        if (typeof parsed.active === 'string' && STEP_SEQUENCE.includes(parsed.active)) {
-          state.active = parsed.active;
+        // Validate active step/substep - ensure it exists in either STEP_SEQUENCE or SUBSTEP_SEQUENCES
+        if (typeof parsed.active === 'string') {
+          const isValidMainStep = STEP_SEQUENCE.includes(parsed.active);
+          const isValidSubstep = Object.values(SUBSTEP_SEQUENCES).some(substeps => substeps.includes(parsed.active));
+
+          if (isValidMainStep || isValidSubstep) {
+            state.active = parsed.active;
+          } else {
+            console.warn('⚠️  Invalid active step in storage:', parsed.active, '- resetting to default');
+            state.active = 'naming'; // Reset to first step if invalid
+          }
         }
         if (typeof parsed.furthestValidIndex === 'number') {
           storedFurthestIndex = clampFurthestIndex(parsed.furthestValidIndex);
@@ -7999,28 +8041,6 @@ function buildManualActionRulesConfig(actionState, permissions) {
     delete validationFingerprints[stepId];
   }
 
-  function computeActiveScreens() {
-    const skipped = [];
-    const active = screenDefinitions.filter((definition) => {
-      const skip = definition.shouldSkip(wizardState);
-      const include = (!definition.isAdvanced || developerMode) && !skip;
-      if (!include && developerMode && (definition.isAdvanced || skip)) {
-        skipped.push(definition.id);
-      }
-      return include;
-    });
-
-    if (developerMode) {
-      const signature = skipped.join('|');
-      if (signature !== lastSkippedSignature) {
-        lastSkippedSignature = signature;
-        console.info('[Dash Token Wizard][dev] Skipped screens:', skipped);
-      }
-    }
-
-    return active;
-  }
-
   function refreshFlow({ initial = false, suppressFocus = false } = {}) {
     const previousId = currentScreenId;
     activeScreens = computeActiveScreens();
@@ -8056,8 +8076,22 @@ function buildManualActionRulesConfig(actionState, permissions) {
     console.log('  📊 Parent step:', parentStep);
 
     if (!parentStep) {
-      console.error('  ❌ No parent step found!');
-      return null;
+      console.error('  ❌ No parent step found for:', currentSubstep);
+      console.log('  ℹ️  This might be a removed step. Attempting recovery...');
+
+      // Try to find a valid step to navigate to
+      // If we're in STEP_SEQUENCE, move to next step
+      const indexInMain = STEP_SEQUENCE.indexOf(currentSubstep);
+      if (indexInMain !== -1 && indexInMain < STEP_SEQUENCE.length - 1) {
+        const nextMain = STEP_SEQUENCE[indexInMain + 1];
+        console.log('  ✓ Recovered: navigating to next main step:', nextMain);
+        return SUBSTEP_SEQUENCES[nextMain]?.[0] || nextMain;
+      }
+
+      // Otherwise, go to first valid step
+      const firstStep = STEP_SEQUENCE[0];
+      console.log('  ✓ Recovered: navigating to first step:', firstStep);
+      return SUBSTEP_SEQUENCES[firstStep]?.[0] || firstStep;
     }
 
     const substeps = SUBSTEP_SEQUENCES[parentStep];
@@ -8425,11 +8459,70 @@ function buildManualActionRulesConfig(actionState, permissions) {
         V0: {
           authorized_to_make_change: isEnabled ? actionTaker : 'NoOne',
           admin_action_takers: isEnabled ? actionTaker : 'NoOne',
-          changing_authorized_action_takers_to_no_one_allowed: false,
-          changing_admin_action_takers_to_no_one_allowed: false,
-          self_changing_admin_action_takers_allowed: false
+          changing_authorized_action_takers_to_no_one_allowed: true,
+          changing_admin_action_takers_to_no_one_allowed: true,
+          self_changing_admin_action_takers_allowed: true
         }
       };
+    }
+
+    // Helper: Convert permission change state to V0 rule with proper authorization
+    function createPermissionChangeRule(changeState) {
+      if (!changeState || !changeState.enabled) {
+        return createRuleV0(false);
+      }
+
+      // Determine action taker from perform authorization
+      let authorizedToMakeChange = 'NoOne';
+      if (changeState.perform) {
+        if (changeState.perform.type === 'owner') {
+          authorizedToMakeChange = 'ContractOwner';
+        } else if (changeState.perform.type === 'identity' && changeState.perform.identityId) {
+          authorizedToMakeChange = changeState.perform.identityId;
+        } else if (changeState.perform.type === 'group' && changeState.perform.groupId) {
+          // Group ID should be a number (group index)
+          authorizedToMakeChange = parseInt(changeState.perform.groupId, 10) || 0;
+        }
+      }
+
+      // Determine admin action takers from changeRules authorization
+      let adminActionTakers = 'NoOne';
+      if (changeState.changeRules) {
+        if (changeState.changeRules.type === 'owner') {
+          adminActionTakers = 'ContractOwner';
+        } else if (changeState.changeRules.type === 'identity' && changeState.changeRules.identityId) {
+          adminActionTakers = changeState.changeRules.identityId;
+        } else if (changeState.changeRules.type === 'group' && changeState.changeRules.groupId) {
+          adminActionTakers = parseInt(changeState.changeRules.groupId, 10) || 0;
+        }
+      }
+
+      return {
+        V0: {
+          authorized_to_make_change: authorizedToMakeChange,
+          admin_action_takers: adminActionTakers,
+          changing_authorized_action_takers_to_no_one_allowed: true,
+          changing_admin_action_takers_to_no_one_allowed: true,
+          self_changing_admin_action_takers_allowed: true
+        }
+      };
+    }
+
+    // Helper: Convert authorization state to simple actor string (for mainControlGroupCanBeModified)
+    function getActorFromAuthorization(authState) {
+      if (!authState || !authState.type) {
+        return 'NoOne';
+      }
+
+      if (authState.type === 'owner') {
+        return 'ContractOwner';
+      } else if (authState.type === 'identity' && authState.identityId) {
+        return authState.identityId;
+      } else if (authState.type === 'group' && authState.groupId) {
+        return parseInt(authState.groupId, 10) || 0;
+      }
+
+      return 'NoOne';
     }
 
     // Helper: Convert keepsHistory to Platform format
@@ -8482,9 +8575,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
         newTokensDestinationIdentityRules: createRuleV0(true),
         mintingAllowChoosingDestination: allowCustomDestination,
         mintingAllowChoosingDestinationRules: createRuleV0(true),
-        changeDirectPurchasePricingRules: createRuleV0(
-          Boolean(wizardState.form.advanced?.changeControl?.directPurchase)
-        )
+        changeDirectPurchasePricingRules: createPermissionChangeRule(wizardState.form.permissions.directPricing)
       };
 
       // Build perpetual distribution if emission is configured
@@ -8761,7 +8852,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
       return {
         $format_version: '0',
         tradeMode: platformTradeMode,
-        tradeModeChangeRules: createRuleV0(false)
+        tradeModeChangeRules: createPermissionChangeRule(wizardState.form.permissions.marketplaceTradeMode)
       };
     }
 
@@ -8802,7 +8893,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
         ),
         decimals: parseInt(wizardState.form.permissions.decimals, 10) || 2
       },
-      conventionsChangeRules: createRuleV0(false),
+      conventionsChangeRules: createPermissionChangeRule(wizardState.form.permissions.conventionsChange),
       baseSupply: parseInt(wizardState.form.permissions.baseSupply, 10) || 0,
       maxSupply: wizardState.form.permissions.useMaxSupply
         ? parseInt(wizardState.form.permissions.maxSupply, 10) || null
@@ -8831,7 +8922,9 @@ function buildManualActionRulesConfig(actionState, permissions) {
         Boolean(wizardState.form.advanced?.changeControl?.emergency)
       ),
       mainControlGroup: null,
-      mainControlGroupCanBeModified: 'NoOne'
+      mainControlGroupCanBeModified: wizardState.form.permissions.mainControl?.enabled
+        ? getActorFromAuthorization(wizardState.form.permissions.mainControl.changeRules)
+        : 'NoOne'
     };
 
     // Add distribution rules if configured
@@ -8875,7 +8968,9 @@ function buildManualActionRulesConfig(actionState, permissions) {
         };
         // Update mainControlGroup in token if group is defined
         tokenConfig.mainControlGroup = 0;
-        tokenConfig.mainControlGroupCanBeModified = 'NoOne';
+        tokenConfig.mainControlGroupCanBeModified = wizardState.form.permissions.mainControl?.enabled
+          ? getActorFromAuthorization(wizardState.form.permissions.mainControl.changeRules)
+          : 'NoOne';
       }
     }
 
@@ -8885,6 +8980,18 @@ function buildManualActionRulesConfig(actionState, permissions) {
       id: '<generated-by-platform>',  // Platform generates this
       ownerId: '<from-identity>',     // Comes from identity during registration
       version: 1,
+      config: {
+        $format_version: '0',
+        canBeDeletedByOwner: false,
+        readonly: false,
+        keepsHistory: false,
+        documentsKeepHistoryContractDefault: false,
+        documentsMutableContractDefault: true,
+        documentsCanBeDeletedByOwnerDefault: false,
+        requiresIdentityEncryptionBoundedKey: null,
+        requiresIdentityDecryptionBoundedKey: null
+      },
+      schemaDefs: {},  // Reusable schema definitions for document types
       documentSchemas: {},  // Will be populated if document types are defined
       tokens: {
         '0': tokenConfig  // Token at position 0
@@ -9459,7 +9566,15 @@ function buildManualActionRulesConfig(actionState, permissions) {
     { selectId: 'manual-burn-group-id', containerId: 'manual-burn-group-selector-container', hintId: 'manual-burn-group-hint', noGroupsMessageId: 'manual-burn-no-groups-message' },
     { selectId: 'manual-freeze-group-id', containerId: 'manual-freeze-group-selector-container', hintId: 'manual-freeze-group-hint', noGroupsMessageId: 'manual-freeze-no-groups-message' },
     { selectId: 'destroy-frozen-group-id', containerId: 'destroy-frozen-group-selector-container', hintId: 'destroy-frozen-group-hint', noGroupsMessageId: 'destroy-frozen-no-groups-message' },
-    { selectId: 'emergency-group-id', containerId: 'emergency-group-selector-container', hintId: 'emergency-group-hint', noGroupsMessageId: 'emergency-no-groups-message' }
+    { selectId: 'emergency-group-id', containerId: 'emergency-group-selector-container', hintId: 'emergency-group-hint', noGroupsMessageId: 'emergency-no-groups-message' },
+    // New permission change pages
+    { selectId: 'conventions-perform-group-id' },
+    { selectId: 'conventions-rules-group-id' },
+    { selectId: 'marketplace-trade-mode-perform-group-id' },
+    { selectId: 'marketplace-trade-mode-rules-group-id' },
+    { selectId: 'direct-pricing-perform-group-id' },
+    { selectId: 'direct-pricing-rules-group-id' },
+    { selectId: 'main-control-group-id' }
   ];
 
   // Function to update all group selectors with current groups
@@ -9474,17 +9589,19 @@ function buildManualActionRulesConfig(actionState, permissions) {
 
     groupSelectors.forEach(config => {
       const selectElement = document.getElementById(config.selectId);
-      const containerElement = document.getElementById(config.containerId);
-      const hintElement = document.getElementById(config.hintId);
-      const noGroupsMessageElement = document.getElementById(config.noGroupsMessageId);
+      const containerElement = config.containerId ? document.getElementById(config.containerId) : null;
+      const hintElement = config.hintId ? document.getElementById(config.hintId) : null;
+      const noGroupsMessageElement = config.noGroupsMessageId ? document.getElementById(config.noGroupsMessageId) : null;
 
-      if (!selectElement || !containerElement) {
+      if (!selectElement) {
         return;
       }
 
       if (hasGroups) {
         // Show select dropdown with available groups
-        containerElement.hidden = false;
+        if (containerElement) {
+          containerElement.hidden = false;
+        }
         selectElement.style.display = '';
 
         // Clear existing options
@@ -9510,7 +9627,9 @@ function buildManualActionRulesConfig(actionState, permissions) {
         }
       } else {
         // No groups exist - hide dropdown and show message
-        containerElement.hidden = true;
+        if (containerElement) {
+          containerElement.hidden = true;
+        }
 
         // Show "no groups" message
         if (noGroupsMessageElement) {
@@ -9583,6 +9702,161 @@ function buildManualActionRulesConfig(actionState, permissions) {
   });
 
   console.log('Create Group button handlers initialized');
+})();
+
+// ========================================
+// NEW PERMISSION CHANGE PAGES STATE MANAGEMENT
+// ========================================
+
+(function initializePermissionChangePages() {
+  // Define all new permission change pages
+  const permissionPages = [
+    {
+      key: 'conventionsChange',
+      prefix: 'conventions-change',
+      hasRulesSection: true  // Has both "perform" and "change rules" sections
+    },
+    {
+      key: 'marketplaceTradeMode',
+      prefix: 'marketplace-trade-mode',
+      hasRulesSection: true
+    },
+    {
+      key: 'directPricing',
+      prefix: 'direct-pricing',
+      hasRulesSection: true
+    },
+    {
+      key: 'mainControl',
+      prefix: 'main-control',
+      hasRulesSection: false  // Only has one section (change rules)
+    }
+  ];
+
+  // Initialize state for all pages
+  function ensurePermissionChangeState() {
+    if (!wizardState.form.permissions) {
+      wizardState.form.permissions = {};
+    }
+
+    permissionPages.forEach(page => {
+      if (!wizardState.form.permissions[page.key]) {
+        wizardState.form.permissions[page.key] = {
+          enabled: false,
+          perform: {
+            type: 'owner',  // owner, identity, or group
+            identityId: '',
+            groupId: ''
+          },
+          changeRules: {
+            type: 'owner',
+            identityId: '',
+            groupId: ''
+          }
+        };
+      }
+    });
+  }
+
+  // Helper function to get state for a specific page
+  function getPageState(key) {
+    ensurePermissionChangeState();
+    return wizardState.form.permissions[key];
+  }
+
+  // Helper function to update state for a specific page
+  function updatePageState(key, updates) {
+    ensurePermissionChangeState();
+    wizardState.form.permissions[key] = {
+      ...wizardState.form.permissions[key],
+      ...updates
+    };
+  }
+
+  // Set up event listeners for each page
+  permissionPages.forEach(page => {
+    // Enable/disable radios
+    const enableRadios = document.querySelectorAll(`input[name="${page.prefix}-enable"]`);
+    enableRadios.forEach(radio => {
+      radio.addEventListener('change', function() {
+        const enabled = this.value === 'enabled';
+        updatePageState(page.key, { enabled });
+        console.log(`${page.key} enabled:`, enabled);
+      });
+    });
+
+    // Perform authorization radios (only if page has this section)
+    if (page.hasRulesSection) {
+      const performRadios = document.querySelectorAll(`input[name="${page.prefix}-perform"]`);
+      performRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+          const state = getPageState(page.key);
+          state.perform.type = this.value;
+          updatePageState(page.key, { perform: state.perform });
+          console.log(`${page.key} perform type:`, this.value);
+        });
+      });
+
+      // Perform identity input
+      const performIdentityInput = document.getElementById(`${page.prefix}-perform-identity-id`);
+      if (performIdentityInput) {
+        performIdentityInput.addEventListener('input', function() {
+          const state = getPageState(page.key);
+          state.perform.identityId = this.value.trim();
+          updatePageState(page.key, { perform: state.perform });
+        });
+      }
+
+      // Perform group select
+      const performGroupSelect = document.getElementById(`${page.prefix}-perform-group-id`);
+      if (performGroupSelect) {
+        performGroupSelect.addEventListener('change', function() {
+          const state = getPageState(page.key);
+          state.perform.groupId = this.value;
+          updatePageState(page.key, { perform: state.perform });
+        });
+      }
+    }
+
+    // Change rules authorization radios
+    const rulesRadiosName = page.hasRulesSection ? `${page.prefix}-change-rules` : `${page.prefix}-rules`;
+    const rulesRadios = document.querySelectorAll(`input[name="${rulesRadiosName}"]`);
+    rulesRadios.forEach(radio => {
+      radio.addEventListener('change', function() {
+        const state = getPageState(page.key);
+        state.changeRules.type = this.value;
+        updatePageState(page.key, { changeRules: state.changeRules });
+        console.log(`${page.key} change rules type:`, this.value);
+      });
+    });
+
+    // Change rules identity input
+    const rulesIdentityInputId = page.hasRulesSection ? `${page.prefix}-rules-identity-id` : `${page.prefix}-identity-id`;
+    const rulesIdentityInput = document.getElementById(rulesIdentityInputId);
+    if (rulesIdentityInput) {
+      rulesIdentityInput.addEventListener('input', function() {
+        const state = getPageState(page.key);
+        state.changeRules.identityId = this.value.trim();
+        updatePageState(page.key, { changeRules: state.changeRules });
+      });
+    }
+
+    // Change rules group select
+    const rulesGroupSelectId = page.hasRulesSection ? `${page.prefix}-rules-group-id` : `${page.prefix}-group-id`;
+    const rulesGroupSelect = document.getElementById(rulesGroupSelectId);
+    if (rulesGroupSelect) {
+      rulesGroupSelect.addEventListener('change', function() {
+        const state = getPageState(page.key);
+        state.changeRules.groupId = this.value;
+        updatePageState(page.key, { changeRules: state.changeRules });
+      });
+    }
+  });
+
+  // Initialize state on page load
+  ensurePermissionChangeState();
+
+  console.log('Permission change pages initialized');
 })();
 
 // ========================================
