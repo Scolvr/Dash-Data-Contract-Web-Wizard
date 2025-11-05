@@ -9149,8 +9149,116 @@ function buildManualActionRulesConfig(actionState, permissions) {
     console.log('- Allowed types:', test5Output.tokens['0'].transferNotesConfig?.allowedNoteTypes);
     console.groupEnd();
 
+    // Test 6: Critical Platform Schema Fields
+    console.group('Test 6: Critical Platform Schema Fields');
+    const test6State = createTestState({
+      tokenName: 'SchemaCompliantToken',
+      allowTransferToFrozenBalance: true,
+      startAsPaused: true
+    });
+    const test6Output = generateTestContract(test6State);
+    console.log('Generated Contract:', test6Output);
+    console.log('✅ Checks:');
+    console.log('- Has allowTransferToFrozenBalance:', 'allowTransferToFrozenBalance' in test6Output.tokens['0']);
+    console.log('- allowTransferToFrozenBalance is boolean:', typeof test6Output.tokens['0'].allowTransferToFrozenBalance === 'boolean');
+    console.log('- allowTransferToFrozenBalance value:', test6Output.tokens['0'].allowTransferToFrozenBalance);
+    console.log('- Has startAsPaused:', 'startAsPaused' in test6Output.tokens['0']);
+    console.log('- startAsPaused is boolean:', typeof test6Output.tokens['0'].startAsPaused === 'boolean');
+    console.log('- startAsPaused value:', test6Output.tokens['0'].startAsPaused);
+    console.groupEnd();
+
+    // Test 7: StepDecreasing with maxIntervalCount
+    console.group('Test 7: StepDecreasing with maxIntervalCount');
+    const test7State = createTestState({
+      tokenName: 'HalvingToken',
+      distribution: {
+        type: 'BlockBasedDistribution',
+        intervalBlocks: 210000,
+        emission: {
+          type: 'StepDecreasing',
+          stepCount: 210000,
+          decreasePerIntervalNumerator: 1,
+          decreasePerIntervalDenominator: 2,
+          distributionStartAmount: 50,
+          trailingDistributionIntervalAmount: 0,
+          maxIntervalCount: 500
+        }
+      }
+    });
+    const test7Output = generateTestContract(test7State);
+    console.log('Generated Contract:', test7Output);
+    const stepDecreasing = test7Output.tokens['0'].distributionRules?.perpetualDistribution?.distributionType?.BlockBasedDistribution?.function?.StepDecreasing;
+    console.log('✅ Checks:');
+    console.log('- Has StepDecreasing:', Boolean(stepDecreasing));
+    console.log('- Has maxIntervalCount:', 'maxIntervalCount' in stepDecreasing);
+    console.log('- maxIntervalCount value:', stepDecreasing?.maxIntervalCount);
+    console.log('- maxIntervalCount is BigInt:', typeof stepDecreasing?.maxIntervalCount === 'bigint');
+    console.groupEnd();
+
+    // Test 8: Emission functions with min/max values
+    console.group('Test 8: Emission Functions with min/max Constraints');
+
+    // Test Linear with constraints
+    const linearState = createTestState({
+      tokenName: 'LinearToken',
+      distribution: {
+        type: 'BlockBasedDistribution',
+        intervalBlocks: 100,
+        emission: {
+          type: 'Linear',
+          linearSlopeNumerator: 1,
+          linearSlopeDivisor: 1,
+          linearStartingAmount: 1000,
+          linearMinValue: 100,
+          linearMaxValue: 10000
+        }
+      }
+    });
+    const linearOutput = generateTestContract(linearState);
+    const linearEmission = linearOutput.tokens['0'].distributionRules?.perpetualDistribution?.distributionType?.BlockBasedDistribution?.function?.Linear;
+    console.log('Linear Emission Checks:');
+    console.log('  - Has minValue:', 'minValue' in linearEmission);
+    console.log('  - Has maxValue:', 'maxValue' in linearEmission);
+    console.log('  - minValue:', linearEmission?.minValue);
+    console.log('  - maxValue:', linearEmission?.maxValue);
+
+    // Test Exponential with constraints
+    const expState = createTestState({
+      tokenName: 'ExpToken',
+      distribution: {
+        type: 'BlockBasedDistribution',
+        intervalBlocks: 100,
+        emission: {
+          type: 'Exponential',
+          expA: 1,
+          expM: 2,
+          expN: 1,
+          expD: 1,
+          expO: 0,
+          expB: 100,
+          expMinValue: 50,
+          expMaxValue: 5000
+        }
+      }
+    });
+    const expOutput = generateTestContract(expState);
+    const expEmission = expOutput.tokens['0'].distributionRules?.perpetualDistribution?.distributionType?.BlockBasedDistribution?.function?.Exponential;
+    console.log('Exponential Emission Checks:');
+    console.log('  - Has minValue:', 'minValue' in expEmission);
+    console.log('  - Has maxValue:', 'maxValue' in expEmission);
+    console.log('  - minValue:', expEmission?.minValue);
+    console.log('  - maxValue:', expEmission?.maxValue);
+    console.groupEnd();
+
     console.log('\n📊 Test Summary:');
     console.log('All structural tests completed. Review console output above for details.');
+    console.log('\n🎯 New Features Tested:');
+    console.log('  ✅ allowTransferToFrozenBalance field');
+    console.log('  ✅ startAsPaused field');
+    console.log('  ✅ StepDecreasing maxIntervalCount');
+    console.log('  ✅ Linear emission min/max values');
+    console.log('  ✅ Exponential emission min/max values');
+    console.log('  ✅ Transfer notes configuration');
     console.groupEnd();
   }
 
@@ -9285,6 +9393,18 @@ function buildManualActionRulesConfig(actionState, permissions) {
     if (config.transferNotes?.enabled) {
       defaultState.form.permissions.transferNotesEnabled = true;
       defaultState.form.permissions.transferNoteTypes = config.transferNotes.types || {};
+    }
+
+    if (config.allowTransferToFrozenBalance !== undefined) {
+      defaultState.form.permissions.allowTransferToFrozenBalance = config.allowTransferToFrozenBalance;
+    }
+
+    if (config.startAsPaused !== undefined) {
+      defaultState.form.permissions.startAsPaused = config.startAsPaused;
+    }
+
+    if (config.distribution?.emission?.maxIntervalCount !== undefined) {
+      defaultState.form.distribution.emission.stepMaxInterval = String(config.distribution.emission.maxIntervalCount);
     }
 
     return defaultState;
