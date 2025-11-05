@@ -51,6 +51,7 @@
     'naming-update': 'naming',
     // Permissions substeps
     'permissions-group': 'permissions',
+    'permissions-transfer': 'permissions',
     'permissions-manual-mint': 'permissions',
     'permissions-manual-burn': 'permissions',
     'permissions-manual-freeze': 'permissions',
@@ -86,7 +87,7 @@
   const SUBSTEP_SEQUENCES = Object.freeze({
     welcome: ['welcome'],
     naming: ['naming', 'naming-localization', 'naming-update'],
-    permissions: ['permissions', 'permissions-manual-mint', 'permissions-manual-burn', 'permissions-manual-freeze', 'permissions-emergency', 'permissions-conventions-change', 'permissions-marketplace-trade-mode-change', 'permissions-direct-pricing-change', 'permissions-main-control-change'],
+    permissions: ['permissions', 'permissions-transfer', 'permissions-manual-mint', 'permissions-manual-burn', 'permissions-manual-freeze', 'permissions-emergency', 'permissions-conventions-change', 'permissions-marketplace-trade-mode-change', 'permissions-direct-pricing-change', 'permissions-main-control-change'],
     advanced: ['advanced-history', 'advanced', 'advanced-launch'],
     distribution: ['distribution-preprogrammed', 'distribution-perpetual'],
     search: ['search'],

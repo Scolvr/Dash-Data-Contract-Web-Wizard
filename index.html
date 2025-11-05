@@ -93,6 +93,9 @@
             <a href="#" class="wizard-nav-subitem" data-substep="permissions">
               <span class="wizard-nav-subitem__text">Token Supply</span>
             </a>
+            <a href="#" class="wizard-nav-subitem" data-substep="permissions-transfer">
+              <span class="wizard-nav-subitem__text">Transfer Notes</span>
+            </a>
             <a href="#" class="wizard-nav-subitem" data-substep="permissions-manual-mint">
               <span class="wizard-nav-subitem__text">Minting</span>
             </a>
@@ -3139,6 +3142,137 @@
           </div>
 
           <p class="wizard-field__message" id="permissions-group-message" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+
+    <!-- Permissions: Transfer Notes Sub-step -->
+    <section class="wizard-screen" id="screen-permissions-transfer" data-step="permissions" data-substep="permissions-transfer" data-tab="token" hidden>
+
+      <!-- Right Side Guide Panel -->
+      <aside class="page-guide" aria-label="Page guide">
+        <div class="page-guide__content">
+          <h2 class="page-guide__title">Transfer Notes</h2>
+          <p class="page-guide__intro">Allow users to attach messages or data to token transfers.</p>
+
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">What are Transfer Notes?</h3>
+            <p>Transfer notes let users attach additional data or messages when sending tokens. This is useful for:</p>
+            <ul style="margin: var(--space-2) 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>Payment references:</strong> Invoice numbers, memo fields</li>
+              <li><strong>Context:</strong> Why the transfer was made</li>
+              <li><strong>Metadata:</strong> Additional information about the transaction</li>
+            </ul>
+
+            <h4 class="page-guide__step-heading">Note Types</h4>
+            <ul style="margin: var(--space-2) 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>Public:</strong> Visible to everyone on the blockchain</li>
+              <li><strong>Shared Encrypted:</strong> Encrypted, visible only to sender and receiver</li>
+              <li><strong>Private Encrypted:</strong> Encrypted, visible only to sender</li>
+            </ul>
+          </div>
+
+          <div class="page-guide__section">
+            <h3 class="page-guide__section-title">Best Practice</h3>
+            <ul style="margin: var(--space-2) 0 0 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>Payment tokens:</strong> Enable public notes for payment references</li>
+              <li><strong>Privacy-focused tokens:</strong> Enable encrypted notes only</li>
+              <li>Consider blockchain storage costs when enabling notes</li>
+            </ul>
+          </div>
+        </div>
+      </aside>
+
+      <div class="wizard-screen__inner">
+        <form class="wizard-form" id="permissions-transfer-form" novalidate>
+          <h1 class="wizard-screen__title" id="title-permissions-transfer" tabindex="-1">Enable Transfer Notes?</h1>
+          <p class="wizard-screen__subtitle">Allow users to attach messages or data to token transfers.</p>
+
+          <!-- Transfer Notes Configuration Card -->
+          <div class="form-card">
+            <div class="form-card__header">
+              <h3 class="form-card__title">Transfer Notes</h3>
+              <p class="form-card__description">Control whether users can attach notes to token transfers</p>
+            </div>
+            <div class="form-card__body">
+              <fieldset class="wizard-fieldset">
+                <legend class="wizard-field__label">Enable transfer notes?</legend>
+
+                <!-- Disabled Option -->
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="transfer-notes-enabled" value="disabled" checked>
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">No</span>
+                    <span class="wizard-choice__hint">Transfers cannot include notes or messages</span>
+                  </span>
+                </label>
+
+                <!-- Enabled Option -->
+                <label class="wizard-choice">
+                  <input class="wizard-choice__input" type="radio" name="transfer-notes-enabled" value="enabled" data-toggle-panel="transfer-notes-types-panel">
+                  <span class="wizard-choice__content">
+                    <span class="wizard-choice__title">Yes</span>
+                    <span class="wizard-choice__hint">Allow users to attach notes to transfers</span>
+                  </span>
+                </label>
+
+                <!-- Note Types Panel (shown when enabled) -->
+                <div class="distribution-inline-panel" id="transfer-notes-types-panel" hidden>
+                  <fieldset class="wizard-fieldset" style="margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--color-border);">
+                    <legend class="wizard-field__label">Allowed note types</legend>
+                    <p class="field-hint" style="margin-bottom: var(--space-3);">Select which types of notes users can attach</p>
+
+                    <!-- Public Notes -->
+                    <div class="wizard-field wizard-field--checkbox">
+                      <label class="wizard-checkbox">
+                        <input class="wizard-checkbox__input" type="checkbox" id="transfer-note-type-public" name="transfer-note-type-public" checked>
+                        <span class="wizard-checkbox__label">
+                          <span class="wizard-checkbox__title">Public Notes</span>
+                          <span class="wizard-checkbox__hint" style="display: block; margin-top: var(--space-2xs);">
+                            Visible to everyone on the blockchain. Good for payment references and invoice numbers.
+                          </span>
+                        </span>
+                      </label>
+                    </div>
+
+                    <!-- Shared Encrypted Notes -->
+                    <div class="wizard-field wizard-field--checkbox">
+                      <label class="wizard-checkbox">
+                        <input class="wizard-checkbox__input" type="checkbox" id="transfer-note-type-shared" name="transfer-note-type-shared">
+                        <span class="wizard-checkbox__label">
+                          <span class="wizard-checkbox__title">Shared Encrypted Notes</span>
+                          <span class="wizard-checkbox__hint" style="display: block; margin-top: var(--space-2xs);">
+                            Encrypted and visible only to sender and receiver. Provides privacy while maintaining context.
+                          </span>
+                        </span>
+                      </label>
+                    </div>
+
+                    <!-- Private Encrypted Notes -->
+                    <div class="wizard-field wizard-field--checkbox">
+                      <label class="wizard-checkbox">
+                        <input class="wizard-checkbox__input" type="checkbox" id="transfer-note-type-private" name="transfer-note-type-private">
+                        <span class="wizard-checkbox__label">
+                          <span class="wizard-checkbox__title">Private Encrypted Notes</span>
+                          <span class="wizard-checkbox__hint" style="display: block; margin-top: var(--space-2xs);">
+                            Encrypted and visible only to the sender. For internal record-keeping and private memos.
+                          </span>
+                        </span>
+                      </label>
+                    </div>
+                  </fieldset>
+                </div>
+              </fieldset>
+            </div>
+          </div>
+
+          <p class="wizard-field__message" id="permissions-transfer-message" role="status" aria-live="polite"></p>
+
+          <div class="wizard-actions wizard-actions--between wizard-actions--sticky">
+            <button class="wizard-button wizard-button--secondary" type="button" data-step-back="permissions-transfer">← Back</button>
+            <button class="wizard-button wizard-button--secondary" type="button" id="contract-preview-btn">📄 Contract Preview</button>
+            <button class="wizard-button wizard-button--primary" id="permissions-transfer-next" type="submit">Continue →</button>
+          </div>
         </form>
       </div>
     </section>
