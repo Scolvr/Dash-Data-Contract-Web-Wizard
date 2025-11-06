@@ -482,6 +482,17 @@
           groups: [],
           mainControlGroupIndex: -1,
           freeze: createDefaultFreezeState(),
+          unfreeze: {
+            allowChangeAuthorizedToNone: false,
+            allowChangeAdminToNone: false,
+            allowSelfChangeAdmin: false
+          },
+          changeMaxSupply: {
+            enabled: false,
+            allowChangeAuthorizedToNone: false,
+            allowChangeAdminToNone: false,
+            allowSelfChangeAdmin: false
+          },
           ...manualActionsDefaults
         },
         distribution: {
@@ -944,6 +955,8 @@ let advancedUI = createAdvancedUI(advancedForm);
   const jsonPreviewContent = document.getElementById('json-preview-content');
   const jsonShowButton = document.getElementById('json-show-button');
   const jsonCopyButton = document.getElementById('json-copy-button');
+  const copyJsonBtn = document.getElementById('copy-json-btn');
+  const contractJsonPreview = document.getElementById('contract-json-preview');
   const selfWarningCheckbox = document.getElementById('self-warning-checkbox');
   const selfWarningProceedButton = document.getElementById('self-warning-proceed');
   const themeControls = Array.from(document.querySelectorAll('input[name="ui-theme"], input[name="ui-theme-group"], input[name="ui-theme-doc"]'));
@@ -1182,13 +1195,19 @@ let advancedUI = createAdvancedUI(advancedForm);
     identityRegisterButton.addEventListener('click', handleIdentityRegistration);
   }
 
-  tokenNameInput.addEventListener('input', handleNamingInput);
-  tokenNameInput.addEventListener('blur', () => evaluateNaming({ touched: true }));
+  if (tokenNameInput) {
+    tokenNameInput.addEventListener('input', handleNamingInput);
+    tokenNameInput.addEventListener('blur', () => evaluateNaming({ touched: true }));
+  }
 
   // Plural field and capitalize checkbox
-  tokenPluralInput.addEventListener('input', handleNamingInput);
-  tokenPluralInput.addEventListener('blur', () => evaluateNaming({ touched: true }));
-  tokenCapitalizeInput.addEventListener('change', handleNamingInput);
+  if (tokenPluralInput) {
+    tokenPluralInput.addEventListener('input', handleNamingInput);
+    tokenPluralInput.addEventListener('blur', () => evaluateNaming({ touched: true }));
+  }
+  if (tokenCapitalizeInput) {
+    tokenCapitalizeInput.addEventListener('change', handleNamingInput);
+  }
 
   // Auto-sync: Update English localization when token name fields change
   function syncToEnglishLocalization() {
@@ -1227,9 +1246,15 @@ let advancedUI = createAdvancedUI(advancedForm);
   }
 
   // Add auto-sync to all three fields
-  tokenNameInput.addEventListener('input', syncToEnglishLocalization);
-  tokenPluralInput.addEventListener('input', syncToEnglishLocalization);
-  tokenCapitalizeInput.addEventListener('change', syncToEnglishLocalization);
+  if (tokenNameInput) {
+    tokenNameInput.addEventListener('input', syncToEnglishLocalization);
+  }
+  if (tokenPluralInput) {
+    tokenPluralInput.addEventListener('input', syncToEnglishLocalization);
+  }
+  if (tokenCapitalizeInput) {
+    tokenCapitalizeInput.addEventListener('change', syncToEnglishLocalization);
+  }
 
   if (registrationMethodsContainer) {
     registrationMethodsContainer.addEventListener('change', handleRegistrationSelection);
@@ -1508,6 +1533,30 @@ let advancedUI = createAdvancedUI(advancedForm);
   }
   if (jsonCopyButton) {
     jsonCopyButton.addEventListener('click', copyJsonPayload);
+  }
+  if (copyJsonBtn && contractJsonPreview) {
+    copyJsonBtn.addEventListener('click', () => {
+      const text = contractJsonPreview.textContent;
+      if (!text || text.trim() === '' || text.trim() === '{') {
+        announce('No contract JSON to copy yet. Please complete the wizard first.');
+        return;
+      }
+
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        navigator.clipboard.writeText(text)
+          .then(() => {
+            announce('Contract JSON copied to clipboard.');
+            const originalText = copyJsonBtn.textContent;
+            copyJsonBtn.textContent = '✓ Copied!';
+            setTimeout(() => {
+              copyJsonBtn.textContent = originalText;
+            }, 2000);
+          })
+          .catch(() => fallbackCopyToClipboard(text));
+      } else {
+        fallbackCopyToClipboard(text);
+      }
+    });
   }
   if (createTokenButton) {
     createTokenButton.addEventListener('click', () => handleStepAdvance('registration'));
@@ -5621,7 +5670,17 @@ function ensurePermissionsGroupState() {
 
     if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
       navigator.clipboard.writeText(serialized)
-        .then(() => announce('JSON payload copied to clipboard.'), () => fallbackCopyToClipboard(serialized));
+        .then(() => {
+          announce('JSON payload copied to clipboard.');
+          if (jsonCopyButton) {
+            const originalText = jsonCopyButton.textContent;
+            jsonCopyButton.textContent = '✓ Copied!';
+            setTimeout(() => {
+              jsonCopyButton.textContent = originalText;
+            }, 2000);
+          }
+        })
+        .catch(() => fallbackCopyToClipboard(serialized));
     } else {
       fallbackCopyToClipboard(serialized);
     }
@@ -6002,6 +6061,54 @@ function ensurePermissionsGroupState() {
       });
     }
 
+    // Change Max Supply Governance Checkboxes
+    const changeMaxSupplyAllowAuthorizedNone = document.getElementById('change-max-supply-allow-authorized-none');
+    const changeMaxSupplyAllowAdminNone = document.getElementById('change-max-supply-allow-admin-none');
+    const changeMaxSupplyAllowSelfChange = document.getElementById('change-max-supply-allow-self-change');
+
+    if (changeMaxSupplyAllowAuthorizedNone) {
+      changeMaxSupplyAllowAuthorizedNone.addEventListener('change', () => {
+        wizardState.form.permissions.changeMaxSupply.allowChangeAuthorizedToNone = changeMaxSupplyAllowAuthorizedNone.checked;
+        persistState();
+      });
+    }
+    if (changeMaxSupplyAllowAdminNone) {
+      changeMaxSupplyAllowAdminNone.addEventListener('change', () => {
+        wizardState.form.permissions.changeMaxSupply.allowChangeAdminToNone = changeMaxSupplyAllowAdminNone.checked;
+        persistState();
+      });
+    }
+    if (changeMaxSupplyAllowSelfChange) {
+      changeMaxSupplyAllowSelfChange.addEventListener('change', () => {
+        wizardState.form.permissions.changeMaxSupply.allowSelfChangeAdmin = changeMaxSupplyAllowSelfChange.checked;
+        persistState();
+      });
+    }
+
+    // Unfreeze Governance Checkboxes
+    const unfreezeAllowAuthorizedNone = document.getElementById('unfreeze-allow-authorized-none');
+    const unfreezeAllowAdminNone = document.getElementById('unfreeze-allow-admin-none');
+    const unfreezeAllowSelfChange = document.getElementById('unfreeze-allow-self-change');
+
+    if (unfreezeAllowAuthorizedNone) {
+      unfreezeAllowAuthorizedNone.addEventListener('change', () => {
+        wizardState.form.permissions.unfreeze.allowChangeAuthorizedToNone = unfreezeAllowAuthorizedNone.checked;
+        persistState();
+      });
+    }
+    if (unfreezeAllowAdminNone) {
+      unfreezeAllowAdminNone.addEventListener('change', () => {
+        wizardState.form.permissions.unfreeze.allowChangeAdminToNone = unfreezeAllowAdminNone.checked;
+        persistState();
+      });
+    }
+    if (unfreezeAllowSelfChange) {
+      unfreezeAllowSelfChange.addEventListener('change', () => {
+        wizardState.form.permissions.unfreeze.allowSelfChangeAdmin = unfreezeAllowSelfChange.checked;
+        persistState();
+      });
+    }
+
     // Initialize UI
     setTimeout(() => {
       // Restore mode from state
@@ -6014,6 +6121,28 @@ function ensurePermissionsGroupState() {
         maxSupplyModeToken.checked = true;
       } else if (maxSupplyModeBase && wizardState.form.permissions.maxSupplyMode === 'base') {
         maxSupplyModeBase.checked = true;
+      }
+
+      // Restore change max supply governance checkboxes
+      if (changeMaxSupplyAllowAuthorizedNone) {
+        changeMaxSupplyAllowAuthorizedNone.checked = Boolean(wizardState.form.permissions.changeMaxSupply?.allowChangeAuthorizedToNone);
+      }
+      if (changeMaxSupplyAllowAdminNone) {
+        changeMaxSupplyAllowAdminNone.checked = Boolean(wizardState.form.permissions.changeMaxSupply?.allowChangeAdminToNone);
+      }
+      if (changeMaxSupplyAllowSelfChange) {
+        changeMaxSupplyAllowSelfChange.checked = Boolean(wizardState.form.permissions.changeMaxSupply?.allowSelfChangeAdmin);
+      }
+
+      // Restore unfreeze governance checkboxes
+      if (unfreezeAllowAuthorizedNone) {
+        unfreezeAllowAuthorizedNone.checked = Boolean(wizardState.form.permissions.unfreeze?.allowChangeAuthorizedToNone);
+      }
+      if (unfreezeAllowAdminNone) {
+        unfreezeAllowAdminNone.checked = Boolean(wizardState.form.permissions.unfreeze?.allowChangeAdminToNone);
+      }
+      if (unfreezeAllowSelfChange) {
+        unfreezeAllowSelfChange.checked = Boolean(wizardState.form.permissions.unfreeze?.allowSelfChangeAdmin);
       }
 
       updateSupplyUI();
@@ -8496,14 +8625,25 @@ function buildManualActionRulesConfig(actionState, permissions) {
     const tokenName = rawName.trim() || 'Unnamed Token';
 
     // Helper: Convert change control boolean to V0 rule object
-    function createRuleV0(isEnabled, actionTaker = 'ContractOwner') {
+    function createRuleV0(isEnabled, actionTaker = 'ContractOwner', governanceFlags = {}) {
+      // Default governance flags to false if not provided
+      const changingAuthorizedToNoOneAllowed = governanceFlags.allowChangeAuthorizedToNone !== undefined
+        ? Boolean(governanceFlags.allowChangeAuthorizedToNone)
+        : false;
+      const changingAdminToNoOneAllowed = governanceFlags.allowChangeAdminToNone !== undefined
+        ? Boolean(governanceFlags.allowChangeAdminToNone)
+        : false;
+      const selfChangingAdminAllowed = governanceFlags.allowSelfChangeAdmin !== undefined
+        ? Boolean(governanceFlags.allowSelfChangeAdmin)
+        : false;
+
       return {
         V0: {
           authorized_to_make_change: isEnabled ? actionTaker : 'NoOne',
           admin_action_takers: isEnabled ? actionTaker : 'NoOne',
-          changing_authorized_action_takers_to_no_one_allowed: true,
-          changing_admin_action_takers_to_no_one_allowed: true,
-          self_changing_admin_action_takers_allowed: true
+          changing_authorized_action_takers_to_no_one_allowed: changingAuthorizedToNoOneAllowed,
+          changing_admin_action_takers_to_no_one_allowed: changingAdminToNoOneAllowed,
+          self_changing_admin_action_takers_allowed: selfChangingAdminAllowed
         }
       };
     }
@@ -8539,13 +8679,24 @@ function buildManualActionRulesConfig(actionState, permissions) {
         }
       }
 
+      // Get governance flags from state (default to false if not present)
+      const changingAuthorizedToNoOneAllowed = changeState.allowChangeAuthorizedToNone !== undefined
+        ? Boolean(changeState.allowChangeAuthorizedToNone)
+        : false;
+      const changingAdminToNoOneAllowed = changeState.allowChangeAdminToNone !== undefined
+        ? Boolean(changeState.allowChangeAdminToNone)
+        : false;
+      const selfChangingAdminAllowed = changeState.allowSelfChangeAdmin !== undefined
+        ? Boolean(changeState.allowSelfChangeAdmin)
+        : false;
+
       return {
         V0: {
           authorized_to_make_change: authorizedToMakeChange,
           admin_action_takers: adminActionTakers,
-          changing_authorized_action_takers_to_no_one_allowed: true,
-          changing_admin_action_takers_to_no_one_allowed: true,
-          self_changing_admin_action_takers_allowed: true
+          changing_authorized_action_takers_to_no_one_allowed: changingAuthorizedToNoOneAllowed,
+          changing_admin_action_takers_to_no_one_allowed: changingAdminToNoOneAllowed,
+          self_changing_admin_action_takers_allowed: selfChangingAdminAllowed
         }
       };
     }
@@ -8944,24 +9095,40 @@ function buildManualActionRulesConfig(actionState, permissions) {
       transferable: true,  // Tokens are transferable by default
       startAsPaused: Boolean(wizardState.form.permissions.startAsPaused),
       allowTransferToFrozenBalance: Boolean(wizardState.form.permissions.allowTransferToFrozenBalance),
-      maxSupplyChangeRules: createRuleV0(false),
+      maxSupplyChangeRules: createRuleV0(
+        false,  // Currently max supply changes are disabled in UI
+        'ContractOwner',
+        wizardState.form.permissions.changeMaxSupply || {}
+      ),
       manualMintingRules: createRuleV0(
-        Boolean(wizardState.form.permissions.manualMint?.enabled)
+        Boolean(wizardState.form.permissions.manualMint?.enabled),
+        'ContractOwner',
+        wizardState.form.permissions.manualMint || {}
       ),
       manualBurningRules: createRuleV0(
-        Boolean(wizardState.form.permissions.manualBurn?.enabled)
+        Boolean(wizardState.form.permissions.manualBurn?.enabled),
+        'ContractOwner',
+        wizardState.form.permissions.manualBurn || {}
       ),
       freezeRules: createRuleV0(
-        Boolean(wizardState.form.advanced?.changeControl?.freeze)
+        Boolean(wizardState.form.advanced?.changeControl?.freeze),
+        'ContractOwner',
+        wizardState.form.permissions.freeze?.flags || {}
       ),
       unfreezeRules: createRuleV0(
-        Boolean(wizardState.form.advanced?.changeControl?.unfreeze)
+        Boolean(wizardState.form.advanced?.changeControl?.unfreeze),
+        'ContractOwner',
+        wizardState.form.permissions.unfreeze || {}
       ),
       destroyFrozenFundsRules: createRuleV0(
-        Boolean(wizardState.form.advanced?.changeControl?.destroyFrozen)
+        Boolean(wizardState.form.advanced?.changeControl?.destroyFrozen),
+        'ContractOwner',
+        wizardState.form.permissions.destroyFrozen || {}
       ),
       emergencyActionRules: createRuleV0(
-        Boolean(wizardState.form.advanced?.changeControl?.emergency)
+        Boolean(wizardState.form.advanced?.changeControl?.emergency),
+        'ContractOwner',
+        wizardState.form.permissions.emergencyAction || {}
       ),
       mainControlGroup: null,
       mainControlGroupCanBeModified: wizardState.form.permissions.mainControl?.enabled
@@ -9495,30 +9662,53 @@ function buildManualActionRulesConfig(actionState, permissions) {
     const jsonElement = document.getElementById('contract-preview-json');
     const featuresElement = document.getElementById('contract-preview-features');
     const modal = document.getElementById('contract-preview-modal');
+    const registrationJsonPreview = document.getElementById('json-preview');
+    const registrationJsonContent = document.getElementById('json-preview-content');
 
-    // Only update if modal is visible
-    if (!modal || modal.hasAttribute('hidden')) {
+    // Check if modal is visible
+    const modalVisible = modal && !modal.hasAttribute('hidden');
+
+    // Check if registration JSON preview is visible
+    const registrationJsonVisible = registrationJsonPreview &&
+                                   !registrationJsonPreview.hasAttribute('hidden') &&
+                                   wizardState.form.registration.method === 'det';
+
+    // Only update if something is visible
+    if (!modalVisible && !registrationJsonVisible) {
       return;
     }
 
     try {
-      // Update JSON
-      if (jsonElement && typeof generatePlatformContractJSON === 'function') {
-        const contract = generatePlatformContractJSON();
-        jsonElement.textContent = JSON.stringify(contract, null, 2);
-      }
+      const contract = typeof generatePlatformContractJSON === 'function' ? generatePlatformContractJSON() : null;
 
-      // Update features checklist
-      if (featuresElement && typeof window.wizardState !== 'undefined') {
-        const state = JSON.parse(JSON.stringify(window.wizardState.form));
-        featuresElement.innerHTML = generateFeaturesHTML(state);
-      }
+      if (contract) {
+        const contractJSON = JSON.stringify(contract, null, 2);
 
-      console.log('Live preview updated (JSON + features)');
+        // Update modal JSON if modal is visible
+        if (modalVisible && jsonElement) {
+          jsonElement.textContent = contractJSON;
+        }
+
+        // Update registration screen JSON if it's visible
+        if (registrationJsonVisible && registrationJsonContent) {
+          registrationJsonContent.textContent = contractJSON;
+        }
+
+        // Update features checklist (modal only)
+        if (modalVisible && featuresElement && typeof window.wizardState !== 'undefined') {
+          const state = JSON.parse(JSON.stringify(window.wizardState.form));
+          featuresElement.innerHTML = generateFeaturesHTML(state);
+        }
+
+        console.log('Live preview updated (JSON + features)');
+      }
     } catch (error) {
       console.error('Error updating live preview:', error);
-      if (jsonElement) {
+      if (modalVisible && jsonElement) {
         jsonElement.textContent = `Error generating contract: ${error.message}`;
+      }
+      if (registrationJsonVisible && registrationJsonContent) {
+        registrationJsonContent.textContent = `Error generating contract: ${error.message}`;
       }
     }
   }
@@ -9665,6 +9855,142 @@ function buildManualActionRulesConfig(actionState, permissions) {
 
   // Expose the update function globally for manual triggers
   window.updateLiveContractPreview = updateLiveContractPreview;
+})();
+
+// Export Configuration Screen - Button Handlers and Live Preview
+(function() {
+  'use strict';
+
+  function initializeExportScreen() {
+    // Wire up alternative export buttons
+    const exportContractBtnAlt = document.getElementById('export-contract-json-btn-alt');
+    const exportFullConfigBtnAlt = document.getElementById('export-full-config-btn-alt');
+    const copyContractPreviewBtn = document.getElementById('copy-contract-preview');
+    const exportContractPreview = document.getElementById('export-contract-preview');
+
+    // Download Contract JSON (alternative button)
+    if (exportContractBtnAlt) {
+      exportContractBtnAlt.addEventListener('click', () => {
+        try {
+          const contract = generatePlatformContractJSON();
+          const contractJSON = JSON.stringify(contract, null, 2);
+          const blob = new Blob([contractJSON], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${wizardState.form.tokenName || 'token'}-contract.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          announce('Contract JSON downloaded successfully!');
+        } catch (error) {
+          console.error('Export error:', error);
+          announce('Error exporting contract. Please check your configuration.');
+        }
+      });
+    }
+
+    // Download Full Configuration (alternative button)
+    if (exportFullConfigBtnAlt) {
+      exportFullConfigBtnAlt.addEventListener('click', () => {
+        try {
+          const fullConfig = JSON.stringify(wizardState, null, 2);
+          const blob = new Blob([fullConfig], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${wizardState.form.tokenName || 'token'}-full-config.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          announce('Full configuration downloaded successfully!');
+        } catch (error) {
+          console.error('Export error:', error);
+          announce('Error exporting configuration.');
+        }
+      });
+    }
+
+    // Copy Contract Preview
+    if (copyContractPreviewBtn && exportContractPreview) {
+      copyContractPreviewBtn.addEventListener('click', () => {
+        try {
+          const text = exportContractPreview.textContent;
+          navigator.clipboard.writeText(text).then(() => {
+            announce('Contract JSON copied to clipboard!');
+            copyContractPreviewBtn.textContent = '✅ Copied!';
+            setTimeout(() => {
+              copyContractPreviewBtn.textContent = '📋 Copy';
+            }, 2000);
+          }).catch(err => {
+            console.error('Copy failed:', err);
+            announce('Failed to copy to clipboard');
+          });
+        } catch (error) {
+          console.error('Copy error:', error);
+          announce('Failed to copy to clipboard');
+        }
+      });
+    }
+
+    // Update live preview whenever state changes
+    function updateExportPreview() {
+      if (!exportContractPreview) return;
+
+      try {
+        const contract = generatePlatformContractJSON();
+        const contractJSON = JSON.stringify(contract, null, 2);
+        exportContractPreview.textContent = contractJSON;
+      } catch (error) {
+        console.error('Preview update error:', error);
+        exportContractPreview.textContent = '{\n  "error": "Unable to generate preview"\n}';
+      }
+    }
+
+    // Initial preview update
+    updateExportPreview();
+
+    // Listen for state changes and update preview
+    const originalPersistState = window.persistState;
+    if (typeof originalPersistState === 'function') {
+      window.persistState = function() {
+        originalPersistState.apply(this, arguments);
+        updateExportPreview();
+      };
+    }
+
+    // Also update when navigating to the export screen
+    const exportNavLink = document.querySelector('[data-substep="registration-export"]');
+    if (exportNavLink) {
+      exportNavLink.addEventListener('click', updateExportPreview);
+    }
+
+    // Update on any form input change (comprehensive coverage)
+    document.addEventListener('change', updateExportPreview);
+    document.addEventListener('input', debounce(updateExportPreview, 500));
+  }
+
+  // Debounce helper
+  function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
+
+  // Initialize on DOMContentLoaded
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeExportScreen);
+  } else {
+    initializeExportScreen();
+  }
 })();
 
 /*!

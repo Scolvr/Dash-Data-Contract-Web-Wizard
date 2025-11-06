@@ -208,6 +208,12 @@
             <span class="wizard-nav-item__text">Register Token</span>
             <span class="wizard-path__pill pill" id="status-registration" aria-live="polite"></span>
           </button>
+
+          <div class="wizard-nav-subitems">
+            <a href="#" class="wizard-nav-subitem" data-substep="registration-export">
+              <span class="wizard-nav-subitem__text">Export Configuration</span>
+            </a>
+          </div>
         </div>
       </nav>
 
@@ -797,6 +803,22 @@
             <p>Hard cap for total possible tokens. If enabled, no minting can exceed this cap.</p>
             <p><strong>Warning:</strong> Irreversible once deployed if you lock rules.</p>
 
+            <h4 class="page-guide__step-heading">Changing Max Supply</h4>
+            <p>Decide whether the maximum supply limit can be modified after deployment. This gives flexibility to adjust the cap based on future needs.</p>
+            <ul style="margin: var(--space-2) 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>Enabled:</strong> Authorized identities can increase or decrease the max supply cap.</li>
+              <li><strong>Disabled:</strong> Max supply is permanently fixed at deployment.</li>
+            </ul>
+
+            <h4 class="page-guide__step-heading">Governance Safeguards (Max Supply Changes)</h4>
+            <p>Control what modifications are allowed to max supply rules after deployment:</p>
+            <ul style="margin: var(--space-2) 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>Allow changing authorized changer to "No One":</strong> Permits permanently locking the max supply by removing all authorized changers.</li>
+              <li><strong>Allow changing rule changer to "No One":</strong> Allows rule changers to lock themselves out, making the max supply immutable.</li>
+              <li><strong>Allow rule changer to modify themselves:</strong> Enables reassigning control to different identities or groups.</li>
+            </ul>
+            <p><strong>Security tip:</strong> Keep disabled for flexibility. Enable only if you plan to make max supply permanently unchangeable later.</p>
+
             <h4 class="page-guide__step-heading">History Tracking</h4>
             <p>Enables on-chain event logging for transfers, mints, burns, freezes, or purchases. More tracking = better transparency, but uses more storage.</p>
 
@@ -812,6 +834,8 @@
             <ul style="margin: var(--space-2) 0 0 0; padding-left: var(--space-5); list-style: disc;">
               <li><strong>For public tokens:</strong> decimals 8–18, enable history tracking for at least transfers and mints.</li>
               <li><strong>For internal or test tokens:</strong> 2–6 decimals, history off for simplicity.</li>
+              <li><strong>Max supply changes:</strong> enable if your tokenomics may need future adjustments, disable for immutable hard caps.</li>
+              <li><strong>Governance safeguards:</strong> keep disabled unless you need the option to permanently lock max supply later.</li>
               <li>Always verify your base supply before launch — this sets your economy's starting point.</li>
             </ul>
           </div>
@@ -1061,6 +1085,36 @@
                   </span>
                 </label>
               </fieldset>
+
+              <!-- Governance Safeguards -->
+              <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
+                <legend class="wizard-field__label">Governance Safeguards</legend>
+                <p class="wizard-subsection__body" style="margin-bottom: var(--space-4);">Control what rule modifications are permitted after deployment</p>
+
+                <div class="wizard-field wizard-field--checkbox">
+                  <label class="wizard-checkbox" for="change-max-supply-allow-authorized-none">
+                    <input class="wizard-checkbox__input" id="change-max-supply-allow-authorized-none" type="checkbox">
+                    <span class="wizard-checkbox__label">Allow changing authorized max supply changer to "No One"</span>
+                  </label>
+                  <p class="field-hint">When enabled, authorized max supply changers can be permanently locked by changing to "No One"</p>
+                </div>
+
+                <div class="wizard-field wizard-field--checkbox">
+                  <label class="wizard-checkbox" for="change-max-supply-allow-admin-none">
+                    <input class="wizard-checkbox__input" id="change-max-supply-allow-admin-none" type="checkbox">
+                    <span class="wizard-checkbox__label">Allow changing rule changer to "No One"</span>
+                  </label>
+                  <p class="field-hint">When enabled, the rule changer can permanently lock themselves out by changing to "No One"</p>
+                </div>
+
+                <div class="wizard-field wizard-field--checkbox">
+                  <label class="wizard-checkbox" for="change-max-supply-allow-self-change">
+                    <input class="wizard-checkbox__input" id="change-max-supply-allow-self-change" type="checkbox">
+                    <span class="wizard-checkbox__label">Allow rule changer to modify themselves</span>
+                  </label>
+                  <p class="field-hint">When enabled, the current rule changer can reassign rule-changing authority to a different identity or group</p>
+                </div>
+              </fieldset>
               </div>
             </div>
           </div>
@@ -1101,6 +1155,15 @@
 
             <h4 class="page-guide__step-heading">Who Can Change This Rule</h4>
             <p>Define if future edits (to who can mint) are possible. "No One" = immutable rule, best for deflationary tokens.</p>
+
+            <h4 class="page-guide__step-heading">Governance Safeguards</h4>
+            <p>Control what modifications are permitted after deployment to prevent unauthorized changes:</p>
+            <ul style="margin: var(--space-2) 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>Allow changing authorized minter to "No One":</strong> When enabled, rule changers can permanently disable minting by removing all authorized minters.</li>
+              <li><strong>Allow changing rule changer to "No One":</strong> When enabled, rule changers can lock themselves out permanently, making minting rules immutable.</li>
+              <li><strong>Allow rule changer to modify themselves:</strong> When enabled, rule changers can reassign control to different identities or groups.</li>
+            </ul>
+            <p><strong>Security tip:</strong> Keep these disabled (unchecked) for maximum control retention. Enable only if you need the flexibility to lock down permissions permanently later.</p>
           </div>
 
           <div class="page-guide__section">
@@ -1109,6 +1172,7 @@
               <li><strong>Fixed-supply coins:</strong> disable minting.</li>
               <li><strong>DAO or project tokens:</strong> allow Group-based minting (multi-sig style).</li>
               <li><strong>For compliance tokens:</strong> allow an admin identity to mint under audit.</li>
+              <li><strong>Governance safeguards:</strong> leave disabled unless you plan to make permissions immutable in the future.</li>
             </ul>
           </div>
         </div>
@@ -1272,6 +1336,36 @@
                   </label>
                 </fieldset>
 
+                <!-- Governance Safeguards -->
+                <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
+                  <legend class="wizard-field__label">Governance Safeguards</legend>
+                  <p class="wizard-subsection__body" style="margin-bottom: var(--space-4);">Control what rule modifications are permitted after deployment</p>
+
+                  <div class="wizard-field wizard-field--checkbox">
+                    <label class="wizard-checkbox" for="manual-mint-allow-authorized-none">
+                      <input class="wizard-checkbox__input" id="manual-mint-allow-authorized-none" type="checkbox">
+                      <span class="wizard-checkbox__label">Allow changing authorized minter to "No One"</span>
+                    </label>
+                    <p class="field-hint">When enabled, authorized minters can be permanently locked by changing to "No One"</p>
+                  </div>
+
+                  <div class="wizard-field wizard-field--checkbox">
+                    <label class="wizard-checkbox" for="manual-mint-allow-admin-none">
+                      <input class="wizard-checkbox__input" id="manual-mint-allow-admin-none" type="checkbox">
+                      <span class="wizard-checkbox__label">Allow changing rule changer to "No One"</span>
+                    </label>
+                    <p class="field-hint">When enabled, the rule changer can permanently lock themselves out by changing to "No One"</p>
+                  </div>
+
+                  <div class="wizard-field wizard-field--checkbox">
+                    <label class="wizard-checkbox" for="manual-mint-allow-self-change">
+                      <input class="wizard-checkbox__input" id="manual-mint-allow-self-change" type="checkbox">
+                      <span class="wizard-checkbox__label">Allow rule changer to modify themselves</span>
+                    </label>
+                    <p class="field-hint">When enabled, the current rule changer can reassign rule-changing authority to a different identity or group</p>
+                  </div>
+                </fieldset>
+
                 <!-- Minting Destination Configuration -->
                 <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
                   <legend class="wizard-field__label">Default destination for minted tokens</legend>
@@ -1377,7 +1471,7 @@
           <div class="form-card">
             <div class="form-card__header">
               <h3 class="form-card__title">Burning</h3>
-              <p class="form-card__description">Choose whether tokens can be permanently destroyed</p>
+              <p class="form-card__description">Choose whether tokens can be permanently destroyed to reduce circulating supply</p>
             </div>
             <div class="form-card__body">
               <fieldset class="wizard-fieldset">
@@ -1525,6 +1619,36 @@
                     </span>
                   </label>
                 </fieldset>
+
+                <!-- Governance Safeguards -->
+                <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
+                  <legend class="wizard-field__label">Governance Safeguards</legend>
+                  <p class="wizard-subsection__body" style="margin-bottom: var(--space-4);">Control what rule modifications are permitted after deployment</p>
+
+                  <div class="wizard-field wizard-field--checkbox">
+                    <label class="wizard-checkbox" for="manual-burn-allow-authorized-none">
+                      <input class="wizard-checkbox__input" id="manual-burn-allow-authorized-none" type="checkbox">
+                      <span class="wizard-checkbox__label">Allow changing authorized burner to "No One"</span>
+                    </label>
+                    <p class="field-hint">When enabled, authorized burners can be permanently locked by changing to "No One"</p>
+                  </div>
+
+                  <div class="wizard-field wizard-field--checkbox">
+                    <label class="wizard-checkbox" for="manual-burn-allow-admin-none">
+                      <input class="wizard-checkbox__input" id="manual-burn-allow-admin-none" type="checkbox">
+                      <span class="wizard-checkbox__label">Allow changing rule changer to "No One"</span>
+                    </label>
+                    <p class="field-hint">When enabled, the rule changer can permanently lock themselves out by changing to "No One"</p>
+                  </div>
+
+                  <div class="wizard-field wizard-field--checkbox">
+                    <label class="wizard-checkbox" for="manual-burn-allow-self-change">
+                      <input class="wizard-checkbox__input" id="manual-burn-allow-self-change" type="checkbox">
+                      <span class="wizard-checkbox__label">Allow rule changer to modify themselves</span>
+                    </label>
+                    <p class="field-hint">When enabled, the current rule changer can reassign rule-changing authority to a different identity or group</p>
+                  </div>
+                </fieldset>
               </div>
             </div>
           </div>
@@ -1565,6 +1689,19 @@
 
             <h4 class="page-guide__step-heading">Who Can Change This Rule</h4>
             <p>If set to "No One," even you cannot restore freeze authority later.</p>
+
+            <h4 class="page-guide__step-heading">Unfreezing</h4>
+            <p>Choose whether frozen balances can be restored. You can enable unfreezing independently from freezing to create flexible compliance workflows.</p>
+
+            <h4 class="page-guide__step-heading">Governance Safeguards</h4>
+            <p>Each permission (Freeze, Unfreeze, Destroy Frozen) has independent governance safeguards that control post-deployment modifications:</p>
+            <ul style="margin: var(--space-2) 0; padding-left: var(--space-5); list-style: disc;">
+              <li><strong>Allow changing authorized actor to "No One":</strong> Permits permanently disabling the action by removing all authorized actors.</li>
+              <li><strong>Allow changing rule changer to "No One":</strong> Allows rule changers to lock themselves out, making rules immutable.</li>
+              <li><strong>Allow rule changer to modify themselves:</strong> Enables rule changers to reassign control to other identities or groups.</li>
+            </ul>
+            <p><strong>Note:</strong> Freeze has its own governance safeguards, Unfreeze has separate safeguards, and Destroy Frozen has its own. Configure each independently based on your compliance requirements.</p>
+            <p><strong>Security tip:</strong> Keep safeguards disabled (default) to maintain maximum flexibility. Enable only if you need the option to make permissions permanently immutable later.</p>
           </div>
 
           <div class="page-guide__section">
@@ -1572,6 +1709,8 @@
             <ul style="margin: var(--space-2) 0 0 0; padding-left: var(--space-5); list-style: disc;">
               <li><strong>Regulated tokens (e.g., stablecoins):</strong> enable freeze with Group authority.</li>
               <li><strong>Fully decentralized assets:</strong> disable freezing entirely.</li>
+              <li><strong>Compliance workflows:</strong> enable both freeze and unfreeze with different authority levels.</li>
+              <li><strong>Governance safeguards:</strong> leave disabled for operational flexibility, enable if planning future immutability.</li>
               <li>If used, always publish freeze policy in your documentation.</li>
             </ul>
           </div>
@@ -1883,6 +2022,36 @@
                     </span>
                   </label>
                 </fieldset>
+
+                <!-- Governance Safeguards for Unfreezing -->
+                <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
+                  <legend class="wizard-field__label">Governance Safeguards</legend>
+                  <p class="wizard-subsection__body" style="margin-bottom: var(--space-4);">Control what rule modifications are permitted after deployment</p>
+
+                  <div class="wizard-field wizard-field--checkbox">
+                    <label class="wizard-checkbox" for="unfreeze-allow-authorized-none">
+                      <input class="wizard-checkbox__input" id="unfreeze-allow-authorized-none" type="checkbox">
+                      <span class="wizard-checkbox__label">Allow changing authorized unfreezer to "No One"</span>
+                    </label>
+                    <p class="field-hint">When enabled, authorized unfreezers can be permanently locked by changing to "No One"</p>
+                  </div>
+
+                  <div class="wizard-field wizard-field--checkbox">
+                    <label class="wizard-checkbox" for="unfreeze-allow-admin-none">
+                      <input class="wizard-checkbox__input" id="unfreeze-allow-admin-none" type="checkbox">
+                      <span class="wizard-checkbox__label">Allow changing rule changer to "No One"</span>
+                    </label>
+                    <p class="field-hint">When enabled, the rule changer can permanently lock themselves out by changing to "No One"</p>
+                  </div>
+
+                  <div class="wizard-field wizard-field--checkbox">
+                    <label class="wizard-checkbox" for="unfreeze-allow-self-change">
+                      <input class="wizard-checkbox__input" id="unfreeze-allow-self-change" type="checkbox">
+                      <span class="wizard-checkbox__label">Allow rule changer to modify themselves</span>
+                    </label>
+                    <p class="field-hint">When enabled, the current rule changer can reassign rule-changing authority to a different identity or group</p>
+                  </div>
+                </fieldset>
               </div>
 
                 <!-- Destroy Frozen Section (inside freeze permissions panel) -->
@@ -2032,6 +2201,36 @@
                       <span class="wizard-choice__hint">Destroy frozen rules are immutable and cannot be changed</span>
                     </span>
                   </label>
+                </fieldset>
+
+                <!-- Governance Safeguards -->
+                <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
+                  <legend class="wizard-field__label">Governance Safeguards</legend>
+                  <p class="wizard-subsection__body" style="margin-bottom: var(--space-4);">Control what rule modifications are permitted after deployment</p>
+
+                  <div class="wizard-field wizard-field--checkbox">
+                    <label class="wizard-checkbox" for="destroy-frozen-allow-authorized-none">
+                      <input class="wizard-checkbox__input" id="destroy-frozen-allow-authorized-none" type="checkbox">
+                      <span class="wizard-checkbox__label">Allow changing authorized destroyer to "No One"</span>
+                    </label>
+                    <p class="field-hint">When enabled, authorized destroyers can be permanently locked by changing to "No One"</p>
+                  </div>
+
+                  <div class="wizard-field wizard-field--checkbox">
+                    <label class="wizard-checkbox" for="destroy-frozen-allow-admin-none">
+                      <input class="wizard-checkbox__input" id="destroy-frozen-allow-admin-none" type="checkbox">
+                      <span class="wizard-checkbox__label">Allow changing rule changer to "No One"</span>
+                    </label>
+                    <p class="field-hint">When enabled, the rule changer can permanently lock themselves out by changing to "No One"</p>
+                  </div>
+
+                  <div class="wizard-field wizard-field--checkbox">
+                    <label class="wizard-checkbox" for="destroy-frozen-allow-self-change">
+                      <input class="wizard-checkbox__input" id="destroy-frozen-allow-self-change" type="checkbox">
+                      <span class="wizard-checkbox__label">Allow rule changer to modify themselves</span>
+                    </label>
+                    <p class="field-hint">When enabled, the current rule changer can reassign rule-changing authority to a different identity or group</p>
+                  </div>
                 </fieldset>
               </fieldset>
               </div>
@@ -2265,6 +2464,36 @@
                     </span>
                   </label>
                 </fieldset>
+
+                <!-- Governance Safeguards -->
+                <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
+                  <legend class="wizard-field__label">Governance Safeguards</legend>
+                  <p class="wizard-subsection__body" style="margin-bottom: var(--space-4);">Control what rule modifications are permitted after deployment</p>
+
+                  <div class="wizard-field wizard-field--checkbox">
+                    <label class="wizard-checkbox" for="emergency-allow-authorized-none">
+                      <input class="wizard-checkbox__input" id="emergency-allow-authorized-none" type="checkbox">
+                      <span class="wizard-checkbox__label">Allow changing authorized actor to "No One"</span>
+                    </label>
+                    <p class="field-hint">When enabled, authorized emergency actors can be permanently locked by changing to "No One"</p>
+                  </div>
+
+                  <div class="wizard-field wizard-field--checkbox">
+                    <label class="wizard-checkbox" for="emergency-allow-admin-none">
+                      <input class="wizard-checkbox__input" id="emergency-allow-admin-none" type="checkbox">
+                      <span class="wizard-checkbox__label">Allow changing rule changer to "No One"</span>
+                    </label>
+                    <p class="field-hint">When enabled, the rule changer can permanently lock themselves out by changing to "No One"</p>
+                  </div>
+
+                  <div class="wizard-field wizard-field--checkbox">
+                    <label class="wizard-checkbox" for="emergency-allow-self-change">
+                      <input class="wizard-checkbox__input" id="emergency-allow-self-change" type="checkbox">
+                      <span class="wizard-checkbox__label">Allow rule changer to modify themselves</span>
+                    </label>
+                    <p class="field-hint">When enabled, the current rule changer can reassign rule-changing authority to a different identity or group</p>
+                  </div>
+                </fieldset>
               </div>
             </div>
           </div>
@@ -2474,6 +2703,36 @@
                     </label>
                   </fieldset>
 
+                  <!-- Governance Safeguards -->
+                  <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
+                    <legend class="wizard-field__label">Governance Safeguards</legend>
+                    <p class="wizard-subsection__body" style="margin-bottom: var(--space-4);">Control what rule modifications are permitted after deployment</p>
+
+                    <div class="wizard-field wizard-field--checkbox">
+                      <label class="wizard-checkbox" for="conventions-change-allow-authorized-none">
+                        <input class="wizard-checkbox__input" id="conventions-change-allow-authorized-none" type="checkbox">
+                        <span class="wizard-checkbox__label">Allow changing authorized actor to "No One"</span>
+                      </label>
+                      <p class="field-hint">When enabled, authorized actors for convention changes can be permanently locked by changing to "No One"</p>
+                    </div>
+
+                    <div class="wizard-field wizard-field--checkbox">
+                      <label class="wizard-checkbox" for="conventions-change-allow-admin-none">
+                        <input class="wizard-checkbox__input" id="conventions-change-allow-admin-none" type="checkbox">
+                        <span class="wizard-checkbox__label">Allow changing rule changer to "No One"</span>
+                      </label>
+                      <p class="field-hint">When enabled, the rule changer can permanently lock themselves out by changing to "No One"</p>
+                    </div>
+
+                    <div class="wizard-field wizard-field--checkbox">
+                      <label class="wizard-checkbox" for="conventions-change-allow-self-change">
+                        <input class="wizard-checkbox__input" id="conventions-change-allow-self-change" type="checkbox">
+                        <span class="wizard-checkbox__label">Allow rule changer to modify themselves</span>
+                      </label>
+                      <p class="field-hint">When enabled, the current rule changer can reassign rule-changing authority to a different identity or group</p>
+                    </div>
+                  </fieldset>
+
                 </div>
               </fieldset>
             </div>
@@ -2679,6 +2938,36 @@
                     </label>
                   </fieldset>
 
+                  <!-- Governance Safeguards -->
+                  <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
+                    <legend class="wizard-field__label">Governance Safeguards</legend>
+                    <p class="wizard-subsection__body" style="margin-bottom: var(--space-4);">Control what rule modifications are permitted after deployment</p>
+
+                    <div class="wizard-field wizard-field--checkbox">
+                      <label class="wizard-checkbox" for="marketplace-trade-mode-allow-authorized-none">
+                        <input class="wizard-checkbox__input" id="marketplace-trade-mode-allow-authorized-none" type="checkbox">
+                        <span class="wizard-checkbox__label">Allow changing authorized actor to "No One"</span>
+                      </label>
+                      <p class="field-hint">When enabled, authorized actors for trade mode changes can be permanently locked by changing to "No One"</p>
+                    </div>
+
+                    <div class="wizard-field wizard-field--checkbox">
+                      <label class="wizard-checkbox" for="marketplace-trade-mode-allow-admin-none">
+                        <input class="wizard-checkbox__input" id="marketplace-trade-mode-allow-admin-none" type="checkbox">
+                        <span class="wizard-checkbox__label">Allow changing rule changer to "No One"</span>
+                      </label>
+                      <p class="field-hint">When enabled, the rule changer can permanently lock themselves out by changing to "No One"</p>
+                    </div>
+
+                    <div class="wizard-field wizard-field--checkbox">
+                      <label class="wizard-checkbox" for="marketplace-trade-mode-allow-self-change">
+                        <input class="wizard-checkbox__input" id="marketplace-trade-mode-allow-self-change" type="checkbox">
+                        <span class="wizard-checkbox__label">Allow rule changer to modify themselves</span>
+                      </label>
+                      <p class="field-hint">When enabled, the current rule changer can reassign rule-changing authority to a different identity or group</p>
+                    </div>
+                  </fieldset>
+
                 </div>
               </fieldset>
             </div>
@@ -2880,6 +3169,36 @@
                         <span class="wizard-choice__hint">Authorization rules are locked and cannot be changed</span>
                       </span>
                     </label>
+                  </fieldset>
+
+                  <!-- Governance Safeguards -->
+                  <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
+                    <legend class="wizard-field__label">Governance Safeguards</legend>
+                    <p class="wizard-subsection__body" style="margin-bottom: var(--space-4);">Control what rule modifications are permitted after deployment</p>
+
+                    <div class="wizard-field wizard-field--checkbox">
+                      <label class="wizard-checkbox" for="direct-pricing-allow-authorized-none">
+                        <input class="wizard-checkbox__input" id="direct-pricing-allow-authorized-none" type="checkbox">
+                        <span class="wizard-checkbox__label">Allow changing authorized actor to "No One"</span>
+                      </label>
+                      <p class="field-hint">When enabled, authorized actors for pricing changes can be permanently locked by changing to "No One"</p>
+                    </div>
+
+                    <div class="wizard-field wizard-field--checkbox">
+                      <label class="wizard-checkbox" for="direct-pricing-allow-admin-none">
+                        <input class="wizard-checkbox__input" id="direct-pricing-allow-admin-none" type="checkbox">
+                        <span class="wizard-checkbox__label">Allow changing rule changer to "No One"</span>
+                      </label>
+                      <p class="field-hint">When enabled, the rule changer can permanently lock themselves out by changing to "No One"</p>
+                    </div>
+
+                    <div class="wizard-field wizard-field--checkbox">
+                      <label class="wizard-checkbox" for="direct-pricing-allow-self-change">
+                        <input class="wizard-checkbox__input" id="direct-pricing-allow-self-change" type="checkbox">
+                        <span class="wizard-checkbox__label">Allow rule changer to modify themselves</span>
+                      </label>
+                      <p class="field-hint">When enabled, the current rule changer can reassign rule-changing authority to a different identity or group</p>
+                    </div>
                   </fieldset>
 
                 </div>
@@ -3192,7 +3511,7 @@
           <div class="form-card">
             <div class="form-card__header">
               <h3 class="form-card__title">Transfer Notes</h3>
-              <p class="form-card__description">Control whether users can attach notes to token transfers</p>
+              <p class="form-card__description">Control whether users can attach notes to token transfers for enhanced transaction context</p>
             </div>
             <div class="form-card__body">
               <fieldset class="wizard-fieldset">
@@ -3215,54 +3534,54 @@
                     <span class="wizard-choice__hint">Allow users to attach notes to transfers</span>
                   </span>
                 </label>
-
-                <!-- Note Types Panel (shown when enabled) -->
-                <div class="distribution-inline-panel" id="transfer-notes-types-panel" hidden>
-                  <fieldset class="wizard-fieldset" style="margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--color-border);">
-                    <legend class="wizard-field__label">Allowed note types</legend>
-                    <p class="field-hint" style="margin-bottom: var(--space-3);">Select which types of notes users can attach</p>
-
-                    <!-- Public Notes -->
-                    <div class="wizard-field wizard-field--checkbox">
-                      <label class="wizard-checkbox">
-                        <input class="wizard-checkbox__input" type="checkbox" id="transfer-note-type-public" name="transfer-note-type-public" checked>
-                        <span class="wizard-checkbox__label">
-                          <span class="wizard-checkbox__title">Public Notes</span>
-                          <span class="wizard-checkbox__hint" style="display: block; margin-top: var(--space-2xs);">
-                            Visible to everyone on the blockchain. Good for payment references and invoice numbers.
-                          </span>
-                        </span>
-                      </label>
-                    </div>
-
-                    <!-- Shared Encrypted Notes -->
-                    <div class="wizard-field wizard-field--checkbox">
-                      <label class="wizard-checkbox">
-                        <input class="wizard-checkbox__input" type="checkbox" id="transfer-note-type-shared" name="transfer-note-type-shared">
-                        <span class="wizard-checkbox__label">
-                          <span class="wizard-checkbox__title">Shared Encrypted Notes</span>
-                          <span class="wizard-checkbox__hint" style="display: block; margin-top: var(--space-2xs);">
-                            Encrypted and visible only to sender and receiver. Provides privacy while maintaining context.
-                          </span>
-                        </span>
-                      </label>
-                    </div>
-
-                    <!-- Private Encrypted Notes -->
-                    <div class="wizard-field wizard-field--checkbox">
-                      <label class="wizard-checkbox">
-                        <input class="wizard-checkbox__input" type="checkbox" id="transfer-note-type-private" name="transfer-note-type-private">
-                        <span class="wizard-checkbox__label">
-                          <span class="wizard-checkbox__title">Private Encrypted Notes</span>
-                          <span class="wizard-checkbox__hint" style="display: block; margin-top: var(--space-2xs);">
-                            Encrypted and visible only to the sender. For internal record-keeping and private memos.
-                          </span>
-                        </span>
-                      </label>
-                    </div>
-                  </fieldset>
-                </div>
               </fieldset>
+
+              <!-- Note Types Panel -->
+              <div class="distribution-inline-panel" id="transfer-notes-types-panel" hidden>
+                <fieldset class="wizard-fieldset" style="margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
+                  <legend class="wizard-field__label">Allowed note types</legend>
+                  <p class="field-hint" style="margin-bottom: var(--space-3);">Select which types of notes users can attach</p>
+
+                  <!-- Public Notes -->
+                  <div class="wizard-field wizard-field--checkbox">
+                    <label class="wizard-checkbox">
+                      <input class="wizard-checkbox__input" type="checkbox" id="transfer-note-type-public" name="transfer-note-type-public" checked>
+                      <span class="wizard-checkbox__label">
+                        <span class="wizard-checkbox__title">Public Notes</span>
+                        <span class="wizard-checkbox__hint" style="display: block; margin-top: var(--space-2xs);">
+                          Visible to everyone on the blockchain. Good for payment references and invoice numbers.
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+
+                  <!-- Shared Encrypted Notes -->
+                  <div class="wizard-field wizard-field--checkbox">
+                    <label class="wizard-checkbox">
+                      <input class="wizard-checkbox__input" type="checkbox" id="transfer-note-type-shared" name="transfer-note-type-shared">
+                      <span class="wizard-checkbox__label">
+                        <span class="wizard-checkbox__title">Shared Encrypted Notes</span>
+                        <span class="wizard-checkbox__hint" style="display: block; margin-top: var(--space-2xs);">
+                          Encrypted and visible only to sender and receiver. Provides privacy while maintaining context.
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+
+                  <!-- Private Encrypted Notes -->
+                  <div class="wizard-field wizard-field--checkbox">
+                    <label class="wizard-checkbox">
+                      <input class="wizard-checkbox__input" type="checkbox" id="transfer-note-type-private" name="transfer-note-type-private">
+                      <span class="wizard-checkbox__label">
+                        <span class="wizard-checkbox__title">Private Encrypted Notes</span>
+                        <span class="wizard-checkbox__hint" style="display: block; margin-top: var(--space-2xs);">
+                          Encrypted and visible only to the sender. For internal record-keeping and private memos.
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                </fieldset>
+              </div>
             </div>
           </div>
 
@@ -5276,6 +5595,74 @@
             <button class="wizard-button wizard-button--primary js-create-token" id="create-new-token" type="button" disabled aria-disabled="true" aria-label="Create new token">Create new token</button>
           </div>
         </form>
+      </div>
+    </section>
+
+    <!-- Export Configuration Sub-step -->
+    <section class="wizard-screen" id="screen-registration-export" data-step="registration" data-substep="registration-export" data-tab="token" hidden>
+      <div class="wizard-screen__inner">
+        <h1 class="wizard-screen__title" id="title-registration-export" tabindex="-1">Export Configuration</h1>
+        <p class="wizard-screen__subtitle">Download your token configuration before or after registration</p>
+
+        <!-- Dash Platform Contract Export -->
+        <div class="form-card">
+          <div class="form-card__header" style="display: flex; align-items: center; gap: var(--space-4);">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" style="color: var(--color-primary);">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M14 2v6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div>
+              <h3 class="form-card__title">Dash Platform Contract</h3>
+              <p class="form-card__description">Export production-ready contract JSON for Dash Platform deployment</p>
+            </div>
+          </div>
+          <div class="form-card__body">
+            <button class="wizard-button wizard-button--primary" type="button" id="export-contract-json-btn-alt" style="width: 100%;">
+              📥 Download Contract
+            </button>
+          </div>
+        </div>
+
+        <!-- Full Configuration Export -->
+        <div class="form-card">
+          <div class="form-card__header" style="display: flex; align-items: center; gap: var(--space-4);">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" style="color: var(--color-accent);">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div>
+              <h3 class="form-card__title">Full Configuration</h3>
+              <p class="form-card__description">Export complete wizard state (all forms, settings, and data)</p>
+            </div>
+          </div>
+          <div class="form-card__body">
+            <button class="wizard-button wizard-button--secondary" type="button" id="export-full-config-btn-alt" style="width: 100%;">
+              📥 Download JSON
+            </button>
+          </div>
+        </div>
+
+        <!-- Live Contract Preview -->
+        <div class="form-card">
+          <div class="form-card__header">
+            <h3 class="form-card__title">Live Contract Preview</h3>
+            <p class="form-card__description">Real-time preview of your token contract JSON (updates automatically)</p>
+          </div>
+          <div class="form-card__body">
+            <div style="position: relative;">
+              <pre id="export-contract-preview" style="background: var(--color-bg-secondary); padding: var(--space-4); border-radius: var(--radius-md); max-height: 400px; overflow: auto; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.5; color: var(--color-text);">{
+  "Loading contract..."
+}</pre>
+              <button class="wizard-button wizard-button--secondary wizard-button--small" type="button" id="copy-contract-preview" style="position: absolute; top: var(--space-2); right: var(--space-2);">
+                📋 Copy
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="wizard-actions wizard-actions--between wizard-actions--sticky">
+          <button class="wizard-button wizard-button--secondary" type="button" data-step-back="registration-export">← Back</button>
+          <button class="wizard-button wizard-button--primary" type="button" id="registration-export-next">Continue →</button>
+        </div>
       </div>
     </section>
 
