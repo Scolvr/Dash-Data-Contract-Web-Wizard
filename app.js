@@ -9913,6 +9913,53 @@ function buildManualActionRulesConfig(actionState, permissions) {
       });
     }
 
+    // DET Export Contract Button
+    const detExportContractBtn = document.getElementById('det-export-contract-btn');
+    if (detExportContractBtn) {
+      detExportContractBtn.addEventListener('click', () => {
+        try {
+          const contract = generatePlatformContractJSON();
+          const contractJSON = JSON.stringify(contract, null, 2);
+          const blob = new Blob([contractJSON], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${wizardState.form.tokenName || 'token'}-contract.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          announce('Contract JSON downloaded successfully!');
+        } catch (error) {
+          console.error('DET export error:', error);
+          announce('Error exporting contract. Please check your configuration.');
+        }
+      });
+    }
+
+    // DET Export Full Config Button
+    const detExportFullConfigBtn = document.getElementById('det-export-full-config-btn');
+    if (detExportFullConfigBtn) {
+      detExportFullConfigBtn.addEventListener('click', () => {
+        try {
+          const fullConfig = JSON.stringify(wizardState, null, 2);
+          const blob = new Blob([fullConfig], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${wizardState.form.tokenName || 'token'}-full-config.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          announce('Full configuration downloaded successfully!');
+        } catch (error) {
+          console.error('DET export error:', error);
+          announce('Error exporting configuration.');
+        }
+      });
+    }
+
     // Copy Contract Preview
     if (copyContractPreviewBtn && exportContractPreview) {
       copyContractPreviewBtn.addEventListener('click', () => {

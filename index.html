@@ -208,12 +208,6 @@
             <span class="wizard-nav-item__text">Register Token</span>
             <span class="wizard-path__pill pill" id="status-registration" aria-live="polite"></span>
           </button>
-
-          <div class="wizard-nav-subitems">
-            <a href="#" class="wizard-nav-subitem" data-substep="registration-export">
-              <span class="wizard-nav-subitem__text">Export Configuration</span>
-            </a>
-          </div>
         </div>
       </nav>
 
@@ -3873,7 +3867,7 @@
                       </label>
                       <div class="distribution-inline-panel" id="emission-panel-exponential" hidden>
                         <div class="field-group">
-                          <label class="wizard-field__label" for="emission-exp-a">Scaling Factor (a, { 0 < a ≤ 256 })</label>
+                          <label class="wizard-field__label" for="emission-exp-a">Scaling Factor (a, { 0 &lt; a ≤ 256 })</label>
                           <input class="wizard-field__input" type="number" id="emission-exp-a" placeholder="e.g., 1" min="1" max="256">
                         </div>
                         <div class="field-group">
@@ -3882,7 +3876,7 @@
                           <span class="field-hint">Cannot be 0</span>
                         </div>
                         <div class="field-group">
-                          <label class="wizard-field__label" for="emission-exp-n">Exponent Rate Denominator (n, { 0 < n ≤ 32 })</label>
+                          <label class="wizard-field__label" for="emission-exp-n">Exponent Rate Denominator (n, { 0 &lt; n ≤ 32 })</label>
                           <input class="wizard-field__input" type="number" id="emission-exp-n" placeholder="e.g., 1" min="1" max="32">
                         </div>
                         <div class="field-group">
@@ -3988,11 +3982,11 @@
                           <span class="field-hint">Number of emissions before decreasing</span>
                         </div>
                         <div class="field-group">
-                          <label class="wizard-field__label" for="emission-step-numerator">Decrease per Interval Numerator (n < 65,536)</label>
+                          <label class="wizard-field__label" for="emission-step-numerator">Decrease per Interval Numerator (n &lt; 65,536)</label>
                           <input class="wizard-field__input" type="number" id="emission-step-numerator" placeholder="e.g., 1" min="0" max="65535">
                         </div>
                         <div class="field-group">
-                          <label class="wizard-field__label" for="emission-step-denominator">Decrease per Interval Denominator (d < 65,536)</label>
+                          <label class="wizard-field__label" for="emission-step-denominator">Decrease per Interval Denominator (d &lt; 65,536)</label>
                           <input class="wizard-field__input" type="number" id="emission-step-denominator" placeholder="e.g., 2" min="1" max="65535">
                           <span class="field-hint">1/2 = halving, 3/4 = 75% of previous, etc.</span>
                         </div>
@@ -4067,7 +4061,7 @@
                           <input class="wizard-field__input" type="number" id="emission-poly-m" placeholder="e.g., 2" min="-8" max="8">
                         </div>
                         <div class="field-group">
-                          <label class="wizard-field__label" for="emission-poly-n">Exponent Denominator (n, { 0 < n ≤ 32 })</label>
+                          <label class="wizard-field__label" for="emission-poly-n">Exponent Denominator (n, { 0 &lt; n ≤ 32 })</label>
                           <input class="wizard-field__input" type="number" id="emission-poly-n" placeholder="e.g., 1" min="1" max="32">
                         </div>
                         <div class="field-group">
@@ -4422,7 +4416,7 @@
                 </label>
                 <div class="distribution-inline-panel" id="emission-panel-exponential" hidden>
                   <div class="field-group">
-                    <label class="wizard-field__label" for="emission-exp-a">Scaling Factor (a, { 0 < a ≤ 256 })</label>
+                    <label class="wizard-field__label" for="emission-exp-a">Scaling Factor (a, { 0 &lt; a ≤ 256 })</label>
                     <input class="wizard-field__input" type="number" id="emission-exp-a" placeholder="e.g., 1" min="1" max="256">
                   </div>
                   <div class="field-group">
@@ -4431,7 +4425,7 @@
                     <span class="field-hint">Cannot be 0</span>
                   </div>
                   <div class="field-group">
-                    <label class="wizard-field__label" for="emission-exp-n">Exponent Rate Denominator (n, { 0 < n ≤ 32 })</label>
+                    <label class="wizard-field__label" for="emission-exp-n">Exponent Rate Denominator (n, { 0 &lt; n ≤ 32 })</label>
                     <input class="wizard-field__input" type="number" id="emission-exp-n" placeholder="e.g., 1" min="1" max="32">
                   </div>
                   <div class="field-group">
@@ -4537,11 +4531,11 @@
                     <span class="field-hint">Number of emissions before decreasing</span>
                   </div>
                   <div class="field-group">
-                    <label class="wizard-field__label" for="emission-step-numerator">Decrease per Interval Numerator (n < 65,536)</label>
+                    <label class="wizard-field__label" for="emission-step-numerator">Decrease per Interval Numerator (n &lt; 65,536)</label>
                     <input class="wizard-field__input" type="number" id="emission-step-numerator" placeholder="e.g., 1" min="0" max="65535">
                   </div>
                   <div class="field-group">
-                    <label class="wizard-field__label" for="emission-step-denominator">Decrease per Interval Denominator (d < 65,536)</label>
+                    <label class="wizard-field__label" for="emission-step-denominator">Decrease per Interval Denominator (d &lt; 65,536)</label>
                     <input class="wizard-field__input" type="number" id="emission-step-denominator" placeholder="e.g., 2" min="1" max="65535">
                     <span class="field-hint">1/2 = halving, 3/4 = 75% of previous, etc.</span>
                   </div>
@@ -4616,7 +4610,7 @@
                     <input class="wizard-field__input" type="number" id="emission-poly-m" placeholder="e.g., 2" min="-8" max="8">
                   </div>
                   <div class="field-group">
-                    <label class="wizard-field__label" for="emission-poly-n">Exponent Denominator (n, { 0 < n ≤ 32 })</label>
+                    <label class="wizard-field__label" for="emission-poly-n">Exponent Denominator (n, { 0 &lt; n ≤ 32 })</label>
                     <input class="wizard-field__input" type="number" id="emission-poly-n" placeholder="e.g., 1" min="1" max="32">
                   </div>
                   <div class="field-group">
@@ -5381,8 +5375,9 @@
             <p><strong>Best for:</strong> Users who prefer mobile-first workflows and want a simple, secure process without exposing their recovery phrase to a web browser.</p>
 
             <h4 class="page-guide__step-heading">DET (Dash Evo Tool)</h4>
-            <p>This method exports your token configuration as a JSON file that can be used with the Dash Evo Tool command-line interface. This is ideal for developers who want full control over the registration process or need to integrate token creation into automated workflows.</p>
-            <p><strong>Best for:</strong> Developers, advanced users, and those integrating with custom tooling.</p>
+            <p>This method provides a step-by-step workflow to download your contract JSON and deploy it using the command-line Dash Evo Tool. You'll get clear instructions for installation and deployment, plus the ability to preview and download both the contract and full wizard configuration.</p>
+            <p><strong>Best for:</strong> Developers, advanced users, automated workflows, and those who prefer command-line tools.</p>
+            <p><strong>What you'll do:</strong> Download contract JSON → Install DET → Run deployment command</p>
 
             <h4 class="page-guide__step-heading">Self-Service (Manual Registration)</h4>
             <p>Import your wallet mnemonic directly into the browser to register your identity and submit the contract in one flow. This is the fastest method but requires you to enter your recovery phrase into a web application.</p>
@@ -5484,17 +5479,87 @@
 
           <section class="registration-panel" id="registration-panel-det" aria-labelledby="registration-det-title" hidden>
             <h2 class="registration-panel__title" id="registration-det-title">Dash Evo Tool (DET)</h2>
-            <p class="wizard-screen__help">Preview the deterministic JSON to import into the Dash Evo Tool.</p>
-            <div class="wizard-inline">
-              <button class="wizard-button wizard-button--secondary" type="button" id="json-show-button">Show JSON</button>
-              <button class="wizard-button wizard-button--secondary" type="button" id="json-copy-button" disabled>Copy JSON</button>
-            </div>
-            <div class="wizard-json" id="json-preview" hidden>
-              <div class="wizard-json__header">
-                <h3 class="wizard-json__title">JSON preview</h3>
+            <p class="wizard-screen__help">Export your token configuration and import it into the Dash Evo Tool for deployment.</p>
+
+            <!-- Step 1: Download Contract -->
+            <div class="form-card">
+              <div class="form-card__header">
+                <h3 class="form-card__title">Step 1: Download Contract JSON</h3>
+                <p class="form-card__description">Download the production-ready contract file for Dash Platform</p>
               </div>
-              <pre class="wizard-json__code" id="json-preview-content"></pre>
-              <p class="wizard-json__hint">This JSON can be imported into the Dash Evo Tool (DET).</p>
+              <div class="form-card__body">
+                <button class="wizard-button wizard-button--primary" type="button" id="det-export-contract-btn" style="width: 100%;">
+                  📥 Download Contract JSON
+                </button>
+                <p class="field-hint" style="margin-top: var(--space-2);">
+                  This file contains your complete token configuration ready for deployment
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 2: Install & Open DET -->
+            <div class="form-card">
+              <div class="form-card__header">
+                <h3 class="form-card__title">Step 2: Install Dash Evo Tool</h3>
+                <p class="form-card__description">Set up the command-line tool if you haven't already</p>
+              </div>
+              <div class="form-card__body">
+                <pre style="background: var(--color-bg-secondary); padding: var(--space-3); border-radius: var(--radius-md);">npm install -g @dashevo/dashevo-tool</pre>
+                <p class="field-hint" style="margin-top: var(--space-2);">
+                  For more information, visit the <a href="https://docs.dash.org" target="_blank" rel="noopener" class="wizard-link">Dash Platform Documentation</a>
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 3: Import to DET -->
+            <div class="form-card">
+              <div class="form-card__header">
+                <h3 class="form-card__title">Step 3: Import JSON into DET</h3>
+                <p class="form-card__description">Use the DET command-line to register your token</p>
+              </div>
+              <div class="form-card__body">
+                <p style="margin-bottom: var(--space-3);">Run the following command with your downloaded JSON file:</p>
+                <pre style="background: var(--color-bg-secondary); padding: var(--space-3); border-radius: var(--radius-md);">dashevo-tool contract register --file ./your-token-contract.json</pre>
+                <p class="field-hint" style="margin-top: var(--space-2);">
+                  Replace <code>your-token-contract.json</code> with the actual filename you downloaded
+                </p>
+              </div>
+            </div>
+
+            <!-- Optional: Preview JSON -->
+            <div class="form-card">
+              <div class="form-card__header">
+                <h3 class="form-card__title">Preview Contract JSON</h3>
+                <p class="form-card__description">View your contract before downloading (optional)</p>
+              </div>
+              <div class="form-card__body">
+                <div class="wizard-inline" style="margin-bottom: var(--space-3);">
+                  <button class="wizard-button wizard-button--secondary" type="button" id="json-show-button">👁️ Show JSON</button>
+                  <button class="wizard-button wizard-button--secondary" type="button" id="json-copy-button" disabled>📋 Copy JSON</button>
+                </div>
+                <div class="wizard-json" id="json-preview" hidden>
+                  <div class="wizard-json__header">
+                    <h3 class="wizard-json__title">JSON Preview</h3>
+                  </div>
+                  <pre class="wizard-json__code" id="json-preview-content"></pre>
+                </div>
+              </div>
+            </div>
+
+            <!-- Optional: Full Configuration Backup -->
+            <div class="form-card">
+              <div class="form-card__header">
+                <h3 class="form-card__title">Optional: Download Full Configuration</h3>
+                <p class="form-card__description">Backup complete wizard state for later</p>
+              </div>
+              <div class="form-card__body">
+                <button class="wizard-button wizard-button--secondary" type="button" id="det-export-full-config-btn" style="width: 100%;">
+                  📥 Download Full Configuration
+                </button>
+                <p class="field-hint" style="margin-top: var(--space-2);">
+                  Save all your wizard settings to reload or share later
+                </p>
+              </div>
             </div>
           </section>
 
@@ -5595,74 +5660,6 @@
             <button class="wizard-button wizard-button--primary js-create-token" id="create-new-token" type="button" disabled aria-disabled="true" aria-label="Create new token">Create new token</button>
           </div>
         </form>
-      </div>
-    </section>
-
-    <!-- Export Configuration Sub-step -->
-    <section class="wizard-screen" id="screen-registration-export" data-step="registration" data-substep="registration-export" data-tab="token" hidden>
-      <div class="wizard-screen__inner">
-        <h1 class="wizard-screen__title" id="title-registration-export" tabindex="-1">Export Configuration</h1>
-        <p class="wizard-screen__subtitle">Download your token configuration before or after registration</p>
-
-        <!-- Dash Platform Contract Export -->
-        <div class="form-card">
-          <div class="form-card__header" style="display: flex; align-items: center; gap: var(--space-4);">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" style="color: var(--color-primary);">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M14 2v6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <div>
-              <h3 class="form-card__title">Dash Platform Contract</h3>
-              <p class="form-card__description">Export production-ready contract JSON for Dash Platform deployment</p>
-            </div>
-          </div>
-          <div class="form-card__body">
-            <button class="wizard-button wizard-button--primary" type="button" id="export-contract-json-btn-alt" style="width: 100%;">
-              📥 Download Contract
-            </button>
-          </div>
-        </div>
-
-        <!-- Full Configuration Export -->
-        <div class="form-card">
-          <div class="form-card__header" style="display: flex; align-items: center; gap: var(--space-4);">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" style="color: var(--color-accent);">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <div>
-              <h3 class="form-card__title">Full Configuration</h3>
-              <p class="form-card__description">Export complete wizard state (all forms, settings, and data)</p>
-            </div>
-          </div>
-          <div class="form-card__body">
-            <button class="wizard-button wizard-button--secondary" type="button" id="export-full-config-btn-alt" style="width: 100%;">
-              📥 Download JSON
-            </button>
-          </div>
-        </div>
-
-        <!-- Live Contract Preview -->
-        <div class="form-card">
-          <div class="form-card__header">
-            <h3 class="form-card__title">Live Contract Preview</h3>
-            <p class="form-card__description">Real-time preview of your token contract JSON (updates automatically)</p>
-          </div>
-          <div class="form-card__body">
-            <div style="position: relative;">
-              <pre id="export-contract-preview" style="background: var(--color-bg-secondary); padding: var(--space-4); border-radius: var(--radius-md); max-height: 400px; overflow: auto; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.5; color: var(--color-text);">{
-  "Loading contract..."
-}</pre>
-              <button class="wizard-button wizard-button--secondary wizard-button--small" type="button" id="copy-contract-preview" style="position: absolute; top: var(--space-2); right: var(--space-2);">
-                📋 Copy
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="wizard-actions wizard-actions--between wizard-actions--sticky">
-          <button class="wizard-button wizard-button--secondary" type="button" data-step-back="registration-export">← Back</button>
-          <button class="wizard-button wizard-button--primary" type="button" id="registration-export-next">Continue →</button>
-        </div>
       </div>
     </section>
 

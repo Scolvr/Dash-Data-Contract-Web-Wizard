@@ -2732,13 +2732,60 @@ html[data-theme='dark'] .spec-badge {
 }
 
 .registration-panel {
-  display: grid;
-  gap: var(--space-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
   padding: clamp(var(--space-md), 2vw, var(--space-lg));
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
   box-shadow: none;
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.registration-panel pre {
+  max-width: 100%;
+  overflow-x: auto;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+.registration-panel .form-card {
+  box-sizing: border-box;
+  max-width: 100%;
+  margin: 0;
+  width: 100%;
+}
+
+.registration-panel .form-card__body {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.registration-panel .wizard-json {
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.registration-panel .wizard-json__code {
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-x: auto;
+  word-wrap: break-word;
+}
+
+.registration-panel button {
+  box-sizing: border-box;
+}
+
+.registration-panel .wizard-inline {
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
 .registration-panel + .registration-panel {
@@ -3803,6 +3850,7 @@ textarea.wizard-field__input {
   }
 }
 
+@media (max-width: 600px) {
   .wizard-group-card__member-actions {
     justify-content: flex-start;
   }
