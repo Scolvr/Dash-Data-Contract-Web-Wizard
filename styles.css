@@ -1043,9 +1043,10 @@ img {
 }
 
 .pill.valid {
-  background: var(--color-success-light);
-  border-color: var(--color-success-border);
-  color: var(--color-success);
+  background: #D1FAE5;
+  border-color: #10B981;
+  color: #047857;
+  font-weight: 600;
 }
 
 .pill.valid::before {
@@ -1054,9 +1055,10 @@ img {
 }
 
 .pill.invalid {
-  background: var(--color-error-light);
-  border-color: var(--color-error-border);
-  color: var(--color-error);
+  background: #FEE2E2;
+  border-color: #EF4444;
+  color: #DC2626;
+  font-weight: 600;
 }
 
 .pill.invalid::before {
@@ -1970,7 +1972,7 @@ html[data-theme='auto'] .wizard-tab--active {
   align-items: flex-start;
   gap: var(--space-4);
   padding: var(--space-5);
-  background: var(--color-bg-primary);
+  background: var(--color-surface);
   border: 2px solid var(--color-border);
   border-radius: var(--radius-lg);
   text-align: left;
@@ -1978,6 +1980,7 @@ html[data-theme='auto'] .wizard-tab--active {
   transition: all 0.2s ease;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .template-card::before {
@@ -2011,8 +2014,8 @@ html[data-theme='auto'] .wizard-tab--active {
   border-color: var(--color-primary);
   border-width: 3px;
   background: linear-gradient(135deg,
-    color-mix(in srgb, var(--color-primary) 5%, var(--color-bg-primary)) 0%,
-    var(--color-bg-primary) 100%);
+    color-mix(in srgb, var(--color-primary) 5%, var(--color-surface)) 0%,
+    var(--color-surface) 100%);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 15%, transparent);
 }
 
@@ -2036,14 +2039,33 @@ html[data-theme='auto'] .wizard-tab--active {
   font-size: 1.25rem;
   font-weight: 600;
   margin: 0;
-  color: var(--color-text-primary);
+  color: #1A1F36;
 }
 
 .template-card__description {
   font-size: 0.9375rem;
   margin: 0;
-  color: var(--color-text-secondary);
+  color: #4A5568;
   line-height: 1.5;
+}
+
+/* Dark mode overrides for template card text */
+html[data-theme='dark'] .template-card__title {
+  color: #F1F5F9;
+}
+
+html[data-theme='dark'] .template-card__description {
+  color: #94A3B8;
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-theme='auto'] .template-card__title {
+    color: #F1F5F9;
+  }
+
+  html[data-theme='auto'] .template-card__description {
+    color: #94A3B8;
+  }
 }
 
 .template-card__specs {
