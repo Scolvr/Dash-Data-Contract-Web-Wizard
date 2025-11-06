@@ -10829,7 +10829,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
         </div>
         <div style="margin-bottom: var(--space-3);">
           <label class="wizard-field__label" for="member-identity-${member.id}">Identity ID *</label>
-          <input class="wizard-field__input" type="text" id="member-identity-${member.id}" data-member-id="${member.id}" data-field="identityId" placeholder="e.g., 4ZJZ8nQ5P..." value="${member.identityId || ''}">
+          <input class="wizard-field__input" type="text" id="member-identity-${member.id}" data-member-id="${member.id}" data-field="identityId" placeholder="Enter a Base58 ID" value="${member.identityId || ''}">
           <span class="field-hint">Base58-encoded Dash Platform identity ID (43-44 characters)</span>
         </div>
         <div>
