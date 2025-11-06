@@ -5608,51 +5608,6 @@
             </div>
           </section>
 
-          <!-- Export Configuration Section -->
-          <div class="form-card" style="margin-top: var(--space-6);">
-            <div class="form-card__header">
-              <h3 class="form-card__title">Export Configuration</h3>
-              <p class="form-card__description">Download your token configuration before or after registration</p>
-            </div>
-            <div class="form-card__body">
-              <div style="display: flex; flex-direction: column; gap: var(--space-3);">
-                <!-- Export Contract JSON -->
-                <div class="export-option">
-                  <div class="export-option__header">
-                    <svg class="export-option__icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M14 2v6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M10 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    <div>
-                      <h4 class="export-option__title">Dash Platform Contract</h4>
-                      <p class="export-option__description">Export production-ready contract JSON for Dash Platform deployment</p>
-                    </div>
-                  </div>
-                  <button class="wizard-button wizard-button--primary" type="button" id="export-contract-json-btn">
-                    📥 Download Contract
-                  </button>
-                </div>
-
-                <!-- Export Full Configuration -->
-                <div class="export-option">
-                  <div class="export-option__header">
-                    <svg class="export-option__icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    <div>
-                      <h4 class="export-option__title">Full Configuration</h4>
-                      <p class="export-option__description">Export complete wizard state (all forms, settings, and data)</p>
-                    </div>
-                  </div>
-                  <button class="wizard-button wizard-button--secondary" type="button" id="export-full-config-btn">
-                    📥 Download JSON
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <p class="wizard-field__message wizard-status-banner" id="registration-message" role="status" aria-live="polite"></p>
           <div class="wizard-actions wizard-actions--between wizard-actions--sticky">
             <button class="wizard-button wizard-button--secondary" type="button" data-step-back="registration">Back</button>

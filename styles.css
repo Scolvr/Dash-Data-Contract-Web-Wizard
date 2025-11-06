@@ -3583,6 +3583,8 @@ textarea.wizard-field__input {
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
   overflow-x: auto;
+  overflow-y: auto;
+  max-height: 400px;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: var(--font-size-sm);
   line-height: 1.5;
