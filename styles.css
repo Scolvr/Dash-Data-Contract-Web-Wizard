@@ -2079,12 +2079,27 @@ html[data-theme='dark'] .template-card__description {
   display: inline-flex;
   align-items: center;
   padding: 4px 10px;
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
+  background: #EEF2FF;
+  border: 1px solid #C7D2FE;
   border-radius: var(--radius-full);
   font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--color-text-secondary);
+  font-weight: 600;
+  color: #4338CA;
+}
+
+/* Dark mode for spec badges */
+html[data-theme='dark'] .spec-badge {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: #A5B4FC;
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-theme='auto'] .spec-badge {
+    background: rgba(99, 102, 241, 0.15);
+    border-color: rgba(99, 102, 241, 0.3);
+    color: #A5B4FC;
+  }
 }
 
 @media (max-width: 768px) {
@@ -4263,7 +4278,7 @@ html[data-theme="dark"] .document-type-item__btn {
 
 .modal__content {
   position: relative;
-  background: var(--color-bg-primary);
+  background: #FFFFFF;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xl);
   max-width: 500px;
@@ -4271,6 +4286,17 @@ html[data-theme="dark"] .document-type-item__btn {
   max-height: 90vh;
   overflow-y: auto;
   animation: slideUp 0.3s ease;
+}
+
+/* Dark mode for modal */
+html[data-theme='dark'] .modal__content {
+  background: #1E293B;
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-theme='auto'] .modal__content {
+    background: #1E293B;
+  }
 }
 
 .modal__header {
@@ -4297,18 +4323,48 @@ html[data-theme="dark"] .document-type-item__btn {
 
 .modal__warning {
   padding: var(--space-3);
-  background: color-mix(in srgb, var(--color-warning) 10%, transparent);
-  border-left: 3px solid var(--color-warning);
+  background: #FEF3C7;
+  border-left: 3px solid #F59E0B;
   border-radius: var(--radius-sm);
   font-size: 0.9rem;
-  color: var(--color-warning);
+  color: #92400E;
+  font-weight: 500;
+}
+
+/* Dark mode for modal warning */
+html[data-theme='dark'] .modal__warning {
+  background: rgba(245, 158, 11, 0.15);
+  border-left-color: #FBBF24;
+  color: #FCD34D;
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-theme='auto'] .modal__warning {
+    background: rgba(245, 158, 11, 0.15);
+    border-left-color: #FBBF24;
+    color: #FCD34D;
+  }
 }
 
 .template-preview {
-  background: var(--color-bg-secondary);
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
   border-radius: var(--radius-md);
   padding: var(--space-4);
   margin: var(--space-4) 0;
+}
+
+/* Dark mode for template preview */
+html[data-theme='dark'] .template-preview {
+  background: #0F172A;
+  border-color: #334155;
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-theme='auto'] .template-preview {
+    background: #0F172A;
+    border-color: #334155;
+  }
 }
 
 .template-preview h3 {
