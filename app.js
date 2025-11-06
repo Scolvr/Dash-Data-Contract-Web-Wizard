@@ -9872,30 +9872,32 @@ function buildManualActionRulesConfig(actionState, permissions) {
     if (exportContractBtnAlt) {
       exportContractBtnAlt.addEventListener('click', async () => {
         try {
-          // Check if evo-sdk is available
-          if (!window.EvoSDK || !window.EvoSDK.DataContract) {
-            throw new Error('Evo SDK not loaded. Please reload the page.');
-          }
-
           const contractJSON = generatePlatformContractJSON();
 
-          // Create DataContract from JSON using Evo SDK
-          const dataContract = await window.EvoSDK.DataContract.fromJSON(contractJSON);
+          // Validate contract JSON using Evo SDK (if available)
+          if (window.EvoSDK && window.EvoSDK.DataContract) {
+            try {
+              // Validate by attempting to create DataContract from JSON
+              await window.EvoSDK.DataContract.fromJSON(contractJSON);
+              console.log('✓ Contract JSON validated successfully with Evo SDK');
+            } catch (validationError) {
+              console.warn('Contract validation warning:', validationError);
+              // Continue anyway - user may want to see/edit the JSON
+            }
+          }
 
-          // Serialize to bytes
-          const contractBytes = dataContract.toBytes();
-
-          // Download as binary file
-          const blob = new Blob([contractBytes], { type: 'application/octet-stream' });
+          // Download as JSON file for DET
+          const contractJSONString = JSON.stringify(contractJSON, null, 2);
+          const blob = new Blob([contractJSONString], { type: 'application/json' });
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `${wizardState.form.tokenName || 'token'}-contract.bin`;
+          a.download = `${wizardState.form.tokenName || 'token'}-contract.json`;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
           URL.revokeObjectURL(url);
-          announce('Serialized contract downloaded successfully!');
+          announce('Contract JSON downloaded successfully!');
         } catch (error) {
           console.error('Export error:', error);
           announce(`Error exporting contract: ${error.message}`);
@@ -9930,30 +9932,32 @@ function buildManualActionRulesConfig(actionState, permissions) {
     if (detExportContractBtn) {
       detExportContractBtn.addEventListener('click', async () => {
         try {
-          // Check if evo-sdk is available
-          if (!window.EvoSDK || !window.EvoSDK.DataContract) {
-            throw new Error('Evo SDK not loaded. Please reload the page.');
-          }
-
           const contractJSON = generatePlatformContractJSON();
 
-          // Create DataContract from JSON using Evo SDK
-          const dataContract = await window.EvoSDK.DataContract.fromJSON(contractJSON);
+          // Validate contract JSON using Evo SDK (if available)
+          if (window.EvoSDK && window.EvoSDK.DataContract) {
+            try {
+              // Validate by attempting to create DataContract from JSON
+              await window.EvoSDK.DataContract.fromJSON(contractJSON);
+              console.log('✓ Contract JSON validated successfully with Evo SDK');
+            } catch (validationError) {
+              console.warn('Contract validation warning:', validationError);
+              // Continue anyway - user may want to see/edit the JSON
+            }
+          }
 
-          // Serialize to bytes
-          const contractBytes = dataContract.toBytes();
-
-          // Download as binary file
-          const blob = new Blob([contractBytes], { type: 'application/octet-stream' });
+          // Download as JSON file for DET
+          const contractJSONString = JSON.stringify(contractJSON, null, 2);
+          const blob = new Blob([contractJSONString], { type: 'application/json' });
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `${wizardState.form.tokenName || 'token'}-contract.bin`;
+          a.download = `${wizardState.form.tokenName || 'token'}-contract.json`;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
           URL.revokeObjectURL(url);
-          announce('Serialized contract downloaded successfully!');
+          announce('Contract JSON downloaded successfully!');
         } catch (error) {
           console.error('DET export error:', error);
           announce('Error exporting contract. Please check your configuration.');
