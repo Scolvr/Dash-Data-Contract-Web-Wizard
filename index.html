@@ -3184,17 +3184,19 @@
           <aside class="page-guide" aria-label="Page guide">
             <div class="page-guide__content">
               <h2 class="page-guide__title">Marketplace Trade Mode Change</h2>
-              <p class="page-guide__intro">Allow or restrict who can modify your token's trading mode in the
-                marketplace.</p>
+              <p class="page-guide__intro">Pre-configure who may enable marketplace trading once the Dash Platform
+                feature becomes available.</p>
 
               <div class="page-guide__section">
                 <h3 class="page-guide__section-title">Detailed Guide</h3>
 
                 <h4 class="page-guide__step-heading">Trade Mode</h4>
+                <p>Trading is currently disabled on Dash Platform, so tokens launch as <strong>Not Tradeable</strong>.
+                  This screen lets you decide who can change that once new modes unlock.</p>
                 <ul style="margin: var(--space-2) 0; padding-left: var(--space-5); list-style: disc;">
-                  <li><strong>Permissionless:</strong> Anyone can trade freely</li>
-                  <li><strong>Approval Required:</strong> Only approved traders can interact</li>
-                  <li><strong>Not Tradeable:</strong> Transfers limited or disabled</li>
+                  <li><strong>Not Tradeable (current):</strong> Transfers limited or disabled</li>
+                  <li><strong>Future modes:</strong> Permissionless and Approval Required are reserved for the upcoming
+                    marketplace release</li>
                 </ul>
 
                 <h4 class="page-guide__step-heading">Who Can Modify</h4>
@@ -3207,9 +3209,9 @@
               <div class="page-guide__section">
                 <h3 class="page-guide__section-title">Best Practice</h3>
                 <ul style="margin: var(--space-2) 0 0 0; padding-left: var(--space-5); list-style: disc;">
-                  <li><strong>Governance tokens:</strong> Permissionless.</li>
-                  <li><strong>Security or compliance tokens:</strong> Approval Required.</li>
-                  <li>Lock trade mode after deployment to avoid confusion in listings.</li>
+                  <li>Decide now who can flip trading on once the network supports it.</li>
+                  <li>Keep trade mode changes restricted to trusted owners or governance groups.</li>
+                  <li>Lock trade mode after deployment to avoid confusion in future listings.</li>
                 </ul>
               </div>
             </div>
@@ -5728,20 +5730,17 @@
           <aside class="page-guide" aria-label="Page guide">
             <div class="page-guide__content">
               <h2 class="page-guide__title">Trading & Marketplace</h2>
-              <p class="page-guide__intro">Control how your token behaves in trading environments.</p>
+              <p class="page-guide__intro">Dash Platform trading isn't live yet, so tokens created today are locked to
+                Not Tradeable until marketplace support ships.</p>
 
               <div class="page-guide__section">
                 <h3 class="page-guide__section-title">Guide</h3>
-                <p>Choose Trade Mode: open, approval-based, or closed. Enable Transfer Notes to attach data or messages
-                  to transfers. You can allow public or encrypted note types for user flexibility. Click Continue for
-                  launch settings.</p>
+                <p>Marketplace trade modes will arrive in a future release. Until then, every token is created as Not
+                  Tradeable.</p>
 
-                <h4 class="page-guide__step-heading">Trade Modes</h4>
-                <ul style="margin: var(--space-2) 0; padding-left: var(--space-5); list-style: disc;">
-                  <li><strong>Permissionless:</strong> Anyone can trade freely</li>
-                  <li><strong>Approval Required:</strong> Trades need authorization</li>
-                  <li><strong>Closed:</strong> No trading allowed</li>
-                </ul>
+                <h4 class="page-guide__step-heading">Trade Mode</h4>
+                <p><strong>Not Tradeable:</strong> Trading is disabled until Dash Platform enables token
+                  marketplaces.</p>
 
                 <h4 class="page-guide__step-heading">Transfer Notes</h4>
                 <p>Allow users to attach messages or data to token transfers:</p>
@@ -5756,9 +5755,10 @@
 
           <div class="wizard-screen__inner">
             <form class="wizard-form" id="advanced-form" novalidate>
-              <h1 class="wizard-screen__title" id="title-advanced" tabindex="-1">Would you like your token to be
-                tradeable when the feature is turned on on the Dash Evolution blockchain?</h1>
-              <p class="wizard-screen__subtitle">Choose the trading permissions that work best for your use case.</p>
+              <h1 class="wizard-screen__title" id="title-advanced" tabindex="-1">Marketplace trading is coming soon
+              </h1>
+              <p class="wizard-screen__subtitle">Dash Platform hasn't enabled token trading yet, so every token created
+                with this wizard is deployed as Not Tradeable until the feature launches.</p>
 
               <!-- Trading Rules Card -->
               <div class="form-card">
@@ -5769,35 +5769,22 @@
                 <div class="form-card__body">
                   <fieldset class="wizard-fieldset">
                     <legend class="wizard-field__label">
-                      Who can change our token to being tradeable?
+                      Marketplace trade mode
                     </legend>
+                    <p class="wizard-field__hint">Trading on Dash Platform is currently disabled. Tokens deployed now
+                      are locked to Not Tradeable.</p>
                     <label class="wizard-choice">
                       <input class="wizard-choice__input" type="radio" name="trade-mode"
-                        id="advanced-trade-mode-permissionless" value="permissionless" checked>
+                        id="advanced-trade-mode-closed" value="closed" checked disabled>
                       <span class="wizard-choice__content">
-                        <span class="wizard-choice__title">Anyone (permissionless)</span>
-                        <span class="wizard-choice__hint">Free trading for everyone • Most common choice</span>
+                        <span class="wizard-choice__title">Not Tradeable (current default)</span>
+                        <span class="wizard-choice__hint">Trading will be enabled in a future Dash Platform release</span>
                       </span>
                     </label>
-                    <label class="wizard-choice">
-                      <input class="wizard-choice__input" type="radio" name="trade-mode"
-                        id="advanced-trade-mode-approval" value="approvalRequired">
-                      <span class="wizard-choice__content">
-                        <span class="wizard-choice__title">Approval required</span>
-                        <span class="wizard-choice__hint">Trades need your permission • Good for controlled
-                          access</span>
-                      </span>
-                    </label>
-                    <label class="wizard-choice">
-                      <input class="wizard-choice__input" type="radio" name="trade-mode" id="advanced-trade-mode-closed"
-                        value="closed">
-                      <span class="wizard-choice__content">
-                        <span class="wizard-choice__title">No trading (closed)</span>
-                        <span class="wizard-choice__hint">Trading disabled • For internal use only</span>
-                      </span>
-                    </label>
+                    <p class="wizard-field__hint">We'll add additional trade modes once marketplace support is live.
+                    </p>
                   </fieldset>
-                  <input type="hidden" id="advanced-trade-mode" name="advanced-trade-mode" value="permissionless">
+                  <input type="hidden" id="advanced-trade-mode" name="advanced-trade-mode" value="closed">
                 </div>
               </div>
 

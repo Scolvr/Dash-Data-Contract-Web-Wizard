@@ -48,9 +48,8 @@ The Dash Token Wizard is a **zero-dependency, static web application** that prov
   - **Inverted Logarithmic** - Inverted log curves
 
 - **✓ Marketplace Controls**
-  - Permissionless trading
-  - Committee-approval required trading
-  - Closed (non-tradeable) tokens
+  - Tokens currently deploy as **Not Tradeable** (marketplace trading is coming soon)
+  - Pre-configure who can enable future trade modes once Dash Platform unlocks them
 
 - **✓ Change Control**
   - Owner-only controls
@@ -124,7 +123,7 @@ open http://localhost:5173
    - Select an emission function (or skip for no automatic distribution)
 
 4. **Advanced**
-   - Configure marketplace trading rules
+   - Marketplace trading is fixed to Not Tradeable (feature coming soon)
    - Set change control permissions
 
 5. **Registration**
@@ -136,7 +135,7 @@ open http://localhost:5173
 1. **Naming**: Name: "MyToken", Symbol: "MTK", Decimals: 2
 2. **Permissions**: Base Supply: 1,000,000, No max supply
 3. **Distribution**: Skip (no automatic distribution)
-4. **Advanced**: Permissionless trading, owner-only controls
+4. **Advanced**: Not Tradeable (current default), owner-only controls
 5. **Registration**: Use DET method to export JSON
 
 ### Example: Creating a Bitcoin-Style Halving Token
@@ -146,7 +145,7 @@ open http://localhost:5173
 3. **Distribution**:
    - Schedule: Block-based, every 100 blocks
    - Emission: Step Decreasing, starting at 50 tokens, halving every 210,000 intervals
-4. **Advanced**: Permissionless trading
+4. **Advanced**: Not Tradeable (current default)
 5. **Registration**: Self-service or QR code
 
 ## Architecture

@@ -366,7 +366,7 @@ Each action has a V0 Rule structure:
 ```json
 {
   "$format_version": "0",
-  "tradeMode": "Permissionless",
+  "tradeMode": "NotTradeable",
   "tradeModeChangeRules": {
     "$format_version": "0",
     "isEnabled": true,
@@ -381,10 +381,10 @@ Each action has a V0 Rule structure:
 }
 ```
 
-**Trade Modes:**
-- `Permissionless`: Anyone can trade freely
-- `ApprovalRequired`: Trades require owner/committee approval
-- `NotTradeable`: Token cannot be traded (transfer only)
+**Trade Modes (current & planned):**
+- `NotTradeable`: Token cannot be traded (transfer only) — **only option available today**
+- `Permissionless` *(reserved)*: Anyone can trade freely once marketplaces launch
+- `ApprovalRequired` *(reserved)*: Trades require owner/committee approval once supported
 
 ---
 

@@ -575,7 +575,7 @@
         },
         documentTypes: {},
         advanced: {
-          tradeMode: 'permissionless',
+          tradeMode: 'closed',
           changeControl: { ...DEFAULT_CHANGE_CONTROL_FLAGS }
         },
         search: {
@@ -2743,8 +2743,8 @@
 
     const values = advancedUI.getValues();
     const changeControl = normalizeChangeControl(values.changeControl);
-    // Keep existing tradeMode or default to permissionless (UI for tradeMode removed)
-    const tradeMode = wizardState.form.advanced?.tradeMode || 'permissionless';
+    // Trade mode is locked to NotTradeable (closed) until marketplace support ships
+    const tradeMode = 'closed';
 
     wizardState.form.advanced = {
       tradeMode,
@@ -5391,6 +5391,11 @@
           state.form.advanced.changeControl = normalizeChangeControl(form.advanced.changeControl);
         }
 
+        if (state.form.advanced.tradeMode !== 'closed') {
+          console.warn('Only NotTradeable trade mode is supported; forcing saved value to closed.');
+          state.form.advanced.tradeMode = 'closed';
+        }
+
         const registrationFormData = form.registration && typeof form.registration === 'object' ? form.registration : {};
         const walletSource = registrationFormData.wallet && typeof registrationFormData.wallet === 'object'
           ? registrationFormData.wallet
@@ -8020,13 +8025,13 @@
   }
 
   function buildMarketplaceRules(tradeMode) {
-    const normalized = ['permissionless', 'approvalRequired', 'closed'].includes(tradeMode)
-      ? tradeMode
-      : 'permissionless';
+    if (tradeMode && tradeMode !== 'closed') {
+      console.warn('Only NotTradeable tokens are supported; forcing trade mode to closed.');
+    }
     return {
-      tradeMode: normalized,
-      allowSecondaryMarkets: normalized !== 'closed',
-      allowAtomicSwaps: normalized === 'permissionless'
+      tradeMode: 'closed',
+      allowSecondaryMarkets: false,
+      allowAtomicSwaps: false
     };
   }
 
@@ -8158,7 +8163,7 @@
     }
     const keepsHistory = normalizeKeepsHistory(permissions.keepsHistory);
     const changeControl = normalizeChangeControl(advanced.changeControl);
-    const tradeMode = typeof advanced.tradeMode === 'string' ? advanced.tradeMode : 'permissionless';
+    const tradeMode = 'closed';
 
     const adminRule = createChangeRule(changeControl.admin);
     const freezeRules = buildFreezeRulesConfig(permissions.freeze, permissions, { disabled: !changeControl.freeze });
@@ -8576,7 +8581,7 @@
     // Add advanced settings
     if (wizardState.form.advanced) {
       payload.marketplace = {
-        trade_mode: wizardState.form.advanced.tradeMode || 'permissionless'
+        trade_mode: 'closed'
       };
       payload.change_control = wizardState.form.advanced.changeControl || {};
     }
@@ -9029,22 +9034,13 @@
     // Helper: Transform marketplace rules
     function transformMarketplaceRules() {
       const tradeMode = wizardState.form.advanced?.tradeMode;
-
-      // Map wizard values to Platform enum values
-      let platformTradeMode;
-      if (tradeMode === 'permissionless') {
-        platformTradeMode = 'Permissionless';
-      } else if (tradeMode === 'approvalRequired') {
-        platformTradeMode = 'ApprovalRequired';
-      } else if (tradeMode === 'closed') {
-        platformTradeMode = 'NotTradeable';
-      } else {
-        platformTradeMode = 'Permissionless'; // Default to permissionless
+      if (tradeMode && tradeMode !== 'closed') {
+        console.warn('Only NotTradeable trade mode is supported; forcing closed.');
       }
 
       return {
         $format_version: '0',
-        tradeMode: platformTradeMode,
+        tradeMode: 'NotTradeable',
         tradeModeChangeRules: createPermissionChangeRule(wizardState.form.permissions.marketplaceTradeMode)
       };
     }
@@ -12059,7 +12055,7 @@
       manualFreeze: { enabled: false },
       destroyFrozen: { enabled: false },
       emergency: { enabled: false },
-      tradeMode: 'permissionless',
+      tradeMode: 'closed',
       changeControl: {
         mint: false,
         burn: false,
@@ -12092,7 +12088,7 @@
       manualFreeze: { enabled: false },
       destroyFrozen: { enabled: false },
       emergency: { enabled: false },
-      tradeMode: 'permissionless',
+      tradeMode: 'closed',
       changeControl: {
         mint: true,
         burn: true,
@@ -12125,7 +12121,7 @@
       manualFreeze: { enabled: false },
       destroyFrozen: { enabled: false },
       emergency: { enabled: false },
-      tradeMode: 'permissionless',
+      tradeMode: 'closed',
       changeControl: {
         mint: true,
         burn: true,
@@ -12207,7 +12203,7 @@
 
     // Advanced
     state.form.advanced = state.form.advanced || {};
-    state.form.advanced.tradeMode = template.tradeMode || 'permissionless';
+    state.form.advanced.tradeMode = template.tradeMode || 'closed';
     state.form.advanced.changeControl = template.changeControl || {};
 
     // Document Types
@@ -12479,11 +12475,9 @@
     'trade-mode': {
       title: 'Marketplace Trade Mode',
       content: `
-        <p>Controls who can trade your token on decentralized exchanges.</p>
-        <p><strong>Permissionless:</strong> Anyone can buy/sell freely (most common)</p>
-        <p><strong>Approval Required:</strong> Trades need approval from token owner/committee</p>
-        <p><strong>Not Tradeable:</strong> Token cannot be traded on markets (like membership badges)</p>
-        <p><strong>Tip:</strong> Use "Not Tradeable" for non-transferable rewards or credentials.</p>
+        <p>Dash Platform hasn't enabled marketplace trading yet, so every token launches as <strong>Not Tradeable</strong>.</p>
+        <p><strong>Not Tradeable:</strong> Token cannot be listed or swapped until the future marketplace upgrade.</p>
+        <p><strong>Coming soon:</strong> Permissionless and approval-based modes will unlock once trading goes live.</p>
       `
     },
 
