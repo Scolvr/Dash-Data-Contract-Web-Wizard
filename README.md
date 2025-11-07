@@ -237,6 +237,7 @@ node server.js
 ```
 
 The development server provides:
+
 - Static file serving
 - Mock `/api/validate` endpoint for testing
 - CORS headers for local development
@@ -309,13 +310,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Issues**: Report bugs or request features via [GitHub Issues](https://github.com/Scolvr/Dash-Data-Contract-Web-Wizard/issues)
 - **Discussions**: Join the conversation in [GitHub Discussions](https://github.com/Scolvr/Dash-Data-Contract-Web-Wizard/discussions)
-- **Dash Platform Docs**: https://docs.dash.org/projects/platform/
+- **Dash Platform Docs**: <https://docs.dash.org/projects/platform/>
 
 ## Links
 
-- **Repository**: https://github.com/Scolvr/Dash-Data-Contract-Web-Wizard
-- **Dash Platform**: https://dashplatform.readme.io/
-- **Dash Evo Tool**: https://github.com/dashpay/dash-evo-tool
+- **Repository**: <https://github.com/Scolvr/Dash-Data-Contract-Web-Wizard>
+- **Dash Platform**: <https://dashplatform.readme.io/>
+- **Dash Evo Tool**: <https://github.com/dashpay/dash-evo-tool>
 
 ---
 
