@@ -285,8 +285,8 @@
   function createConditionalFieldMount(wrapper) {
     if (!wrapper) {
       return {
-        show: () => {},
-        hide: () => {}
+        show: () => { },
+        hide: () => { }
       };
     }
 
@@ -575,7 +575,7 @@
         },
         documentTypes: {},
         advanced: {
-          tradeMode: 'permissionless',
+          tradeMode: 'closed',
           changeControl: { ...DEFAULT_CHANGE_CONTROL_FLAGS }
         },
         search: {
@@ -705,6 +705,7 @@
   // FIXED: Use correct selector for substep navigation items
   const subpathItems = Array.from(document.querySelectorAll('.wizard-nav-subitem'));
   let manualNavigationActive = false;
+  let registrationValidationSequence = 0;
 
   progressItems.forEach((item) => {
     item.setAttribute('role', 'button');
@@ -838,6 +839,12 @@
   const distributionForm = document.getElementById('distribution-form');
   const advancedForm = document.getElementById('advanced-form');
   const registrationForm = document.getElementById('registration-form');
+  const registrationValidationCard = document.getElementById('registration-validation-card');
+  const registrationValidationBody = document.getElementById('registration-validation-body');
+  const registrationValidationFallbackHTML = '<p><strong>You\'re almost done!</strong></p><p style=\"margin-bottom: 0;\">Your token is configured and ready to go. Now you just need to publish it to the Dash Platform. Choose the method that works best for you below.</p>';
+  const registrationValidationDefaultHTML = registrationValidationBody
+    ? registrationValidationBody.innerHTML || registrationValidationFallbackHTML
+    : registrationValidationFallbackHTML;
   const groupMainPositionInput = document.getElementById('group-main-position');
   const groupAddButton = document.getElementById('group-add');
   const groupListElement = document.getElementById('group-list');
@@ -880,30 +887,30 @@
   const transferMessage = document.getElementById('permissions-transfer-message');
   const transferNextButton = document.getElementById('permissions-transfer-next');
 
-const distributionMessage = document.getElementById('distribution-message');
-const distributionNextButton = document.getElementById('distribution-next');
-// FIXED: Add reference to distribution skip button
-const distributionSkipButton = document.getElementById('distribution-skip');
-const distributionEmissionSkipButton = document.getElementById('distribution-emission-skip');
-// FIXED: Add reference to emission substep button and message
-const distributionEmissionNextButton = document.getElementById('distribution-emission-next');
-const distributionEmissionMessage = document.getElementById('distribution-emission-message');
+  const distributionMessage = document.getElementById('distribution-message');
+  const distributionNextButton = document.getElementById('distribution-next');
+  // FIXED: Add reference to distribution skip button
+  const distributionSkipButton = document.getElementById('distribution-skip');
+  const distributionEmissionSkipButton = document.getElementById('distribution-emission-skip');
+  // FIXED: Add reference to emission substep button and message
+  const distributionEmissionNextButton = document.getElementById('distribution-emission-next');
+  const distributionEmissionMessage = document.getElementById('distribution-emission-message');
 
-const advancedMessage = document.getElementById('advanced-message');
-const advancedNextButton = document.getElementById('advanced-next');
-const overviewNextButton = document.getElementById('overview-next');
-const overviewBackButton = document.getElementById('overview-back');
+  const advancedMessage = document.getElementById('advanced-message');
+  const advancedNextButton = document.getElementById('advanced-next');
+  const overviewNextButton = document.getElementById('overview-next');
+  const overviewBackButton = document.getElementById('overview-back');
 
-const searchMessage = document.getElementById('search-message');
-const searchNextButton = document.getElementById('search-next');
-const searchKeywordsInput = document.getElementById('search-keywords');
-const searchDescriptionInput = document.getElementById('search-description');
+  const searchMessage = document.getElementById('search-message');
+  const searchNextButton = document.getElementById('search-next');
+  const searchKeywordsInput = document.getElementById('search-keywords');
+  const searchDescriptionInput = document.getElementById('search-description');
 
-// FIXED: Use existing HTML inputs instead of creating new ones
-let permissionsUI = createPermissionsUIFromHTML(permissionsForm);
-let transferUI = createTransferUI(transferForm);
-let distributionUI = createDistributionUI(distributionForm);
-let advancedUI = createAdvancedUI(advancedForm);
+  // FIXED: Use existing HTML inputs instead of creating new ones
+  let permissionsUI = createPermissionsUIFromHTML(permissionsForm);
+  let transferUI = createTransferUI(transferForm);
+  let distributionUI = createDistributionUI(distributionForm);
+  let advancedUI = createAdvancedUI(advancedForm);
   const manualActionUIs = {};
   let freezeUI = null;
 
@@ -1675,6 +1682,11 @@ let advancedUI = createAdvancedUI(advancedForm);
   document.addEventListener('keydown', handleEscapeShortcut);
   window.addEventListener('unhandledrejection', handleChunkLoadRejection);
   window.addEventListener('error', handleChunkLoadError, true);
+  window.addEventListener('evo:sdk-ready', () => {
+    if (getPrimaryStepId(wizardState.active) === 'registration') {
+      validateRegistrationContract();
+    }
+  });
 
   // ═══════════════════════════════════════════════════════════════════════════
   // Pre-Programmed Distribution UI
@@ -2743,8 +2755,8 @@ let advancedUI = createAdvancedUI(advancedForm);
 
     const values = advancedUI.getValues();
     const changeControl = normalizeChangeControl(values.changeControl);
-    // Keep existing tradeMode or default to permissionless (UI for tradeMode removed)
-    const tradeMode = wizardState.form.advanced?.tradeMode || 'permissionless';
+    // Trade mode is locked to NotTradeable (closed) until marketplace support ships
+    const tradeMode = 'closed';
 
     wizardState.form.advanced = {
       tradeMode,
@@ -3236,6 +3248,116 @@ let advancedUI = createAdvancedUI(advancedForm);
     syncWizardReadiness();
   }
 
+  function setRegistrationValidationState({ variant = 'pending', title = '', message = '' } = {}) {
+    if (!registrationValidationCard || !registrationValidationBody) {
+      return;
+    }
+    registrationValidationCard.hidden = false;
+    registrationValidationCard.classList.remove('form-card--error', 'form-card--highlight');
+
+    if (variant === 'success') {
+      registrationValidationCard.classList.add('form-card--highlight');
+      registrationValidationBody.innerHTML = registrationValidationDefaultHTML;
+      return;
+    }
+
+    if (variant === 'error') {
+      registrationValidationCard.classList.add('form-card--error');
+    } else {
+      registrationValidationCard.classList.add('form-card--highlight');
+    }
+
+    registrationValidationBody.innerHTML = '';
+
+    if (title) {
+      const heading = document.createElement('p');
+      const strong = document.createElement('strong');
+      strong.textContent = title;
+      heading.appendChild(strong);
+      registrationValidationBody.appendChild(heading);
+    }
+
+    const paragraph = document.createElement('p');
+    paragraph.style.marginBottom = '0';
+    paragraph.textContent = message || 'Generating your contract and checking it with the Dash Evo SDK.';
+    registrationValidationBody.appendChild(paragraph);
+  }
+
+  function getReadableErrorMessage(error, fallback = 'Unknown error.') {
+    if (!error) {
+      return fallback;
+    }
+    if (typeof error === 'string') {
+      return error;
+    }
+    if (typeof error.message === 'string' && error.message.trim()) {
+      return error.message;
+    }
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return fallback;
+    }
+  }
+
+  async function validateRegistrationContract() {
+    if (!registrationValidationCard || !registrationValidationBody) {
+      return;
+    }
+    registrationValidationSequence += 1;
+    const sequence = registrationValidationSequence;
+    const pendingMessage = 'Generating your contract and checking it with the Dash Evo SDK.';
+    setRegistrationValidationState({
+      variant: 'pending',
+      title: 'Validating contract…',
+      message: pendingMessage
+    });
+
+    let contractJSON;
+    try {
+      contractJSON = generatePlatformContractJSON();
+    } catch (error) {
+      if (sequence === registrationValidationSequence) {
+        const message = getReadableErrorMessage(error, 'Unable to generate your contract.');
+        setRegistrationValidationState({
+          variant: 'error',
+          title: 'Contract generation failed',
+          message
+        });
+      }
+      return;
+    }
+
+    if (!window.EvoSDK || !window.EvoSDK.DataContract || typeof window.EvoSDK.DataContract.fromJSON !== 'function') {
+      if (sequence === registrationValidationSequence) {
+        setRegistrationValidationState({
+          variant: 'error',
+          title: 'Validation unavailable',
+          message: 'Dash Evo SDK is still loading. Reopen this step once the SDK finishes initializing.'
+        });
+      }
+      return;
+    }
+
+    try {
+      await window.EvoSDK.DataContract.fromJSON(contractJSON, 10);
+      if (sequence !== registrationValidationSequence) {
+        return;
+      }
+      setRegistrationValidationState({ variant: 'success' });
+    } catch (error) {
+      if (sequence !== registrationValidationSequence) {
+        return;
+      }
+      const message = getReadableErrorMessage(error, 'Dash Evo SDK reported a validation error.');
+      setRegistrationValidationState({
+        variant: 'error',
+        title: 'Contract validation failed',
+        message
+      });
+    }
+  }
+
   function syncWizardReadiness({ refreshStatus = false } = {}) {
     wizardReadiness.hasQr = Boolean(wizardState.form.registration.preflight.mobile.qrGenerated);
     wizardReadiness.hasJson = Boolean(wizardState.form.registration.preflight.det.jsonDisplayed);
@@ -3367,12 +3489,12 @@ let advancedUI = createAdvancedUI(advancedForm);
         if (navigator.serviceWorker) {
           const registrations = await navigator.serviceWorker.getRegistrations();
           await Promise.all(
-            registrations.map((registration) => registration.unregister().catch(() => {}))
+            registrations.map((registration) => registration.unregister().catch(() => { }))
           );
         }
         if ('caches' in window) {
           const keys = await caches.keys();
-          await Promise.all(keys.map((key) => caches.delete(key).catch(() => {})));
+          await Promise.all(keys.map((key) => caches.delete(key).catch(() => { })));
         }
       } catch (error) {
         console.warn('Chunk recovery cleanup failed', error);
@@ -3419,7 +3541,7 @@ let advancedUI = createAdvancedUI(advancedForm);
     updateStepStatusFromValidation('naming', result, touched);
   }
 
-  
+
   function ensureNamingFormState() {
     const naming = wizardState.form.naming;
     if (!naming || typeof naming !== 'object') {
@@ -3452,101 +3574,101 @@ let advancedUI = createAdvancedUI(advancedForm);
         });
       })();
       naming.rows = nextRow ? [nextRow] : [];
+    }
+
+    naming.rows = limitLocalizationRows(naming.rows);
+    const [primaryRow] = naming.rows;
+    naming.conventions.localizations = createLocalizationRecordFromRow(primaryRow);
   }
 
-  naming.rows = limitLocalizationRows(naming.rows);
-  const [primaryRow] = naming.rows;
-  naming.conventions.localizations = createLocalizationRecordFromRow(primaryRow);
-}
+  function normalizeManualActionRecord(permissions, actionKey) {
+    const defaults = createDefaultManualActionState();
+    if (!permissions || typeof permissions !== 'object') {
+      return createDefaultManualActionState();
+    }
 
-function normalizeManualActionRecord(permissions, actionKey) {
-  const defaults = createDefaultManualActionState();
-  if (!permissions || typeof permissions !== 'object') {
-    return createDefaultManualActionState();
-  }
+    const source = permissions[actionKey] && typeof permissions[actionKey] === 'object' ? permissions[actionKey] : {};
+    const normalized = {
+      ...defaults,
+      ...source
+    };
 
-  const source = permissions[actionKey] && typeof permissions[actionKey] === 'object' ? permissions[actionKey] : {};
-  const normalized = {
-    ...defaults,
-    ...source
-  };
+    const validTypes = new Set(['none', 'owner', 'identity', 'group', 'main-group']);
+    normalized.enabled = Boolean(source.enabled);
+    normalized.performerType = validTypes.has(source.performerType) ? source.performerType : defaults.performerType;
+    normalized.performerReference = typeof source.performerReference === 'string' ? source.performerReference.trim() : '';
+    normalized.ruleChangerType = validTypes.has(source.ruleChangerType) ? source.ruleChangerType : defaults.ruleChangerType;
+    normalized.ruleChangerReference =
+      typeof source.ruleChangerReference === 'string' ? source.ruleChangerReference.trim() : '';
+    normalized.allowChangeAuthorizedToNone = Boolean(source.allowChangeAuthorizedToNone);
+    normalized.allowChangeAdminToNone = Boolean(source.allowChangeAdminToNone);
+    normalized.allowSelfChangeAdmin = Boolean(source.allowSelfChangeAdmin);
 
-  const validTypes = new Set(['none', 'owner', 'identity', 'group', 'main-group']);
-  normalized.enabled = Boolean(source.enabled);
-  normalized.performerType = validTypes.has(source.performerType) ? source.performerType : defaults.performerType;
-  normalized.performerReference = typeof source.performerReference === 'string' ? source.performerReference.trim() : '';
-  normalized.ruleChangerType = validTypes.has(source.ruleChangerType) ? source.ruleChangerType : defaults.ruleChangerType;
-  normalized.ruleChangerReference =
-    typeof source.ruleChangerReference === 'string' ? source.ruleChangerReference.trim() : '';
-  normalized.allowChangeAuthorizedToNone = Boolean(source.allowChangeAuthorizedToNone);
-  normalized.allowChangeAdminToNone = Boolean(source.allowChangeAdminToNone);
-  normalized.allowSelfChangeAdmin = Boolean(source.allowSelfChangeAdmin);
+    const groups = Array.isArray(permissions.groups) ? permissions.groups : [];
+    const groupIds = new Set(groups.map((group) => group.id));
+    const mainGroupIndex = clampMainControlIndex(permissions.mainControlGroupIndex, groups.length);
 
-  const groups = Array.isArray(permissions.groups) ? permissions.groups : [];
-  const groupIds = new Set(groups.map((group) => group.id));
-  const mainGroupIndex = clampMainControlIndex(permissions.mainControlGroupIndex, groups.length);
-
-  if (normalized.performerType === 'group') {
-    if (!groupIds.has(normalized.performerReference)) {
-      const fallbackGroup = groups[0];
-      if (fallbackGroup) {
-        normalized.performerReference = fallbackGroup.id;
-      } else {
-        normalized.performerType = 'none';
-        normalized.performerReference = '';
+    if (normalized.performerType === 'group') {
+      if (!groupIds.has(normalized.performerReference)) {
+        const fallbackGroup = groups[0];
+        if (fallbackGroup) {
+          normalized.performerReference = fallbackGroup.id;
+        } else {
+          normalized.performerType = 'none';
+          normalized.performerReference = '';
+        }
+      }
+    } else if (normalized.performerType === 'main-group') {
+      if (mainGroupIndex < 0 || mainGroupIndex >= groups.length) {
+        normalized.performerType = groups.length ? 'group' : 'none';
+        normalized.performerReference = groups.length ? groups[0].id : '';
       }
     }
-  } else if (normalized.performerType === 'main-group') {
-    if (mainGroupIndex < 0 || mainGroupIndex >= groups.length) {
-      normalized.performerType = groups.length ? 'group' : 'none';
+
+    if (normalized.ruleChangerType === 'group') {
+      if (!groupIds.has(normalized.ruleChangerReference)) {
+        const fallbackGroup = groups[0];
+        if (fallbackGroup) {
+          normalized.ruleChangerReference = fallbackGroup.id;
+        } else {
+          normalized.ruleChangerType = normalized.enabled ? 'owner' : 'none';
+          normalized.ruleChangerReference = '';
+        }
+      }
+    } else if (normalized.ruleChangerType === 'main-group') {
+      if (mainGroupIndex < 0 || mainGroupIndex >= groups.length) {
+        normalized.ruleChangerType = groups.length ? 'group' : 'owner';
+        normalized.ruleChangerReference = groups.length ? groups[0].id : '';
+      }
+    }
+
+    if (!normalized.enabled) {
+      normalized.performerType = 'none';
+      normalized.performerReference = '';
+    } else if (normalized.performerType === 'none') {
+      normalized.performerType = groups.length ? 'group' : 'owner';
       normalized.performerReference = groups.length ? groups[0].id : '';
     }
-  }
 
-  if (normalized.ruleChangerType === 'group') {
-    if (!groupIds.has(normalized.ruleChangerReference)) {
-      const fallbackGroup = groups[0];
-      if (fallbackGroup) {
-        normalized.ruleChangerReference = fallbackGroup.id;
-      } else {
-        normalized.ruleChangerType = normalized.enabled ? 'owner' : 'none';
-        normalized.ruleChangerReference = '';
-      }
+    if (!normalized.enabled && normalized.ruleChangerType === 'none') {
+      normalized.ruleChangerType = 'owner';
+      normalized.ruleChangerReference = '';
     }
-  } else if (normalized.ruleChangerType === 'main-group') {
-    if (mainGroupIndex < 0 || mainGroupIndex >= groups.length) {
-      normalized.ruleChangerType = groups.length ? 'group' : 'owner';
-      normalized.ruleChangerReference = groups.length ? groups[0].id : '';
+
+    return normalized;
+  }
+
+  function ensureManualActionState(actionKey) {
+    const permissions = wizardState.form.permissions;
+    if (!permissions || typeof permissions !== 'object') {
+      return;
     }
+    permissions[actionKey] = normalizeManualActionRecord(permissions, actionKey);
   }
 
-  if (!normalized.enabled) {
-    normalized.performerType = 'none';
-    normalized.performerReference = '';
-  } else if (normalized.performerType === 'none') {
-    normalized.performerType = groups.length ? 'group' : 'owner';
-    normalized.performerReference = groups.length ? groups[0].id : '';
+  function ensureAllManualActionStates() {
+    MANUAL_ACTION_DEFINITIONS.forEach(({ key }) => ensureManualActionState(key));
   }
-
-  if (!normalized.enabled && normalized.ruleChangerType === 'none') {
-    normalized.ruleChangerType = 'owner';
-    normalized.ruleChangerReference = '';
-  }
-
-  return normalized;
-}
-
-function ensureManualActionState(actionKey) {
-  const permissions = wizardState.form.permissions;
-  if (!permissions || typeof permissions !== 'object') {
-    return;
-  }
-  permissions[actionKey] = normalizeManualActionRecord(permissions, actionKey);
-}
-
-function ensureAllManualActionStates() {
-  MANUAL_ACTION_DEFINITIONS.forEach(({ key }) => ensureManualActionState(key));
-}
 
   function normalizeFreezeState(source) {
     const defaults = createDefaultFreezeState();
@@ -3589,16 +3711,16 @@ function ensureAllManualActionStates() {
     permissions.freeze = normalizeFreezeState(permissions.freeze);
   }
 
-function ensurePermissionsGroupState() {
-  const permissions = wizardState.form.permissions;
-  if (!permissions || typeof permissions !== 'object') {
-    return;
+  function ensurePermissionsGroupState() {
+    const permissions = wizardState.form.permissions;
+    if (!permissions || typeof permissions !== 'object') {
+      return;
+    }
+    ensureAllManualActionStates();
+    ensureFreezeState();
+    permissions.groups = normalisePermissionsGroups(permissions.groups);
+    permissions.mainControlGroupIndex = clampMainControlIndex(permissions.mainControlGroupIndex, permissions.groups.length);
   }
-  ensureAllManualActionStates();
-  ensureFreezeState();
-  permissions.groups = normalisePermissionsGroups(permissions.groups);
-  permissions.mainControlGroupIndex = clampMainControlIndex(permissions.mainControlGroupIndex, permissions.groups.length);
-}
 
   function clonePermissionGroups(groups) {
     return normalisePermissionsGroups(groups).map((group) => ({
@@ -4737,6 +4859,13 @@ function ensurePermissionsGroupState() {
       });
     }
 
+    // Validate contract when showing registration step
+    if (screenId === 'registration' || getPrimaryStepId(screenId) === 'registration') {
+      requestAnimationFrame(() => {
+        validateRegistrationContract();
+      });
+    }
+
     // Sync preprogrammed distribution form when showing preprogrammed screen
     if (screenId === 'distribution-preprogrammed' || getPrimaryStepId(screenId) === 'distribution') {
       requestAnimationFrame(() => {
@@ -5389,6 +5518,11 @@ function ensurePermissionsGroupState() {
             state.form.advanced.tradeMode = form.advanced.tradeMode;
           }
           state.form.advanced.changeControl = normalizeChangeControl(form.advanced.changeControl);
+        }
+
+        if (state.form.advanced.tradeMode !== 'closed') {
+          console.warn('Only NotTradeable trade mode is supported; forcing saved value to closed.');
+          state.form.advanced.tradeMode = 'closed';
         }
 
         const registrationFormData = form.registration && typeof form.registration === 'object' ? form.registration : {};
@@ -6691,410 +6825,410 @@ function ensurePermissionsGroupState() {
   }
 
   function createManualActionUI(definition, screen) {
-  if (!definition || !screen) {
-    return null;
-  }
-  const { key, stepId, domPrefix } = definition;
-  const form = screen.querySelector(`#${domPrefix}-form`);
-  if (!form) {
-    return null;
-  }
-
-  const selector = (suffix) => `#${domPrefix}-${suffix}`;
-  const dataSelector = (role) => `[data-${domPrefix}-identity="${role}"]`;
-
-  const enabledRadios = Array.from(form.querySelectorAll(`input[name="${domPrefix}-enabled"]`));
-  const performerSelect = form.querySelector(selector('performer'));
-  const performerIdentityWrapper = form.querySelector(dataSelector('performer'));
-  const performerIdentityInput = form.querySelector(selector('performer-identity'));
-  const ruleChangerSelect = form.querySelector(selector('rule-changer'));
-  const ruleChangerIdentityWrapper = form.querySelector(dataSelector('changer'));
-  const ruleChangerIdentityInput = form.querySelector(selector('rule-changer-identity'));
-  const allowAuthorizedNoneInput = form.querySelector(selector('allow-authorized-none'));
-  const allowAdminNoneInput = form.querySelector(selector('allow-admin-none'));
-  const allowSelfChangeInput = form.querySelector(selector('allow-self-change'));
-  const controlsPanel = form.querySelector(`[data-${domPrefix}-controls]`);
-  const messageElement = form.querySelector(selector('message'));
-  const performerIdentityMount = createConditionalFieldMount(performerIdentityWrapper);
-  const ruleChangerIdentityMount = createConditionalFieldMount(ruleChangerIdentityWrapper);
-
-  let touched = Boolean(getStepState(stepId)?.touched);
-
-  const actionState = () => {
-    ensurePermissionsGroupState();
-    ensureManualActionState(key);
-    return wizardState.form.permissions[key];
-  };
-
-  function encodeActorValue(type, reference = '') {
-    switch (type) {
-      case 'owner':
-        return 'owner';
-      case 'identity':
-        return `identity:${reference || ''}`;
-      case 'group':
-        return `group:${reference || ''}`;
-      case 'main-group':
-        return 'main-group';
-      case 'none':
-      default:
-        return 'none';
+    if (!definition || !screen) {
+      return null;
     }
-  }
-
-  function decodeActorValue(value) {
-    if (value && value.startsWith('group:')) {
-      return { type: 'group', reference: value.slice(6) };
+    const { key, stepId, domPrefix } = definition;
+    const form = screen.querySelector(`#${domPrefix}-form`);
+    if (!form) {
+      return null;
     }
-    if (value && value.startsWith('identity:')) {
-      return { type: 'identity', reference: value.slice(9) };
-    }
-    if (value === 'owner') {
-      return { type: 'owner', reference: '' };
-    }
-    if (value === 'main-group') {
-      return { type: 'main-group', reference: '' };
-    }
-    return { type: 'none', reference: '' };
-  }
 
-  function buildGroupLabel(group, index) {
-    // Use custom name if provided, otherwise use default "Group N" format
-    if (group.name && group.name.trim()) {
-      return group.name.trim();
+    const selector = (suffix) => `#${domPrefix}-${suffix}`;
+    const dataSelector = (role) => `[data-${domPrefix}-identity="${role}"]`;
+
+    const enabledRadios = Array.from(form.querySelectorAll(`input[name="${domPrefix}-enabled"]`));
+    const performerSelect = form.querySelector(selector('performer'));
+    const performerIdentityWrapper = form.querySelector(dataSelector('performer'));
+    const performerIdentityInput = form.querySelector(selector('performer-identity'));
+    const ruleChangerSelect = form.querySelector(selector('rule-changer'));
+    const ruleChangerIdentityWrapper = form.querySelector(dataSelector('changer'));
+    const ruleChangerIdentityInput = form.querySelector(selector('rule-changer-identity'));
+    const allowAuthorizedNoneInput = form.querySelector(selector('allow-authorized-none'));
+    const allowAdminNoneInput = form.querySelector(selector('allow-admin-none'));
+    const allowSelfChangeInput = form.querySelector(selector('allow-self-change'));
+    const controlsPanel = form.querySelector(`[data-${domPrefix}-controls]`);
+    const messageElement = form.querySelector(selector('message'));
+    const performerIdentityMount = createConditionalFieldMount(performerIdentityWrapper);
+    const ruleChangerIdentityMount = createConditionalFieldMount(ruleChangerIdentityWrapper);
+
+    let touched = Boolean(getStepState(stepId)?.touched);
+
+    const actionState = () => {
+      ensurePermissionsGroupState();
+      ensureManualActionState(key);
+      return wizardState.form.permissions[key];
+    };
+
+    function encodeActorValue(type, reference = '') {
+      switch (type) {
+        case 'owner':
+          return 'owner';
+        case 'identity':
+          return `identity:${reference || ''}`;
+        case 'group':
+          return `group:${reference || ''}`;
+        case 'main-group':
+          return 'main-group';
+        case 'none':
+        default:
+          return 'none';
+      }
     }
-    return `Group ${index + 1}`;
-  }
 
-  function buildActorOptions() {
-    const options = [];
-    options.push({ value: 'none', label: 'No one' });
-    options.push({ value: 'owner', label: 'Contract owner' });
+    function decodeActorValue(value) {
+      if (value && value.startsWith('group:')) {
+        return { type: 'group', reference: value.slice(6) };
+      }
+      if (value && value.startsWith('identity:')) {
+        return { type: 'identity', reference: value.slice(9) };
+      }
+      if (value === 'owner') {
+        return { type: 'owner', reference: '' };
+      }
+      if (value === 'main-group') {
+        return { type: 'main-group', reference: '' };
+      }
+      return { type: 'none', reference: '' };
+    }
 
-    const permissions = wizardState.form.permissions;
-    const groups = Array.isArray(permissions.groups) ? permissions.groups : [];
-    const mainIndex = clampMainControlIndex(permissions.mainControlGroupIndex, groups.length);
+    function buildGroupLabel(group, index) {
+      // Use custom name if provided, otherwise use default "Group N" format
+      if (group.name && group.name.trim()) {
+        return group.name.trim();
+      }
+      return `Group ${index + 1}`;
+    }
 
-    if (groups.length) {
-      groups.forEach((group, index) => {
-        options.push({ value: encodeActorValue('group', group.id), label: buildGroupLabel(group, index) });
+    function buildActorOptions() {
+      const options = [];
+      options.push({ value: 'none', label: 'No one' });
+      options.push({ value: 'owner', label: 'Contract owner' });
+
+      const permissions = wizardState.form.permissions;
+      const groups = Array.isArray(permissions.groups) ? permissions.groups : [];
+      const mainIndex = clampMainControlIndex(permissions.mainControlGroupIndex, groups.length);
+
+      if (groups.length) {
+        groups.forEach((group, index) => {
+          options.push({ value: encodeActorValue('group', group.id), label: buildGroupLabel(group, index) });
+        });
+      }
+
+      if (mainIndex >= 0 && mainIndex < groups.length) {
+        options.push({ value: 'main-group', label: 'Main control group' });
+      }
+
+      options.push({ value: 'identity:', label: 'Specific Identity' });
+
+      if (!groups.length) {
+        options.push({ value: '__groups-missing__', label: '(No groups added yet)', disabled: true });
+      }
+
+      return options;
+    }
+
+    function populateSelect(select, options, requestedValue) {
+      if (!select) {
+        return '';
+      }
+      const previousValue = select.value;
+      select.innerHTML = '';
+      let fallbackValue = '';
+      options.forEach((option) => {
+        const opt = document.createElement('option');
+        opt.value = option.value;
+        opt.textContent = option.label;
+        if (option.disabled) {
+          opt.disabled = true;
+        } else if (!fallbackValue) {
+          fallbackValue = option.value;
+        }
+        select.appendChild(opt);
       });
-    }
 
-    if (mainIndex >= 0 && mainIndex < groups.length) {
-      options.push({ value: 'main-group', label: 'Main control group' });
-    }
-
-    options.push({ value: 'identity:', label: 'Specific Identity' });
-
-    if (!groups.length) {
-      options.push({ value: '__groups-missing__', label: '(No groups added yet)', disabled: true });
-    }
-
-    return options;
-  }
-
-  function populateSelect(select, options, requestedValue) {
-    if (!select) {
-      return '';
-    }
-    const previousValue = select.value;
-    select.innerHTML = '';
-    let fallbackValue = '';
-    options.forEach((option) => {
-      const opt = document.createElement('option');
-      opt.value = option.value;
-      opt.textContent = option.label;
-      if (option.disabled) {
-        opt.disabled = true;
-      } else if (!fallbackValue) {
-        fallbackValue = option.value;
+      let nextValue = requestedValue;
+      if (!options.some((option) => option.value === requestedValue && !option.disabled)) {
+        nextValue = fallbackValue || '';
       }
-      select.appendChild(opt);
-    });
 
-    let nextValue = requestedValue;
-    if (!options.some((option) => option.value === requestedValue && !option.disabled)) {
-      nextValue = fallbackValue || '';
-    }
-
-    select.value = nextValue;
-    if (select.value !== nextValue && nextValue) {
       select.value = nextValue;
-    }
-
-    if (!select.value && previousValue && select.value !== previousValue) {
-      select.value = previousValue;
-    }
-
-    return select.value;
-  }
-
-  function setControlsDisabled(disabled) {
-    const controlElements = [
-      performerSelect,
-      ruleChangerSelect,
-      performerIdentityInput,
-      ruleChangerIdentityInput,
-      allowAuthorizedNoneInput,
-      allowAdminNoneInput,
-      allowSelfChangeInput
-    ];
-    controlElements.forEach((element) => {
-      if (element) {
-        element.disabled = disabled;
+      if (select.value !== nextValue && nextValue) {
+        select.value = nextValue;
       }
-    });
-    if (controlsPanel) {
-      controlsPanel.classList.toggle('is-disabled', disabled);
-      controlsPanel.setAttribute('aria-disabled', String(Boolean(disabled)));
-    }
-  }
 
-  function syncIdentityField(type, mount, input, enabled, reference) {
-    if (!mount || !input) {
-      return;
-    }
-    if (type === 'identity' && enabled) {
-      mount.show();
-      input.disabled = false;
-      input.value = reference || '';
-    } else {
-      mount.hide();
-      input.disabled = true;
-    }
-  }
+      if (!select.value && previousValue && select.value !== previousValue) {
+        select.value = previousValue;
+      }
 
-  function validate(state) {
-    if (!state.enabled) {
+      return select.value;
+    }
+
+    function setControlsDisabled(disabled) {
+      const controlElements = [
+        performerSelect,
+        ruleChangerSelect,
+        performerIdentityInput,
+        ruleChangerIdentityInput,
+        allowAuthorizedNoneInput,
+        allowAdminNoneInput,
+        allowSelfChangeInput
+      ];
+      controlElements.forEach((element) => {
+        if (element) {
+          element.disabled = disabled;
+        }
+      });
+      if (controlsPanel) {
+        controlsPanel.classList.toggle('is-disabled', disabled);
+        controlsPanel.setAttribute('aria-disabled', String(Boolean(disabled)));
+      }
+    }
+
+    function syncIdentityField(type, mount, input, enabled, reference) {
+      if (!mount || !input) {
+        return;
+      }
+      if (type === 'identity' && enabled) {
+        mount.show();
+        input.disabled = false;
+        input.value = reference || '';
+      } else {
+        mount.hide();
+        input.disabled = true;
+      }
+    }
+
+    function validate(state) {
+      if (!state.enabled) {
+        return { valid: true, message: '' };
+      }
+      if (state.performerType === 'none') {
+        return { valid: false, message: 'Choose who may perform this action when it is enabled.' };
+      }
+      if (state.performerType === 'identity' && !state.performerReference) {
+        return { valid: false, message: 'Enter the identity ID allowed to perform this action.' };
+      }
+      if (state.performerType === 'group' && !state.performerReference) {
+        return { valid: false, message: 'Select a permission group allowed to perform this action.' };
+      }
+      if (state.ruleChangerType === 'identity' && !state.ruleChangerReference) {
+        return { valid: false, message: 'Enter the identity ID allowed to change the rules.' };
+      }
+      if (state.ruleChangerType === 'group' && !state.ruleChangerReference) {
+        return { valid: false, message: 'Select a permission group allowed to change the rules.' };
+      }
       return { valid: true, message: '' };
     }
-    if (state.performerType === 'none') {
-      return { valid: false, message: 'Choose who may perform this action when it is enabled.' };
-    }
-    if (state.performerType === 'identity' && !state.performerReference) {
-      return { valid: false, message: 'Enter the identity ID allowed to perform this action.' };
-    }
-    if (state.performerType === 'group' && !state.performerReference) {
-      return { valid: false, message: 'Select a permission group allowed to perform this action.' };
-    }
-    if (state.ruleChangerType === 'identity' && !state.ruleChangerReference) {
-      return { valid: false, message: 'Enter the identity ID allowed to change the rules.' };
-    }
-    if (state.ruleChangerType === 'group' && !state.ruleChangerReference) {
-      return { valid: false, message: 'Select a permission group allowed to change the rules.' };
-    }
-    return { valid: true, message: '' };
-  }
 
-  function applyValidation(state, { silent = false } = {}) {
-    const validation = validate(state);
-    if (messageElement) {
-      if (!validation.valid && (touched || state.enabled)) {
-        messageElement.textContent = validation.message;
-      } else {
-        messageElement.textContent = '';
+    function applyValidation(state, { silent = false } = {}) {
+      const validation = validate(state);
+      if (messageElement) {
+        if (!validation.valid && (touched || state.enabled)) {
+          messageElement.textContent = validation.message;
+        } else {
+          messageElement.textContent = '';
+        }
       }
-    }
-    updateStepStatusFromValidation(stepId, validation, touched || state.enabled);
-    if (!validation.valid && !silent && validation.message) {
-      announce(validation.message);
-    }
-    return validation;
-  }
-
-  function commit(partial, { markTouched = true, silent = false } = {}) {
-    const permissions = wizardState.form.permissions;
-    permissions[key] = {
-      ...permissions[key],
-      ...partial
-    };
-    permissions[key] = normalizeManualActionRecord(permissions, key);
-    persistState();
-    if (markTouched) {
-      touched = true;
-    }
-    applyValidation(permissions[key], { silent });
-  }
-
-  function sync({ announce = true } = {}) {
-    const state = actionState();
-    const options = buildActorOptions();
-
-    const performerValue = encodeActorValue(state.performerType, state.performerReference);
-    const resolvedPerformerValue = populateSelect(performerSelect, options, performerValue);
-    const performerActor = decodeActorValue(resolvedPerformerValue);
-    if (performerActor.type !== state.performerType || performerActor.reference !== state.performerReference) {
-      commit({ performerType: performerActor.type, performerReference: performerActor.reference }, { markTouched: false, silent: true });
+      updateStepStatusFromValidation(stepId, validation, touched || state.enabled);
+      if (!validation.valid && !silent && validation.message) {
+        announce(validation.message);
+      }
+      return validation;
     }
 
-    const ruleValue = encodeActorValue(state.ruleChangerType, state.ruleChangerReference);
-    const resolvedRuleValue = populateSelect(ruleChangerSelect, options, ruleValue);
-    const ruleActor = decodeActorValue(resolvedRuleValue);
-    if (ruleActor.type !== state.ruleChangerType || ruleActor.reference !== state.ruleChangerReference) {
-      commit({ ruleChangerType: ruleActor.type, ruleChangerReference: ruleActor.reference }, { markTouched: false, silent: true });
+    function commit(partial, { markTouched = true, silent = false } = {}) {
+      const permissions = wizardState.form.permissions;
+      permissions[key] = {
+        ...permissions[key],
+        ...partial
+      };
+      permissions[key] = normalizeManualActionRecord(permissions, key);
+      persistState();
+      if (markTouched) {
+        touched = true;
+      }
+      applyValidation(permissions[key], { silent });
     }
 
-    const updatedState = actionState();
-    const enableRadio = updatedState.enabled ? 'enabled' : 'disabled';
+    function sync({ announce = true } = {}) {
+      const state = actionState();
+      const options = buildActorOptions();
+
+      const performerValue = encodeActorValue(state.performerType, state.performerReference);
+      const resolvedPerformerValue = populateSelect(performerSelect, options, performerValue);
+      const performerActor = decodeActorValue(resolvedPerformerValue);
+      if (performerActor.type !== state.performerType || performerActor.reference !== state.performerReference) {
+        commit({ performerType: performerActor.type, performerReference: performerActor.reference }, { markTouched: false, silent: true });
+      }
+
+      const ruleValue = encodeActorValue(state.ruleChangerType, state.ruleChangerReference);
+      const resolvedRuleValue = populateSelect(ruleChangerSelect, options, ruleValue);
+      const ruleActor = decodeActorValue(resolvedRuleValue);
+      if (ruleActor.type !== state.ruleChangerType || ruleActor.reference !== state.ruleChangerReference) {
+        commit({ ruleChangerType: ruleActor.type, ruleChangerReference: ruleActor.reference }, { markTouched: false, silent: true });
+      }
+
+      const updatedState = actionState();
+      const enableRadio = updatedState.enabled ? 'enabled' : 'disabled';
+      enabledRadios.forEach((input) => {
+        input.checked = input.value === enableRadio;
+      });
+
+      setControlsDisabled(!updatedState.enabled);
+      syncIdentityField(
+        updatedState.performerType,
+        performerIdentityMount,
+        performerIdentityInput,
+        updatedState.enabled,
+        updatedState.performerReference
+      );
+      syncIdentityField(
+        updatedState.ruleChangerType,
+        ruleChangerIdentityMount,
+        ruleChangerIdentityInput,
+        updatedState.enabled,
+        updatedState.ruleChangerReference
+      );
+
+      if (allowAuthorizedNoneInput) {
+        allowAuthorizedNoneInput.checked = Boolean(updatedState.allowChangeAuthorizedToNone);
+      }
+      if (allowAdminNoneInput) {
+        allowAdminNoneInput.checked = Boolean(updatedState.allowChangeAdminToNone);
+      }
+      if (allowSelfChangeInput) {
+        allowSelfChangeInput.checked = Boolean(updatedState.allowSelfChangeAdmin);
+      }
+
+      applyValidation(updatedState, { silent: !announce });
+    }
+
     enabledRadios.forEach((input) => {
-      input.checked = input.value === enableRadio;
+      input.addEventListener('change', () => {
+        const enable = input.value === 'enabled';
+        commit({ enabled: enable }, { silent: true });
+        if (!enable) {
+          commit(
+            {
+              performerType: 'none',
+              performerReference: '',
+              allowChangeAuthorizedToNone: false,
+              allowChangeAdminToNone: false,
+              allowSelfChangeAdmin: false
+            },
+            { markTouched: false, silent: true }
+          );
+        }
+        sync({ announce: false });
+      });
     });
 
-    setControlsDisabled(!updatedState.enabled);
-    syncIdentityField(
-      updatedState.performerType,
-      performerIdentityMount,
-      performerIdentityInput,
-      updatedState.enabled,
-      updatedState.performerReference
-    );
-    syncIdentityField(
-      updatedState.ruleChangerType,
-      ruleChangerIdentityMount,
-      ruleChangerIdentityInput,
-      updatedState.enabled,
-      updatedState.ruleChangerReference
-    );
+    if (performerSelect) {
+      performerSelect.addEventListener('change', () => {
+        const actor = decodeActorValue(performerSelect.value);
+        commit({ performerType: actor.type, performerReference: actor.reference });
+        sync({ announce: false });
+      });
+    }
+
+    if (ruleChangerSelect) {
+      ruleChangerSelect.addEventListener('change', () => {
+        const actor = decodeActorValue(ruleChangerSelect.value);
+        commit({ ruleChangerType: actor.type, ruleChangerReference: actor.reference });
+        sync({ announce: false });
+      });
+    }
+
+    if (performerIdentityInput) {
+      performerIdentityInput.addEventListener('input', () => {
+        commit({ performerReference: performerIdentityInput.value.trim() });
+      });
+    }
+
+    if (ruleChangerIdentityInput) {
+      ruleChangerIdentityInput.addEventListener('input', () => {
+        commit({ ruleChangerReference: ruleChangerIdentityInput.value.trim() });
+      });
+    }
 
     if (allowAuthorizedNoneInput) {
-      allowAuthorizedNoneInput.checked = Boolean(updatedState.allowChangeAuthorizedToNone);
+      allowAuthorizedNoneInput.addEventListener('change', () => {
+        commit({ allowChangeAuthorizedToNone: Boolean(allowAuthorizedNoneInput.checked) }, { silent: true });
+        applyValidation(actionState(), { silent: true });
+      });
     }
+
     if (allowAdminNoneInput) {
-      allowAdminNoneInput.checked = Boolean(updatedState.allowChangeAdminToNone);
+      allowAdminNoneInput.addEventListener('change', () => {
+        commit({ allowChangeAdminToNone: Boolean(allowAdminNoneInput.checked) }, { silent: true });
+        applyValidation(actionState(), { silent: true });
+      });
     }
+
     if (allowSelfChangeInput) {
-      allowSelfChangeInput.checked = Boolean(updatedState.allowSelfChangeAdmin);
+      allowSelfChangeInput.addEventListener('change', () => {
+        commit({ allowSelfChangeAdmin: Boolean(allowSelfChangeInput.checked) }, { silent: true });
+        applyValidation(actionState(), { silent: true });
+      });
     }
 
-    applyValidation(updatedState, { silent: !announce });
-  }
+    // Special handling for manualMint destination fields
+    if (key === 'manualMint') {
+      const destinationRadios = Array.from(form.querySelectorAll('input[name="manual-mint-destination"]'));
+      const destinationIdentityInput = form.querySelector('#manual-mint-destination-id');
+      const allowCustomDestinationCheckbox = form.querySelector('#manual-mint-allow-custom-destination');
 
-  enabledRadios.forEach((input) => {
-    input.addEventListener('change', () => {
-      const enable = input.value === 'enabled';
-      commit({ enabled: enable }, { silent: true });
-      if (!enable) {
-        commit(
-          {
-            performerType: 'none',
-            performerReference: '',
-            allowChangeAuthorizedToNone: false,
-            allowChangeAdminToNone: false,
-            allowSelfChangeAdmin: false
-          },
-          { markTouched: false, silent: true }
-        );
-      }
-      sync({ announce: false });
-    });
-  });
-
-  if (performerSelect) {
-    performerSelect.addEventListener('change', () => {
-      const actor = decodeActorValue(performerSelect.value);
-      commit({ performerType: actor.type, performerReference: actor.reference });
-      sync({ announce: false });
-    });
-  }
-
-  if (ruleChangerSelect) {
-    ruleChangerSelect.addEventListener('change', () => {
-      const actor = decodeActorValue(ruleChangerSelect.value);
-      commit({ ruleChangerType: actor.type, ruleChangerReference: actor.reference });
-      sync({ announce: false });
-    });
-  }
-
-  if (performerIdentityInput) {
-    performerIdentityInput.addEventListener('input', () => {
-      commit({ performerReference: performerIdentityInput.value.trim() });
-    });
-  }
-
-  if (ruleChangerIdentityInput) {
-    ruleChangerIdentityInput.addEventListener('input', () => {
-      commit({ ruleChangerReference: ruleChangerIdentityInput.value.trim() });
-    });
-  }
-
-  if (allowAuthorizedNoneInput) {
-    allowAuthorizedNoneInput.addEventListener('change', () => {
-      commit({ allowChangeAuthorizedToNone: Boolean(allowAuthorizedNoneInput.checked) }, { silent: true });
-      applyValidation(actionState(), { silent: true });
-    });
-  }
-
-  if (allowAdminNoneInput) {
-    allowAdminNoneInput.addEventListener('change', () => {
-      commit({ allowChangeAdminToNone: Boolean(allowAdminNoneInput.checked) }, { silent: true });
-      applyValidation(actionState(), { silent: true });
-    });
-  }
-
-  if (allowSelfChangeInput) {
-    allowSelfChangeInput.addEventListener('change', () => {
-      commit({ allowSelfChangeAdmin: Boolean(allowSelfChangeInput.checked) }, { silent: true });
-      applyValidation(actionState(), { silent: true });
-    });
-  }
-
-  // Special handling for manualMint destination fields
-  if (key === 'manualMint') {
-    const destinationRadios = Array.from(form.querySelectorAll('input[name="manual-mint-destination"]'));
-    const destinationIdentityInput = form.querySelector('#manual-mint-destination-id');
-    const allowCustomDestinationCheckbox = form.querySelector('#manual-mint-allow-custom-destination');
-
-    if (destinationRadios.length > 0) {
-      destinationRadios.forEach((radio) => {
-        radio.addEventListener('change', () => {
-          const destinationType = radio.value; // 'contract-owner' or 'default-identity'
-          commit({ destinationType }, { silent: true });
+      if (destinationRadios.length > 0) {
+        destinationRadios.forEach((radio) => {
+          radio.addEventListener('change', () => {
+            const destinationType = radio.value; // 'contract-owner' or 'default-identity'
+            commit({ destinationType }, { silent: true });
+          });
         });
-      });
-    }
+      }
 
-    if (destinationIdentityInput) {
-      destinationIdentityInput.addEventListener('input', () => {
-        commit({ destinationIdentity: destinationIdentityInput.value.trim() });
-      });
-    }
+      if (destinationIdentityInput) {
+        destinationIdentityInput.addEventListener('input', () => {
+          commit({ destinationIdentity: destinationIdentityInput.value.trim() });
+        });
+      }
 
-    if (allowCustomDestinationCheckbox) {
-      allowCustomDestinationCheckbox.addEventListener('change', () => {
-        commit({ allowCustomDestination: Boolean(allowCustomDestinationCheckbox.checked) }, { silent: true });
-      });
-    }
+      if (allowCustomDestinationCheckbox) {
+        allowCustomDestinationCheckbox.addEventListener('change', () => {
+          commit({ allowCustomDestination: Boolean(allowCustomDestinationCheckbox.checked) }, { silent: true });
+        });
+      }
 
-    // Sync destination fields to UI
-    const state = actionState();
-    if (state.destinationType) {
-      const destinationRadio = destinationRadios.find(r => r.value === state.destinationType);
-      if (destinationRadio) {
-        destinationRadio.checked = true;
+      // Sync destination fields to UI
+      const state = actionState();
+      if (state.destinationType) {
+        const destinationRadio = destinationRadios.find(r => r.value === state.destinationType);
+        if (destinationRadio) {
+          destinationRadio.checked = true;
+        }
+      }
+      if (destinationIdentityInput && state.destinationIdentity) {
+        destinationIdentityInput.value = state.destinationIdentity;
+      }
+      if (allowCustomDestinationCheckbox) {
+        allowCustomDestinationCheckbox.checked = Boolean(state.allowCustomDestination);
       }
     }
-    if (destinationIdentityInput && state.destinationIdentity) {
-      destinationIdentityInput.value = state.destinationIdentity;
-    }
-    if (allowCustomDestinationCheckbox) {
-      allowCustomDestinationCheckbox.checked = Boolean(state.allowCustomDestination);
-    }
+
+    return {
+      sync
+    };
   }
 
-  return {
-    sync
-  };
-}
-
-function syncManualActionUIs({ announce = false } = {}) {
-  MANUAL_ACTION_DEFINITIONS.forEach(({ key }) => {
-    const ui = manualActionUIs[key];
-    if (ui && typeof ui.sync === 'function') {
-      ui.sync({ announce });
-    }
-  });
-}
+  function syncManualActionUIs({ announce = false } = {}) {
+    MANUAL_ACTION_DEFINITIONS.forEach(({ key }) => {
+      const ui = manualActionUIs[key];
+      if (ui && typeof ui.sync === 'function') {
+        ui.sync({ announce });
+      }
+    });
+  }
 
   function createDistributionUI(form) {
     if (!form) {
@@ -8020,13 +8154,13 @@ function syncManualActionUIs({ announce = false } = {}) {
   }
 
   function buildMarketplaceRules(tradeMode) {
-    const normalized = ['permissionless', 'approvalRequired', 'closed'].includes(tradeMode)
-      ? tradeMode
-      : 'permissionless';
+    if (tradeMode && tradeMode !== 'closed') {
+      console.warn('Only NotTradeable tokens are supported; forcing trade mode to closed.');
+    }
     return {
-      tradeMode: normalized,
-      allowSecondaryMarkets: normalized !== 'closed',
-      allowAtomicSwaps: normalized === 'permissionless'
+      tradeMode: 'closed',
+      allowSecondaryMarkets: false,
+      allowAtomicSwaps: false
     };
   }
 
@@ -8112,33 +8246,33 @@ function syncManualActionUIs({ announce = false } = {}) {
     };
   }
 
-function buildManualActionRulesConfig(actionState, permissions) {
-  if (!actionState || !actionState.enabled) {
+  function buildManualActionRulesConfig(actionState, permissions) {
+    if (!actionState || !actionState.enabled) {
+      return {
+        authorizedToMakeChange: { kind: 'NoOne' },
+        adminActionTakers: { kind: 'NoOne' },
+        changingAuthorizedActionTakersToNoOneAllowed: false,
+        changingAdminActionTakersToNoOneAllowed: false,
+        selfChangingAdminActionTakersAllowed: false
+      };
+    }
+
     return {
-      authorizedToMakeChange: { kind: 'NoOne' },
-      adminActionTakers: { kind: 'NoOne' },
-      changingAuthorizedActionTakersToNoOneAllowed: false,
-      changingAdminActionTakersToNoOneAllowed: false,
-      selfChangingAdminActionTakersAllowed: false
+      authorizedToMakeChange: buildAuthorizedActionTakersFromConfig(
+        actionState.ruleChangerType,
+        actionState.ruleChangerReference,
+        permissions
+      ),
+      adminActionTakers: buildAuthorizedActionTakersFromConfig(
+        actionState.performerType,
+        actionState.performerReference,
+        permissions
+      ),
+      changingAuthorizedActionTakersToNoOneAllowed: Boolean(actionState.allowChangeAuthorizedToNone),
+      changingAdminActionTakersToNoOneAllowed: Boolean(actionState.allowChangeAdminToNone),
+      selfChangingAdminActionTakersAllowed: Boolean(actionState.allowSelfChangeAdmin)
     };
   }
-
-  return {
-    authorizedToMakeChange: buildAuthorizedActionTakersFromConfig(
-      actionState.ruleChangerType,
-      actionState.ruleChangerReference,
-      permissions
-    ),
-    adminActionTakers: buildAuthorizedActionTakersFromConfig(
-      actionState.performerType,
-      actionState.performerReference,
-      permissions
-    ),
-    changingAuthorizedActionTakersToNoOneAllowed: Boolean(actionState.allowChangeAuthorizedToNone),
-    changingAdminActionTakersToNoOneAllowed: Boolean(actionState.allowChangeAdminToNone),
-    selfChangingAdminActionTakersAllowed: Boolean(actionState.allowSelfChangeAdmin)
-  };
-}
 
   function buildAdvancedConfiguration() {
     const permissions = wizardState.form.permissions || {};
@@ -8158,7 +8292,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
     }
     const keepsHistory = normalizeKeepsHistory(permissions.keepsHistory);
     const changeControl = normalizeChangeControl(advanced.changeControl);
-    const tradeMode = typeof advanced.tradeMode === 'string' ? advanced.tradeMode : 'permissionless';
+    const tradeMode = 'closed';
 
     const adminRule = createChangeRule(changeControl.admin);
     const freezeRules = buildFreezeRulesConfig(permissions.freeze, permissions, { disabled: !changeControl.freeze });
@@ -8166,8 +8300,8 @@ function buildManualActionRulesConfig(actionState, permissions) {
     const destroyRule = createChangeRule(changeControl.destroyFrozen);
     const emergencyRule = createChangeRule(changeControl.emergency);
     const directPurchaseRule = createChangeRule(changeControl.directPurchase);
-  const manualMintRules = buildManualActionRulesConfig(permissions.manualMint, permissions);
-  const manualBurnRules = buildManualActionRulesConfig(permissions.manualBurn, permissions);
+    const manualMintRules = buildManualActionRulesConfig(permissions.manualMint, permissions);
+    const manualBurnRules = buildManualActionRulesConfig(permissions.manualBurn, permissions);
 
     return {
       conventions: {
@@ -8576,7 +8710,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
     // Add advanced settings
     if (wizardState.form.advanced) {
       payload.marketplace = {
-        trade_mode: wizardState.form.advanced.tradeMode || 'permissionless'
+        trade_mode: 'closed'
       };
       payload.change_control = wizardState.form.advanced.changeControl || {};
     }
@@ -9029,22 +9163,13 @@ function buildManualActionRulesConfig(actionState, permissions) {
     // Helper: Transform marketplace rules
     function transformMarketplaceRules() {
       const tradeMode = wizardState.form.advanced?.tradeMode;
-
-      // Map wizard values to Platform enum values
-      let platformTradeMode;
-      if (tradeMode === 'permissionless') {
-        platformTradeMode = 'Permissionless';
-      } else if (tradeMode === 'approvalRequired') {
-        platformTradeMode = 'ApprovalRequired';
-      } else if (tradeMode === 'closed') {
-        platformTradeMode = 'NotTradeable';
-      } else {
-        platformTradeMode = 'Permissionless'; // Default to permissionless
+      if (tradeMode && tradeMode !== 'closed') {
+        console.warn('Only NotTradeable trade mode is supported; forcing closed.');
       }
 
       return {
         $format_version: '0',
-        tradeMode: platformTradeMode,
+        tradeMode: 'NotTradeable',
         tradeModeChangeRules: createPermissionChangeRule(wizardState.form.permissions.marketplaceTradeMode)
       };
     }
@@ -9186,8 +9311,10 @@ function buildManualActionRulesConfig(actionState, permissions) {
     // Build Platform contract structure
     const platformContract = {
       $format_version: '1',
-      id: '<generated-by-platform>',  // Platform generates this
-      ownerId: '<from-identity>',     // Comes from identity during registration
+      // TODO: We should generate this one based on owner ID
+      id: '6DsX9gnYqtkM9SmdfyqMeBaX323mD5AJCnQYjdJmt8jk',  // Platform generates this
+      // TODO: Should be asked from user?
+      ownerId: '6DsX9gnYqtkM9SmdfyqMeBaX323mD5AJCnQYjdJmt8jk',     // Comes from identity during registration
       version: 1,
       config: {
         $format_version: '0',
@@ -9623,9 +9750,9 @@ function buildManualActionRulesConfig(actionState, permissions) {
     const originalState = {
       active: wizardState.active,
       furthestValidIndex: wizardState.furthestValidIndex,
-      steps: {...wizardState.steps},
-      form: {...wizardState.form},
-      runtime: {...wizardState.runtime}
+      steps: { ...wizardState.steps },
+      form: { ...wizardState.form },
+      runtime: { ...wizardState.runtime }
     };
 
     // Temporarily replace wizardState properties
@@ -9670,8 +9797,8 @@ function buildManualActionRulesConfig(actionState, permissions) {
 
     // Check if registration JSON preview is visible
     const registrationJsonVisible = registrationJsonPreview &&
-                                   !registrationJsonPreview.hasAttribute('hidden') &&
-                                   wizardState.form.registration.method === 'det';
+      !registrationJsonPreview.hasAttribute('hidden') &&
+      wizardState.form.registration.method === 'det';
 
     // Only update if something is visible
     if (!modalVisible && !registrationJsonVisible) {
@@ -9815,7 +9942,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
     console.log('Initializing live contract preview...');
 
     // Listen to all input changes globally
-    document.addEventListener('input', function(event) {
+    document.addEventListener('input', function (event) {
       const target = event.target;
 
       // Check if the input is part of a wizard form
@@ -9830,7 +9957,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
     });
 
     // Also listen to change events for checkboxes and radios
-    document.addEventListener('change', function(event) {
+    document.addEventListener('change', function (event) {
       const target = event.target;
 
       if (target.matches('input[type="checkbox"], input[type="radio"]')) {
@@ -9858,7 +9985,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
 })();
 
 // Export Configuration Screen - Button Handlers and Live Preview
-(function() {
+(function () {
   'use strict';
 
   function initializeExportScreen() {
@@ -9878,11 +10005,11 @@ function buildManualActionRulesConfig(actionState, permissions) {
           if (window.EvoSDK && window.EvoSDK.DataContract) {
             try {
               // Validate by attempting to create DataContract from JSON
-              await window.EvoSDK.DataContract.fromJSON(contractJSON);
+              await window.EvoSDK.DataContract.fromJSON(contractJSON, 10);
               console.log('✓ Contract JSON validated successfully with Evo SDK');
             } catch (validationError) {
-              console.warn('Contract validation warning:', validationError);
-              // Continue anyway - user may want to see/edit the JSON
+              console.warn('Contract validation warning:', validationError.message);
+              // Continue anyway - user may want to see/edit the JSONx  
             }
           }
 
@@ -9938,10 +10065,10 @@ function buildManualActionRulesConfig(actionState, permissions) {
           if (window.EvoSDK && window.EvoSDK.DataContract) {
             try {
               // Validate by attempting to create DataContract from JSON
-              await window.EvoSDK.DataContract.fromJSON(contractJSON);
+              await window.EvoSDK.DataContract.fromJSON(contractJSON, 10);
               console.log('✓ Contract JSON validated successfully with Evo SDK');
             } catch (validationError) {
-              console.warn('Contract validation warning:', validationError);
+              console.error('Contract validation warning:', validationError.message);
               // Continue anyway - user may want to see/edit the JSON
             }
           }
@@ -10030,7 +10157,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
     // Listen for state changes and update preview
     const originalPersistState = window.persistState;
     if (typeof originalPersistState === 'function') {
-      window.persistState = function() {
+      window.persistState = function () {
         originalPersistState.apply(this, arguments);
         updateExportPreview();
       };
@@ -10206,7 +10333,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
 
   if (addStepwiseBtn && stepwiseContainer) {
     let stepwiseIndex = 1;
-    addStepwiseBtn.addEventListener('click', function() {
+    addStepwiseBtn.addEventListener('click', function () {
       const entry = document.createElement('div');
       entry.className = 'field-group stepwise-entry';
       entry.setAttribute('data-entry-index', stepwiseIndex);
@@ -10221,7 +10348,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
       stepwiseIndex++;
     });
 
-    stepwiseContainer.addEventListener('click', function(e) {
+    stepwiseContainer.addEventListener('click', function (e) {
       if (e.target.hasAttribute('data-remove-stepwise')) {
         const entry = e.target.closest('.stepwise-entry');
         if (stepwiseContainer.querySelectorAll('.stepwise-entry').length > 1) {
@@ -10237,7 +10364,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
 
   if (addPreprogrammedBtn && preprogrammedContainer) {
     let preprogrammedIndex = 1;
-    addPreprogrammedBtn.addEventListener('click', function() {
+    addPreprogrammedBtn.addEventListener('click', function () {
       const entry = document.createElement('div');
       entry.className = 'field-group preprogrammed-entry';
       entry.setAttribute('data-entry-index', preprogrammedIndex);
@@ -10262,7 +10389,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
       preprogrammedIndex++;
     });
 
-    preprogrammedContainer.addEventListener('click', function(e) {
+    preprogrammedContainer.addEventListener('click', function (e) {
       if (e.target.hasAttribute('data-remove-preprogrammed')) {
         const entry = e.target.closest('.preprogrammed-entry');
         if (preprogrammedContainer.querySelectorAll('.preprogrammed-entry').length > 1) {
@@ -10273,7 +10400,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
   }
 
   // Panel toggle functionality for radio buttons with data-toggle-panel
-  document.addEventListener('change', function(e) {
+  document.addEventListener('change', function (e) {
     if (e.target.type === 'radio') {
       const radioName = e.target.name;
       const allRadios = document.querySelectorAll(`input[name="${radioName}"]`);
@@ -10405,14 +10532,14 @@ function buildManualActionRulesConfig(actionState, permissions) {
   // Hook into the renderPermissionGroups function
   const originalRenderPermissionGroups = window.renderPermissionGroups;
   if (originalRenderPermissionGroups && typeof originalRenderPermissionGroups === 'function') {
-    window.renderPermissionGroups = function() {
+    window.renderPermissionGroups = function () {
       originalRenderPermissionGroups.apply(this, arguments);
       updateGroupSelectors();
     };
   }
 
   // Also update when panels are shown
-  document.addEventListener('change', function(e) {
+  document.addEventListener('change', function (e) {
     if (e.target.type === 'radio' && e.target.hasAttribute('data-toggle-panel')) {
       const panelId = e.target.getAttribute('data-toggle-panel');
       // Check if this is a group panel
@@ -10443,7 +10570,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
   createGroupButtonIds.forEach(buttonId => {
     const button = document.getElementById(buttonId);
     if (button) {
-      button.addEventListener('click', function(e) {
+      button.addEventListener('click', function (e) {
         e.preventDefault();
         // Navigate to the group creation page (permissions-group substep on group tab)
         // First switch to the group tab
@@ -10537,7 +10664,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
     // Enable/disable radios
     const enableRadios = document.querySelectorAll(`input[name="${page.prefix}-enable"]`);
     enableRadios.forEach(radio => {
-      radio.addEventListener('change', function() {
+      radio.addEventListener('change', function () {
         const enabled = this.value === 'enabled';
         updatePageState(page.key, { enabled });
         console.log(`${page.key} enabled:`, enabled);
@@ -10548,7 +10675,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
     if (page.hasRulesSection) {
       const performRadios = document.querySelectorAll(`input[name="${page.prefix}-perform"]`);
       performRadios.forEach(radio => {
-        radio.addEventListener('change', function() {
+        radio.addEventListener('change', function () {
           const state = getPageState(page.key);
           state.perform.type = this.value;
           updatePageState(page.key, { perform: state.perform });
@@ -10559,7 +10686,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
       // Perform identity input
       const performIdentityInput = document.getElementById(`${page.prefix}-perform-identity-id`);
       if (performIdentityInput) {
-        performIdentityInput.addEventListener('input', function() {
+        performIdentityInput.addEventListener('input', function () {
           const state = getPageState(page.key);
           state.perform.identityId = this.value.trim();
           updatePageState(page.key, { perform: state.perform });
@@ -10569,7 +10696,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
       // Perform group select
       const performGroupSelect = document.getElementById(`${page.prefix}-perform-group-id`);
       if (performGroupSelect) {
-        performGroupSelect.addEventListener('change', function() {
+        performGroupSelect.addEventListener('change', function () {
           const state = getPageState(page.key);
           state.perform.groupId = this.value;
           updatePageState(page.key, { perform: state.perform });
@@ -10581,7 +10708,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
     const rulesRadiosName = page.hasRulesSection ? `${page.prefix}-change-rules` : `${page.prefix}-rules`;
     const rulesRadios = document.querySelectorAll(`input[name="${rulesRadiosName}"]`);
     rulesRadios.forEach(radio => {
-      radio.addEventListener('change', function() {
+      radio.addEventListener('change', function () {
         const state = getPageState(page.key);
         state.changeRules.type = this.value;
         updatePageState(page.key, { changeRules: state.changeRules });
@@ -10593,7 +10720,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
     const rulesIdentityInputId = page.hasRulesSection ? `${page.prefix}-rules-identity-id` : `${page.prefix}-identity-id`;
     const rulesIdentityInput = document.getElementById(rulesIdentityInputId);
     if (rulesIdentityInput) {
-      rulesIdentityInput.addEventListener('input', function() {
+      rulesIdentityInput.addEventListener('input', function () {
         const state = getPageState(page.key);
         state.changeRules.identityId = this.value.trim();
         updatePageState(page.key, { changeRules: state.changeRules });
@@ -10604,7 +10731,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
     const rulesGroupSelectId = page.hasRulesSection ? `${page.prefix}-rules-group-id` : `${page.prefix}-group-id`;
     const rulesGroupSelect = document.getElementById(rulesGroupSelectId);
     if (rulesGroupSelect) {
-      rulesGroupSelect.addEventListener('change', function() {
+      rulesGroupSelect.addEventListener('change', function () {
         const state = getPageState(page.key);
         state.changeRules.groupId = this.value;
         updatePageState(page.key, { changeRules: state.changeRules });
@@ -10680,7 +10807,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
     });
 
     // Handle search input
-    searchInput.addEventListener('input', function(e) {
+    searchInput.addEventListener('input', function (e) {
       const query = e.target.value.toLowerCase().trim();
 
       if (query === '') {
@@ -10748,7 +10875,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
 
     // Handle clicking on search results
     subItems.forEach(subItem => {
-      subItem.addEventListener('click', function(e) {
+      subItem.addEventListener('click', function (e) {
         e.preventDefault();
         const substep = this.getAttribute('data-substep');
 
@@ -10831,7 +10958,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
 
   // Enable/disable group checkbox handler
   if (enableGroupCheckbox) {
-    enableGroupCheckbox.addEventListener('change', function() {
+    enableGroupCheckbox.addEventListener('change', function () {
       wizardState.form.group.enabled = this.checked;
       toggleGroupSections(this.checked);
       persistState();
@@ -10840,7 +10967,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
 
   // Group name input handler
   if (groupNameInput) {
-    groupNameInput.addEventListener('input', function() {
+    groupNameInput.addEventListener('input', function () {
       wizardState.form.group.name = this.value;
       persistState();
     });
@@ -10848,7 +10975,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
 
   // Group threshold input handler
   if (groupThresholdInput) {
-    groupThresholdInput.addEventListener('input', function() {
+    groupThresholdInput.addEventListener('input', function () {
       const value = parseInt(this.value, 10);
       if (!isNaN(value) && value >= 1) {
         wizardState.form.group.threshold = value;
@@ -10859,7 +10986,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
 
   // Add group member button
   if (addGroupMemberBtn && groupMembersList) {
-    addGroupMemberBtn.addEventListener('click', function() {
+    addGroupMemberBtn.addEventListener('click', function () {
       const memberId = 'member-' + Date.now();
       wizardState.form.group.members.push({
         id: memberId,
@@ -10919,7 +11046,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
 
   // Handle member input changes and removals
   if (groupMembersList) {
-    groupMembersList.addEventListener('input', function(e) {
+    groupMembersList.addEventListener('input', function (e) {
       if (e.target.hasAttribute('data-member-id')) {
         const memberId = e.target.getAttribute('data-member-id');
         const field = e.target.getAttribute('data-field');
@@ -10931,7 +11058,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
       }
     });
 
-    groupMembersList.addEventListener('click', function(e) {
+    groupMembersList.addEventListener('click', function (e) {
       if (e.target.hasAttribute('data-remove-member')) {
         const memberId = e.target.getAttribute('data-remove-member');
         const index = wizardState.form.group.members.findIndex(m => m.id === memberId);
@@ -10951,7 +11078,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
 })();
 
 // ==================== DOCUMENT TYPES MANAGEMENT ====================
-(function() {
+(function () {
   const documentTypesList = document.getElementById('document-types-list');
   const documentTypesEmpty = document.getElementById('document-types-empty');
   const documentTypeAddButton = document.getElementById('document-type-add');
@@ -12035,7 +12162,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
   // Token Templates
   const TOKEN_TEMPLATES = {
     scratch: null, // No template, start fresh
-    
+
     'simple-fixed': {
       name: 'SimpleToken',
       description: 'A basic fixed-supply token',
@@ -12057,7 +12184,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
       manualFreeze: { enabled: false },
       destroyFrozen: { enabled: false },
       emergency: { enabled: false },
-      tradeMode: 'permissionless',
+      tradeMode: 'closed',
       changeControl: {
         mint: false,
         burn: false,
@@ -12090,7 +12217,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
       manualFreeze: { enabled: false },
       destroyFrozen: { enabled: false },
       emergency: { enabled: false },
-      tradeMode: 'permissionless',
+      tradeMode: 'closed',
       changeControl: {
         mint: true,
         burn: true,
@@ -12123,7 +12250,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
       manualFreeze: { enabled: false },
       destroyFrozen: { enabled: false },
       emergency: { enabled: false },
-      tradeMode: 'permissionless',
+      tradeMode: 'closed',
       changeControl: {
         mint: true,
         burn: true,
@@ -12205,7 +12332,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
 
     // Advanced
     state.form.advanced = state.form.advanced || {};
-    state.form.advanced.tradeMode = template.tradeMode || 'permissionless';
+    state.form.advanced.tradeMode = template.tradeMode || 'closed';
     state.form.advanced.changeControl = template.changeControl || {};
 
     // Document Types
@@ -12408,7 +12535,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
         </div>
       `
     },
-    
+
     'decimals': {
       title: 'Decimals',
       content: `
@@ -12424,7 +12551,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
         </div>
       `
     },
-    
+
     'base-supply': {
       title: 'Base Supply',
       content: `
@@ -12437,7 +12564,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
         <p><strong>Tip:</strong> Consider your total planned supply and distribution schedule when setting this.</p>
       `
     },
-    
+
     'max-supply': {
       title: 'Maximum Supply',
       content: `
@@ -12458,7 +12585,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
         </div>
       `
     },
-    
+
     'keeps-history': {
       title: 'History Tracking',
       content: `
@@ -12473,18 +12600,16 @@ function buildManualActionRulesConfig(actionState, permissions) {
         <p><strong>Tip:</strong> Most tokens track transfers at minimum.</p>
       `
     },
-    
+
     'trade-mode': {
       title: 'Marketplace Trade Mode',
       content: `
-        <p>Controls who can trade your token on decentralized exchanges.</p>
-        <p><strong>Permissionless:</strong> Anyone can buy/sell freely (most common)</p>
-        <p><strong>Approval Required:</strong> Trades need approval from token owner/committee</p>
-        <p><strong>Not Tradeable:</strong> Token cannot be traded on markets (like membership badges)</p>
-        <p><strong>Tip:</strong> Use "Not Tradeable" for non-transferable rewards or credentials.</p>
+        <p>Dash Platform hasn't enabled marketplace trading yet, so every token launches as <strong>Not Tradeable</strong>.</p>
+        <p><strong>Not Tradeable:</strong> Token cannot be listed or swapped until the future marketplace upgrade.</p>
+        <p><strong>Coming soon:</strong> Permissionless and approval-based modes will unlock once trading goes live.</p>
       `
     },
-    
+
     'distribution-type': {
       title: 'Distribution Schedule',
       content: `
@@ -12495,7 +12620,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
         <p><strong>⚠️ Important:</strong> Distribution runs automatically once enabled. Make sure you control the destination address!</p>
       `
     },
-    
+
     'emission-type': {
       title: 'Emission Function',
       content: `
@@ -12510,7 +12635,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
         </div>
       `
     },
-    
+
     'manual-mint': {
       title: 'Manual Minting',
       content: `
@@ -12524,7 +12649,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
         <p><strong>⚠️ Warning:</strong> Users may be concerned about inflation. Consider enabling change control to require community approval.</p>
       `
     },
-    
+
     'manual-burn': {
       title: 'Manual Burning',
       content: `
@@ -12538,7 +12663,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
         <p><strong>Tip:</strong> Burned tokens are gone forever and cannot be recovered.</p>
       `
     },
-    
+
     'start-paused': {
       title: 'Start Paused',
       content: `
@@ -12559,7 +12684,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
   function showHelpTooltip(helpIcon, contentKey) {
     // Hide any existing tooltips
     hideAllTooltips();
-    
+
     const content = HELP_CONTENT[contentKey];
     if (!content) {
       console.warn('No help content found for:', contentKey);
@@ -12578,7 +12703,7 @@ function buildManualActionRulesConfig(actionState, permissions) {
     // Position tooltip below the help icon
     const iconRect = helpIcon.getBoundingClientRect();
     const tooltipRect = tooltip.getBoundingClientRect();
-    
+
     let left = iconRect.left;
     let top = iconRect.bottom + 8;
 
@@ -12628,9 +12753,9 @@ function buildManualActionRulesConfig(actionState, permissions) {
       icon.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        
+
         const contentKey = icon.getAttribute('data-help');
-        
+
         // Toggle tooltip
         if (icon._activeTooltip) {
           hideAllTooltips();
