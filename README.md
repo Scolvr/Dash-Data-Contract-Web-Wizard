@@ -96,10 +96,13 @@ open index.html
 For development or testing with the mock validation endpoint:
 
 ```bash
-# Start the development server
-node server.js
+# Install dependencies
+npm install
 
-# Open in browser
+# Start the development server (http://localhost:5173)
+npm run dev
+
+# In another terminal, open the app in your browser
 open http://localhost:5173
 ```
 
@@ -243,10 +246,26 @@ The development server provides:
 
 ### Testing
 
+#### Automated Playwright suite
+
+The e2e suite fuzzes several token configurations and ensures the registration step never shows “Contract validation failed”.
+
+```bash
+npm run test:e2e
+```
+
+If you install a fresh version of Playwright, download the browser binaries once:
+
+```bash
+npx playwright install
+```
+
+#### Manual smoke test
+
 - Open the wizard in your browser
-- Test the multi-step flow manually
+- Walk through the multi-step flow
 - Try different registration methods
-- Validation endpoint returns valid responses during local development
+- The mock `/api/validate` endpoint returns valid responses during local development
 
 ### Contributing
 
