@@ -513,17 +513,21 @@
           <!-- Right Side Guide Panel -->
           <aside class="page-guide" aria-label="Page guide">
             <div class="page-guide__content">
-              <h2 class="page-guide__title">Basic Token Name</h2>
-              <p class="page-guide__intro">Give your token its main identity — this is the name others will see and
-                recognize.</p>
+              <h2 class="page-guide__title">Token Owner & Name</h2>
+              <p class="page-guide__intro">Identify yourself as the contract owner and give your token its identity.</p>
 
               <div class="page-guide__section">
                 <h3 class="page-guide__section-title">Guide</h3>
-                <p>Enter a clear and professional name (e.g. MyToken). Avoid special characters. Then click Continue to
-                  set up localizations.</p>
+                <p><strong>Start by entering your owner identity ID, then provide your token name.</strong> Without a valid identity ID, you cannot proceed to registration.</p>
 
                 <h4 class="page-guide__step-heading">What to Enter</h4>
                 <ol class="page-guide__steps">
+                  <li>
+                    <strong>Owner Identity ID</strong>
+                    <p><strong>REQUIRED FIRST:</strong> Your Base58-encoded Dash Platform identity ID (43-44 characters). This permanently identifies you as the contract owner.</p>
+                    <p><em>Example: "4hKFP3mFB9vku8VJKcZvwVN123..."</em></p>
+                    <p style="color: var(--color-warning); margin-top: var(--space-2);"><strong>⚠️ Without a valid identity ID, you cannot access the Registration step.</strong></p>
+                  </li>
                   <li>
                     <strong>Token Name</strong>
                     <p>Choose a unique and descriptive name for your token (2–64 characters). This is the primary
@@ -557,10 +561,30 @@
 
           <div class="wizard-screen__inner">
             <form class="wizard-form" id="naming-form" novalidate>
-              <h1 class="wizard-screen__title" id="title-naming" tabindex="-1">What would you like to name your token?
+              <h1 class="wizard-screen__title" id="title-naming" tabindex="-1">Token Owner & Name
               </h1>
-              <p class="wizard-screen__subtitle">Give your token a memorable name that users will recognize and trust.
+              <p class="wizard-screen__subtitle">Identify yourself as the contract owner and give your token a memorable name.
               </p>
+
+              <!-- Owner Identity Card -->
+              <div class="form-card" style="max-width: 100%;">
+                <div class="form-card__header">
+                  <h3 class="form-card__title">Contract Owner</h3>
+                  <p class="form-card__description">Your Dash Platform identity ID - this identifies you as the contract owner and cannot be changed later</p>
+                </div>
+                <div class="form-card__body">
+                  <div class="field-group">
+                    <label class="wizard-field__label" for="owner-identity-id">
+                      Owner Identity ID *
+                    </label>
+                    <input class="wizard-field__input" id="owner-identity-id" name="owner-identity-id" type="text"
+                      inputmode="text" autocomplete="off" placeholder="e.g., 4hKFP3mFB9vku8VJKcZvwVN123..." required
+                      minlength="43" maxlength="44" aria-describedby="owner-identity-message">
+                    <span class="field-hint">43-44 characters • Your Base58-encoded Dash Platform identity ID</span>
+                    <p class="wizard-field__message" id="owner-identity-message" role="status" aria-live="polite"></p>
+                  </div>
+                </div>
+              </div>
 
               <!-- Token Name Card -->
               <div class="form-card" style="max-width: 100%;">

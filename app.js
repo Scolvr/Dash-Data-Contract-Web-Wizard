@@ -454,6 +454,7 @@
       },
       form: {
         tokenName: '',
+        ownerIdentityId: '',
         naming: {
           singular: '',
           plural: '',
@@ -867,6 +868,8 @@
 
   const tokenNameInput = document.getElementById('token-name');
   const tokenNameMessage = document.getElementById('token-name-message');
+  const ownerIdentityInput = document.getElementById('owner-identity-id');
+  const ownerIdentityMessage = document.getElementById('owner-identity-message');
   const namingNextButton = document.getElementById('naming-next');
   const namingLocalizationNextButton = document.getElementById('naming-localization-next');
 
@@ -1205,6 +1208,11 @@
   if (tokenNameInput) {
     tokenNameInput.addEventListener('input', handleNamingInput);
     tokenNameInput.addEventListener('blur', () => evaluateNaming({ touched: true }));
+  }
+
+  if (ownerIdentityInput) {
+    ownerIdentityInput.addEventListener('input', handleNamingInput);
+    ownerIdentityInput.addEventListener('blur', () => evaluateNaming({ touched: true }));
   }
 
   // Plural field and capitalize checkbox
@@ -1910,6 +1918,7 @@
     syncIdentityUI();
 
     tokenNameInput.value = wizardState.form.tokenName || '';
+    ownerIdentityInput.value = wizardState.form.ownerIdentityId || '';
 
     ensureNamingFormState();
     renderLocalizationRows(wizardState.form.naming.rows);
@@ -2438,6 +2447,31 @@
 
     wizardState.form.tokenName = rawValue;
 
+    // Validate owner identity ID
+    const rawIdentity = ownerIdentityInput.value;
+    const identityResult = validateBase58Identity(rawIdentity);
+
+    if (touched || !silent) {
+      ownerIdentityMessage.textContent = identityResult.valid ? '' : identityResult.message;
+    } else {
+      ownerIdentityMessage.textContent = '';
+    }
+
+    // Visual feedback for identity
+    if (rawIdentity.trim().length > 0) {
+      if (identityResult.valid) {
+        ownerIdentityInput.classList.remove('wizard-field__input--error');
+        ownerIdentityInput.classList.add('wizard-field__input--valid');
+      } else {
+        ownerIdentityInput.classList.remove('wizard-field__input--valid');
+        ownerIdentityInput.classList.add('wizard-field__input--error');
+      }
+    } else {
+      ownerIdentityInput.classList.remove('wizard-field__input--valid', 'wizard-field__input--error');
+    }
+
+    wizardState.form.ownerIdentityId = rawIdentity;
+
     // Validate plural form (using token name as singular)
     const plural = tokenPluralInput.value.trim();
     let pluralValid = true;
@@ -2478,7 +2512,7 @@
     wizardState.form.naming.capitalize = tokenCapitalizeInput.checked;
 
     const localizationResult = validateLocalizationRows({ touched, silent });
-    const isValid = nameResult.valid && pluralValid && localizationResult.valid;
+    const isValid = nameResult.valid && identityResult.valid && pluralValid && localizationResult.valid;
 
     namingNextButton.disabled = !isValid;
 
@@ -3530,6 +3564,25 @@
       return { valid: false, message: 'Use letters, numbers, spaces, hyphen, underscore, or emoji only.', normalized: trimmed };
     }
     return { valid: true, message: '', normalized: trimmed };
+  }
+
+  function validateBase58Identity(rawValue) {
+    const trimmed = rawValue.trim();
+    if (trimmed !== rawValue) {
+      return { valid: false, message: 'Remove leading or trailing spaces.' };
+    }
+    if (trimmed.length === 0) {
+      return { valid: false, message: 'Owner identity ID is required.' };
+    }
+    if (trimmed.length < 43 || trimmed.length > 44) {
+      return { valid: false, message: 'Identity ID must be 43-44 characters.' };
+    }
+    // Base58 alphabet: 123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz
+    const base58Pattern = /^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$/;
+    if (!base58Pattern.test(trimmed)) {
+      return { valid: false, message: 'Invalid Base58 format. Use only Base58 characters.' };
+    }
+    return { valid: true, message: '' };
   }
 
   function applyTokenNameValidation(result, options = {}) {
@@ -5415,6 +5468,9 @@
         if (typeof form.tokenName === 'string') {
           state.form.tokenName = form.tokenName;
         }
+        if (typeof form.ownerIdentityId === 'string') {
+          state.form.ownerIdentityId = form.ownerIdentityId;
+        }
 
         if (form.naming && typeof form.naming === 'object') {
           const namingForm = form.naming;
@@ -5675,6 +5731,7 @@
         }, {}),
         form: {
           tokenName: wizardState.form.tokenName,
+          ownerIdentityId: wizardState.form.ownerIdentityId,
           naming: {
             rows: limitedRows.map((row) => ({
               code: row.code || '',
@@ -9309,12 +9366,11 @@
     }
 
     // Build Platform contract structure
+    const ownerIdentity = wizardState.form.ownerIdentityId?.trim() || '<owner-identity-required>';
     const platformContract = {
       $format_version: '1',
-      // TODO: We should generate this one based on owner ID
-      id: '6DsX9gnYqtkM9SmdfyqMeBaX323mD5AJCnQYjdJmt8jk',  // Platform generates this
-      // TODO: Should be asked from user?
-      ownerId: '6DsX9gnYqtkM9SmdfyqMeBaX323mD5AJCnQYjdJmt8jk',     // Comes from identity during registration
+      id: '<generated-by-platform>',  // Platform generates this during registration
+      ownerId: ownerIdentity,           // User-provided owner identity ID
       version: 1,
       config: {
         $format_version: '0',
