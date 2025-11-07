@@ -2185,6 +2185,12 @@ html[data-theme='dark'] .spec-badge {
   background: var(--color-primary-light);
 }
 
+/* Error card variant */
+.form-card--error {
+  border-color: var(--color-error);
+  background: var(--color-error-light);
+}
+
 /* Export Options */
 .export-option {
   display: flex;

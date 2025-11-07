@@ -705,6 +705,7 @@
   // FIXED: Use correct selector for substep navigation items
   const subpathItems = Array.from(document.querySelectorAll('.wizard-nav-subitem'));
   let manualNavigationActive = false;
+  let registrationValidationSequence = 0;
 
   progressItems.forEach((item) => {
     item.setAttribute('role', 'button');
@@ -838,6 +839,12 @@
   const distributionForm = document.getElementById('distribution-form');
   const advancedForm = document.getElementById('advanced-form');
   const registrationForm = document.getElementById('registration-form');
+  const registrationValidationCard = document.getElementById('registration-validation-card');
+  const registrationValidationBody = document.getElementById('registration-validation-body');
+  const registrationValidationFallbackHTML = '<p><strong>You\'re almost done!</strong></p><p style=\"margin-bottom: 0;\">Your token is configured and ready to go. Now you just need to publish it to the Dash Platform. Choose the method that works best for you below.</p>';
+  const registrationValidationDefaultHTML = registrationValidationBody
+    ? registrationValidationBody.innerHTML || registrationValidationFallbackHTML
+    : registrationValidationFallbackHTML;
   const groupMainPositionInput = document.getElementById('group-main-position');
   const groupAddButton = document.getElementById('group-add');
   const groupListElement = document.getElementById('group-list');
@@ -1675,6 +1682,11 @@
   document.addEventListener('keydown', handleEscapeShortcut);
   window.addEventListener('unhandledrejection', handleChunkLoadRejection);
   window.addEventListener('error', handleChunkLoadError, true);
+  window.addEventListener('evo:sdk-ready', () => {
+    if (getPrimaryStepId(wizardState.active) === 'registration') {
+      validateRegistrationContract();
+    }
+  });
 
   // ═══════════════════════════════════════════════════════════════════════════
   // Pre-Programmed Distribution UI
@@ -3236,6 +3248,116 @@
     syncWizardReadiness();
   }
 
+  function setRegistrationValidationState({ variant = 'pending', title = '', message = '' } = {}) {
+    if (!registrationValidationCard || !registrationValidationBody) {
+      return;
+    }
+    registrationValidationCard.hidden = false;
+    registrationValidationCard.classList.remove('form-card--error', 'form-card--highlight');
+
+    if (variant === 'success') {
+      registrationValidationCard.classList.add('form-card--highlight');
+      registrationValidationBody.innerHTML = registrationValidationDefaultHTML;
+      return;
+    }
+
+    if (variant === 'error') {
+      registrationValidationCard.classList.add('form-card--error');
+    } else {
+      registrationValidationCard.classList.add('form-card--highlight');
+    }
+
+    registrationValidationBody.innerHTML = '';
+
+    if (title) {
+      const heading = document.createElement('p');
+      const strong = document.createElement('strong');
+      strong.textContent = title;
+      heading.appendChild(strong);
+      registrationValidationBody.appendChild(heading);
+    }
+
+    const paragraph = document.createElement('p');
+    paragraph.style.marginBottom = '0';
+    paragraph.textContent = message || 'Generating your contract and checking it with the Dash Evo SDK.';
+    registrationValidationBody.appendChild(paragraph);
+  }
+
+  function getReadableErrorMessage(error, fallback = 'Unknown error.') {
+    if (!error) {
+      return fallback;
+    }
+    if (typeof error === 'string') {
+      return error;
+    }
+    if (typeof error.message === 'string' && error.message.trim()) {
+      return error.message;
+    }
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return fallback;
+    }
+  }
+
+  async function validateRegistrationContract() {
+    if (!registrationValidationCard || !registrationValidationBody) {
+      return;
+    }
+    registrationValidationSequence += 1;
+    const sequence = registrationValidationSequence;
+    const pendingMessage = 'Generating your contract and checking it with the Dash Evo SDK.';
+    setRegistrationValidationState({
+      variant: 'pending',
+      title: 'Validating contract…',
+      message: pendingMessage
+    });
+
+    let contractJSON;
+    try {
+      contractJSON = generatePlatformContractJSON();
+    } catch (error) {
+      if (sequence === registrationValidationSequence) {
+        const message = getReadableErrorMessage(error, 'Unable to generate your contract.');
+        setRegistrationValidationState({
+          variant: 'error',
+          title: 'Contract generation failed',
+          message
+        });
+      }
+      return;
+    }
+
+    if (!window.EvoSDK || !window.EvoSDK.DataContract || typeof window.EvoSDK.DataContract.fromJSON !== 'function') {
+      if (sequence === registrationValidationSequence) {
+        setRegistrationValidationState({
+          variant: 'error',
+          title: 'Validation unavailable',
+          message: 'Dash Evo SDK is still loading. Reopen this step once the SDK finishes initializing.'
+        });
+      }
+      return;
+    }
+
+    try {
+      await window.EvoSDK.DataContract.fromJSON(contractJSON, 10);
+      if (sequence !== registrationValidationSequence) {
+        return;
+      }
+      setRegistrationValidationState({ variant: 'success' });
+    } catch (error) {
+      if (sequence !== registrationValidationSequence) {
+        return;
+      }
+      const message = getReadableErrorMessage(error, 'Dash Evo SDK reported a validation error.');
+      setRegistrationValidationState({
+        variant: 'error',
+        title: 'Contract validation failed',
+        message
+      });
+    }
+  }
+
   function syncWizardReadiness({ refreshStatus = false } = {}) {
     wizardReadiness.hasQr = Boolean(wizardState.form.registration.preflight.mobile.qrGenerated);
     wizardReadiness.hasJson = Boolean(wizardState.form.registration.preflight.det.jsonDisplayed);
@@ -4734,6 +4856,13 @@
     if (screenId === 'search' || getPrimaryStepId(screenId) === 'search') {
       requestAnimationFrame(() => {
         syncSearchUI();
+      });
+    }
+
+    // Validate contract when showing registration step
+    if (screenId === 'registration' || getPrimaryStepId(screenId) === 'registration') {
+      requestAnimationFrame(() => {
+        validateRegistrationContract();
       });
     }
 

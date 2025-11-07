@@ -6270,9 +6270,9 @@
               <p class="wizard-screen__subtitle">Choose your preferred method for publishing your token on the Dash
                 Platform.</p>
 
-              <!-- Info Card -->
-              <div class="form-card form-card--highlight">
-                <div class="form-card__body">
+              <!-- Contract Validation Card -->
+              <div class="form-card form-card--highlight" id="registration-validation-card" hidden>
+                <div class="form-card__body" id="registration-validation-body">
                   <p><strong>You're almost done!</strong></p>
                   <p style="margin-bottom: 0;">Your token is configured and ready to go. Now you just need to publish it
                     to the Dash Platform. Choose the method that works best for you below.</p>
@@ -7052,6 +7052,7 @@
         await sdkModule.ensureInitialized();
         window.EvoSDK = sdkModule;
         console.info('Dash Evo SDK initialized.');
+        window.dispatchEvent(new CustomEvent('evo:sdk-ready'));
       } catch (error) {
         console.error('Failed to initialize Dash Evo SDK:', error);
       }
