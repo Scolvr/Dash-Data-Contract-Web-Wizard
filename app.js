@@ -362,12 +362,12 @@
   };
 
   const DEFAULT_CHANGE_CONTROL_FLAGS = {
-    freeze: true,
-    unfreeze: true,
+    freeze: false,
+    unfreeze: false,
     destroyFrozen: false,
     emergency: false,
     directPurchase: false,
-    admin: true
+    admin: false
   };
 
   const DEFAULT_WALLET_STATE = Object.freeze({
@@ -458,7 +458,7 @@
         naming: {
           singular: '',
           plural: '',
-          capitalize: true,
+          capitalize: false,
           description: '',
           keywords: [],
           conventions: {
@@ -476,7 +476,7 @@
           allowTransferToFrozenBalance: false,
           transferNotesEnabled: false,
           transferNoteTypes: {
-            public: true,
+            public: false,
             sharedEncrypted: false,
             privateEncrypted: false
           },
@@ -567,9 +567,9 @@
             { id: 'member-default-2', identityId: '', power: '1' }
           ],
           permissions: {
-            mint: true,
-            burn: true,
-            freeze: true,
+            mint: false,
+            burn: false,
+            freeze: false,
             config: false,
             members: false
           }
