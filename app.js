@@ -653,32 +653,35 @@
     if (!record || typeof record !== 'object') {
       return {};
     }
-    const keys = Object.keys(record).sort();
+    const keys = Object.keys(record);
     if (keys.length === 0) {
       return {};
     }
-    const firstKey = keys[0];
-    const entry = record[firstKey];
-    if (!entry || typeof entry !== 'object') {
-      return {};
-    }
-    return {
-      [firstKey]: {
-        should_capitalize: Boolean(entry.should_capitalize ?? entry.shouldCapitalize),
-        singular_form:
-          typeof entry.singular_form === 'string'
-            ? entry.singular_form
-            : typeof entry.singular === 'string'
-              ? entry.singular
-              : '',
-        plural_form:
-          typeof entry.plural_form === 'string'
-            ? entry.plural_form
-            : typeof entry.plural === 'string'
-              ? entry.plural
-              : ''
+
+    // Preserve all valid localization entries (changed from keeping only first one)
+    // This allows auto-synced English + manually added languages to coexist
+    const result = {};
+    for (const key of keys) {
+      const entry = record[key];
+      if (entry && typeof entry === 'object') {
+        result[key] = {
+          should_capitalize: Boolean(entry.should_capitalize ?? entry.shouldCapitalize),
+          singular_form:
+            typeof entry.singular_form === 'string'
+              ? entry.singular_form
+              : typeof entry.singular === 'string'
+                ? entry.singular
+                : '',
+          plural_form:
+            typeof entry.plural_form === 'string'
+              ? entry.plural_form
+              : typeof entry.plural === 'string'
+                ? entry.plural
+                : ''
+        };
       }
-    };
+    }
+    return result;
   }
 
   const wizardState = loadState();
@@ -1230,33 +1233,36 @@
     const plural = tokenPluralInput ? tokenPluralInput.value.trim() : '';
     const shouldCapitalize = tokenCapitalizeInput ? tokenCapitalizeInput.checked : false;
 
-    // Only sync if we have at least singular form
-    if (singular) {
-      // Ensure naming structure exists
-      if (!wizardState.form.naming) {
-        wizardState.form.naming = { conventions: { localizations: {} }, rows: [] };
-      }
-      if (!wizardState.form.naming.conventions) {
-        wizardState.form.naming.conventions = { localizations: {} };
-      }
-      if (!wizardState.form.naming.conventions.localizations) {
-        wizardState.form.naming.conventions.localizations = {};
-      }
+    // Ensure naming structure exists
+    if (!wizardState.form.naming) {
+      wizardState.form.naming = { conventions: { localizations: {} }, rows: [] };
+    }
+    if (!wizardState.form.naming.conventions) {
+      wizardState.form.naming.conventions = { localizations: {} };
+    }
+    if (!wizardState.form.naming.conventions.localizations) {
+      wizardState.form.naming.conventions.localizations = {};
+    }
 
-      // Auto-update English localization
+    // Remove English localization if singular is empty, otherwise update it
+    if (!singular) {
+      delete wizardState.form.naming.conventions.localizations.en;
+      console.log('🗑️  Removed English localization (token name cleared)');
+    } else {
+      // Auto-update English localization (plural is required, no auto-generation)
       wizardState.form.naming.conventions.localizations.en = {
         singular_form: singular,
-        plural_form: plural || singular + 's', // Default plural if not provided
+        plural_form: plural || '', // No auto-generation - user must provide plural
         should_capitalize: shouldCapitalize
       };
-
       console.log('✅ Auto-synced to English localization:', wizardState.form.naming.conventions.localizations);
-      console.log('📋 Full naming state:', wizardState.form.naming);
+    }
 
-      // Persist the state
-      if (typeof persistState === 'function') {
-        persistState();
-      }
+    console.log('📋 Full naming state:', wizardState.form.naming);
+
+    // Always persist the state (including deletions)
+    if (typeof persistState === 'function') {
+      persistState();
     }
   }
 
@@ -4792,7 +4798,14 @@
       shouldCapitalize: Boolean(data.shouldCapitalize)
     }));
     wizardState.form.naming.rows = limitLocalizationRows(wizardState.form.naming.rows);
+
+    // Preserve auto-synced 'en' entry when updating from manual localization rows
+    const existingEn = wizardState.form.naming.conventions.localizations?.en;
     wizardState.form.naming.conventions.localizations = limitLocalizationRecord(sortedRecord);
+    // Restore 'en' entry if it existed, has valid data, and wasn't in manual rows
+    if (existingEn && !sortedRecord.en && existingEn.singular_form) {
+      wizardState.form.naming.conventions.localizations.en = existingEn;
+    }
 
     if (localizationGlobalMessage) {
       // FIXED: Update message to reflect that localization is optional
