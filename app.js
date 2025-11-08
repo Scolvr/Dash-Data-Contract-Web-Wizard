@@ -354,9 +354,9 @@
   }
 
   const DEFAULT_KEEP_HISTORY = {
-    transfers: true,
-    mints: true,
-    burns: true,
+    transfers: false,
+    mints: false,
+    burns: false,
     freezes: false,
     purchases: false
   };
@@ -3867,6 +3867,14 @@
     syncFreezeUI({ announce: false });
   }
 
+  function buildGroupLabel(group, index) {
+    // Use custom name if provided, otherwise use default "Group N" format
+    if (group.name && group.name.trim()) {
+      return group.name.trim();
+    }
+    return `Group ${index + 1}`;
+  }
+
   function buildPermissionGroupCard(group, index, isPrimary) {
     const card = document.createElement('details');
     card.className = 'wizard-group-card';
@@ -6449,11 +6457,11 @@
     const startPausedInput = form.querySelector('#permissions-start-paused');
     const allowFrozenInput = form.querySelector('#permissions-allow-frozen');
     const keepsHistoryInputs = {
-      transfers: form.querySelector('#permissions-history-transfers'),
-      mints: form.querySelector('#permissions-history-mints'),
-      burns: form.querySelector('#permissions-history-burns'),
-      freezes: form.querySelector('#permissions-history-freezes'),
-      purchases: form.querySelector('#permissions-history-purchases')
+      transfers: form.querySelector('#history-transfers'),
+      mints: form.querySelector('#history-mints'),
+      burns: form.querySelector('#history-burns'),
+      freezes: form.querySelector('#history-freezes'),
+      purchases: form.querySelector('#history-purchases')
     };
 
     function syncMaxSupplyVisibility(checked) {
@@ -6947,14 +6955,6 @@
         return { type: 'main-group', reference: '' };
       }
       return { type: 'none', reference: '' };
-    }
-
-    function buildGroupLabel(group, index) {
-      // Use custom name if provided, otherwise use default "Group N" format
-      if (group.name && group.name.trim()) {
-        return group.name.trim();
-      }
-      return `Group ${index + 1}`;
     }
 
     function buildActorOptions() {
@@ -9366,11 +9366,26 @@
     }
 
     // Build Platform contract structure
-    // Use valid Base58 placeholders (43-44 chars) for validation to pass
-    const ownerIdentity = wizardState.form.ownerIdentityId?.trim() || 'BmKTJeLL3GfH8FxEx7SUbTog4eAKj8vJRDi97gYkxB9p';
+    // Generate valid 32-byte identifiers using Evo SDK if available, otherwise use placeholder
+    let contractId = 'HtQNfXBZJu3WnvjvCFJKgbvfgWYJxWxaFWy23TKoFjg9';
+    let ownerIdentity = wizardState.form.ownerIdentityId?.trim() || 'BmKTJeLL3GfH8FxEx7SUbTog4eAKj8vJRDi97gYkxB9p';
+
+    // If EvoSDK is loaded, generate proper random identifiers for validation
+    if (window.EvoSDK && window.EvoSDK.Identifier && window.EvoSDK.Identifier.generate) {
+      try {
+        contractId = window.EvoSDK.Identifier.generate().toString();
+        // Only use generated ID for owner if no user-provided ID
+        if (!wizardState.form.ownerIdentityId?.trim()) {
+          ownerIdentity = window.EvoSDK.Identifier.generate().toString();
+        }
+      } catch (e) {
+        // Fallback to hardcoded placeholders if SDK generation fails
+      }
+    }
+
     const platformContract = {
       $format_version: '1',
-      id: 'HtQNfXBZJu3WnvjvCFJKgbvfgWYJxWxaFWy23TKoFjg9',  // Placeholder - Platform generates actual ID during registration
+      id: contractId,  // Platform generates actual ID during registration
       ownerId: ownerIdentity,           // User-provided owner identity ID
       version: 1,
       config: {
