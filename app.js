@@ -23,7 +23,6 @@
     'permissions-group',
     'permissions-manual-mint',
     'permissions-manual-burn',
-    'permissions-freeze',
     'permissions-unfreeze',
     'permissions-destroy-frozen',
     'permissions-emergency-action',
@@ -54,7 +53,6 @@
     'permissions-manual-mint': 'permissions',
     'permissions-manual-burn': 'permissions',
     'permissions-manual-freeze': 'permissions',
-    'permissions-freeze': 'permissions',
     'permissions-unfreeze': 'permissions',
     'permissions-destroy-frozen': 'permissions',
     'permissions-emergency': 'permissions',
@@ -107,7 +105,6 @@
     'permissions-manual-mint': 'Manual mint',
     'permissions-manual-burn': 'Manual burn',
     'permissions-manual-freeze': 'Manual freeze',
-    'permissions-freeze': 'Freeze',
     'permissions-unfreeze': 'Unfreeze',
     'permissions-destroy-frozen': 'Destroy frozen funds',
     'permissions-emergency': 'Emergency actions',
@@ -921,7 +918,6 @@
   let distributionUI = createDistributionUI(distributionForm);
   let advancedUI = createAdvancedUI(advancedForm);
   const manualActionUIs = {};
-  let freezeUI = null;
 
   const validationTimers = {};
   const validationFingerprints = {};
@@ -1022,7 +1018,6 @@
   const marketplaceTradeModeScreen = document.getElementById('screen-permissions-marketplace-trade-mode-change');
   const directPricingScreen = document.getElementById('screen-permissions-direct-pricing-change');
   const mainControlScreen = document.getElementById('screen-permissions-main-control-change');
-  const freezeForm = document.getElementById('freeze-form');
   const infoScreenEntries = INFO_STEPS.map((id) => ({
     id,
     element: document.getElementById(`screen-${id}`)
@@ -1188,9 +1183,6 @@
     }
   });
 
-  if (freezeForm) {
-    freezeUI = createFreezeUI(freezeForm);
-  }
 
   ensureNamingFormState();
   initialisePermissionGroupsUI();
@@ -1908,7 +1900,6 @@
       });
     });
     syncManualActionUIs({ announce: false });
-    syncFreezeUI({ announce: false });
     updateRegistrationPreviewVisibility();
     refreshFlow({ initial: true, suppressFocus: true });
   }
@@ -1937,7 +1928,6 @@
       permissionsUI.setValues(wizardState.form.permissions);
     }
     ensurePermissionsGroupState();
-    syncFreezeUI({ announce: false });
     renderPermissionGroups();
     if (distributionUI && typeof distributionUI.setValues === 'function') {
       distributionUI.setValues(wizardState.form.distribution);
@@ -3846,7 +3836,6 @@
         groupListElement.appendChild(emptyHint);
       }
       syncManualActionUIs({ announce: false });
-      syncFreezeUI({ announce: false });
       return;
     }
 
@@ -3873,7 +3862,6 @@
     });
 
     syncManualActionUIs({ announce: false });
-    syncFreezeUI({ announce: false });
   }
 
   function buildGroupLabel(group, index) {
@@ -6766,264 +6754,7 @@
     };
   }
 
-  function createFreezeUI(form) {
-    if (!form) {
-      return null;
-    }
 
-    const stepId = 'permissions-freeze';
-    const enabledRadios = Array.from(form.querySelectorAll('input[name="freeze-enabled"]'));
-    const performerSelect = form.querySelector('#freeze-performer');
-    const performerIdentityWrapper = form.querySelector('[data-freeze-identity="perform"]');
-    const performerIdentityInput = form.querySelector('#freeze-performer-identity');
-    const ruleChangerSelect = form.querySelector('#freeze-rule-changer');
-    const ruleIdentityWrapper = form.querySelector('[data-freeze-identity="rules"]');
-    const ruleIdentityInput = form.querySelector('#freeze-rule-identity');
-    const allowAuthorizedNoneInput = form.querySelector('#freeze-allow-authorized-none');
-    const allowAdminNoneInput = form.querySelector('#freeze-allow-admin-none');
-    const allowSelfChangeInput = form.querySelector('#freeze-allow-self-change');
-    const performerIdentityMount = createConditionalFieldMount(performerIdentityWrapper);
-    const ruleIdentityMount = createConditionalFieldMount(ruleIdentityWrapper);
-    const controlsPanel = form.querySelector('[data-freeze-controls]');
-    const messageElement = form.querySelector('#freeze-message');
-
-    form.addEventListener('submit', (event) => event.preventDefault());
-
-    let touched = Boolean(getStepState(stepId)?.touched);
-
-    function state() {
-      ensureFreezeState();
-      return wizardState.form.permissions.freeze;
-    }
-
-    function setIdentityVisibility(type, mount, input, value, enabled) {
-      if (!mount || !input) {
-        return;
-      }
-      const show = enabled && type === 'identity';
-      if (show) {
-        mount.show();
-        input.disabled = false;
-        input.required = true;
-        input.value = value || '';
-      } else {
-        mount.hide();
-        input.disabled = true;
-        input.required = false;
-        input.value = value || '';
-      }
-    }
-
-    function setControlsEnabled(enabled) {
-      const controlElements = [
-        performerSelect,
-        ruleChangerSelect,
-        performerIdentityInput,
-        ruleIdentityInput,
-        allowAuthorizedNoneInput,
-        allowAdminNoneInput,
-        allowSelfChangeInput
-      ];
-      controlElements.forEach((element) => {
-        if (element) {
-          element.disabled = !enabled;
-        }
-      });
-      if (controlsPanel) {
-        if (enabled) {
-          controlsPanel.hidden = false;
-          controlsPanel.removeAttribute('aria-disabled');
-        } else {
-          controlsPanel.hidden = true;
-          controlsPanel.setAttribute('aria-disabled', 'true');
-        }
-      }
-    }
-
-    function validate(current) {
-      const freezeState = current || state();
-      if (!freezeState || typeof freezeState !== 'object') {
-        return { valid: false, message: 'Configure freeze permissions.' };
-      }
-      if (!freezeState.enabled) {
-        return { valid: true, message: '' };
-      }
-      if (freezeState.perform.type === 'identity' && !freezeState.perform.identity) {
-        return { valid: false, message: 'Enter the identity ID for the actor allowed to freeze accounts.' };
-      }
-      if (freezeState.changeRules.type === 'identity' && !freezeState.changeRules.identity) {
-        return { valid: false, message: 'Enter the identity ID for the actor allowed to change freeze rules.' };
-      }
-      return { valid: true, message: '' };
-    }
-
-    function applyValidation(current, { silent = false } = {}) {
-      const validation = validate(current);
-      if (messageElement) {
-        if (!validation.valid && touched) {
-          messageElement.textContent = validation.message;
-        } else {
-          messageElement.textContent = '';
-        }
-      }
-      updateStepStatusFromValidation(stepId, validation, touched);
-      if (!validation.valid && !silent && touched && validation.message) {
-        announce(validation.message);
-      }
-      return validation;
-    }
-
-    function commit(partial, { markTouched = true, silent = false } = {}) {
-      ensureFreezeState();
-      const current = wizardState.form.permissions.freeze;
-      const next = {
-        enabled: typeof partial.enabled === 'boolean' ? partial.enabled : current.enabled,
-        perform: { ...current.perform, ...(partial.perform || {}) },
-        changeRules: { ...current.changeRules, ...(partial.changeRules || {}) },
-        flags: { ...current.flags, ...(partial.flags || {}) }
-      };
-      wizardState.form.permissions.freeze = normalizeFreezeState(next);
-      persistState();
-      if (markTouched) {
-        touched = true;
-      }
-      applyValidation(wizardState.form.permissions.freeze, { silent });
-    }
-
-    function sync({ announce = true } = {}) {
-      const freezeState = state();
-      touched = Boolean(getStepState(stepId)?.touched);
-
-      setControlsEnabled(freezeState.enabled);
-
-      if (enabledRadios.length) {
-        enabledRadios.forEach((radio) => {
-          radio.checked = radio.value === (freezeState.enabled ? 'enabled' : 'disabled');
-        });
-      }
-
-      if (performerSelect) {
-        performerSelect.value = freezeState.perform.type;
-      }
-      setIdentityVisibility(
-        freezeState.perform.type,
-        performerIdentityMount,
-        performerIdentityInput,
-        freezeState.perform.identity,
-        freezeState.enabled
-      );
-      if (performerIdentityInput && freezeState.perform.type === 'identity') {
-        performerIdentityInput.value = freezeState.perform.identity;
-      }
-
-      if (ruleChangerSelect) {
-        ruleChangerSelect.value = freezeState.changeRules.type;
-      }
-      setIdentityVisibility(
-        freezeState.changeRules.type,
-        ruleIdentityMount,
-        ruleIdentityInput,
-        freezeState.changeRules.identity,
-        freezeState.enabled
-      );
-      if (ruleIdentityInput && freezeState.changeRules.type === 'identity') {
-        ruleIdentityInput.value = freezeState.changeRules.identity;
-      }
-
-      if (allowAuthorizedNoneInput) {
-        allowAuthorizedNoneInput.checked = Boolean(freezeState.flags.changeAuthorizedToNoOneAllowed);
-      }
-      if (allowAdminNoneInput) {
-        allowAdminNoneInput.checked = Boolean(freezeState.flags.changeAdminToNoOneAllowed);
-      }
-      if (allowSelfChangeInput) {
-        allowSelfChangeInput.checked = Boolean(freezeState.flags.selfChangeAdminAllowed);
-      }
-
-      applyValidation(freezeState, { silent: !announce });
-    }
-
-    if (enabledRadios.length) {
-      enabledRadios.forEach((radio) => {
-        radio.addEventListener('change', () => {
-          if (!radio.checked) {
-            return;
-          }
-          const enabled = radio.value === 'enabled';
-          commit({ enabled }, { silent: !enabled });
-          sync({ announce: false });
-        });
-      });
-    }
-
-    if (performerSelect) {
-      performerSelect.addEventListener('change', () => {
-        const value = performerSelect.value;
-        const type = value === 'identity' ? 'identity' : value === 'owner' ? 'owner' : 'none';
-        const update = { perform: { type } };
-        if (type !== 'identity') {
-          update.perform.identity = '';
-        }
-        commit(update);
-        sync({ announce: false });
-      });
-    }
-
-    if (ruleChangerSelect) {
-      ruleChangerSelect.addEventListener('change', () => {
-        const value = ruleChangerSelect.value;
-        const type = value === 'identity' ? 'identity' : value === 'owner' ? 'owner' : 'none';
-        const update = { changeRules: { type } };
-        if (type !== 'identity') {
-          update.changeRules.identity = '';
-        }
-        commit(update);
-        sync({ announce: false });
-      });
-    }
-
-    if (performerIdentityInput) {
-      performerIdentityInput.addEventListener('input', () => {
-        commit({ perform: { identity: performerIdentityInput.value.trim() } }, { silent: true });
-      });
-    }
-
-    if (ruleIdentityInput) {
-      ruleIdentityInput.addEventListener('input', () => {
-        commit({ changeRules: { identity: ruleIdentityInput.value.trim() } }, { silent: true });
-      });
-    }
-
-    if (allowAuthorizedNoneInput) {
-      allowAuthorizedNoneInput.addEventListener('change', () => {
-        commit({ flags: { changeAuthorizedToNoOneAllowed: Boolean(allowAuthorizedNoneInput.checked) } }, { silent: true });
-      });
-    }
-
-    if (allowAdminNoneInput) {
-      allowAdminNoneInput.addEventListener('change', () => {
-        commit({ flags: { changeAdminToNoOneAllowed: Boolean(allowAdminNoneInput.checked) } }, { silent: true });
-      });
-    }
-
-    if (allowSelfChangeInput) {
-      allowSelfChangeInput.addEventListener('change', () => {
-        commit({ flags: { selfChangeAdminAllowed: Boolean(allowSelfChangeInput.checked) } }, { silent: true });
-      });
-    }
-
-    sync({ announce: false });
-
-    return {
-      sync
-    };
-  }
-
-  function syncFreezeUI({ announce = false } = {}) {
-    if (freezeUI && typeof freezeUI.sync === 'function') {
-      freezeUI.sync({ announce });
-    }
-  }
 
   function createManualActionUI(definition, screen) {
     if (!definition || !screen) {

@@ -2000,7 +2000,7 @@
           </aside>
 
           <div class="wizard-screen__inner">
-            <form class="wizard-form" id="permissions-manual-freeze-form" novalidate>
+            <form class="wizard-form" id="manual-freeze-form" novalidate>
               <h1 class="wizard-screen__title" id="title-permissions-manual-freeze" tabindex="-1">Can token balances be
                 frozen?</h1>
               <p class="wizard-screen__subtitle">Configure permissions for freezing and unfreezing identities to prevent
@@ -2691,7 +2691,7 @@
           </aside>
 
           <div class="wizard-screen__inner">
-            <form class="wizard-form" id="permissions-emergency-form" novalidate>
+            <form class="wizard-form" id="emergency-form" novalidate>
               <h1 class="wizard-screen__title" id="title-permissions-emergency" tabindex="-1">Can emergency actions be
                 performed?</h1>
               <p class="wizard-screen__subtitle">Configure permissions for global pause/resume in emergencies. When
@@ -6599,164 +6599,6 @@
 
 
 
-
-        <section class="wizard-screen wizard-screen--info" id="screen-permissions-freeze" data-step="permissions-freeze"
-          hidden>
-          <div class="wizard-screen__inner">
-            <form class="wizard-form wizard-form--narrow" id="freeze-form" novalidate>
-              <h1 class="wizard-screen__title" id="title-permissions-freeze" tabindex="-1">Freeze</h1>
-              <p class="wizard-screen__body">This page will outline how accounts are frozen and which roles can enforce
-                the state.</p>
-
-              <fieldset class="wizard-fieldset" id="freeze-activation">
-                <legend class="wizard-field__label" id="freeze-activation-label">Freeze availability</legend>
-                <div class="wizard-field__label-row">
-                  <p class="wizard-subsection__body" id="freeze-activation-copy">Should account freezing be available
-                    for this token?</p>
-                  <button class="wizard-info-trigger" type="button" aria-expanded="false"
-                    aria-controls="freeze-activation-info">
-                    <span class="sr-only">More information about freeze availability</span>
-                    <span aria-hidden="true" class="wizard-info-trigger__icon">i</span>
-                  </button>
-                </div>
-                <div class="wizard-info-panel" id="freeze-activation-info" hidden>
-                  <p class="wizard-info-panel__body">Turning freezing on defines who can pause an identity&rsquo;s
-                    transfers when risk is detected.</p>
-                </div>
-                <div class="wizard-choice-group" role="radiogroup" aria-labelledby="freeze-activation-label">
-                  <label class="wizard-choice">
-                    <input class="wizard-choice__input" type="radio" name="freeze-enabled" id="freeze-enabled-yes"
-                      value="enabled">
-                    <span class="wizard-choice__content">
-                      <span class="wizard-choice__title">Yes, allow freezing controls</span>
-                      <span class="wizard-choice__hint">Designated actors may freeze identities when required.</span>
-                    </span>
-                  </label>
-                  <label class="wizard-choice">
-                    <input class="wizard-choice__input" type="radio" name="freeze-enabled" id="freeze-enabled-no"
-                      value="disabled">
-                    <span class="wizard-choice__content">
-                      <span class="wizard-choice__title">No, disable freezing</span>
-                      <span class="wizard-choice__hint">No one can freeze identities through this contract.</span>
-                    </span>
-                  </label>
-                </div>
-              </fieldset>
-
-              <div class="wizard-subsection wizard-subsection--panel" data-freeze-controls hidden>
-                <section class="wizard-subsection" aria-labelledby="freeze-actioners">
-                  <h2 class="wizard-subsection__title" id="freeze-actioners">Authorize freezing</h2>
-                  <p class="wizard-subsection__body">Select who can freeze an identity&rsquo;s balance when the feature
-                    is enabled.</p>
-                  <div class="wizard-field" id="freeze-performer-field">
-                    <div class="wizard-field__label-row">
-                      <label class="wizard-field__label" for="freeze-performer">Authorized to perform action</label>
-                      <button class="wizard-info-trigger" type="button" aria-expanded="false"
-                        aria-controls="freeze-performer-info">
-                        <span class="sr-only">More information about who can freeze identities</span>
-                        <span aria-hidden="true" class="wizard-info-trigger__icon">i</span>
-                      </button>
-                    </div>
-                    <div class="wizard-info-panel" id="freeze-performer-info" hidden>
-                      <p class="wizard-info-panel__body">Pick the account or group that may freeze identities when an
-                        incident occurs.</p>
-                    </div>
-                    <select class="wizard-field__input" id="freeze-performer">
-                      <option value="none">No one</option>
-                      <option value="owner">Contract owner</option>
-                      <option value="identity">Specific Identity</option>
-                    </select>
-                    <div class="wizard-field wizard-field--stacked" data-freeze-identity="perform" hidden>
-                      <label class="wizard-field__label wizard-field__label--secondary"
-                        for="freeze-performer-identity">Identity ID</label>
-                      <input class="wizard-field__input wizard-field__input--condensed" id="freeze-performer-identity"
-                        type="text" autocomplete="off" placeholder="Enter the Base58 ID">
-                      <p class="wizard-field__hint">Enter the identity ID permitted to freeze accounts.</p>
-                    </div>
-                    <p class="wizard-field__hint" id="freeze-performer-hint">Choose <strong>No one</strong> to keep
-                      freezing unavailable, or delegate the authority to the contract owner or the Specific Identity
-                      option.</p>
-                  </div>
-                </section>
-
-                <section class="wizard-subsection" aria-labelledby="freeze-rule-owners">
-                  <h2 class="wizard-subsection__title" id="freeze-rule-owners">Authorize rule changes</h2>
-                  <p class="wizard-subsection__body">Choose who can update the freezing policy after launch.</p>
-                  <div class="wizard-field" id="freeze-rule-field">
-                    <div class="wizard-field__label-row">
-                      <label class="wizard-field__label" for="freeze-rule-changer">Authorized to change rules</label>
-                      <button class="wizard-info-trigger" type="button" aria-expanded="false"
-                        aria-controls="freeze-rule-info">
-                        <span class="sr-only">More information about who can change freezing rules</span>
-                        <span aria-hidden="true" class="wizard-info-trigger__icon">i</span>
-                      </button>
-                    </div>
-                    <div class="wizard-info-panel" id="freeze-rule-info" hidden>
-                      <p class="wizard-info-panel__body">Specify who can adjust or revoke freezing permissions over
-                        time.</p>
-                    </div>
-                    <select class="wizard-field__input" id="freeze-rule-changer">
-                      <option value="none">No one</option>
-                      <option value="owner">Contract owner</option>
-                      <option value="identity">Specific Identity</option>
-                    </select>
-                    <div class="wizard-field wizard-field--stacked" data-freeze-identity="rules" hidden>
-                      <label class="wizard-field__label wizard-field__label--secondary"
-                        for="freeze-rule-identity">Identity ID</label>
-                      <input class="wizard-field__input wizard-field__input--condensed" id="freeze-rule-identity"
-                        type="text" autocomplete="off" placeholder="Enter the Base58 ID">
-                      <p class="wizard-field__hint">Enter the identity ID that can change freezing rules.</p>
-                    </div>
-                    <p class="wizard-field__hint" id="freeze-rule-hint">Select who can adjust freezing permissions
-                      later. Use <strong>Specific Identity</strong> to assign a single identity ID.</p>
-                  </div>
-                </section>
-
-                <fieldset class="wizard-fieldset wizard-fieldset--nested" id="freeze-safeguards">
-                  <legend class="wizard-field__label" id="freeze-safeguards-label">Safeguards</legend>
-                  <div class="wizard-field__label-row">
-                    <p class="wizard-subsection__body" id="freeze-safeguards-copy">Control how freezing permissions may
-                      be tightened or relaxed.</p>
-                    <button class="wizard-info-trigger" type="button" aria-expanded="false"
-                      aria-controls="freeze-safeguards-info">
-                      <span class="sr-only">More information about freezing safeguards</span>
-                      <span aria-hidden="true" class="wizard-info-trigger__icon">i</span>
-                    </button>
-                  </div>
-                  <div class="wizard-info-panel" id="freeze-safeguards-info" hidden>
-                    <p class="wizard-info-panel__body">Safeguards limit how administrators can weaken oversight of
-                      freezing privileges.</p>
-                  </div>
-                  <div class="wizard-field wizard-field--checkbox">
-                    <label class="wizard-checkbox" for="freeze-allow-authorized-none">
-                      <input class="wizard-checkbox__input" id="freeze-allow-authorized-none" type="checkbox">
-                      <span class="wizard-checkbox__label">Allow rule owners to remove all authorized freezers</span>
-                    </label>
-                  </div>
-                  <div class="wizard-field wizard-field--checkbox">
-                    <label class="wizard-checkbox" for="freeze-allow-admin-none">
-                      <input class="wizard-checkbox__input" id="freeze-allow-admin-none" type="checkbox">
-                      <span class="wizard-checkbox__label">Allow rule owners to remove themselves</span>
-                    </label>
-                  </div>
-                  <div class="wizard-field wizard-field--checkbox">
-                    <label class="wizard-checkbox" for="freeze-allow-self-change">
-                      <input class="wizard-checkbox__input" id="freeze-allow-self-change" type="checkbox">
-                      <span class="wizard-checkbox__label">Allow current rule owners to reassign control to
-                        themselves</span>
-                    </label>
-                  </div>
-                </fieldset>
-              </div>
-
-              <p class="wizard-field__message" id="freeze-message" role="status" aria-live="polite"></p>
-              <div class="wizard-actions wizard-actions--end">
-                <button class="wizard-button wizard-button--secondary" type="button" data-step-return="permissions">Back
-                  to Permissions</button>
-              </div>
-            </form>
-          </div>
-        </section>
 
         <section class="wizard-screen wizard-screen--info" id="screen-permissions-unfreeze"
           data-step="permissions-unfreeze" hidden>
