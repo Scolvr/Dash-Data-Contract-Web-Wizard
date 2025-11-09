@@ -483,6 +483,9 @@
           mainControlGroupIndex: -1,
           freeze: createDefaultFreezeState(),
           unfreeze: {
+            enabled: false,
+            performerType: 'none',
+            performerReference: '',
             allowChangeAuthorizedToNone: false,
             allowChangeAdminToNone: false,
             allowSelfChangeAdmin: false
@@ -6375,6 +6378,52 @@
       });
     }
 
+    // Unfreeze Permission Radio Buttons
+    const unfreezePermissionRadios = document.getElementsByName('manual-unfreeze-permission');
+    unfreezePermissionRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        if (!radio.checked) return;
+        const value = radio.value;
+        if (value === 'owner-only') {
+          wizardState.form.permissions.unfreeze.performerType = 'owner';
+          wizardState.form.permissions.unfreeze.performerReference = '';
+        } else if (value === 'specific-identity') {
+          wizardState.form.permissions.unfreeze.performerType = 'identity';
+          // performerReference will be set by the identity input field
+        } else if (value === 'group') {
+          wizardState.form.permissions.unfreeze.performerType = 'group';
+          // performerReference will be set by the group select
+        } else if (value === 'no-one') {
+          wizardState.form.permissions.unfreeze.performerType = 'none';
+          wizardState.form.permissions.unfreeze.performerReference = '';
+        }
+        persistState();
+      });
+    });
+
+    // Destroy Frozen Permission Radio Buttons
+    const destroyFrozenPermissionRadios = document.getElementsByName('destroy-frozen-permission');
+    destroyFrozenPermissionRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        if (!radio.checked) return;
+        const value = radio.value;
+        if (value === 'owner-only') {
+          wizardState.form.permissions.destroyFrozen.performerType = 'owner';
+          wizardState.form.permissions.destroyFrozen.performerReference = '';
+        } else if (value === 'specific-identity') {
+          wizardState.form.permissions.destroyFrozen.performerType = 'identity';
+          // performerReference will be set by the identity input field
+        } else if (value === 'group') {
+          wizardState.form.permissions.destroyFrozen.performerType = 'group';
+          // performerReference will be set by the group select
+        } else if (value === 'no-one') {
+          wizardState.form.permissions.destroyFrozen.performerType = 'none';
+          wizardState.form.permissions.destroyFrozen.performerReference = '';
+        }
+        persistState();
+      });
+    });
+
     // Initialize UI
     setTimeout(() => {
       // Restore mode from state
@@ -8996,6 +9045,25 @@
       return 'NoOne';
     }
 
+    function getActorFromPerformer(performerType, performerReference) {
+      if (!performerType || performerType === 'none') {
+        return 'NoOne';
+      }
+
+      if (performerType === 'owner') {
+        return 'ContractOwner';
+      } else if (performerType === 'identity' && performerReference) {
+        return performerReference;
+      } else if (performerType === 'group' && performerReference) {
+        return parseInt(performerReference, 10) || 0;
+      } else if (performerType === 'main-group') {
+        const mainIndex = wizardState.form.permissions.mainControlGroupIndex;
+        return mainIndex >= 0 ? mainIndex : 0;
+      }
+
+      return 'NoOne';
+    }
+
     // Helper: Convert keepsHistory to Platform format
     function transformKeepsHistory(keepsHistory) {
       return {
@@ -9380,18 +9448,27 @@
         wizardState.form.permissions.manualBurn || {}
       ),
       freezeRules: createRuleV0(
-        Boolean(wizardState.form.advanced?.changeControl?.freeze),
-        'ContractOwner',
-        wizardState.form.permissions.freeze?.flags || {}
+        Boolean(wizardState.form.permissions.manualFreeze?.enabled),
+        getActorFromPerformer(
+          wizardState.form.permissions.manualFreeze?.performerType,
+          wizardState.form.permissions.manualFreeze?.performerReference
+        ),
+        wizardState.form.permissions.manualFreeze || {}
       ),
       unfreezeRules: createRuleV0(
-        Boolean(wizardState.form.advanced?.changeControl?.unfreeze),
-        'ContractOwner',
+        Boolean(wizardState.form.permissions.unfreeze?.enabled),
+        getActorFromPerformer(
+          wizardState.form.permissions.unfreeze?.performerType,
+          wizardState.form.permissions.unfreeze?.performerReference
+        ),
         wizardState.form.permissions.unfreeze || {}
       ),
       destroyFrozenFundsRules: createRuleV0(
-        Boolean(wizardState.form.advanced?.changeControl?.destroyFrozen),
-        'ContractOwner',
+        Boolean(wizardState.form.permissions.destroyFrozen?.enabled),
+        getActorFromPerformer(
+          wizardState.form.permissions.destroyFrozen?.performerType,
+          wizardState.form.permissions.destroyFrozen?.performerReference
+        ),
         wizardState.form.permissions.destroyFrozen || {}
       ),
       emergencyActionRules: createRuleV0(
