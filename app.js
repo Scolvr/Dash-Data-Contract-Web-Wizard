@@ -38,7 +38,6 @@
     { key: 'manualMint', stepId: 'permissions-manual-mint', domPrefix: 'manual-mint' },
     { key: 'manualBurn', stepId: 'permissions-manual-burn', domPrefix: 'manual-burn' },
     { key: 'manualFreeze', stepId: 'permissions-manual-freeze', domPrefix: 'manual-freeze' },
-    { key: 'destroyFrozen', stepId: 'permissions-destroy-frozen', domPrefix: 'destroy-frozen' },
     { key: 'emergencyAction', stepId: 'permissions-emergency', domPrefix: 'emergency' },
     { key: 'conventionsChange', stepId: 'permissions-conventions-change', domPrefix: 'conventions-change' },
     { key: 'marketplaceTradeMode', stepId: 'permissions-marketplace-trade-mode-change', domPrefix: 'marketplace-trade-mode' },
@@ -494,6 +493,7 @@
             allowChangeAdminToNone: false,
             allowSelfChangeAdmin: false
           },
+          destroyFrozen: createDefaultManualActionState(),
           ...manualActionsDefaults
         },
         distribution: {
@@ -6070,6 +6070,23 @@
     const baseSupplyInput = document.getElementById('base-supply');
     const maxSupplyInput = document.getElementById('max-supply');
 
+    // Get checkbox elements
+    const historyTransfersInput = document.getElementById('history-transfers');
+    const historyMintsInput = document.getElementById('history-mints');
+    const historyBurnsInput = document.getElementById('history-burns');
+    const historyFreezesInput = document.getElementById('history-freezes');
+    const historyPurchasesInput = document.getElementById('history-purchases');
+    const startPausedInput = document.getElementById('permissions-start-paused');
+    const allowFrozenInput = document.getElementById('permissions-allow-frozen');
+
+    const keepsHistoryInputs = {
+      transfers: historyTransfersInput,
+      mints: historyMintsInput,
+      burns: historyBurnsInput,
+      freezes: historyFreezesInput,
+      purchases: historyPurchasesInput
+    };
+
     if (!decimalsInput || !baseSupplyInput) {
       return null;
     }
@@ -6273,6 +6290,15 @@
       });
     }
 
+    // Change Max Supply Enable/Disable Radio Buttons
+    const changeMaxSupplyEnabledRadios = document.getElementsByName('change-max-supply-enabled');
+    changeMaxSupplyEnabledRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        wizardState.form.permissions.changeMaxSupply.enabled = radio.value === 'enabled';
+        persistState();
+      });
+    });
+
     // Change Max Supply Governance Checkboxes
     const changeMaxSupplyAllowAuthorizedNone = document.getElementById('change-max-supply-allow-authorized-none');
     const changeMaxSupplyAllowAdminNone = document.getElementById('change-max-supply-allow-admin-none');
@@ -6296,6 +6322,34 @@
         persistState();
       });
     }
+
+    // Unfreeze Enable/Disable Radio Buttons
+    const unfreezeEnabledRadios = document.getElementsByName('manual-unfreeze-enabled');
+    unfreezeEnabledRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        wizardState.form.permissions.unfreeze.enabled = radio.value === 'enabled';
+        persistState();
+      });
+    });
+
+    // Destroy Frozen Enable/Disable Radio Buttons
+    const destroyFrozenEnabledRadios = document.getElementsByName('destroy-frozen-enabled');
+    destroyFrozenEnabledRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        wizardState.form.permissions.destroyFrozen.enabled = radio.value === 'enabled';
+        persistState();
+      });
+    });
+
+    // Freeze System Enable/Disable Radio Buttons
+    const freezeEnabledRadios = document.getElementsByName('freeze-enabled');
+    freezeEnabledRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        if (!radio.checked) return;
+        wizardState.form.permissions.freeze.enabled = radio.value === 'enabled';
+        persistState();
+      });
+    });
 
     // Unfreeze Governance Checkboxes
     const unfreezeAllowAuthorizedNone = document.getElementById('unfreeze-allow-authorized-none');
@@ -6361,6 +6415,20 @@
       evaluatePermissions({ touched: false });
     }, 100);
 
+    // Add event listeners for history tracking checkboxes
+    Object.values(keepsHistoryInputs).forEach((input) => {
+      if (!input) return;
+      input.addEventListener('change', () => evaluatePermissions({ touched: true }));
+    });
+
+    // Add event listeners for other permission checkboxes
+    if (startPausedInput) {
+      startPausedInput.addEventListener('change', () => evaluatePermissions({ touched: true }));
+    }
+    if (allowFrozenInput) {
+      allowFrozenInput.addEventListener('change', () => evaluatePermissions({ touched: true }));
+    }
+
     return {
       setValues(values = {}) {
         if (decimalsInput) {
@@ -6381,9 +6449,15 @@
           baseSupply: baseSupplyInput ? baseSupplyInput.value.trim() : '',
           useMaxSupply: maxSupplyValue.length > 0, // True if user entered a value
           maxSupply: maxSupplyValue,
-          keepsHistory: { transfers: false, mints: false, burns: false, freezes: false },
-          startAsPaused: false,
-          allowTransferToFrozenBalance: false
+          keepsHistory: {
+            transfers: Boolean(historyTransfersInput && historyTransfersInput.checked),
+            mints: Boolean(historyMintsInput && historyMintsInput.checked),
+            burns: Boolean(historyBurnsInput && historyBurnsInput.checked),
+            freezes: Boolean(historyFreezesInput && historyFreezesInput.checked),
+            purchases: Boolean(historyPurchasesInput && historyPurchasesInput.checked)
+          },
+          startAsPaused: Boolean(startPausedInput && startPausedInput.checked),
+          allowTransferToFrozenBalance: Boolean(allowFrozenInput && allowFrozenInput.checked)
         };
       }
     };
