@@ -15,6 +15,7 @@
   console.log('%c═══════════════════════════════════════════════════════\n', 'color: #008de4; font-weight: bold');
 
   const STATE_STORAGE_KEY = 'dashTokenWizardState';
+  const SENSITIVE_DATA_KEY = 'dashTokenWizardIdentities';
   const THEME_STORAGE_KEY = 'ui.theme';
   // FIXED: Correct order matching sidebar navigation
   // Note: 'overview' removed from sequence - accessible only from Document tab
@@ -23,7 +24,6 @@
     'permissions-group',
     'permissions-manual-mint',
     'permissions-manual-burn',
-    'permissions-freeze',
     'permissions-unfreeze',
     'permissions-destroy-frozen',
     'permissions-emergency-action',
@@ -38,7 +38,6 @@
     { key: 'manualMint', stepId: 'permissions-manual-mint', domPrefix: 'manual-mint' },
     { key: 'manualBurn', stepId: 'permissions-manual-burn', domPrefix: 'manual-burn' },
     { key: 'manualFreeze', stepId: 'permissions-manual-freeze', domPrefix: 'manual-freeze' },
-    { key: 'destroyFrozen', stepId: 'permissions-destroy-frozen', domPrefix: 'destroy-frozen' },
     { key: 'emergencyAction', stepId: 'permissions-emergency', domPrefix: 'emergency' },
     { key: 'conventionsChange', stepId: 'permissions-conventions-change', domPrefix: 'conventions-change' },
     { key: 'marketplaceTradeMode', stepId: 'permissions-marketplace-trade-mode-change', domPrefix: 'marketplace-trade-mode' },
@@ -55,7 +54,6 @@
     'permissions-manual-mint': 'permissions',
     'permissions-manual-burn': 'permissions',
     'permissions-manual-freeze': 'permissions',
-    'permissions-freeze': 'permissions',
     'permissions-unfreeze': 'permissions',
     'permissions-destroy-frozen': 'permissions',
     'permissions-emergency': 'permissions',
@@ -108,7 +106,6 @@
     'permissions-manual-mint': 'Manual mint',
     'permissions-manual-burn': 'Manual burn',
     'permissions-manual-freeze': 'Manual freeze',
-    'permissions-freeze': 'Freeze',
     'permissions-unfreeze': 'Unfreeze',
     'permissions-destroy-frozen': 'Destroy frozen funds',
     'permissions-emergency': 'Emergency actions',
@@ -354,20 +351,20 @@
   }
 
   const DEFAULT_KEEP_HISTORY = {
-    transfers: true,
-    mints: true,
-    burns: true,
+    transfers: false,
+    mints: false,
+    burns: false,
     freezes: false,
     purchases: false
   };
 
   const DEFAULT_CHANGE_CONTROL_FLAGS = {
-    freeze: true,
-    unfreeze: true,
+    freeze: false,
+    unfreeze: false,
     destroyFrozen: false,
     emergency: false,
     directPurchase: false,
-    admin: true
+    admin: false
   };
 
   const DEFAULT_WALLET_STATE = Object.freeze({
@@ -454,10 +451,11 @@
       },
       form: {
         tokenName: '',
+        ownerIdentityId: '',
         naming: {
           singular: '',
           plural: '',
-          capitalize: true,
+          capitalize: false,
           description: '',
           keywords: [],
           conventions: {
@@ -475,7 +473,7 @@
           allowTransferToFrozenBalance: false,
           transferNotesEnabled: false,
           transferNoteTypes: {
-            public: true,
+            public: false,
             sharedEncrypted: false,
             privateEncrypted: false
           },
@@ -483,6 +481,9 @@
           mainControlGroupIndex: -1,
           freeze: createDefaultFreezeState(),
           unfreeze: {
+            enabled: false,
+            performerType: 'none',
+            performerReference: '',
             allowChangeAuthorizedToNone: false,
             allowChangeAdminToNone: false,
             allowSelfChangeAdmin: false
@@ -493,6 +494,7 @@
             allowChangeAdminToNone: false,
             allowSelfChangeAdmin: false
           },
+          destroyFrozen: createDefaultManualActionState(),
           ...manualActionsDefaults
         },
         distribution: {
@@ -566,9 +568,9 @@
             { id: 'member-default-2', identityId: '', power: '1' }
           ],
           permissions: {
-            mint: true,
-            burn: true,
-            freeze: true,
+            mint: false,
+            burn: false,
+            freeze: false,
             config: false,
             members: false
           }
@@ -652,32 +654,35 @@
     if (!record || typeof record !== 'object') {
       return {};
     }
-    const keys = Object.keys(record).sort();
+    const keys = Object.keys(record);
     if (keys.length === 0) {
       return {};
     }
-    const firstKey = keys[0];
-    const entry = record[firstKey];
-    if (!entry || typeof entry !== 'object') {
-      return {};
-    }
-    return {
-      [firstKey]: {
-        should_capitalize: Boolean(entry.should_capitalize ?? entry.shouldCapitalize),
-        singular_form:
-          typeof entry.singular_form === 'string'
-            ? entry.singular_form
-            : typeof entry.singular === 'string'
-              ? entry.singular
-              : '',
-        plural_form:
-          typeof entry.plural_form === 'string'
-            ? entry.plural_form
-            : typeof entry.plural === 'string'
-              ? entry.plural
-              : ''
+
+    // Preserve all valid localization entries (changed from keeping only first one)
+    // This allows auto-synced English + manually added languages to coexist
+    const result = {};
+    for (const key of keys) {
+      const entry = record[key];
+      if (entry && typeof entry === 'object') {
+        result[key] = {
+          should_capitalize: Boolean(entry.should_capitalize ?? entry.shouldCapitalize),
+          singular_form:
+            typeof entry.singular_form === 'string'
+              ? entry.singular_form
+              : typeof entry.singular === 'string'
+                ? entry.singular
+                : '',
+          plural_form:
+            typeof entry.plural_form === 'string'
+              ? entry.plural_form
+              : typeof entry.plural === 'string'
+                ? entry.plural
+                : ''
+        };
       }
-    };
+    }
+    return result;
   }
 
   const wizardState = loadState();
@@ -867,6 +872,8 @@
 
   const tokenNameInput = document.getElementById('token-name');
   const tokenNameMessage = document.getElementById('token-name-message');
+  const ownerIdentityInput = document.getElementById('owner-identity-id');
+  const ownerIdentityMessage = document.getElementById('owner-identity-message');
   const namingNextButton = document.getElementById('naming-next');
   const namingLocalizationNextButton = document.getElementById('naming-localization-next');
 
@@ -912,7 +919,6 @@
   let distributionUI = createDistributionUI(distributionForm);
   let advancedUI = createAdvancedUI(advancedForm);
   const manualActionUIs = {};
-  let freezeUI = null;
 
   const validationTimers = {};
   const validationFingerprints = {};
@@ -1013,7 +1019,6 @@
   const marketplaceTradeModeScreen = document.getElementById('screen-permissions-marketplace-trade-mode-change');
   const directPricingScreen = document.getElementById('screen-permissions-direct-pricing-change');
   const mainControlScreen = document.getElementById('screen-permissions-main-control-change');
-  const freezeForm = document.getElementById('freeze-form');
   const infoScreenEntries = INFO_STEPS.map((id) => ({
     id,
     element: document.getElementById(`screen-${id}`)
@@ -1179,9 +1184,6 @@
     }
   });
 
-  if (freezeForm) {
-    freezeUI = createFreezeUI(freezeForm);
-  }
 
   ensureNamingFormState();
   initialisePermissionGroupsUI();
@@ -1207,6 +1209,11 @@
     tokenNameInput.addEventListener('blur', () => evaluateNaming({ touched: true }));
   }
 
+  if (ownerIdentityInput) {
+    ownerIdentityInput.addEventListener('input', handleNamingInput);
+    ownerIdentityInput.addEventListener('blur', () => evaluateNaming({ touched: true }));
+  }
+
   // Plural field and capitalize checkbox
   if (tokenPluralInput) {
     tokenPluralInput.addEventListener('input', handleNamingInput);
@@ -1222,33 +1229,36 @@
     const plural = tokenPluralInput ? tokenPluralInput.value.trim() : '';
     const shouldCapitalize = tokenCapitalizeInput ? tokenCapitalizeInput.checked : false;
 
-    // Only sync if we have at least singular form
-    if (singular) {
-      // Ensure naming structure exists
-      if (!wizardState.form.naming) {
-        wizardState.form.naming = { conventions: { localizations: {} }, rows: [] };
-      }
-      if (!wizardState.form.naming.conventions) {
-        wizardState.form.naming.conventions = { localizations: {} };
-      }
-      if (!wizardState.form.naming.conventions.localizations) {
-        wizardState.form.naming.conventions.localizations = {};
-      }
+    // Ensure naming structure exists
+    if (!wizardState.form.naming) {
+      wizardState.form.naming = { conventions: { localizations: {} }, rows: [] };
+    }
+    if (!wizardState.form.naming.conventions) {
+      wizardState.form.naming.conventions = { localizations: {} };
+    }
+    if (!wizardState.form.naming.conventions.localizations) {
+      wizardState.form.naming.conventions.localizations = {};
+    }
 
-      // Auto-update English localization
+    // Remove English localization if singular is empty, otherwise update it
+    if (!singular) {
+      delete wizardState.form.naming.conventions.localizations.en;
+      console.log('🗑️  Removed English localization (token name cleared)');
+    } else {
+      // Auto-update English localization (plural is required, no auto-generation)
       wizardState.form.naming.conventions.localizations.en = {
         singular_form: singular,
-        plural_form: plural || singular + 's', // Default plural if not provided
+        plural_form: plural || '', // No auto-generation - user must provide plural
         should_capitalize: shouldCapitalize
       };
-
       console.log('✅ Auto-synced to English localization:', wizardState.form.naming.conventions.localizations);
-      console.log('📋 Full naming state:', wizardState.form.naming);
+    }
 
-      // Persist the state
-      if (typeof persistState === 'function') {
-        persistState();
-      }
+    console.log('📋 Full naming state:', wizardState.form.naming);
+
+    // Always persist the state (including deletions)
+    if (typeof persistState === 'function') {
+      persistState();
     }
   }
 
@@ -1891,7 +1901,6 @@
       });
     });
     syncManualActionUIs({ announce: false });
-    syncFreezeUI({ announce: false });
     updateRegistrationPreviewVisibility();
     refreshFlow({ initial: true, suppressFocus: true });
   }
@@ -1910,6 +1919,7 @@
     syncIdentityUI();
 
     tokenNameInput.value = wizardState.form.tokenName || '';
+    ownerIdentityInput.value = wizardState.form.ownerIdentityId || '';
 
     ensureNamingFormState();
     renderLocalizationRows(wizardState.form.naming.rows);
@@ -1919,7 +1929,6 @@
       permissionsUI.setValues(wizardState.form.permissions);
     }
     ensurePermissionsGroupState();
-    syncFreezeUI({ announce: false });
     renderPermissionGroups();
     if (distributionUI && typeof distributionUI.setValues === 'function') {
       distributionUI.setValues(wizardState.form.distribution);
@@ -2438,6 +2447,31 @@
 
     wizardState.form.tokenName = rawValue;
 
+    // Validate owner identity ID
+    const rawIdentity = ownerIdentityInput.value;
+    const identityResult = validateBase58Identity(rawIdentity);
+
+    if (touched || !silent) {
+      ownerIdentityMessage.textContent = identityResult.valid ? '' : identityResult.message;
+    } else {
+      ownerIdentityMessage.textContent = '';
+    }
+
+    // Visual feedback for identity
+    if (rawIdentity.trim().length > 0) {
+      if (identityResult.valid) {
+        ownerIdentityInput.classList.remove('wizard-field__input--error');
+        ownerIdentityInput.classList.add('wizard-field__input--valid');
+      } else {
+        ownerIdentityInput.classList.remove('wizard-field__input--valid');
+        ownerIdentityInput.classList.add('wizard-field__input--error');
+      }
+    } else {
+      ownerIdentityInput.classList.remove('wizard-field__input--valid', 'wizard-field__input--error');
+    }
+
+    wizardState.form.ownerIdentityId = rawIdentity;
+
     // Validate plural form (using token name as singular)
     const plural = tokenPluralInput.value.trim();
     let pluralValid = true;
@@ -2478,7 +2512,7 @@
     wizardState.form.naming.capitalize = tokenCapitalizeInput.checked;
 
     const localizationResult = validateLocalizationRows({ touched, silent });
-    const isValid = nameResult.valid && pluralValid && localizationResult.valid;
+    const isValid = nameResult.valid && identityResult.valid && pluralValid && localizationResult.valid;
 
     namingNextButton.disabled = !isValid;
 
@@ -2921,7 +2955,7 @@
 
     const storagePrefixes = ['wizard:', 'token:', 'qr:'];
     const shouldClearStorageKey = (key) =>
-      key === STATE_STORAGE_KEY || storagePrefixes.some((prefix) => key.startsWith(prefix));
+      key === STATE_STORAGE_KEY || key === SENSITIVE_DATA_KEY || storagePrefixes.some((prefix) => key.startsWith(prefix));
 
     try {
       for (let index = localStorage.length - 1; index >= 0; index -= 1) {
@@ -3016,6 +3050,7 @@
 
     try {
       storage.removeItem(STATE_STORAGE_KEY);
+      sessionStorage.removeItem(SENSITIVE_DATA_KEY);
     } catch (error) {
       console.debug('Unable to clear stored wizard state', error);
     }
@@ -3532,6 +3567,25 @@
     return { valid: true, message: '', normalized: trimmed };
   }
 
+  function validateBase58Identity(rawValue) {
+    const trimmed = rawValue.trim();
+    if (trimmed !== rawValue) {
+      return { valid: false, message: 'Remove leading or trailing spaces.' };
+    }
+    if (trimmed.length === 0) {
+      return { valid: false, message: 'Owner identity ID is required.' };
+    }
+    if (trimmed.length < 43 || trimmed.length > 44) {
+      return { valid: false, message: 'Identity ID must be 43-44 characters.' };
+    }
+    // Base58 alphabet: 123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz
+    const base58Pattern = /^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$/;
+    if (!base58Pattern.test(trimmed)) {
+      return { valid: false, message: 'Invalid Base58 format. Use only Base58 characters.' };
+    }
+    return { valid: true, message: '' };
+  }
+
   function applyTokenNameValidation(result, options = {}) {
     const touched = options.touched ?? false;
     namingNextButton.disabled = !result.valid;
@@ -3784,7 +3838,6 @@
         groupListElement.appendChild(emptyHint);
       }
       syncManualActionUIs({ announce: false });
-      syncFreezeUI({ announce: false });
       return;
     }
 
@@ -3811,7 +3864,14 @@
     });
 
     syncManualActionUIs({ announce: false });
-    syncFreezeUI({ announce: false });
+  }
+
+  function buildGroupLabel(group, index) {
+    // Use custom name if provided, otherwise use default "Group N" format
+    if (group.name && group.name.trim()) {
+      return group.name.trim();
+    }
+    return `Group ${index + 1}`;
   }
 
   function buildPermissionGroupCard(group, index, isPrimary) {
@@ -4731,7 +4791,14 @@
       shouldCapitalize: Boolean(data.shouldCapitalize)
     }));
     wizardState.form.naming.rows = limitLocalizationRows(wizardState.form.naming.rows);
+
+    // Preserve auto-synced 'en' entry when updating from manual localization rows
+    const existingEn = wizardState.form.naming.conventions.localizations?.en;
     wizardState.form.naming.conventions.localizations = limitLocalizationRecord(sortedRecord);
+    // Restore 'en' entry if it existed, has valid data, and wasn't in manual rows
+    if (existingEn && !sortedRecord.en && existingEn.singular_form) {
+      wizardState.form.naming.conventions.localizations.en = existingEn;
+    }
 
     if (localizationGlobalMessage) {
       // FIXED: Update message to reflect that localization is optional
@@ -5415,6 +5482,9 @@
         if (typeof form.tokenName === 'string') {
           state.form.tokenName = form.tokenName;
         }
+        if (typeof form.ownerIdentityId === 'string') {
+          state.form.ownerIdentityId = form.ownerIdentityId;
+        }
 
         if (form.naming && typeof form.naming === 'object') {
           const namingForm = form.naming;
@@ -5636,11 +5706,243 @@
         ? computedFurthest
         : Math.max(computedFurthest, storedFurthestIndex);
 
+      // Hybrid storage: Restore sensitive identities from sessionStorage
+      try {
+        const sensitiveJson = sessionStorage.getItem(SENSITIVE_DATA_KEY);
+        if (sensitiveJson) {
+          const sensitiveData = JSON.parse(sensitiveJson);
+
+          // Restore owner identity
+          if (sensitiveData.ownerIdentityId) {
+            state.form.ownerIdentityId = sensitiveData.ownerIdentityId;
+          }
+
+          // Restore group member identities
+          if (Array.isArray(sensitiveData.groups) && Array.isArray(state.form.permissions.groups)) {
+            state.form.permissions.groups = state.form.permissions.groups.map((group, groupIndex) => {
+              const savedGroup = sensitiveData.groups[groupIndex];
+              if (!savedGroup) return group;
+
+              return {
+                ...group,
+                members: (group.members || []).map((member, memberIndex) => {
+                  const savedMember = savedGroup.members?.[memberIndex];
+                  return {
+                    ...member,
+                    identityId: savedMember?.identityId || ''
+                  };
+                })
+              };
+            });
+          }
+
+          // Restore manual action performer identities
+          if (sensitiveData.manualActions) {
+            MANUAL_ACTION_DEFINITIONS.forEach(def => {
+              const savedIdentities = sensitiveData.manualActions[def.key];
+              const action = state.form.permissions[def.key];
+              if (savedIdentities && action?.allowAuthorized && Array.isArray(action.authorizedPerformers)) {
+                action.authorizedPerformers = action.authorizedPerformers.map((p, index) => ({
+                  ...p,
+                  identityId: savedIdentities[index] || ''
+                }));
+              }
+            });
+          }
+
+          // Restore distribution recipient identity
+          if (sensitiveData.distributionRecipient && state.form.distribution?.preprogrammed?.recipient) {
+            state.form.distribution.preprogrammed.recipient.identityId = sensitiveData.distributionRecipient;
+          }
+
+          // Restore pre-programmed distribution entry identities
+          if (Array.isArray(sensitiveData.preProgrammedEntries) && Array.isArray(state.form.distribution?.preProgrammed?.entries)) {
+            state.form.distribution.preProgrammed.entries = state.form.distribution.preProgrammed.entries.map((entry, index) => {
+              const savedEntry = sensitiveData.preProgrammedEntries.find(e => e.id === entry.id);
+              if (savedEntry) {
+                return {
+                  ...entry,
+                  identity: savedEntry.identity || ''
+                };
+              }
+              return entry;
+            });
+          }
+
+          // Restore registration identity
+          if (sensitiveData.registrationIdentity && state.form.registration?.identity) {
+            state.form.registration.identity.id = sensitiveData.registrationIdentity;
+          }
+        }
+      } catch (sessionError) {
+        console.warn('Unable to restore sensitive data from sessionStorage:', sessionError);
+      }
+
       return state;
     } catch (error) {
       console.warn('Unable to read wizard state:', error);
       return fallback;
     }
+  }
+
+  /**
+   * Extract sensitive identity data from snapshot
+   * Returns object containing all identity IDs for session storage
+   */
+  function extractSensitiveData(snapshot) {
+    const sensitive = {
+      ownerIdentityId: snapshot.form.ownerIdentityId || '',
+      groups: [],
+      manualActions: {},
+      distributionRecipient: '',
+      preProgrammedEntries: [],
+      registrationIdentity: snapshot.form.registration?.identity?.id || ''
+    };
+
+    // Extract group member identities
+    if (Array.isArray(snapshot.form.permissions?.groups)) {
+      sensitive.groups = snapshot.form.permissions.groups.map(group => ({
+        name: group.name || '',
+        members: (group.members || []).map(member => ({
+          identityId: member.identityId || ''
+        }))
+      }));
+    }
+
+    // Extract manual action performer identities
+    MANUAL_ACTION_DEFINITIONS.forEach(def => {
+      const action = snapshot.form.permissions?.[def.key];
+      if (action && action.allowAuthorized && Array.isArray(action.authorizedPerformers)) {
+        sensitive.manualActions[def.key] = action.authorizedPerformers.map(p => p.identityId || '');
+      }
+    });
+
+    // Extract distribution recipient identity
+    if (snapshot.form.distribution?.preprogrammed?.recipient?.identityId) {
+      sensitive.distributionRecipient = snapshot.form.distribution.preprogrammed.recipient.identityId;
+    }
+
+    // Extract pre-programmed distribution entry identities
+    if (Array.isArray(snapshot.form.distribution?.preProgrammed?.entries)) {
+      sensitive.preProgrammedEntries = snapshot.form.distribution.preProgrammed.entries.map(entry => ({
+        id: entry.id || '',
+        identity: entry.identity || ''
+      }));
+    }
+
+    return sensitive;
+  }
+
+  /**
+   * Remove sensitive identity data from snapshot
+   * Returns sanitized snapshot safe for localStorage
+   */
+  function sanitizeSnapshot(snapshot) {
+    const sanitized = JSON.parse(JSON.stringify(snapshot));
+
+    // Clear owner identity
+    sanitized.form.ownerIdentityId = '';
+
+    // Clear group member identities
+    if (Array.isArray(sanitized.form.permissions?.groups)) {
+      sanitized.form.permissions.groups = sanitized.form.permissions.groups.map(group => ({
+        ...group,
+        members: (group.members || []).map(member => ({
+          ...member,
+          identityId: ''
+        }))
+      }));
+    }
+
+    // Clear manual action performer identities
+    MANUAL_ACTION_DEFINITIONS.forEach(def => {
+      const action = sanitized.form.permissions?.[def.key];
+      if (action && action.allowAuthorized && Array.isArray(action.authorizedPerformers)) {
+        action.authorizedPerformers = action.authorizedPerformers.map(p => ({
+          ...p,
+          identityId: ''
+        }));
+      }
+    });
+
+    // Clear distribution recipient identity
+    if (sanitized.form.distribution?.preprogrammed?.recipient) {
+      sanitized.form.distribution.preprogrammed.recipient.identityId = '';
+    }
+
+    // Clear pre-programmed distribution entry identities
+    if (Array.isArray(sanitized.form.distribution?.preProgrammed?.entries)) {
+      sanitized.form.distribution.preProgrammed.entries = sanitized.form.distribution.preProgrammed.entries.map(entry => ({
+        ...entry,
+        identity: ''
+      }));
+    }
+
+    // Clear registration identity
+    if (sanitized.form.registration?.identity) {
+      sanitized.form.registration.identity.id = '';
+    }
+
+    return sanitized;
+  }
+
+  /**
+   * Merge sensitive data back into restored snapshot
+   */
+  function mergeSensitiveData(snapshot, sensitiveData) {
+    if (!sensitiveData) return snapshot;
+
+    const merged = JSON.parse(JSON.stringify(snapshot));
+
+    // Restore owner identity
+    if (sensitiveData.ownerIdentityId) {
+      merged.form.ownerIdentityId = sensitiveData.ownerIdentityId;
+    }
+
+    // Restore group member identities
+    if (Array.isArray(sensitiveData.groups) && Array.isArray(merged.form.permissions?.groups)) {
+      merged.form.permissions.groups = merged.form.permissions.groups.map((group, groupIndex) => {
+        const savedGroup = sensitiveData.groups[groupIndex];
+        if (!savedGroup) return group;
+
+        return {
+          ...group,
+          members: (group.members || []).map((member, memberIndex) => {
+            const savedMember = savedGroup.members?.[memberIndex];
+            return {
+              ...member,
+              identityId: savedMember?.identityId || ''
+            };
+          })
+        };
+      });
+    }
+
+    // Restore manual action performer identities
+    if (sensitiveData.manualActions) {
+      MANUAL_ACTION_DEFINITIONS.forEach(def => {
+        const savedIdentities = sensitiveData.manualActions[def.key];
+        const action = merged.form.permissions?.[def.key];
+        if (savedIdentities && action?.allowAuthorized && Array.isArray(action.authorizedPerformers)) {
+          action.authorizedPerformers = action.authorizedPerformers.map((p, index) => ({
+            ...p,
+            identityId: savedIdentities[index] || ''
+          }));
+        }
+      });
+    }
+
+    // Restore distribution recipient identity
+    if (sensitiveData.distributionRecipient && merged.form.distribution?.preprogrammed?.recipient) {
+      merged.form.distribution.preprogrammed.recipient.identityId = sensitiveData.distributionRecipient;
+    }
+
+    // Restore registration identity
+    if (sensitiveData.registrationIdentity && merged.form.registration?.identity) {
+      merged.form.registration.identity.id = sensitiveData.registrationIdentity;
+    }
+
+    return merged;
   }
 
   function persistState() {
@@ -5675,6 +5977,7 @@
         }, {}),
         form: {
           tokenName: wizardState.form.tokenName,
+          ownerIdentityId: wizardState.form.ownerIdentityId,
           naming: {
             rows: limitedRows.map((row) => ({
               code: row.code || '',
@@ -5728,7 +6031,20 @@
           }
         }
       };
-      storage.setItem(STATE_STORAGE_KEY, JSON.stringify(snapshot));
+
+      // Hybrid storage: Extract sensitive identities for sessionStorage
+      const sensitiveData = extractSensitiveData(snapshot);
+      const sanitizedSnapshot = sanitizeSnapshot(snapshot);
+
+      // Save non-sensitive config to localStorage (persists forever)
+      storage.setItem(STATE_STORAGE_KEY, JSON.stringify(sanitizedSnapshot));
+
+      // Save sensitive identities to sessionStorage (clears on browser close)
+      try {
+        sessionStorage.setItem(SENSITIVE_DATA_KEY, JSON.stringify(sensitiveData));
+      } catch (sessionError) {
+        console.warn('Unable to save sensitive data to sessionStorage:', sessionError);
+      }
     } catch (error) {
       console.warn('Unable to persist wizard state:', error);
     }
@@ -5992,6 +6308,23 @@
     const baseSupplyInput = document.getElementById('base-supply');
     const maxSupplyInput = document.getElementById('max-supply');
 
+    // Get checkbox elements
+    const historyTransfersInput = document.getElementById('history-transfers');
+    const historyMintsInput = document.getElementById('history-mints');
+    const historyBurnsInput = document.getElementById('history-burns');
+    const historyFreezesInput = document.getElementById('history-freezes');
+    const historyPurchasesInput = document.getElementById('history-purchases');
+    const startPausedInput = document.getElementById('permissions-start-paused');
+    const allowFrozenInput = document.getElementById('permissions-allow-frozen');
+
+    const keepsHistoryInputs = {
+      transfers: historyTransfersInput,
+      mints: historyMintsInput,
+      burns: historyBurnsInput,
+      freezes: historyFreezesInput,
+      purchases: historyPurchasesInput
+    };
+
     if (!decimalsInput || !baseSupplyInput) {
       return null;
     }
@@ -6195,6 +6528,15 @@
       });
     }
 
+    // Change Max Supply Enable/Disable Radio Buttons
+    const changeMaxSupplyEnabledRadios = document.getElementsByName('change-max-supply-enabled');
+    changeMaxSupplyEnabledRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        wizardState.form.permissions.changeMaxSupply.enabled = radio.value === 'enabled';
+        persistState();
+      });
+    });
+
     // Change Max Supply Governance Checkboxes
     const changeMaxSupplyAllowAuthorizedNone = document.getElementById('change-max-supply-allow-authorized-none');
     const changeMaxSupplyAllowAdminNone = document.getElementById('change-max-supply-allow-admin-none');
@@ -6219,6 +6561,34 @@
       });
     }
 
+    // Unfreeze Enable/Disable Radio Buttons
+    const unfreezeEnabledRadios = document.getElementsByName('manual-unfreeze-enabled');
+    unfreezeEnabledRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        wizardState.form.permissions.unfreeze.enabled = radio.value === 'enabled';
+        persistState();
+      });
+    });
+
+    // Destroy Frozen Enable/Disable Radio Buttons
+    const destroyFrozenEnabledRadios = document.getElementsByName('destroy-frozen-enabled');
+    destroyFrozenEnabledRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        wizardState.form.permissions.destroyFrozen.enabled = radio.value === 'enabled';
+        persistState();
+      });
+    });
+
+    // Freeze System Enable/Disable Radio Buttons
+    const freezeEnabledRadios = document.getElementsByName('freeze-enabled');
+    freezeEnabledRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        if (!radio.checked) return;
+        wizardState.form.permissions.freeze.enabled = radio.value === 'enabled';
+        persistState();
+      });
+    });
+
     // Unfreeze Governance Checkboxes
     const unfreezeAllowAuthorizedNone = document.getElementById('unfreeze-allow-authorized-none');
     const unfreezeAllowAdminNone = document.getElementById('unfreeze-allow-admin-none');
@@ -6242,6 +6612,52 @@
         persistState();
       });
     }
+
+    // Unfreeze Permission Radio Buttons
+    const unfreezePermissionRadios = document.getElementsByName('manual-unfreeze-permission');
+    unfreezePermissionRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        if (!radio.checked) return;
+        const value = radio.value;
+        if (value === 'owner-only') {
+          wizardState.form.permissions.unfreeze.performerType = 'owner';
+          wizardState.form.permissions.unfreeze.performerReference = '';
+        } else if (value === 'specific-identity') {
+          wizardState.form.permissions.unfreeze.performerType = 'identity';
+          // performerReference will be set by the identity input field
+        } else if (value === 'group') {
+          wizardState.form.permissions.unfreeze.performerType = 'group';
+          // performerReference will be set by the group select
+        } else if (value === 'no-one') {
+          wizardState.form.permissions.unfreeze.performerType = 'none';
+          wizardState.form.permissions.unfreeze.performerReference = '';
+        }
+        persistState();
+      });
+    });
+
+    // Destroy Frozen Permission Radio Buttons
+    const destroyFrozenPermissionRadios = document.getElementsByName('destroy-frozen-permission');
+    destroyFrozenPermissionRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        if (!radio.checked) return;
+        const value = radio.value;
+        if (value === 'owner-only') {
+          wizardState.form.permissions.destroyFrozen.performerType = 'owner';
+          wizardState.form.permissions.destroyFrozen.performerReference = '';
+        } else if (value === 'specific-identity') {
+          wizardState.form.permissions.destroyFrozen.performerType = 'identity';
+          // performerReference will be set by the identity input field
+        } else if (value === 'group') {
+          wizardState.form.permissions.destroyFrozen.performerType = 'group';
+          // performerReference will be set by the group select
+        } else if (value === 'no-one') {
+          wizardState.form.permissions.destroyFrozen.performerType = 'none';
+          wizardState.form.permissions.destroyFrozen.performerReference = '';
+        }
+        persistState();
+      });
+    });
 
     // Initialize UI
     setTimeout(() => {
@@ -6283,6 +6699,20 @@
       evaluatePermissions({ touched: false });
     }, 100);
 
+    // Add event listeners for history tracking checkboxes
+    Object.values(keepsHistoryInputs).forEach((input) => {
+      if (!input) return;
+      input.addEventListener('change', () => evaluatePermissions({ touched: true }));
+    });
+
+    // Add event listeners for other permission checkboxes
+    if (startPausedInput) {
+      startPausedInput.addEventListener('change', () => evaluatePermissions({ touched: true }));
+    }
+    if (allowFrozenInput) {
+      allowFrozenInput.addEventListener('change', () => evaluatePermissions({ touched: true }));
+    }
+
     return {
       setValues(values = {}) {
         if (decimalsInput) {
@@ -6303,9 +6733,15 @@
           baseSupply: baseSupplyInput ? baseSupplyInput.value.trim() : '',
           useMaxSupply: maxSupplyValue.length > 0, // True if user entered a value
           maxSupply: maxSupplyValue,
-          keepsHistory: { transfers: false, mints: false, burns: false, freezes: false },
-          startAsPaused: false,
-          allowTransferToFrozenBalance: false
+          keepsHistory: {
+            transfers: Boolean(historyTransfersInput && historyTransfersInput.checked),
+            mints: Boolean(historyMintsInput && historyMintsInput.checked),
+            burns: Boolean(historyBurnsInput && historyBurnsInput.checked),
+            freezes: Boolean(historyFreezesInput && historyFreezesInput.checked),
+            purchases: Boolean(historyPurchasesInput && historyPurchasesInput.checked)
+          },
+          startAsPaused: Boolean(startPausedInput && startPausedInput.checked),
+          allowTransferToFrozenBalance: Boolean(allowFrozenInput && allowFrozenInput.checked)
         };
       }
     };
@@ -6392,11 +6828,11 @@
     const startPausedInput = form.querySelector('#permissions-start-paused');
     const allowFrozenInput = form.querySelector('#permissions-allow-frozen');
     const keepsHistoryInputs = {
-      transfers: form.querySelector('#permissions-history-transfers'),
-      mints: form.querySelector('#permissions-history-mints'),
-      burns: form.querySelector('#permissions-history-burns'),
-      freezes: form.querySelector('#permissions-history-freezes'),
-      purchases: form.querySelector('#permissions-history-purchases')
+      transfers: form.querySelector('#history-transfers'),
+      mints: form.querySelector('#history-mints'),
+      burns: form.querySelector('#history-burns'),
+      freezes: form.querySelector('#history-freezes'),
+      purchases: form.querySelector('#history-purchases')
     };
 
     function syncMaxSupplyVisibility(checked) {
@@ -6565,264 +7001,7 @@
     };
   }
 
-  function createFreezeUI(form) {
-    if (!form) {
-      return null;
-    }
 
-    const stepId = 'permissions-freeze';
-    const enabledRadios = Array.from(form.querySelectorAll('input[name="freeze-enabled"]'));
-    const performerSelect = form.querySelector('#freeze-performer');
-    const performerIdentityWrapper = form.querySelector('[data-freeze-identity="perform"]');
-    const performerIdentityInput = form.querySelector('#freeze-performer-identity');
-    const ruleChangerSelect = form.querySelector('#freeze-rule-changer');
-    const ruleIdentityWrapper = form.querySelector('[data-freeze-identity="rules"]');
-    const ruleIdentityInput = form.querySelector('#freeze-rule-identity');
-    const allowAuthorizedNoneInput = form.querySelector('#freeze-allow-authorized-none');
-    const allowAdminNoneInput = form.querySelector('#freeze-allow-admin-none');
-    const allowSelfChangeInput = form.querySelector('#freeze-allow-self-change');
-    const performerIdentityMount = createConditionalFieldMount(performerIdentityWrapper);
-    const ruleIdentityMount = createConditionalFieldMount(ruleIdentityWrapper);
-    const controlsPanel = form.querySelector('[data-freeze-controls]');
-    const messageElement = form.querySelector('#freeze-message');
-
-    form.addEventListener('submit', (event) => event.preventDefault());
-
-    let touched = Boolean(getStepState(stepId)?.touched);
-
-    function state() {
-      ensureFreezeState();
-      return wizardState.form.permissions.freeze;
-    }
-
-    function setIdentityVisibility(type, mount, input, value, enabled) {
-      if (!mount || !input) {
-        return;
-      }
-      const show = enabled && type === 'identity';
-      if (show) {
-        mount.show();
-        input.disabled = false;
-        input.required = true;
-        input.value = value || '';
-      } else {
-        mount.hide();
-        input.disabled = true;
-        input.required = false;
-        input.value = value || '';
-      }
-    }
-
-    function setControlsEnabled(enabled) {
-      const controlElements = [
-        performerSelect,
-        ruleChangerSelect,
-        performerIdentityInput,
-        ruleIdentityInput,
-        allowAuthorizedNoneInput,
-        allowAdminNoneInput,
-        allowSelfChangeInput
-      ];
-      controlElements.forEach((element) => {
-        if (element) {
-          element.disabled = !enabled;
-        }
-      });
-      if (controlsPanel) {
-        if (enabled) {
-          controlsPanel.hidden = false;
-          controlsPanel.removeAttribute('aria-disabled');
-        } else {
-          controlsPanel.hidden = true;
-          controlsPanel.setAttribute('aria-disabled', 'true');
-        }
-      }
-    }
-
-    function validate(current) {
-      const freezeState = current || state();
-      if (!freezeState || typeof freezeState !== 'object') {
-        return { valid: false, message: 'Configure freeze permissions.' };
-      }
-      if (!freezeState.enabled) {
-        return { valid: true, message: '' };
-      }
-      if (freezeState.perform.type === 'identity' && !freezeState.perform.identity) {
-        return { valid: false, message: 'Enter the identity ID for the actor allowed to freeze accounts.' };
-      }
-      if (freezeState.changeRules.type === 'identity' && !freezeState.changeRules.identity) {
-        return { valid: false, message: 'Enter the identity ID for the actor allowed to change freeze rules.' };
-      }
-      return { valid: true, message: '' };
-    }
-
-    function applyValidation(current, { silent = false } = {}) {
-      const validation = validate(current);
-      if (messageElement) {
-        if (!validation.valid && touched) {
-          messageElement.textContent = validation.message;
-        } else {
-          messageElement.textContent = '';
-        }
-      }
-      updateStepStatusFromValidation(stepId, validation, touched);
-      if (!validation.valid && !silent && touched && validation.message) {
-        announce(validation.message);
-      }
-      return validation;
-    }
-
-    function commit(partial, { markTouched = true, silent = false } = {}) {
-      ensureFreezeState();
-      const current = wizardState.form.permissions.freeze;
-      const next = {
-        enabled: typeof partial.enabled === 'boolean' ? partial.enabled : current.enabled,
-        perform: { ...current.perform, ...(partial.perform || {}) },
-        changeRules: { ...current.changeRules, ...(partial.changeRules || {}) },
-        flags: { ...current.flags, ...(partial.flags || {}) }
-      };
-      wizardState.form.permissions.freeze = normalizeFreezeState(next);
-      persistState();
-      if (markTouched) {
-        touched = true;
-      }
-      applyValidation(wizardState.form.permissions.freeze, { silent });
-    }
-
-    function sync({ announce = true } = {}) {
-      const freezeState = state();
-      touched = Boolean(getStepState(stepId)?.touched);
-
-      setControlsEnabled(freezeState.enabled);
-
-      if (enabledRadios.length) {
-        enabledRadios.forEach((radio) => {
-          radio.checked = radio.value === (freezeState.enabled ? 'enabled' : 'disabled');
-        });
-      }
-
-      if (performerSelect) {
-        performerSelect.value = freezeState.perform.type;
-      }
-      setIdentityVisibility(
-        freezeState.perform.type,
-        performerIdentityMount,
-        performerIdentityInput,
-        freezeState.perform.identity,
-        freezeState.enabled
-      );
-      if (performerIdentityInput && freezeState.perform.type === 'identity') {
-        performerIdentityInput.value = freezeState.perform.identity;
-      }
-
-      if (ruleChangerSelect) {
-        ruleChangerSelect.value = freezeState.changeRules.type;
-      }
-      setIdentityVisibility(
-        freezeState.changeRules.type,
-        ruleIdentityMount,
-        ruleIdentityInput,
-        freezeState.changeRules.identity,
-        freezeState.enabled
-      );
-      if (ruleIdentityInput && freezeState.changeRules.type === 'identity') {
-        ruleIdentityInput.value = freezeState.changeRules.identity;
-      }
-
-      if (allowAuthorizedNoneInput) {
-        allowAuthorizedNoneInput.checked = Boolean(freezeState.flags.changeAuthorizedToNoOneAllowed);
-      }
-      if (allowAdminNoneInput) {
-        allowAdminNoneInput.checked = Boolean(freezeState.flags.changeAdminToNoOneAllowed);
-      }
-      if (allowSelfChangeInput) {
-        allowSelfChangeInput.checked = Boolean(freezeState.flags.selfChangeAdminAllowed);
-      }
-
-      applyValidation(freezeState, { silent: !announce });
-    }
-
-    if (enabledRadios.length) {
-      enabledRadios.forEach((radio) => {
-        radio.addEventListener('change', () => {
-          if (!radio.checked) {
-            return;
-          }
-          const enabled = radio.value === 'enabled';
-          commit({ enabled }, { silent: !enabled });
-          sync({ announce: false });
-        });
-      });
-    }
-
-    if (performerSelect) {
-      performerSelect.addEventListener('change', () => {
-        const value = performerSelect.value;
-        const type = value === 'identity' ? 'identity' : value === 'owner' ? 'owner' : 'none';
-        const update = { perform: { type } };
-        if (type !== 'identity') {
-          update.perform.identity = '';
-        }
-        commit(update);
-        sync({ announce: false });
-      });
-    }
-
-    if (ruleChangerSelect) {
-      ruleChangerSelect.addEventListener('change', () => {
-        const value = ruleChangerSelect.value;
-        const type = value === 'identity' ? 'identity' : value === 'owner' ? 'owner' : 'none';
-        const update = { changeRules: { type } };
-        if (type !== 'identity') {
-          update.changeRules.identity = '';
-        }
-        commit(update);
-        sync({ announce: false });
-      });
-    }
-
-    if (performerIdentityInput) {
-      performerIdentityInput.addEventListener('input', () => {
-        commit({ perform: { identity: performerIdentityInput.value.trim() } }, { silent: true });
-      });
-    }
-
-    if (ruleIdentityInput) {
-      ruleIdentityInput.addEventListener('input', () => {
-        commit({ changeRules: { identity: ruleIdentityInput.value.trim() } }, { silent: true });
-      });
-    }
-
-    if (allowAuthorizedNoneInput) {
-      allowAuthorizedNoneInput.addEventListener('change', () => {
-        commit({ flags: { changeAuthorizedToNoOneAllowed: Boolean(allowAuthorizedNoneInput.checked) } }, { silent: true });
-      });
-    }
-
-    if (allowAdminNoneInput) {
-      allowAdminNoneInput.addEventListener('change', () => {
-        commit({ flags: { changeAdminToNoOneAllowed: Boolean(allowAdminNoneInput.checked) } }, { silent: true });
-      });
-    }
-
-    if (allowSelfChangeInput) {
-      allowSelfChangeInput.addEventListener('change', () => {
-        commit({ flags: { selfChangeAdminAllowed: Boolean(allowSelfChangeInput.checked) } }, { silent: true });
-      });
-    }
-
-    sync({ announce: false });
-
-    return {
-      sync
-    };
-  }
-
-  function syncFreezeUI({ announce = false } = {}) {
-    if (freezeUI && typeof freezeUI.sync === 'function') {
-      freezeUI.sync({ announce });
-    }
-  }
 
   function createManualActionUI(definition, screen) {
     if (!definition || !screen) {
@@ -6890,14 +7069,6 @@
         return { type: 'main-group', reference: '' };
       }
       return { type: 'none', reference: '' };
-    }
-
-    function buildGroupLabel(group, index) {
-      // Use custom name if provided, otherwise use default "Group N" format
-      if (group.name && group.name.trim()) {
-        return group.name.trim();
-      }
-      return `Group ${index + 1}`;
     }
 
     function buildActorOptions() {
@@ -7672,7 +7843,9 @@
   function cloneDistributionValues(values = {}) {
     const cadence = values.cadence && typeof values.cadence === 'object' ? values.cadence : {};
     const emission = values.emission && typeof values.emission === 'object' ? values.emission : {};
-    return {
+    const preProgrammed = values.preProgrammed && typeof values.preProgrammed === 'object' ? values.preProgrammed : {};
+
+    const cloned = {
       cadence: {
         type: typeof cadence.type === 'string' ? cadence.type : 'BlockBasedDistribution',
         intervalBlocks: typeof cadence.intervalBlocks === 'string' ? cadence.intervalBlocks : '',
@@ -7696,6 +7869,22 @@
         minValue: typeof emission.minValue === 'string' ? emission.minValue : ''
       }
     };
+
+    // Include preProgrammed entries if they exist
+    if (Array.isArray(preProgrammed.entries)) {
+      cloned.preProgrammed = {
+        entries: preProgrammed.entries.map(entry => ({
+          id: entry.id || '',
+          days: typeof entry.days === 'number' ? entry.days : 0,
+          hours: typeof entry.hours === 'number' ? entry.hours : 0,
+          minutes: typeof entry.minutes === 'number' ? entry.minutes : 0,
+          identity: typeof entry.identity === 'string' ? entry.identity : '',
+          amount: typeof entry.amount === 'string' ? entry.amount : ''
+        }))
+      };
+    }
+
+    return cloned;
   }
 
   function parsePositiveInt(value) {
@@ -8852,6 +9041,25 @@
       return 'NoOne';
     }
 
+    function getActorFromPerformer(performerType, performerReference) {
+      if (!performerType || performerType === 'none') {
+        return 'NoOne';
+      }
+
+      if (performerType === 'owner') {
+        return 'ContractOwner';
+      } else if (performerType === 'identity' && performerReference) {
+        return performerReference;
+      } else if (performerType === 'group' && performerReference) {
+        return parseInt(performerReference, 10) || 0;
+      } else if (performerType === 'main-group') {
+        const mainIndex = wizardState.form.permissions.mainControlGroupIndex;
+        return mainIndex >= 0 ? mainIndex : 0;
+      }
+
+      return 'NoOne';
+    }
+
     // Helper: Convert keepsHistory to Platform format
     function transformKeepsHistory(keepsHistory) {
       return {
@@ -9236,18 +9444,27 @@
         wizardState.form.permissions.manualBurn || {}
       ),
       freezeRules: createRuleV0(
-        Boolean(wizardState.form.advanced?.changeControl?.freeze),
-        'ContractOwner',
-        wizardState.form.permissions.freeze?.flags || {}
+        Boolean(wizardState.form.permissions.manualFreeze?.enabled),
+        getActorFromPerformer(
+          wizardState.form.permissions.manualFreeze?.performerType,
+          wizardState.form.permissions.manualFreeze?.performerReference
+        ),
+        wizardState.form.permissions.manualFreeze || {}
       ),
       unfreezeRules: createRuleV0(
-        Boolean(wizardState.form.advanced?.changeControl?.unfreeze),
-        'ContractOwner',
+        Boolean(wizardState.form.permissions.unfreeze?.enabled),
+        getActorFromPerformer(
+          wizardState.form.permissions.unfreeze?.performerType,
+          wizardState.form.permissions.unfreeze?.performerReference
+        ),
         wizardState.form.permissions.unfreeze || {}
       ),
       destroyFrozenFundsRules: createRuleV0(
-        Boolean(wizardState.form.advanced?.changeControl?.destroyFrozen),
-        'ContractOwner',
+        Boolean(wizardState.form.permissions.destroyFrozen?.enabled),
+        getActorFromPerformer(
+          wizardState.form.permissions.destroyFrozen?.performerType,
+          wizardState.form.permissions.destroyFrozen?.performerReference
+        ),
         wizardState.form.permissions.destroyFrozen || {}
       ),
       emergencyActionRules: createRuleV0(
@@ -9309,12 +9526,27 @@
     }
 
     // Build Platform contract structure
+    // Generate valid 32-byte identifiers using Evo SDK if available, otherwise use placeholder
+    let contractId = 'HtQNfXBZJu3WnvjvCFJKgbvfgWYJxWxaFWy23TKoFjg9';
+    let ownerIdentity = wizardState.form.ownerIdentityId?.trim() || 'BmKTJeLL3GfH8FxEx7SUbTog4eAKj8vJRDi97gYkxB9p';
+
+    // If EvoSDK is loaded, generate proper random identifiers for validation
+    if (window.EvoSDK && window.EvoSDK.Identifier && window.EvoSDK.Identifier.generate) {
+      try {
+        contractId = window.EvoSDK.Identifier.generate().toString();
+        // Only use generated ID for owner if no user-provided ID
+        if (!wizardState.form.ownerIdentityId?.trim()) {
+          ownerIdentity = window.EvoSDK.Identifier.generate().toString();
+        }
+      } catch (e) {
+        // Fallback to hardcoded placeholders if SDK generation fails
+      }
+    }
+
     const platformContract = {
       $format_version: '1',
-      // TODO: We should generate this one based on owner ID
-      id: '6DsX9gnYqtkM9SmdfyqMeBaX323mD5AJCnQYjdJmt8jk',  // Platform generates this
-      // TODO: Should be asked from user?
-      ownerId: '6DsX9gnYqtkM9SmdfyqMeBaX323mD5AJCnQYjdJmt8jk',     // Comes from identity during registration
+      id: contractId,  // Platform generates actual ID during registration
+      ownerId: ownerIdentity,           // User-provided owner identity ID
       version: 1,
       config: {
         $format_version: '0',
@@ -9594,6 +9826,36 @@
     console.log('  ✅ Linear emission min/max values');
     console.log('  ✅ Exponential emission min/max values');
     console.log('  ✅ Transfer notes configuration');
+
+    // Test 9: Owner Identity ID (NEW - Required field)
+    console.group('Test 9: Owner Identity ID Validation');
+    console.log('Testing default owner identity...');
+    const test9State = createTestState({
+      tokenName: 'IdentityToken'
+    });
+    const test9Output = generateTestContract(test9State);
+    console.log('Generated Contract:', test9Output);
+    console.log('✅ Checks:');
+    console.log('- Has ownerId at root:', 'ownerId' in test9Output);
+    console.log('- ownerId is string:', typeof test9Output.ownerId === 'string');
+    console.log('- ownerId value:', test9Output.ownerId);
+    console.log('- ownerId length (should be 43-44):', test9Output.ownerId?.length);
+    console.log('- ownerId is valid Base58:', /^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{43,44}$/.test(test9Output.ownerId));
+
+    // Test custom owner identity
+    console.log('\nTesting custom owner identity...');
+    const customOwnerId = 'HtQNfXBZJu3WnvjvCFJKgbvfgWYJxWxaFWy23TKoFjg9';
+    const test9CustomState = createTestState({
+      tokenName: 'CustomOwnerToken',
+      ownerId: customOwnerId
+    });
+    const test9CustomOutput = generateTestContract(test9CustomState);
+    console.log('✅ Custom Owner Checks:');
+    console.log('- Custom ownerId matches input:', test9CustomOutput.ownerId === customOwnerId);
+    console.log('- Custom ownerId value:', test9CustomOutput.ownerId);
+    console.groupEnd();
+
+    console.log('  ✅ Owner Identity ID validation');
     console.groupEnd();
   }
 
@@ -9603,6 +9865,14 @@
     // Apply test configuration
     if (config.tokenName) {
       defaultState.form.tokenName = config.tokenName;
+    }
+
+    // Set owner identity (required field)
+    if (config.ownerId) {
+      defaultState.form.ownerIdentityId = config.ownerId;
+    } else {
+      // Use a valid test identity ID (Base58, 43-44 chars)
+      defaultState.form.ownerIdentityId = 'BmKTJeLL3GfH8FxEx7SUbTog4eAKj8vJRDi97gYkxB9p';
     }
 
     if (config.decimals !== undefined) {
@@ -11579,283 +11849,6 @@
 // Moved from naming to search step
 // Event listeners and state management handled in main wizard code above
 
-// ========================================
-// ACTION RULES PRESETS
-// ========================================
-// REMOVED: Action rules presets functionality - no longer used
-/*
-(function initializeActionRulesPresets() {
-  const presetRadios = document.querySelectorAll('input[name="action-rules-preset"]');
-
-  if (!presetRadios || presetRadios.length === 0) {
-    console.warn('Action rules preset radios not found');
-    return;
-  }
-
-  const wizardState = window.wizardState;
-  const persistState = window.persistState;
-
-  if (!wizardState || !persistState) {
-    console.error('wizardState or persistState not available for presets');
-    return;
-  }
-
-  // Define preset configurations
-  const PRESETS = {
-    'custom': {
-      name: 'Custom',
-      description: 'Manual configuration - no automatic changes',
-      config: null // null means don't auto-configure
-    },
-    'most-restrictive': {
-      name: 'Most Restrictive',
-      description: 'All actions disabled after initialization',
-      config: {
-        manualMint: { enabled: false },
-        manualBurn: { enabled: false },
-        manualFreeze: { enabled: false },
-        destroyFrozen: { enabled: false },
-        emergency: { enabled: false },
-        changeControl: {
-          mint: false,
-          burn: false,
-          freeze: false,
-          unfreeze: false,
-          destroyFrozen: false,
-          emergency: false,
-          maxSupply: false,
-          conventions: false,
-          tradeMode: false,
-          directPurchase: false,
-          mainControlGroup: false
-        }
-      }
-    },
-    'emergency-only': {
-      name: 'Only Emergency Action',
-      description: 'Only emergency actions (pausing) permitted',
-      config: {
-        manualMint: { enabled: false },
-        manualBurn: { enabled: false },
-        manualFreeze: { enabled: false },
-        destroyFrozen: { enabled: false },
-        emergency: { enabled: true },
-        changeControl: {
-          mint: false,
-          burn: false,
-          freeze: false,
-          unfreeze: false,
-          destroyFrozen: false,
-          emergency: true,
-          maxSupply: false,
-          conventions: false,
-          tradeMode: false,
-          directPurchase: false,
-          mainControlGroup: false
-        }
-      }
-    },
-    'mint-burn': {
-      name: 'Minting and Burning',
-      description: 'Supply management through minting and burning',
-      config: {
-        manualMint: { enabled: true },
-        manualBurn: { enabled: true },
-        manualFreeze: { enabled: false },
-        destroyFrozen: { enabled: false },
-        emergency: { enabled: false },
-        changeControl: {
-          mint: true,
-          burn: true,
-          freeze: false,
-          unfreeze: false,
-          destroyFrozen: false,
-          emergency: false,
-          maxSupply: false,
-          conventions: false,
-          tradeMode: false,
-          directPurchase: false,
-          mainControlGroup: false
-        }
-      }
-    },
-    'advanced': {
-      name: 'Advanced Actions',
-      description: 'Minting, burning, and freezing capabilities',
-      config: {
-        manualMint: { enabled: true },
-        manualBurn: { enabled: true },
-        manualFreeze: { enabled: true },
-        destroyFrozen: { enabled: false },
-        emergency: { enabled: false },
-        changeControl: {
-          mint: true,
-          burn: true,
-          freeze: true,
-          unfreeze: true,
-          destroyFrozen: false,
-          emergency: false,
-          maxSupply: false,
-          conventions: false,
-          tradeMode: false,
-          directPurchase: false,
-          mainControlGroup: false
-        }
-      }
-    },
-    'all-allowed': {
-      name: 'All Allowed',
-      description: 'All actions enabled',
-      config: {
-        manualMint: { enabled: true },
-        manualBurn: { enabled: true },
-        manualFreeze: { enabled: true },
-        destroyFrozen: { enabled: true },
-        emergency: { enabled: true },
-        changeControl: {
-          mint: true,
-          burn: true,
-          freeze: true,
-          unfreeze: true,
-          destroyFrozen: true,
-          emergency: true,
-          maxSupply: true,
-          conventions: true,
-          tradeMode: true,
-          directPurchase: true,
-          mainControlGroup: true
-        }
-      }
-    }
-  };
-
-  // Apply preset configuration to wizard state
-  function applyPreset(presetKey) {
-    const preset = PRESETS[presetKey];
-    if (!preset) {
-      console.warn('Unknown preset:', presetKey);
-      return;
-    }
-
-    console.log('Applying preset:', preset.name);
-
-    // Ensure permissions structure exists
-    if (!wizardState.form.permissions) {
-      wizardState.form.permissions = {};
-    }
-
-    // Save the selected preset key
-    wizardState.form.permissions.selectedPreset = presetKey;
-
-    // If custom, don't auto-configure
-    if (preset.config === null) {
-      console.log('Custom preset selected - no automatic configuration');
-      persistState();
-      return;
-    }
-
-    const config = preset.config;
-
-    // Apply manual action configurations
-    if (config.manualMint) {
-      wizardState.form.permissions.manualMint = {
-        ...wizardState.form.permissions.manualMint,
-        enabled: config.manualMint.enabled,
-        performerType: config.manualMint.enabled ? 'owner' : 'none'
-      };
-    }
-
-    if (config.manualBurn) {
-      wizardState.form.permissions.manualBurn = {
-        ...wizardState.form.permissions.manualBurn,
-        enabled: config.manualBurn.enabled,
-        performerType: config.manualBurn.enabled ? 'owner' : 'none'
-      };
-    }
-
-    if (config.manualFreeze) {
-      wizardState.form.permissions.manualFreeze = {
-        ...wizardState.form.permissions.manualFreeze,
-        enabled: config.manualFreeze.enabled,
-        performerType: config.manualFreeze.enabled ? 'owner' : 'none'
-      };
-    }
-
-    if (config.destroyFrozen) {
-      wizardState.form.permissions.destroyFrozen = {
-        ...wizardState.form.permissions.destroyFrozen,
-        enabled: config.destroyFrozen.enabled,
-        performerType: config.destroyFrozen.enabled ? 'owner' : 'none'
-      };
-    }
-
-    if (config.emergency) {
-      wizardState.form.permissions.emergency = {
-        ...wizardState.form.permissions.emergency,
-        enabled: config.emergency.enabled,
-        performerType: config.emergency.enabled ? 'owner' : 'none'
-      };
-    }
-
-    // Ensure advanced structure exists
-    if (!wizardState.form.advanced) {
-      wizardState.form.advanced = {};
-    }
-    if (!wizardState.form.advanced.changeControl) {
-      wizardState.form.advanced.changeControl = {};
-    }
-
-    // Apply change control configurations
-    if (config.changeControl) {
-      Object.assign(wizardState.form.advanced.changeControl, config.changeControl);
-    }
-
-    // Save to localStorage
-    persistState();
-
-    console.log('✅ Preset applied:', preset.name);
-    console.log('State after preset:', {
-      manualMint: wizardState.form.permissions.manualMint?.enabled,
-      manualBurn: wizardState.form.permissions.manualBurn?.enabled,
-      manualFreeze: wizardState.form.permissions.manualFreeze?.enabled,
-      destroyFrozen: wizardState.form.permissions.destroyFrozen?.enabled,
-      emergency: wizardState.form.permissions.emergency?.enabled,
-      changeControl: wizardState.form.advanced.changeControl
-    });
-  }
-
-  // Listen for preset changes
-  presetRadios.forEach(radio => {
-    radio.addEventListener('change', (e) => {
-      if (e.target.checked) {
-        const presetKey = e.target.value;
-        applyPreset(presetKey);
-      }
-    });
-  });
-
-  // Restore previously selected preset from state
-  function restoreSelectedPreset() {
-    const savedPreset = wizardState.form.permissions?.selectedPreset;
-    if (savedPreset) {
-      // Find and check the corresponding radio button
-      const radioToCheck = Array.from(presetRadios).find(radio => radio.value === savedPreset);
-      if (radioToCheck && !radioToCheck.checked) {
-        radioToCheck.checked = true;
-        console.log('Restored preset selection:', savedPreset);
-      }
-    }
-  }
-
-  // Restore on initialization
-  restoreSelectedPreset();
-
-  // Expose function to restore preset when returning to this screen
-  window.restorePresetSelection = restoreSelectedPreset;
-
-  console.log('Action rules presets initialized with 6 templates');
-})();
-*/
 
 // ========================================
 // PRE-PROGRAMMED DISTRIBUTION
@@ -12076,74 +12069,6 @@
   console.log('Pre-programmed distribution initialized');
 })();
 
-// ========================================
-// CONTROL MODEL - GROUPS INTEGRATION
-// ========================================
-// REMOVED: Permissions scope radios functionality - no longer used
-/*
-(function initializeControlModelGroupsIntegration() {
-  const permissionsScopeRadios = document.querySelectorAll('input[name="permissions-scope"]');
-  const enableGroupCheckbox = document.getElementById('enable-group');
-
-  if (!permissionsScopeRadios || permissionsScopeRadios.length === 0) {
-    console.warn('Permissions scope radios not found');
-    return;
-  }
-
-  if (!enableGroupCheckbox) {
-    console.warn('Enable group checkbox not found');
-    return;
-  }
-
-  const wizardState = window.wizardState;
-  const persistState = window.persistState;
-
-  if (!wizardState || !persistState) {
-    console.error('wizardState or persistState not available for control model integration');
-    return;
-  }
-
-  // Handle permissions scope changes
-  permissionsScopeRadios.forEach(radio => {
-    radio.addEventListener('change', (e) => {
-      if (!e.target.checked) return;
-
-      const selectedScope = e.target.value;
-
-      if (selectedScope === 'groups') {
-        // Enable groups when "Groups" control model is selected
-        enableGroupCheckbox.checked = true;
-
-        // Trigger change event on checkbox to show group configuration
-        const changeEvent = new Event('change', { bubbles: true });
-        enableGroupCheckbox.dispatchEvent(changeEvent);
-
-        // Save to state
-        if (wizardState.form.group) {
-          wizardState.form.group.enabled = true;
-          persistState();
-        }
-
-        console.log('Control model: Groups enabled');
-      } else if (selectedScope === 'owner') {
-        // Owner-only mode - groups are optional
-        // Don't automatically disable groups, let user decide
-        console.log('Control model: Owner-only selected');
-      }
-    });
-  });
-
-  // Sync state on load: if groups are enabled, select the groups radio
-  if (wizardState.form.group?.enabled) {
-    const groupsRadio = document.querySelector('input[name="permissions-scope"][value="groups"]');
-    if (groupsRadio) {
-      groupsRadio.checked = true;
-    }
-  }
-
-  console.log('Control model - Groups integration initialized');
-})();
-*/
 
 // ═══════════════════════════════════════════════════════
 // TEMPLATE SELECTION

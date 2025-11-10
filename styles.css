@@ -1841,6 +1841,7 @@ html[data-theme='auto'] .wizard-tab--active {
   flex-direction: column;
   align-items: center;
   gap: clamp(var(--space-lg), 3vw, var(--space-xl));
+  background: var(--color-background);
 }
 
 .wizard-screen {
@@ -4004,20 +4005,13 @@ body {
 
 /* Shell containers must be transparent so the page gradient shows through */
 #wizard,
-.wizard-main,
-.wizard-container,
-.wizard-screen,
 #wizard::before,
-.wizard-main::before,
-.wizard-container::before,
-.wizard-screen::before,
-#wizard::after,
-.wizard-main::after,
-.wizard-container::after,
-.wizard-screen::after {
+#wizard::after {
   background: transparent;
   background-image: none;
 }
+/* Note: .wizard-main, .wizard-container, and .wizard-screen removed from transparency rule
+   to prevent content bleed-through. Only the #wizard wrapper remains transparent. */
 /* ==== BG-SMOOTH v4 END ==== */
 
 /* ========================================

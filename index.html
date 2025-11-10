@@ -513,17 +513,21 @@
           <!-- Right Side Guide Panel -->
           <aside class="page-guide" aria-label="Page guide">
             <div class="page-guide__content">
-              <h2 class="page-guide__title">Basic Token Name</h2>
-              <p class="page-guide__intro">Give your token its main identity — this is the name others will see and
-                recognize.</p>
+              <h2 class="page-guide__title">Token Owner & Name</h2>
+              <p class="page-guide__intro">Identify yourself as the contract owner and give your token its identity.</p>
 
               <div class="page-guide__section">
                 <h3 class="page-guide__section-title">Guide</h3>
-                <p>Enter a clear and professional name (e.g. MyToken). Avoid special characters. Then click Continue to
-                  set up localizations.</p>
+                <p><strong>Start by entering your owner identity ID, then provide your token name.</strong> Without a valid identity ID, you cannot proceed to registration.</p>
 
                 <h4 class="page-guide__step-heading">What to Enter</h4>
                 <ol class="page-guide__steps">
+                  <li>
+                    <strong>Owner Identity ID</strong>
+                    <p><strong>REQUIRED FIRST:</strong> Your Base58-encoded Dash Platform identity ID (43-44 characters). This permanently identifies you as the contract owner.</p>
+                    <p><em>Example: "4hKFP3mFB9vku8VJKcZvwVN123..."</em></p>
+                    <p style="color: var(--color-warning); margin-top: var(--space-2);"><strong>⚠️ Without a valid identity ID, you cannot access the Registration step.</strong></p>
+                  </li>
                   <li>
                     <strong>Token Name</strong>
                     <p>Choose a unique and descriptive name for your token (2–64 characters). This is the primary
@@ -557,10 +561,30 @@
 
           <div class="wizard-screen__inner">
             <form class="wizard-form" id="naming-form" novalidate>
-              <h1 class="wizard-screen__title" id="title-naming" tabindex="-1">What would you like to name your token?
+              <h1 class="wizard-screen__title" id="title-naming" tabindex="-1">Token Owner & Name
               </h1>
-              <p class="wizard-screen__subtitle">Give your token a memorable name that users will recognize and trust.
+              <p class="wizard-screen__subtitle">Identify yourself as the contract owner and give your token a memorable name.
               </p>
+
+              <!-- Owner Identity Card -->
+              <div class="form-card" style="max-width: 100%;">
+                <div class="form-card__header">
+                  <h3 class="form-card__title">Contract Owner</h3>
+                  <p class="form-card__description">Your Dash Platform identity ID - this identifies you as the contract owner and cannot be changed later</p>
+                </div>
+                <div class="form-card__body">
+                  <div class="field-group">
+                    <label class="wizard-field__label" for="owner-identity-id">
+                      Owner Identity ID *
+                    </label>
+                    <input class="wizard-field__input" id="owner-identity-id" name="owner-identity-id" type="text"
+                      inputmode="text" autocomplete="off" placeholder="e.g., 4hKFP3mFB9vku8VJKcZvwVN123..." required
+                      minlength="43" maxlength="44" aria-describedby="owner-identity-message">
+                    <span class="field-hint">43-44 characters • Your Base58-encoded Dash Platform identity ID</span>
+                    <p class="wizard-field__message" id="owner-identity-message" role="status" aria-live="polite"></p>
+                  </div>
+                </div>
+              </div>
 
               <!-- Token Name Card -->
               <div class="form-card" style="max-width: 100%;">
@@ -1351,7 +1375,7 @@
           </aside>
 
           <div class="wizard-screen__inner">
-            <form class="wizard-form" id="permissions-manual-mint-form" novalidate>
+            <form class="wizard-form" id="manual-mint-form" novalidate>
               <h1 class="wizard-screen__title" id="title-permissions-manual-mint" tabindex="-1">Can this token be
                 minted?</h1>
               <p class="wizard-screen__subtitle">Configure permissions for creating new tokens on-demand (outside of
@@ -1976,7 +2000,7 @@
           </aside>
 
           <div class="wizard-screen__inner">
-            <form class="wizard-form" id="permissions-manual-freeze-form" novalidate>
+            <form class="wizard-form" id="manual-freeze-form" novalidate>
               <h1 class="wizard-screen__title" id="title-permissions-manual-freeze" tabindex="-1">Can token balances be
                 frozen?</h1>
               <p class="wizard-screen__subtitle">Configure permissions for freezing and unfreezing identities to prevent
@@ -2667,7 +2691,7 @@
           </aside>
 
           <div class="wizard-screen__inner">
-            <form class="wizard-form" id="permissions-emergency-form" novalidate>
+            <form class="wizard-form" id="emergency-form" novalidate>
               <h1 class="wizard-screen__title" id="title-permissions-emergency" tabindex="-1">Can emergency actions be
                 performed?</h1>
               <p class="wizard-screen__subtitle">Configure permissions for global pause/resume in emergencies. When
@@ -4081,7 +4105,7 @@
                       <div class="wizard-field wizard-field--checkbox">
                         <label class="wizard-checkbox">
                           <input class="wizard-checkbox__input" type="checkbox" id="transfer-note-type-public"
-                            name="transfer-note-type-public" checked>
+                            name="transfer-note-type-public">
                           <span class="wizard-checkbox__label">
                             <span class="wizard-checkbox__title">Public Notes</span>
                             <span class="wizard-checkbox__hint" style="display: block; margin-top: var(--space-2xs);">
@@ -5634,7 +5658,7 @@
                   <div class="field-group" style="margin-bottom: var(--space-4);">
                     <label class="wizard-checkbox" for="history-transfers">
                       <input class="wizard-checkbox__input" type="checkbox" id="history-transfers"
-                        name="history-transfers" checked>
+                        name="history-transfers">
                       <span class="wizard-checkbox__label">
                         <span class="wizard-checkbox__title">Would you like to keep a queryable history of
                           transfers?</span>
@@ -5646,8 +5670,7 @@
 
                   <div class="field-group" style="margin-bottom: var(--space-4);">
                     <label class="wizard-checkbox" for="history-freezes">
-                      <input class="wizard-checkbox__input" type="checkbox" id="history-freezes" name="history-freezes"
-                        checked>
+                      <input class="wizard-checkbox__input" type="checkbox" id="history-freezes" name="history-freezes">
                       <span class="wizard-checkbox__label">
                         <span class="wizard-checkbox__title">Would you like to keep a queryable history of freezes and
                           unfreezes?</span>
@@ -5659,8 +5682,7 @@
 
                   <div class="field-group" style="margin-bottom: var(--space-4);">
                     <label class="wizard-checkbox" for="history-mints">
-                      <input class="wizard-checkbox__input" type="checkbox" id="history-mints" name="history-mints"
-                        checked>
+                      <input class="wizard-checkbox__input" type="checkbox" id="history-mints" name="history-mints">
                       <span class="wizard-checkbox__label">
                         <span class="wizard-checkbox__title">Would you like to keep a queryable history of mints?</span>
                         <span class="wizard-checkbox__hint">Track all token minting operations to maintain a complete
@@ -5671,8 +5693,7 @@
 
                   <div class="field-group" style="margin-bottom: var(--space-4);">
                     <label class="wizard-checkbox" for="history-burns">
-                      <input class="wizard-checkbox__input" type="checkbox" id="history-burns" name="history-burns"
-                        checked>
+                      <input class="wizard-checkbox__input" type="checkbox" id="history-burns" name="history-burns">
                       <span class="wizard-checkbox__label">
                         <span class="wizard-checkbox__title">Would you like to keep a queryable history of burns?</span>
                         <span class="wizard-checkbox__hint">Track all token burning operations to document supply
@@ -5684,7 +5705,7 @@
                   <div class="field-group" style="margin-bottom: var(--space-4);">
                     <label class="wizard-checkbox" for="history-pricing-changes">
                       <input class="wizard-checkbox__input" type="checkbox" id="history-pricing-changes"
-                        name="history-pricing-changes" checked>
+                        name="history-pricing-changes">
                       <span class="wizard-checkbox__label">
                         <span class="wizard-checkbox__title">Would you like to keep a queryable history of
                           direct-pricing changes?</span>
@@ -5697,7 +5718,7 @@
                   <div class="field-group">
                     <label class="wizard-checkbox" for="history-purchases">
                       <input class="wizard-checkbox__input" type="checkbox" id="history-purchases"
-                        name="history-purchases" checked>
+                        name="history-purchases">
                       <span class="wizard-checkbox__label">
                         <span class="wizard-checkbox__title">Would you like to keep a queryable history of direct
                           purchases?</span>
@@ -6310,17 +6331,6 @@
                             developers</span>
                         </span>
                       </label>
-                      <label class="wizard-option" data-method="self">
-                        <input class="wizard-option__input" type="radio" name="registration-method" value="self">
-                        <span class="wizard-option__body">
-                          <span class="wizard-option__header">
-                            <span class="wizard-option__title">⚠️ Manual (Not Recommended)</span>
-                            <span class="wizard-option__check" aria-hidden="true"></span>
-                          </span>
-                          <span class="wizard-option__description">Import wallet & register identity • Requires
-                            technical knowledge</span>
-                        </span>
-                      </label>
                     </div>
                   </div>
                 </div>
@@ -6440,70 +6450,6 @@
                 </div>
               </section>
 
-              <section class="registration-panel" id="registration-panel-self" aria-labelledby="registration-self-title"
-                hidden>
-                <h2 class="registration-panel__title" id="registration-self-title">Identity &amp; Private Key (not
-                  recommended)</h2>
-                <p class="wizard-screen__help">Import a wallet to initialise the Dash JS client, then register an
-                  identity. <a class="wizard-link"
-                    href="https://docs.dash.org/projects/platform/en/stable/docs/tutorials/identities-and-names/register-an-identity.html#:~:text=Prerequisites"
-                    rel="noreferrer" target="_blank">Review the Dash Platform prerequisites</a>.</p>
-                <div class="wizard-field">
-                  <label class="wizard-field__label" for="wallet-file">Wallet JSON file</label>
-                  <input class="wizard-field__input" id="wallet-file" name="wallet-file" type="file"
-                    accept="application/json" aria-describedby="wallet-message wallet-balance-note">
-                  <p class="wizard-field__hint">Upload JSON that contains a mnemonic or private key.</p>
-                </div>
-                <div class="wizard-field">
-                  <label class="wizard-field__label" for="wallet-mnemonic">Wallet mnemonic</label>
-                  <textarea class="wizard-field__input" id="wallet-mnemonic" name="wallet-mnemonic" rows="3"
-                    placeholder="abandon ability able about above ..."
-                    aria-describedby="wallet-message wallet-balance-note"></textarea>
-                  <p class="wizard-field__hint">Enter 12–24 words separated by spaces. Typing a mnemonic clears any
-                    imported private key.</p>
-                </div>
-                <dl class="wallet-insights" aria-live="polite">
-                  <div class="wallet-insights__item">
-                    <dt class="wallet-insights__label">Receiving address</dt>
-                    <dd class="wallet-insights__value" id="wallet-address">—</dd>
-                  </div>
-                  <div class="wallet-insights__item">
-                    <dt class="wallet-insights__label">Balance</dt>
-                    <dd class="wallet-insights__value" id="wallet-balance">—</dd>
-                  </div>
-                </dl>
-                <p class="wizard-hint" id="wallet-balance-note" aria-live="polite">Import a wallet to preview balance
-                  and address.</p>
-                <p class="wizard-field__message" id="wallet-message" role="status" aria-live="polite"></p>
-                <p class="wizard-hint">Identities enable interactions on Dash Platform. <span id="identity-guidance"
-                    aria-live="polite">Import a funded wallet before registering an identity.</span> <a
-                    class="wizard-link"
-                    href="https://docs.dash.org/projects/platform/en/stable/docs/tutorials/identities-and-names/register-an-identity.html#:~:text=const%20createIdentity%20%3D%20async%20,return%20client.platform.identities.register%28%29%3B"
-                    rel="noreferrer" target="_blank">Read the identity docs</a>.</p>
-                <div class="wizard-inline">
-                  <button class="wizard-button wizard-button--secondary" type="button" id="identity-register">Register
-                    Identity</button>
-                </div>
-                <div class="wizard-field">
-                  <label class="wizard-field__label" for="identity-id">Identity ID</label>
-                  <textarea class="wizard-field__input" id="identity-id" name="identity-id" rows="2"
-                    placeholder="Identity ID" readonly aria-describedby="identity-message identity-guidance"></textarea>
-                  <p class="wizard-field__hint">The identifier returned by Dash Platform after registration.</p>
-                </div>
-                <p class="wizard-field__message" id="identity-message" role="status" aria-live="polite"></p>
-                <div class="registration-self-warning">
-                  <label class="wizard-checkbox" for="self-warning-checkbox">
-                    <input class="wizard-checkbox__input" id="self-warning-checkbox" type="checkbox"
-                      aria-describedby="self-warning-hint">
-                    <span class="wizard-checkbox__label">I understand the risks.</span>
-                  </label>
-                  <p class="wizard-hint" id="self-warning-hint">Confirm the warning and proceed only after your identity
-                    is registered.</p>
-                  <button class="wizard-button wizard-button--secondary" type="button" id="self-warning-proceed"
-                    disabled>Proceed</button>
-                </div>
-              </section>
-
               <p class="wizard-field__message wizard-status-banner" id="registration-message" role="status"
                 aria-live="polite"></p>
               <div class="wizard-actions wizard-actions--between wizard-actions--sticky">
@@ -6577,316 +6523,7 @@
         </section>
 
 
-        <section class="wizard-screen wizard-screen--info" id="screen-permissions-manual-mint"
-          data-step="permissions-manual-mint" hidden>
-          <div class="wizard-screen__inner">
-            <form class="wizard-form wizard-form--narrow" id="manual-mint-form" novalidate>
-              <h1 class="wizard-screen__title" id="title-permissions-manual-mint" tabindex="-1">Minting</h1>
-              <p class="wizard-screen__body">Configure who can mint tokens on demand and who may update that policy
-                after deployment.</p>
 
-              <fieldset class="wizard-fieldset" id="manual-mint-activation">
-                <legend class="wizard-field__label" id="manual-mint-activation-label">Minting availability</legend>
-                <div class="wizard-field__label-row">
-                  <p class="wizard-subsection__body" id="manual-mint-activation-copy">Would you like to enable minting
-                    for this token?</p>
-                  <button class="wizard-info-trigger" type="button" aria-expanded="false"
-                    aria-controls="manual-mint-activation-info">
-                    <span class="sr-only">More information about minting availability</span>
-                    <span aria-hidden="true" class="wizard-info-trigger__icon">i</span>
-                  </button>
-                </div>
-                <div class="wizard-info-panel" id="manual-mint-activation-info" hidden>
-                  <p class="wizard-info-panel__body">Minting lets approved actors create tokens outside any automated
-                    release schedule.</p>
-                </div>
-                <div class="wizard-choice-group" role="radiogroup" aria-labelledby="manual-mint-activation-label">
-                  <label class="wizard-choice">
-                    <input class="wizard-choice__input" type="radio" name="manual-mint-enabled"
-                      id="manual-mint-enabled-yes" value="enabled">
-                    <span class="wizard-choice__content">
-                      <span class="wizard-choice__title">Yes, enable minting</span>
-                      <span class="wizard-choice__hint">Allow designated actors to mint extra supply on demand.</span>
-                    </span>
-                  </label>
-                  <label class="wizard-choice">
-                    <input class="wizard-choice__input" type="radio" name="manual-mint-enabled"
-                      id="manual-mint-enabled-no" value="disabled">
-                    <span class="wizard-choice__content">
-                      <span class="wizard-choice__title">No, keep minting disabled</span>
-                      <span class="wizard-choice__hint">Only automated emissions (if any) can increase supply.</span>
-                    </span>
-                  </label>
-                </div>
-              </fieldset>
-
-              <div class="wizard-subsection wizard-subsection--panel" data-manual-mint-controls>
-                <section class="wizard-subsection" aria-labelledby="manual-mint-actioners">
-                  <h2 class="wizard-subsection__title" id="manual-mint-actioners">Authorize minting</h2>
-                  <p class="wizard-subsection__body">Select who can perform a minting action when it is enabled.</p>
-                  <div class="wizard-field" id="manual-mint-performer-field">
-                    <div class="wizard-field__label-row">
-                      <label class="wizard-field__label" for="manual-mint-performer">Authorized to perform
-                        action</label>
-                      <button class="wizard-info-trigger" type="button" aria-expanded="false"
-                        aria-controls="manual-mint-performer-info">
-                        <span class="sr-only">More information about who can perform minting</span>
-                        <span aria-hidden="true" class="wizard-info-trigger__icon">i</span>
-                      </button>
-                    </div>
-                    <div class="wizard-info-panel" id="manual-mint-performer-info" hidden>
-                      <p class="wizard-info-panel__body">Choose the account or group that may submit mint transactions
-                        when the feature is enabled.</p>
-                    </div>
-                    <select class="wizard-field__input" id="manual-mint-performer"></select>
-                    <div class="wizard-field wizard-field--stacked" data-manual-mint-identity="performer" hidden>
-                      <label class="wizard-field__label wizard-field__label--secondary"
-                        for="manual-mint-performer-identity">Identity ID</label>
-                      <input class="wizard-field__input wizard-field__input--condensed"
-                        id="manual-mint-performer-identity" type="text" placeholder="Enter the Base58 ID">
-                      <p class="wizard-field__hint">Provide the Dash Platform identity ID allowed to mint.</p>
-                    </div>
-                    <p class="wizard-field__hint" id="manual-mint-performer-hint">Choose <strong>No one</strong> to
-                      block minting entirely, or assign the contract owner, main group, or a specific group. Select
-                      <strong>Specific Identity</strong> to target a single identity ID.</p>
-                  </div>
-                </section>
-
-                <section class="wizard-subsection" aria-labelledby="manual-mint-rule-owners">
-                  <h2 class="wizard-subsection__title" id="manual-mint-rule-owners">Authorize rule changes</h2>
-                  <p class="wizard-subsection__body">Choose who may update the minting permissions after deployment.
-                    Separate the rule owner from the minting actors to enforce oversight.</p>
-                  <div class="wizard-field" id="manual-mint-rule-field">
-                    <div class="wizard-field__label-row">
-                      <label class="wizard-field__label" for="manual-mint-rule-changer">Authorized to change
-                        rules</label>
-                      <button class="wizard-info-trigger" type="button" aria-expanded="false"
-                        aria-controls="manual-mint-rule-info">
-                        <span class="sr-only">More information about who can change minting rules</span>
-                        <span aria-hidden="true" class="wizard-info-trigger__icon">i</span>
-                      </button>
-                    </div>
-                    <div class="wizard-info-panel" id="manual-mint-rule-info" hidden>
-                      <p class="wizard-info-panel__body">Assign the steward who can adjust minting permissions after
-                        launch.</p>
-                    </div>
-                    <select class="wizard-field__input" id="manual-mint-rule-changer"></select>
-                    <div class="wizard-field wizard-field--stacked" data-manual-mint-identity="changer" hidden>
-                      <label class="wizard-field__label wizard-field__label--secondary"
-                        for="manual-mint-rule-changer-identity">Identity ID</label>
-                      <input class="wizard-field__input wizard-field__input--condensed"
-                        id="manual-mint-rule-changer-identity" type="text" placeholder="Enter the Base58 ID">
-                      <p class="wizard-field__hint">Enter the identity ID that will control future updates to minting.
-                      </p>
-                    </div>
-                  </div>
-                </section>
-
-                <fieldset class="wizard-fieldset wizard-fieldset--nested" id="manual-mint-safeguards">
-                  <legend class="wizard-field__label" id="manual-mint-safeguards-label">Safeguards</legend>
-                  <div class="wizard-field__label-row">
-                    <p class="wizard-subsection__body" id="manual-mint-safeguards-copy">Choose which policy changes
-                      remain allowed over time.</p>
-                    <button class="wizard-info-trigger" type="button" aria-expanded="false"
-                      aria-controls="manual-mint-safeguards-info">
-                      <span class="sr-only">More information about minting safeguards</span>
-                      <span aria-hidden="true" class="wizard-info-trigger__icon">i</span>
-                    </button>
-                  </div>
-                  <div class="wizard-info-panel" id="manual-mint-safeguards-info" hidden>
-                    <p class="wizard-info-panel__body">Safeguards prevent administrators from immediately loosening
-                      every restriction on minting.</p>
-                  </div>
-                  <div class="wizard-field wizard-field--checkbox">
-                    <label class="wizard-checkbox" for="manual-mint-allow-authorized-none">
-                      <input class="wizard-checkbox__input" id="manual-mint-allow-authorized-none" type="checkbox">
-                      <span class="wizard-checkbox__label">Allow rule owners to remove all authorized minters</span>
-                    </label>
-                  </div>
-                  <div class="wizard-field wizard-field--checkbox">
-                    <label class="wizard-checkbox" for="manual-mint-allow-admin-none">
-                      <input class="wizard-checkbox__input" id="manual-mint-allow-admin-none" type="checkbox">
-                      <span class="wizard-checkbox__label">Allow rule owners to remove themselves</span>
-                    </label>
-                  </div>
-                  <div class="wizard-field wizard-field--checkbox">
-                    <label class="wizard-checkbox" for="manual-mint-allow-self-change">
-                      <input class="wizard-checkbox__input" id="manual-mint-allow-self-change" type="checkbox">
-                      <span class="wizard-checkbox__label">Allow current rule owners to reassign control to
-                        themselves</span>
-                    </label>
-                  </div>
-                </fieldset>
-
-                <p class="wizard-field__message" id="manual-mint-message" role="status" aria-live="polite"></p>
-              </div>
-
-              <div class="wizard-actions wizard-actions--end">
-                <button class="wizard-button wizard-button--secondary" type="button" data-step-return="permissions">Back
-                  to Permissions</button>
-              </div>
-            </form>
-          </div>
-        </section>
-
-
-        <section class="wizard-screen wizard-screen--info" id="screen-permissions-freeze" data-step="permissions-freeze"
-          hidden>
-          <div class="wizard-screen__inner">
-            <form class="wizard-form wizard-form--narrow" id="freeze-form" novalidate>
-              <h1 class="wizard-screen__title" id="title-permissions-freeze" tabindex="-1">Freeze</h1>
-              <p class="wizard-screen__body">This page will outline how accounts are frozen and which roles can enforce
-                the state.</p>
-
-              <fieldset class="wizard-fieldset" id="freeze-activation">
-                <legend class="wizard-field__label" id="freeze-activation-label">Freeze availability</legend>
-                <div class="wizard-field__label-row">
-                  <p class="wizard-subsection__body" id="freeze-activation-copy">Should account freezing be available
-                    for this token?</p>
-                  <button class="wizard-info-trigger" type="button" aria-expanded="false"
-                    aria-controls="freeze-activation-info">
-                    <span class="sr-only">More information about freeze availability</span>
-                    <span aria-hidden="true" class="wizard-info-trigger__icon">i</span>
-                  </button>
-                </div>
-                <div class="wizard-info-panel" id="freeze-activation-info" hidden>
-                  <p class="wizard-info-panel__body">Turning freezing on defines who can pause an identity&rsquo;s
-                    transfers when risk is detected.</p>
-                </div>
-                <div class="wizard-choice-group" role="radiogroup" aria-labelledby="freeze-activation-label">
-                  <label class="wizard-choice">
-                    <input class="wizard-choice__input" type="radio" name="freeze-enabled" id="freeze-enabled-yes"
-                      value="enabled">
-                    <span class="wizard-choice__content">
-                      <span class="wizard-choice__title">Yes, allow freezing controls</span>
-                      <span class="wizard-choice__hint">Designated actors may freeze identities when required.</span>
-                    </span>
-                  </label>
-                  <label class="wizard-choice">
-                    <input class="wizard-choice__input" type="radio" name="freeze-enabled" id="freeze-enabled-no"
-                      value="disabled">
-                    <span class="wizard-choice__content">
-                      <span class="wizard-choice__title">No, disable freezing</span>
-                      <span class="wizard-choice__hint">No one can freeze identities through this contract.</span>
-                    </span>
-                  </label>
-                </div>
-              </fieldset>
-
-              <div class="wizard-subsection wizard-subsection--panel" data-freeze-controls hidden>
-                <section class="wizard-subsection" aria-labelledby="freeze-actioners">
-                  <h2 class="wizard-subsection__title" id="freeze-actioners">Authorize freezing</h2>
-                  <p class="wizard-subsection__body">Select who can freeze an identity&rsquo;s balance when the feature
-                    is enabled.</p>
-                  <div class="wizard-field" id="freeze-performer-field">
-                    <div class="wizard-field__label-row">
-                      <label class="wizard-field__label" for="freeze-performer">Authorized to perform action</label>
-                      <button class="wizard-info-trigger" type="button" aria-expanded="false"
-                        aria-controls="freeze-performer-info">
-                        <span class="sr-only">More information about who can freeze identities</span>
-                        <span aria-hidden="true" class="wizard-info-trigger__icon">i</span>
-                      </button>
-                    </div>
-                    <div class="wizard-info-panel" id="freeze-performer-info" hidden>
-                      <p class="wizard-info-panel__body">Pick the account or group that may freeze identities when an
-                        incident occurs.</p>
-                    </div>
-                    <select class="wizard-field__input" id="freeze-performer">
-                      <option value="none">No one</option>
-                      <option value="owner">Contract owner</option>
-                      <option value="identity">Specific Identity</option>
-                    </select>
-                    <div class="wizard-field wizard-field--stacked" data-freeze-identity="perform" hidden>
-                      <label class="wizard-field__label wizard-field__label--secondary"
-                        for="freeze-performer-identity">Identity ID</label>
-                      <input class="wizard-field__input wizard-field__input--condensed" id="freeze-performer-identity"
-                        type="text" autocomplete="off" placeholder="Enter the Base58 ID">
-                      <p class="wizard-field__hint">Enter the identity ID permitted to freeze accounts.</p>
-                    </div>
-                    <p class="wizard-field__hint" id="freeze-performer-hint">Choose <strong>No one</strong> to keep
-                      freezing unavailable, or delegate the authority to the contract owner or the Specific Identity
-                      option.</p>
-                  </div>
-                </section>
-
-                <section class="wizard-subsection" aria-labelledby="freeze-rule-owners">
-                  <h2 class="wizard-subsection__title" id="freeze-rule-owners">Authorize rule changes</h2>
-                  <p class="wizard-subsection__body">Choose who can update the freezing policy after launch.</p>
-                  <div class="wizard-field" id="freeze-rule-field">
-                    <div class="wizard-field__label-row">
-                      <label class="wizard-field__label" for="freeze-rule-changer">Authorized to change rules</label>
-                      <button class="wizard-info-trigger" type="button" aria-expanded="false"
-                        aria-controls="freeze-rule-info">
-                        <span class="sr-only">More information about who can change freezing rules</span>
-                        <span aria-hidden="true" class="wizard-info-trigger__icon">i</span>
-                      </button>
-                    </div>
-                    <div class="wizard-info-panel" id="freeze-rule-info" hidden>
-                      <p class="wizard-info-panel__body">Specify who can adjust or revoke freezing permissions over
-                        time.</p>
-                    </div>
-                    <select class="wizard-field__input" id="freeze-rule-changer">
-                      <option value="none">No one</option>
-                      <option value="owner">Contract owner</option>
-                      <option value="identity">Specific Identity</option>
-                    </select>
-                    <div class="wizard-field wizard-field--stacked" data-freeze-identity="rules" hidden>
-                      <label class="wizard-field__label wizard-field__label--secondary"
-                        for="freeze-rule-identity">Identity ID</label>
-                      <input class="wizard-field__input wizard-field__input--condensed" id="freeze-rule-identity"
-                        type="text" autocomplete="off" placeholder="Enter the Base58 ID">
-                      <p class="wizard-field__hint">Enter the identity ID that can change freezing rules.</p>
-                    </div>
-                    <p class="wizard-field__hint" id="freeze-rule-hint">Select who can adjust freezing permissions
-                      later. Use <strong>Specific Identity</strong> to assign a single identity ID.</p>
-                  </div>
-                </section>
-
-                <fieldset class="wizard-fieldset wizard-fieldset--nested" id="freeze-safeguards">
-                  <legend class="wizard-field__label" id="freeze-safeguards-label">Safeguards</legend>
-                  <div class="wizard-field__label-row">
-                    <p class="wizard-subsection__body" id="freeze-safeguards-copy">Control how freezing permissions may
-                      be tightened or relaxed.</p>
-                    <button class="wizard-info-trigger" type="button" aria-expanded="false"
-                      aria-controls="freeze-safeguards-info">
-                      <span class="sr-only">More information about freezing safeguards</span>
-                      <span aria-hidden="true" class="wizard-info-trigger__icon">i</span>
-                    </button>
-                  </div>
-                  <div class="wizard-info-panel" id="freeze-safeguards-info" hidden>
-                    <p class="wizard-info-panel__body">Safeguards limit how administrators can weaken oversight of
-                      freezing privileges.</p>
-                  </div>
-                  <div class="wizard-field wizard-field--checkbox">
-                    <label class="wizard-checkbox" for="freeze-allow-authorized-none">
-                      <input class="wizard-checkbox__input" id="freeze-allow-authorized-none" type="checkbox">
-                      <span class="wizard-checkbox__label">Allow rule owners to remove all authorized freezers</span>
-                    </label>
-                  </div>
-                  <div class="wizard-field wizard-field--checkbox">
-                    <label class="wizard-checkbox" for="freeze-allow-admin-none">
-                      <input class="wizard-checkbox__input" id="freeze-allow-admin-none" type="checkbox">
-                      <span class="wizard-checkbox__label">Allow rule owners to remove themselves</span>
-                    </label>
-                  </div>
-                  <div class="wizard-field wizard-field--checkbox">
-                    <label class="wizard-checkbox" for="freeze-allow-self-change">
-                      <input class="wizard-checkbox__input" id="freeze-allow-self-change" type="checkbox">
-                      <span class="wizard-checkbox__label">Allow current rule owners to reassign control to
-                        themselves</span>
-                    </label>
-                  </div>
-                </fieldset>
-              </div>
-
-              <p class="wizard-field__message" id="freeze-message" role="status" aria-live="polite"></p>
-              <div class="wizard-actions wizard-actions--end">
-                <button class="wizard-button wizard-button--secondary" type="button" data-step-return="permissions">Back
-                  to Permissions</button>
-              </div>
-            </form>
-          </div>
-        </section>
 
         <section class="wizard-screen wizard-screen--info" id="screen-permissions-unfreeze"
           data-step="permissions-unfreeze" hidden>
@@ -7058,6 +6695,9 @@
       }
     })();
   </script>
+
+  <!-- Cleanup Service Workers and Caches -->
+  <script>
   (function () {
   'use strict';
   if ('serviceWorker' in navigator) {
