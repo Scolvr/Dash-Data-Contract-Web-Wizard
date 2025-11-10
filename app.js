@@ -15,6 +15,7 @@
   console.log('%c═══════════════════════════════════════════════════════\n', 'color: #008de4; font-weight: bold');
 
   const STATE_STORAGE_KEY = 'dashTokenWizardState';
+  const SENSITIVE_DATA_KEY = 'dashTokenWizardIdentities';
   const THEME_STORAGE_KEY = 'ui.theme';
   // FIXED: Correct order matching sidebar navigation
   // Note: 'overview' removed from sequence - accessible only from Document tab
@@ -2954,7 +2955,7 @@
 
     const storagePrefixes = ['wizard:', 'token:', 'qr:'];
     const shouldClearStorageKey = (key) =>
-      key === STATE_STORAGE_KEY || storagePrefixes.some((prefix) => key.startsWith(prefix));
+      key === STATE_STORAGE_KEY || key === SENSITIVE_DATA_KEY || storagePrefixes.some((prefix) => key.startsWith(prefix));
 
     try {
       for (let index = localStorage.length - 1; index >= 0; index -= 1) {
@@ -3049,6 +3050,7 @@
 
     try {
       storage.removeItem(STATE_STORAGE_KEY);
+      sessionStorage.removeItem(SENSITIVE_DATA_KEY);
     } catch (error) {
       console.debug('Unable to clear stored wizard state', error);
     }
@@ -5704,11 +5706,243 @@
         ? computedFurthest
         : Math.max(computedFurthest, storedFurthestIndex);
 
+      // Hybrid storage: Restore sensitive identities from sessionStorage
+      try {
+        const sensitiveJson = sessionStorage.getItem(SENSITIVE_DATA_KEY);
+        if (sensitiveJson) {
+          const sensitiveData = JSON.parse(sensitiveJson);
+
+          // Restore owner identity
+          if (sensitiveData.ownerIdentityId) {
+            state.form.ownerIdentityId = sensitiveData.ownerIdentityId;
+          }
+
+          // Restore group member identities
+          if (Array.isArray(sensitiveData.groups) && Array.isArray(state.form.permissions.groups)) {
+            state.form.permissions.groups = state.form.permissions.groups.map((group, groupIndex) => {
+              const savedGroup = sensitiveData.groups[groupIndex];
+              if (!savedGroup) return group;
+
+              return {
+                ...group,
+                members: (group.members || []).map((member, memberIndex) => {
+                  const savedMember = savedGroup.members?.[memberIndex];
+                  return {
+                    ...member,
+                    identityId: savedMember?.identityId || ''
+                  };
+                })
+              };
+            });
+          }
+
+          // Restore manual action performer identities
+          if (sensitiveData.manualActions) {
+            MANUAL_ACTION_DEFINITIONS.forEach(def => {
+              const savedIdentities = sensitiveData.manualActions[def.key];
+              const action = state.form.permissions[def.key];
+              if (savedIdentities && action?.allowAuthorized && Array.isArray(action.authorizedPerformers)) {
+                action.authorizedPerformers = action.authorizedPerformers.map((p, index) => ({
+                  ...p,
+                  identityId: savedIdentities[index] || ''
+                }));
+              }
+            });
+          }
+
+          // Restore distribution recipient identity
+          if (sensitiveData.distributionRecipient && state.form.distribution?.preprogrammed?.recipient) {
+            state.form.distribution.preprogrammed.recipient.identityId = sensitiveData.distributionRecipient;
+          }
+
+          // Restore pre-programmed distribution entry identities
+          if (Array.isArray(sensitiveData.preProgrammedEntries) && Array.isArray(state.form.distribution?.preProgrammed?.entries)) {
+            state.form.distribution.preProgrammed.entries = state.form.distribution.preProgrammed.entries.map((entry, index) => {
+              const savedEntry = sensitiveData.preProgrammedEntries.find(e => e.id === entry.id);
+              if (savedEntry) {
+                return {
+                  ...entry,
+                  identity: savedEntry.identity || ''
+                };
+              }
+              return entry;
+            });
+          }
+
+          // Restore registration identity
+          if (sensitiveData.registrationIdentity && state.form.registration?.identity) {
+            state.form.registration.identity.id = sensitiveData.registrationIdentity;
+          }
+        }
+      } catch (sessionError) {
+        console.warn('Unable to restore sensitive data from sessionStorage:', sessionError);
+      }
+
       return state;
     } catch (error) {
       console.warn('Unable to read wizard state:', error);
       return fallback;
     }
+  }
+
+  /**
+   * Extract sensitive identity data from snapshot
+   * Returns object containing all identity IDs for session storage
+   */
+  function extractSensitiveData(snapshot) {
+    const sensitive = {
+      ownerIdentityId: snapshot.form.ownerIdentityId || '',
+      groups: [],
+      manualActions: {},
+      distributionRecipient: '',
+      preProgrammedEntries: [],
+      registrationIdentity: snapshot.form.registration?.identity?.id || ''
+    };
+
+    // Extract group member identities
+    if (Array.isArray(snapshot.form.permissions?.groups)) {
+      sensitive.groups = snapshot.form.permissions.groups.map(group => ({
+        name: group.name || '',
+        members: (group.members || []).map(member => ({
+          identityId: member.identityId || ''
+        }))
+      }));
+    }
+
+    // Extract manual action performer identities
+    MANUAL_ACTION_DEFINITIONS.forEach(def => {
+      const action = snapshot.form.permissions?.[def.key];
+      if (action && action.allowAuthorized && Array.isArray(action.authorizedPerformers)) {
+        sensitive.manualActions[def.key] = action.authorizedPerformers.map(p => p.identityId || '');
+      }
+    });
+
+    // Extract distribution recipient identity
+    if (snapshot.form.distribution?.preprogrammed?.recipient?.identityId) {
+      sensitive.distributionRecipient = snapshot.form.distribution.preprogrammed.recipient.identityId;
+    }
+
+    // Extract pre-programmed distribution entry identities
+    if (Array.isArray(snapshot.form.distribution?.preProgrammed?.entries)) {
+      sensitive.preProgrammedEntries = snapshot.form.distribution.preProgrammed.entries.map(entry => ({
+        id: entry.id || '',
+        identity: entry.identity || ''
+      }));
+    }
+
+    return sensitive;
+  }
+
+  /**
+   * Remove sensitive identity data from snapshot
+   * Returns sanitized snapshot safe for localStorage
+   */
+  function sanitizeSnapshot(snapshot) {
+    const sanitized = JSON.parse(JSON.stringify(snapshot));
+
+    // Clear owner identity
+    sanitized.form.ownerIdentityId = '';
+
+    // Clear group member identities
+    if (Array.isArray(sanitized.form.permissions?.groups)) {
+      sanitized.form.permissions.groups = sanitized.form.permissions.groups.map(group => ({
+        ...group,
+        members: (group.members || []).map(member => ({
+          ...member,
+          identityId: ''
+        }))
+      }));
+    }
+
+    // Clear manual action performer identities
+    MANUAL_ACTION_DEFINITIONS.forEach(def => {
+      const action = sanitized.form.permissions?.[def.key];
+      if (action && action.allowAuthorized && Array.isArray(action.authorizedPerformers)) {
+        action.authorizedPerformers = action.authorizedPerformers.map(p => ({
+          ...p,
+          identityId: ''
+        }));
+      }
+    });
+
+    // Clear distribution recipient identity
+    if (sanitized.form.distribution?.preprogrammed?.recipient) {
+      sanitized.form.distribution.preprogrammed.recipient.identityId = '';
+    }
+
+    // Clear pre-programmed distribution entry identities
+    if (Array.isArray(sanitized.form.distribution?.preProgrammed?.entries)) {
+      sanitized.form.distribution.preProgrammed.entries = sanitized.form.distribution.preProgrammed.entries.map(entry => ({
+        ...entry,
+        identity: ''
+      }));
+    }
+
+    // Clear registration identity
+    if (sanitized.form.registration?.identity) {
+      sanitized.form.registration.identity.id = '';
+    }
+
+    return sanitized;
+  }
+
+  /**
+   * Merge sensitive data back into restored snapshot
+   */
+  function mergeSensitiveData(snapshot, sensitiveData) {
+    if (!sensitiveData) return snapshot;
+
+    const merged = JSON.parse(JSON.stringify(snapshot));
+
+    // Restore owner identity
+    if (sensitiveData.ownerIdentityId) {
+      merged.form.ownerIdentityId = sensitiveData.ownerIdentityId;
+    }
+
+    // Restore group member identities
+    if (Array.isArray(sensitiveData.groups) && Array.isArray(merged.form.permissions?.groups)) {
+      merged.form.permissions.groups = merged.form.permissions.groups.map((group, groupIndex) => {
+        const savedGroup = sensitiveData.groups[groupIndex];
+        if (!savedGroup) return group;
+
+        return {
+          ...group,
+          members: (group.members || []).map((member, memberIndex) => {
+            const savedMember = savedGroup.members?.[memberIndex];
+            return {
+              ...member,
+              identityId: savedMember?.identityId || ''
+            };
+          })
+        };
+      });
+    }
+
+    // Restore manual action performer identities
+    if (sensitiveData.manualActions) {
+      MANUAL_ACTION_DEFINITIONS.forEach(def => {
+        const savedIdentities = sensitiveData.manualActions[def.key];
+        const action = merged.form.permissions?.[def.key];
+        if (savedIdentities && action?.allowAuthorized && Array.isArray(action.authorizedPerformers)) {
+          action.authorizedPerformers = action.authorizedPerformers.map((p, index) => ({
+            ...p,
+            identityId: savedIdentities[index] || ''
+          }));
+        }
+      });
+    }
+
+    // Restore distribution recipient identity
+    if (sensitiveData.distributionRecipient && merged.form.distribution?.preprogrammed?.recipient) {
+      merged.form.distribution.preprogrammed.recipient.identityId = sensitiveData.distributionRecipient;
+    }
+
+    // Restore registration identity
+    if (sensitiveData.registrationIdentity && merged.form.registration?.identity) {
+      merged.form.registration.identity.id = sensitiveData.registrationIdentity;
+    }
+
+    return merged;
   }
 
   function persistState() {
@@ -5797,7 +6031,20 @@
           }
         }
       };
-      storage.setItem(STATE_STORAGE_KEY, JSON.stringify(snapshot));
+
+      // Hybrid storage: Extract sensitive identities for sessionStorage
+      const sensitiveData = extractSensitiveData(snapshot);
+      const sanitizedSnapshot = sanitizeSnapshot(snapshot);
+
+      // Save non-sensitive config to localStorage (persists forever)
+      storage.setItem(STATE_STORAGE_KEY, JSON.stringify(sanitizedSnapshot));
+
+      // Save sensitive identities to sessionStorage (clears on browser close)
+      try {
+        sessionStorage.setItem(SENSITIVE_DATA_KEY, JSON.stringify(sensitiveData));
+      } catch (sessionError) {
+        console.warn('Unable to save sensitive data to sessionStorage:', sessionError);
+      }
     } catch (error) {
       console.warn('Unable to persist wizard state:', error);
     }
@@ -7596,7 +7843,9 @@
   function cloneDistributionValues(values = {}) {
     const cadence = values.cadence && typeof values.cadence === 'object' ? values.cadence : {};
     const emission = values.emission && typeof values.emission === 'object' ? values.emission : {};
-    return {
+    const preProgrammed = values.preProgrammed && typeof values.preProgrammed === 'object' ? values.preProgrammed : {};
+
+    const cloned = {
       cadence: {
         type: typeof cadence.type === 'string' ? cadence.type : 'BlockBasedDistribution',
         intervalBlocks: typeof cadence.intervalBlocks === 'string' ? cadence.intervalBlocks : '',
@@ -7620,6 +7869,22 @@
         minValue: typeof emission.minValue === 'string' ? emission.minValue : ''
       }
     };
+
+    // Include preProgrammed entries if they exist
+    if (Array.isArray(preProgrammed.entries)) {
+      cloned.preProgrammed = {
+        entries: preProgrammed.entries.map(entry => ({
+          id: entry.id || '',
+          days: typeof entry.days === 'number' ? entry.days : 0,
+          hours: typeof entry.hours === 'number' ? entry.hours : 0,
+          minutes: typeof entry.minutes === 'number' ? entry.minutes : 0,
+          identity: typeof entry.identity === 'string' ? entry.identity : '',
+          amount: typeof entry.amount === 'string' ? entry.amount : ''
+        }))
+      };
+    }
+
+    return cloned;
   }
 
   function parsePositiveInt(value) {

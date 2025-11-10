@@ -6331,17 +6331,6 @@
                             developers</span>
                         </span>
                       </label>
-                      <label class="wizard-option" data-method="self">
-                        <input class="wizard-option__input" type="radio" name="registration-method" value="self">
-                        <span class="wizard-option__body">
-                          <span class="wizard-option__header">
-                            <span class="wizard-option__title">⚠️ Manual (Not Recommended)</span>
-                            <span class="wizard-option__check" aria-hidden="true"></span>
-                          </span>
-                          <span class="wizard-option__description">Import wallet & register identity • Requires
-                            technical knowledge</span>
-                        </span>
-                      </label>
                     </div>
                   </div>
                 </div>
@@ -6458,70 +6447,6 @@
                       Save all your wizard settings to reload or share later
                     </p>
                   </div>
-                </div>
-              </section>
-
-              <section class="registration-panel" id="registration-panel-self" aria-labelledby="registration-self-title"
-                hidden>
-                <h2 class="registration-panel__title" id="registration-self-title">Identity &amp; Private Key (not
-                  recommended)</h2>
-                <p class="wizard-screen__help">Import a wallet to initialise the Dash JS client, then register an
-                  identity. <a class="wizard-link"
-                    href="https://docs.dash.org/projects/platform/en/stable/docs/tutorials/identities-and-names/register-an-identity.html#:~:text=Prerequisites"
-                    rel="noreferrer" target="_blank">Review the Dash Platform prerequisites</a>.</p>
-                <div class="wizard-field">
-                  <label class="wizard-field__label" for="wallet-file">Wallet JSON file</label>
-                  <input class="wizard-field__input" id="wallet-file" name="wallet-file" type="file"
-                    accept="application/json" aria-describedby="wallet-message wallet-balance-note">
-                  <p class="wizard-field__hint">Upload JSON that contains a mnemonic or private key.</p>
-                </div>
-                <div class="wizard-field">
-                  <label class="wizard-field__label" for="wallet-mnemonic">Wallet mnemonic</label>
-                  <textarea class="wizard-field__input" id="wallet-mnemonic" name="wallet-mnemonic" rows="3"
-                    placeholder="abandon ability able about above ..."
-                    aria-describedby="wallet-message wallet-balance-note"></textarea>
-                  <p class="wizard-field__hint">Enter 12–24 words separated by spaces. Typing a mnemonic clears any
-                    imported private key.</p>
-                </div>
-                <dl class="wallet-insights" aria-live="polite">
-                  <div class="wallet-insights__item">
-                    <dt class="wallet-insights__label">Receiving address</dt>
-                    <dd class="wallet-insights__value" id="wallet-address">—</dd>
-                  </div>
-                  <div class="wallet-insights__item">
-                    <dt class="wallet-insights__label">Balance</dt>
-                    <dd class="wallet-insights__value" id="wallet-balance">—</dd>
-                  </div>
-                </dl>
-                <p class="wizard-hint" id="wallet-balance-note" aria-live="polite">Import a wallet to preview balance
-                  and address.</p>
-                <p class="wizard-field__message" id="wallet-message" role="status" aria-live="polite"></p>
-                <p class="wizard-hint">Identities enable interactions on Dash Platform. <span id="identity-guidance"
-                    aria-live="polite">Import a funded wallet before registering an identity.</span> <a
-                    class="wizard-link"
-                    href="https://docs.dash.org/projects/platform/en/stable/docs/tutorials/identities-and-names/register-an-identity.html#:~:text=const%20createIdentity%20%3D%20async%20,return%20client.platform.identities.register%28%29%3B"
-                    rel="noreferrer" target="_blank">Read the identity docs</a>.</p>
-                <div class="wizard-inline">
-                  <button class="wizard-button wizard-button--secondary" type="button" id="identity-register">Register
-                    Identity</button>
-                </div>
-                <div class="wizard-field">
-                  <label class="wizard-field__label" for="identity-id">Identity ID</label>
-                  <textarea class="wizard-field__input" id="identity-id" name="identity-id" rows="2"
-                    placeholder="Identity ID" readonly aria-describedby="identity-message identity-guidance"></textarea>
-                  <p class="wizard-field__hint">The identifier returned by Dash Platform after registration.</p>
-                </div>
-                <p class="wizard-field__message" id="identity-message" role="status" aria-live="polite"></p>
-                <div class="registration-self-warning">
-                  <label class="wizard-checkbox" for="self-warning-checkbox">
-                    <input class="wizard-checkbox__input" id="self-warning-checkbox" type="checkbox"
-                      aria-describedby="self-warning-hint">
-                    <span class="wizard-checkbox__label">I understand the risks.</span>
-                  </label>
-                  <p class="wizard-hint" id="self-warning-hint">Confirm the warning and proceed only after your identity
-                    is registered.</p>
-                  <button class="wizard-button wizard-button--secondary" type="button" id="self-warning-proceed"
-                    disabled>Proceed</button>
                 </div>
               </section>
 
