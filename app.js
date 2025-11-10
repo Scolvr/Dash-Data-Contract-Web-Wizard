@@ -872,8 +872,6 @@
 
   const tokenNameInput = document.getElementById('token-name');
   const tokenNameMessage = document.getElementById('token-name-message');
-  const ownerIdentityInput = document.getElementById('owner-identity-id');
-  const ownerIdentityMessage = document.getElementById('owner-identity-message');
   const namingNextButton = document.getElementById('naming-next');
   const namingLocalizationNextButton = document.getElementById('naming-localization-next');
 
@@ -1207,11 +1205,6 @@
   if (tokenNameInput) {
     tokenNameInput.addEventListener('input', handleNamingInput);
     tokenNameInput.addEventListener('blur', () => evaluateNaming({ touched: true }));
-  }
-
-  if (ownerIdentityInput) {
-    ownerIdentityInput.addEventListener('input', handleNamingInput);
-    ownerIdentityInput.addEventListener('blur', () => evaluateNaming({ touched: true }));
   }
 
   // Plural field and capitalize checkbox
@@ -1919,7 +1912,6 @@
     syncIdentityUI();
 
     tokenNameInput.value = wizardState.form.tokenName || '';
-    ownerIdentityInput.value = wizardState.form.ownerIdentityId || '';
 
     ensureNamingFormState();
     renderLocalizationRows(wizardState.form.naming.rows);
@@ -2447,30 +2439,7 @@
 
     wizardState.form.tokenName = rawValue;
 
-    // Validate owner identity ID
-    const rawIdentity = ownerIdentityInput.value;
-    const identityResult = validateBase58Identity(rawIdentity);
-
-    if (touched || !silent) {
-      ownerIdentityMessage.textContent = identityResult.valid ? '' : identityResult.message;
-    } else {
-      ownerIdentityMessage.textContent = '';
-    }
-
-    // Visual feedback for identity
-    if (rawIdentity.trim().length > 0) {
-      if (identityResult.valid) {
-        ownerIdentityInput.classList.remove('wizard-field__input--error');
-        ownerIdentityInput.classList.add('wizard-field__input--valid');
-      } else {
-        ownerIdentityInput.classList.remove('wizard-field__input--valid');
-        ownerIdentityInput.classList.add('wizard-field__input--error');
-      }
-    } else {
-      ownerIdentityInput.classList.remove('wizard-field__input--valid', 'wizard-field__input--error');
-    }
-
-    wizardState.form.ownerIdentityId = rawIdentity;
+    // Owner identity is no longer collected - uses placeholder in contract
 
     // Validate plural form (using token name as singular)
     const plural = tokenPluralInput.value.trim();
@@ -2512,7 +2481,7 @@
     wizardState.form.naming.capitalize = tokenCapitalizeInput.checked;
 
     const localizationResult = validateLocalizationRows({ touched, silent });
-    const isValid = nameResult.valid && identityResult.valid && pluralValid && localizationResult.valid;
+    const isValid = nameResult.valid && pluralValid && localizationResult.valid;
 
     namingNextButton.disabled = !isValid;
 
@@ -3375,7 +3344,10 @@
     }
 
     try {
-      await window.EvoSDK.DataContract.fromJSON(contractJSON, 10);
+      // Replace text placeholders with valid Base58 identifiers for validation only
+      const validatableJSON = injectPlaceholdersForValidation(contractJSON);
+
+      await window.EvoSDK.DataContract.fromJSON(validatableJSON, 10);
       if (sequence !== registrationValidationSequence) {
         return;
       }
@@ -3391,6 +3363,37 @@
         message
       });
     }
+  }
+
+  /**
+   * Replace text placeholders with valid Base58 identifiers for validation
+   * This allows validation to pass while keeping human-readable placeholders in output
+   */
+  function injectPlaceholdersForValidation(contractJson) {
+    const jsonString = JSON.stringify(contractJson);
+
+    // Generate valid identifiers if EvoSDK is available, otherwise use static ones
+    let validContractId = 'HtQNfXBZJu3WnvjvCFJKgbvfgWYJxWxaFWy23TKoFjg9';
+    let validOwnerId = 'BmKTJeLL3GfH8FxEx7SUbTog4eAKj8vJRDi97gYkxB9p';
+    let validIdentityId = 'BmKTJeLL3GfH8FxEx7SUbTog4eAKj8vJRDi97gYkxB9p';
+
+    if (window.EvoSDK && window.EvoSDK.Identifier && window.EvoSDK.Identifier.generate) {
+      try {
+        validContractId = window.EvoSDK.Identifier.generate().toString();
+        validOwnerId = window.EvoSDK.Identifier.generate().toString();
+        validIdentityId = window.EvoSDK.Identifier.generate().toString();
+      } catch (e) {
+        // Use fallback static IDs
+      }
+    }
+
+    // Replace all placeholder variants with valid identifiers
+    const injected = jsonString
+      .replace(/<data contract id>/g, validContractId)
+      .replace(/<owner id>/g, validOwnerId)
+      .replace(/<identity id>/g, validIdentityId);
+
+    return JSON.parse(injected);
   }
 
   function syncWizardReadiness({ refreshStatus = false } = {}) {
@@ -9493,13 +9496,10 @@
       tokenConfig.transferNotesConfig = transferNotesConfig;
     }
 
-    // Add description if user provided one, otherwise generate from token name
+    // Add description only if user provided one
     const userDescription = wizardState.form.search.description?.trim();
     if (userDescription && userDescription.length >= 3) {
       tokenConfig.description = userDescription.substring(0, 200); // Max 200 chars
-    } else if (tokenName && tokenName !== 'Unnamed Token') {
-      const description = `Token: ${tokenName}`;
-      tokenConfig.description = description.substring(0, 100); // Max 100 chars
     }
 
     // Build groups at root level (if enabled)
@@ -9508,7 +9508,7 @@
       const validMembers = wizardState.form.group.members
         .filter(m => m.identityId)
         .map(m => ({
-          identity: m.identityId,
+          identity: m.identityId?.trim() || '<identity id>',
           power: parseInt(m.power, 10) || 1
         }));
 
@@ -9526,27 +9526,14 @@
     }
 
     // Build Platform contract structure
-    // Generate valid 32-byte identifiers using Evo SDK if available, otherwise use placeholder
-    let contractId = 'HtQNfXBZJu3WnvjvCFJKgbvfgWYJxWxaFWy23TKoFjg9';
-    let ownerIdentity = wizardState.form.ownerIdentityId?.trim() || 'BmKTJeLL3GfH8FxEx7SUbTog4eAKj8vJRDi97gYkxB9p';
-
-    // If EvoSDK is loaded, generate proper random identifiers for validation
-    if (window.EvoSDK && window.EvoSDK.Identifier && window.EvoSDK.Identifier.generate) {
-      try {
-        contractId = window.EvoSDK.Identifier.generate().toString();
-        // Only use generated ID for owner if no user-provided ID
-        if (!wizardState.form.ownerIdentityId?.trim()) {
-          ownerIdentity = window.EvoSDK.Identifier.generate().toString();
-        }
-      } catch (e) {
-        // Fallback to hardcoded placeholders if SDK generation fails
-      }
-    }
+    // Use text placeholders for identities (to be replaced by DET or manually)
+    const contractId = '<data contract id>';
+    const ownerIdentity = '<owner id>';
 
     const platformContract = {
       $format_version: '1',
-      id: contractId,  // Platform generates actual ID during registration
-      ownerId: ownerIdentity,           // User-provided owner identity ID
+      id: contractId,  // Placeholder - will be replaced by DET or manually
+      ownerId: ownerIdentity,  // Placeholder - will be replaced by DET or manually
       version: 1,
       config: {
         $format_version: '0',
@@ -9576,20 +9563,16 @@
       platformContract.groups = groups;
     }
 
-    // Add keywords - use user-provided keywords if available, otherwise generate from token name
+    // Add keywords only if user provided them
     const userKeywordsText = wizardState.form.search.keywords?.trim();
     const userKeywords = userKeywordsText ? userKeywordsText.split(',').map(k => k.trim()).filter(k => k.length > 0) : [];
     if (userKeywords && userKeywords.length > 0) {
       platformContract.keywords = userKeywords.slice(0, 50); // Max 50 keywords
-    } else if (tokenName && tokenName !== 'Unnamed Token') {
-      platformContract.keywords = [tokenName.toLowerCase()];
     }
 
-    // Add description - use user-provided description if available, otherwise generate from token name
+    // Add description only if user provided one
     if (userDescription && userDescription.length >= 3) {
       platformContract.description = userDescription.substring(0, 100);
-    } else if (tokenName && tokenName !== 'Unnamed Token') {
-      platformContract.description = `Data contract for ${tokenName}`;
     }
 
     return platformContract;
@@ -10274,12 +10257,13 @@
           // Validate contract JSON using Evo SDK (if available)
           if (window.EvoSDK && window.EvoSDK.DataContract) {
             try {
-              // Validate by attempting to create DataContract from JSON
-              await window.EvoSDK.DataContract.fromJSON(contractJSON, 10);
+              // Inject valid placeholders for validation only
+              const validatableJSON = injectPlaceholdersForValidation(contractJSON);
+              await window.EvoSDK.DataContract.fromJSON(validatableJSON, 10);
               console.log('✓ Contract JSON validated successfully with Evo SDK');
             } catch (validationError) {
               console.warn('Contract validation warning:', validationError.message);
-              // Continue anyway - user may want to see/edit the JSONx  
+              // Continue anyway - user may want to see/edit the JSON
             }
           }
 
@@ -10334,8 +10318,9 @@
           // Validate contract JSON using Evo SDK (if available)
           if (window.EvoSDK && window.EvoSDK.DataContract) {
             try {
-              // Validate by attempting to create DataContract from JSON
-              await window.EvoSDK.DataContract.fromJSON(contractJSON, 10);
+              // Inject valid placeholders for validation only
+              const validatableJSON = injectPlaceholdersForValidation(contractJSON);
+              await window.EvoSDK.DataContract.fromJSON(validatableJSON, 10);
               console.log('✓ Contract JSON validated successfully with Evo SDK');
             } catch (validationError) {
               console.error('Contract validation warning:', validationError.message);
