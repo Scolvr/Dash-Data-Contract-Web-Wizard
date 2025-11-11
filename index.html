@@ -518,10 +518,19 @@
 
               <div class="page-guide__section">
                 <h3 class="page-guide__section-title">Guide</h3>
-                <p><strong>Start by choosing a memorable token name.</strong> The owner identity will be provided when you deploy the contract using DET or your preferred deployment tool.</p>
+                <p><strong>Start by entering your owner identity ID, then provide your token name.</strong> Without a
+                  valid identity ID, you cannot proceed to registration.</p>
 
                 <h4 class="page-guide__step-heading">What to Enter</h4>
                 <ol class="page-guide__steps">
+                  <li>
+                    <strong>Owner Identity ID</strong>
+                    <p><strong>REQUIRED FIRST:</strong> Your Base58-encoded Dash Platform identity ID (43-44
+                      characters). This permanently identifies you as the contract owner.</p>
+                    <p><em>Example: "4hKFP3mFB9vku8VJKcZvwVN123..."</em></p>
+                    <p style="color: var(--color-warning); margin-top: var(--space-2);"><strong>⚠️ Without a valid
+                        identity ID, you cannot access the Registration step.</strong></p>
+                  </li>
                   <li>
                     <strong>Token Name</strong>
                     <p>Choose a unique and descriptive name for your token (2–64 characters). This is the primary
@@ -555,10 +564,32 @@
 
           <div class="wizard-screen__inner">
             <form class="wizard-form" id="naming-form" novalidate>
-              <h1 class="wizard-screen__title" id="title-naming" tabindex="-1">Token Name
+              <h1 class="wizard-screen__title" id="title-naming" tabindex="-1">Token Owner & Name
               </h1>
-              <p class="wizard-screen__subtitle">Give your token a memorable name and define how it should appear in wallets and applications.
+              <p class="wizard-screen__subtitle">Identify yourself as the contract owner and give your token a memorable
+                name.
               </p>
+
+              <!-- Owner Identity Card -->
+              <div class="form-card" style="max-width: 100%;">
+                <div class="form-card__header">
+                  <h3 class="form-card__title">Contract Owner</h3>
+                  <p class="form-card__description">Your Dash Platform identity ID - this identifies you as the contract
+                    owner and cannot be changed later</p>
+                </div>
+                <div class="form-card__body">
+                  <div class="field-group">
+                    <label class="wizard-field__label" for="owner-identity-id">
+                      Owner Identity ID *
+                    </label>
+                    <input class="wizard-field__input" id="owner-identity-id" name="owner-identity-id" type="text"
+                      inputmode="text" autocomplete="off" placeholder="e.g., 4hKFP3mFB9vku8VJKcZvwVN123..." required
+                      minlength="43" maxlength="44" aria-describedby="owner-identity-message">
+                    <span class="field-hint">43-44 characters • Your Base58-encoded Dash Platform identity ID</span>
+                    <p class="wizard-field__message" id="owner-identity-message" role="status" aria-live="polite"></p>
+                  </div>
+                </div>
+              </div>
 
               <!-- Token Name Card -->
               <div class="form-card" style="max-width: 100%;">
@@ -5769,11 +5800,12 @@
                     <p class="wizard-field__hint">Trading on Dash Platform is currently disabled. Tokens deployed now
                       are locked to Not Tradeable.</p>
                     <label class="wizard-choice">
-                      <input class="wizard-choice__input" type="radio" name="trade-mode"
-                        id="advanced-trade-mode-closed" value="closed" checked disabled>
+                      <input class="wizard-choice__input" type="radio" name="trade-mode" id="advanced-trade-mode-closed"
+                        value="closed" checked disabled>
                       <span class="wizard-choice__content">
                         <span class="wizard-choice__title">Not Tradeable (current default)</span>
-                        <span class="wizard-choice__hint">Trading will be enabled in a future Dash Platform release</span>
+                        <span class="wizard-choice__hint">Trading will be enabled in a future Dash Platform
+                          release</span>
                       </span>
                     </label>
                     <p class="wizard-field__hint">We'll add additional trade modes once marketplace support is live.
@@ -6263,7 +6295,7 @@
               <h1 class="wizard-screen__title" id="title-registration" tabindex="-1">How would you like to register your
                 token?</h1>
               <p class="wizard-screen__subtitle">Choose your preferred method for publishing your token on the Dash
-                Platform. The generated contract uses placeholders (<code>&lt;owner id&gt;</code>, <code>&lt;data contract id&gt;</code>) that will be replaced automatically by DET or your deployment tool.</p>
+                Platform.</p>
 
               <!-- Contract Validation Card -->
               <div class="form-card form-card--highlight" id="registration-validation-card" hidden>
@@ -6652,47 +6684,54 @@
     </div>
   </div>
 
-  <!-- Load Dash Evo SDK from CDN -->
+  <!-- Import map to resolve EvoSDK's wasm runtime dependency -->
+  <script type="importmap">
+    {
+      "imports": {
+        "@dashevo/wasm-sdk/compressed": "./dist/sdk.compressed.js"
+      }
+    }
+  </script>
+
+  <!-- Load Dash Evo SDK from local dist only (module import) -->
   <script type="module">
-    (async () => {
-      if (window.EvoSDK) {
-        return;
-      }
-      try {
-        const sdkModule = await import('https://cdn.jsdelivr.net/npm/@dashevo/evo-sdk@2.1.3/dist/evo-sdk.module.js');
+    import * as sdkModule from './dist/evo-sdk.module.js';
+    try {
+      if (typeof sdkModule.ensureInitialized === 'function') {
         await sdkModule.ensureInitialized();
-        window.EvoSDK = sdkModule;
-        console.info('Dash Evo SDK initialized.');
-        window.dispatchEvent(new CustomEvent('evo:sdk-ready'));
-      } catch (error) {
-        console.error('Failed to initialize Dash Evo SDK:', error);
       }
-    })();
+      window.EvoSDK = sdkModule;
+      window.__evo_sdk_ready = true;
+      console.info('Dash Evo SDK initialized from local dist.');
+      window.dispatchEvent(new CustomEvent('evo:sdk-ready'));
+    } catch (error) {
+      console.error('Failed to initialize Dash Evo SDK from local dist:', error);
+    }
   </script>
 
   <!-- Cleanup Service Workers and Caches -->
   <script>
-  (function () {
-  'use strict';
-  if ('serviceWorker' in navigator) {
-  navigator.serviceWorker
-  .getRegistrations()
-  .then((registrations) => {
-  registrations.forEach((registration) => registration.unregister());
-  })
-  .catch(() => {
-  // ignore cleanup errors
-  });
-  }
-  if (typeof window !== 'undefined' && 'caches' in window) {
-  caches
-  .keys()
-  .then((keys) => Promise.all(keys.map((key) => caches.delete(key))))
-  .catch(() => {
-  // ignore cache cleanup errors
-  });
-  }
-  })();
+    (function () {
+      'use strict';
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker
+          .getRegistrations()
+          .then((registrations) => {
+            registrations.forEach((registration) => registration.unregister());
+          })
+          .catch(() => {
+            // ignore cleanup errors
+          });
+      }
+      if (typeof window !== 'undefined' && 'caches' in window) {
+        caches
+          .keys()
+          .then((keys) => Promise.all(keys.map((key) => caches.delete(key))))
+          .catch(() => {
+            // ignore cache cleanup errors
+          });
+      }
+    })();
   </script>
 
   <!-- Progressive Disclosure for Distribution (Inline Panels) -->
