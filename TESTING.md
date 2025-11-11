@@ -4,6 +4,33 @@ This document provides comprehensive testing procedures for validating the Platf
 
 ---
 
+## Verification Checklist (UI → rs-dpp)
+
+- [ ] Root contract uses `$format_version: "1"`, `id`, `ownerId`, `version`
+- [ ] `config` keys match rs-dpp (`canBeDeleted`, `readonly`, `keepsHistory`, `documentsKeepHistoryContractDefault`, `documentsMutableContractDefault`, `documentsCanBeDeletedContractDefault`, `requiresIdentityEncryptionBoundedKey`, `requiresIdentityDecryptionBoundedKey`)
+- [ ] `tokens` map has string index `'0'` → token config `$format_version: "0"`
+- [ ] Token `conventions.localizations` use camelCase fields (`shouldCapitalize`, `singularForm`, `pluralForm`) and `decimals` is a number
+- [ ] `baseSupply`/`maxSupply`/`decimals` are numbers (not strings); `maxSupply` null or number
+- [ ] `keepsHistory` uses camelCase flags and `$format_version: "0"`
+- [ ] Change-control rules fields exist in token and distribution rules; actors encode as AuthorizedActionTakers:
+  - `"NoOne"`, `"ContractOwner"`, `"MainGroup"`, `{ "Group": <index> }`, `{ "Identity": "<id>" }`
+- [ ] `distributionRules` structure matches rs-dpp V0:
+  - `perpetualDistribution` → `{ $format_version: "0", distributionType, distributionRecipient }`
+  - Time intervals are milliseconds (not seconds)
+  - `preProgrammedDistribution` timestamps are epoch millis keys; nested identity→amount map
+  - `mintingAllowChoosingDestination` boolean and related rules present
+- [ ] Distribution functions encode exactly as rs-dpp variants:
+  - `FixedAmount`, `Random`, `StepDecreasingAmount`, `Linear`, `Exponential`, `Polynomial`, `Logarithmic`, `InvertedLogarithmic`, `Stepwise`
+  - Optional bounds use `min_value`/`max_value` (snake_case)
+  - `Stepwise` is a map of `{ "<period>": <amount> }` (not an array)
+- [ ] Recipient encodes as `"ContractOwner"` or `{ "Identity": "<id>" }`
+- [ ] Root `groups` (if present): `$format_version: "0"`, `members` is a map of identity→power, `required_power` (snake_case)
+- [ ] `mainControlGroup` is a number; `mainControlGroupCanBeModified` is AuthorizedActionTakers
+- [ ] Remove unsupported fields (e.g., `transferable`, `transferNotesConfig`)
+- [ ] `keywords` array and short `description` string (optional)
+
+Track these items as you iterate. All boxes must be checked before shipping.
+
 ## 🧪 Automated Testing
 
 ### Running the Test Suite
@@ -18,6 +45,7 @@ This document provides comprehensive testing procedures for validating the Platf
 The automated test suite validates:
 
 #### **Test 1: Simple Fixed-Supply Token**
+
 - ✅ Root structure with `$format_version: "1"`
 - ✅ Token wrapped in `tokens.0`
 - ✅ `baseSupply` and `maxSupply` are numbers (not strings)
@@ -25,6 +53,7 @@ The automated test suite validates:
 - ✅ Localizations properly formatted
 
 #### **Test 2: Bitcoin-Style Halving Token**
+
 - ✅ Distribution rules present
 - ✅ Perpetual distribution configured
 - ✅ StepDecreasing emission function
@@ -32,6 +61,7 @@ The automated test suite validates:
 - ✅ Proper nesting of distribution structures
 
 #### **Test 3: Token with Groups**
+
 - ✅ Groups at contract root level (not in token)
 - ✅ Groups indexed by position (`"0"`)
 - ✅ Token references `mainControlGroup: 0`
@@ -39,7 +69,9 @@ The automated test suite validates:
 - ✅ `requiredPower` threshold configured
 
 #### **Test 4: All Emission Function Types**
+
 Tests all 9 supported emission functions:
+
 - ✅ FixedAmount
 - ✅ Random
 - ✅ StepDecreasing
@@ -51,9 +83,37 @@ Tests all 9 supported emission functions:
 - ✅ Stepwise (if configured)
 
 #### **Test 5: Transfer Notes**
+
 - ✅ `transferNotesConfig` field present
 - ✅ `allowedNoteTypes` array populated
 - ✅ Only enabled note types included
+
+---
+
+## 🌐 CDN-Based Validation (Evo SDK)
+
+The Playwright fuzzing tests also validate the generated JSON by calling Evo SDK’s `DataContract.fromJSON` loaded from the CDN (same integration the UI uses).
+
+Notes:
+
+- Requires network access to fetch `@dashevo/evo-sdk` from jsDelivr.
+- Keeps this UI decoupled from local rs-dpp internals.
+
+What happens in tests:
+
+- Seed representative wizard states (see `tests/token-registration.spec.mjs`).
+- Navigate to Registration; the UI runs validation automatically.
+- Additionally, the test directly calls:
+
+```js
+await page.waitForFunction(() => Boolean(window.EvoSDK?.DataContract?.fromJSON));
+const contract = await page.evaluate(() => window.generatePlatformContractJSON());
+await page.evaluate(async (payload) => {
+  await window.EvoSDK.DataContract.fromJSON(payload, 10);
+}, contract);
+```
+
+This ensures the JSON is accepted by Evo SDK exactly as in the app.
 
 ---
 
@@ -64,6 +124,7 @@ Tests all 9 supported emission functions:
 **Test:** Create any token and check JSON output
 
 **Verify:**
+
 - [ ] All fields use camelCase (not snake_case)
 - [ ] `shouldCapitalize` (not `should_capitalize`)
 - [ ] `singularForm` (not `singular_form`)
@@ -81,6 +142,7 @@ Tests all 9 supported emission functions:
 **Test:** Check supply and numeric values
 
 **Verify:**
+
 - [ ] `baseSupply` is a number: `1000000` (not `"1000000"`)
 - [ ] `maxSupply` is a number or null
 - [ ] `decimals` is a number
@@ -89,6 +151,7 @@ Tests all 9 supported emission functions:
 - [ ] Group member `power` is a number
 
 **Command:**
+
 ```javascript
 const contract = generatePlatformContractJSON();
 console.log('baseSupply type:', typeof contract.tokens['0'].baseSupply);
@@ -102,6 +165,7 @@ console.log('maxSupply type:', typeof contract.tokens['0'].maxSupply);
 **Test:** Verify top-level fields
 
 **Verify:**
+
 - [ ] `$format_version: "1"` at root
 - [ ] `id: "<generated-by-platform>"`
 - [ ] `ownerId: "<from-identity>"`
@@ -113,6 +177,7 @@ console.log('maxSupply type:', typeof contract.tokens['0'].maxSupply);
 - [ ] `description` string
 
 **Command:**
+
 ```javascript
 const contract = generatePlatformContractJSON();
 console.log('Root keys:', Object.keys(contract));
@@ -125,6 +190,7 @@ console.log('Root keys:', Object.keys(contract));
 **Test:** Verify token-level fields
 
 **Verify:**
+
 - [ ] `$format_version: "0"` at token level
 - [ ] `conventions` object with `$format_version: "0"`
 - [ ] `baseSupply` (number)
@@ -136,6 +202,7 @@ console.log('Root keys:', Object.keys(contract));
 - [ ] `description` string (3-100 chars)
 
 **Command:**
+
 ```javascript
 const contract = generatePlatformContractJSON();
 console.log('Token 0:', contract.tokens['0']);
@@ -148,6 +215,7 @@ console.log('Token 0:', contract.tokens['0']);
 **Test:** Check all V0 rule structures
 
 **Verify each rule has this structure:**
+
 ```javascript
 {
   "V0": {
@@ -161,6 +229,7 @@ console.log('Token 0:', contract.tokens['0']);
 ```
 
 **Rules to verify:**
+
 - [ ] `conventionsChangeRules`
 - [ ] `maxSupplyChangeRules`
 - [ ] `manualMintingRules`
@@ -174,6 +243,7 @@ console.log('Token 0:', contract.tokens['0']);
 - [ ] `tradeModeChangeRules`
 
 **Command:**
+
 ```javascript
 const contract = generatePlatformContractJSON();
 console.log('Freeze rules:', contract.tokens['0'].freezeRules);
@@ -186,6 +256,7 @@ console.log('Freeze rules:', contract.tokens['0'].freezeRules);
 **Test:** Verify history structure
 
 **Expected Structure:**
+
 ```javascript
 {
   "$format_version": "0",
@@ -199,12 +270,14 @@ console.log('Freeze rules:', contract.tokens['0'].freezeRules);
 ```
 
 **Verify:**
+
 - [ ] `keepsHistory` is an object (not boolean)
 - [ ] Has `$format_version: "0"`
 - [ ] All history fields use camelCase
 - [ ] All values are booleans
 
 **Command:**
+
 ```javascript
 const contract = generatePlatformContractJSON();
 console.log('History:', contract.tokens['0'].keepsHistory);
@@ -217,6 +290,7 @@ console.log('History:', contract.tokens['0'].keepsHistory);
 **Test:** Check distribution structure when emission is configured
 
 **Verify:**
+
 - [ ] `distributionRules` object exists
 - [ ] Has `$format_version: "0"`
 - [ ] `perpetualDistribution` (if emission configured)
@@ -226,6 +300,7 @@ console.log('History:', contract.tokens['0'].keepsHistory);
 - [ ] Emission function matches selected type
 
 **Command:**
+
 ```javascript
 const contract = generatePlatformContractJSON();
 console.log('Distribution:', contract.tokens['0'].distributionRules);
@@ -238,6 +313,7 @@ console.log('Distribution:', contract.tokens['0'].distributionRules);
 **Test:** Enable groups and check placement
 
 **Verify:**
+
 - [ ] `groups` is at **contract root** (not in token)
 - [ ] Groups indexed by position: `groups['0']`
 - [ ] Each group has `members` array
@@ -246,6 +322,7 @@ console.log('Distribution:', contract.tokens['0'].distributionRules);
 - [ ] Token has `mainControlGroup: 0` (if group enabled)
 
 **Command:**
+
 ```javascript
 const contract = generatePlatformContractJSON();
 console.log('Root groups:', contract.groups);
@@ -259,6 +336,7 @@ console.log('Token mainControlGroup:', contract.tokens['0'].mainControlGroup);
 **Test:** Check marketplace structure
 
 **Expected Structure:**
+
 ```javascript
 {
   "$format_version": "0",
@@ -270,6 +348,7 @@ console.log('Token mainControlGroup:', contract.tokens['0'].mainControlGroup);
 ```
 
 **Verify:**
+
 - [ ] `marketplaceRules` object exists
 - [ ] Has `$format_version: "0"`
 - [ ] `tradeMode` is a string
@@ -282,17 +361,20 @@ console.log('Token mainControlGroup:', contract.tokens['0'].mainControlGroup);
 **Test:** Enable transfer notes and check output
 
 **Steps:**
+
 1. Go to Permissions → Transfer Settings
 2. Enable transfer notes
 3. Select note types (Public, Shared Encrypted, Private Encrypted)
 
 **Verify:**
+
 - [ ] `transferNotesConfig` exists (if enabled)
 - [ ] `allowedNoteTypes` is an array
 - [ ] Only selected types are included
 - [ ] Types match: `["Public", "SharedEncrypted", "PrivateEncrypted"]`
 
 **Command:**
+
 ```javascript
 const contract = generatePlatformContractJSON();
 console.log('Transfer notes:', contract.tokens['0'].transferNotesConfig);
@@ -305,6 +387,7 @@ console.log('Transfer notes:', contract.tokens['0'].transferNotesConfig);
 **Test:** Field length and value limits
 
 **Verify:**
+
 - [ ] Decimals: max is **16** (not 18)
 - [ ] Token singular form: 3-25 characters
 - [ ] Token plural form: 3-25 characters
@@ -322,6 +405,7 @@ Compare wizard output with the real contract example:
 **Reference Contract ID:** `AcYUCSvAmUwryNsQqkqqD1o3BnFuzepGtR3Mhh2swLk6`
 
 **Verification Points:**
+
 - [ ] Root structure matches
 - [ ] Token nesting matches (`tokens.0`)
 - [ ] Field names match exactly
@@ -370,26 +454,31 @@ Notes:
 ## 🐛 Common Issues to Check
 
 ### Issue 1: snake_case instead of camelCase
+
 **Symptom:** Fields like `should_capitalize` appear in output
 **Expected:** `shouldCapitalize`
 **Fix:** Check localization transformation function
 
 ### Issue 2: Strings instead of numbers
+
 **Symptom:** `"baseSupply": "1000000"`
 **Expected:** `"baseSupply": 1000000`
 **Fix:** Ensure `parseInt()` is used
 
 ### Issue 3: Groups in wrong location
+
 **Symptom:** Groups inside `tokens.0`
 **Expected:** Groups at contract root
 **Fix:** Check group transformation logic
 
 ### Issue 4: Missing V0 wrapper
+
 **Symptom:** Change rules are simple booleans
 **Expected:** `{ V0: { authorized_to_make_change: ..., ... } }`
 **Fix:** Check `createRuleV0()` function usage
 
 ### Issue 5: keepsHistory is boolean
+
 **Symptom:** `"keepsHistory": true`
 **Expected:** `"keepsHistory": { $format_version: "0", keepsTransferHistory: true, ... }`
 **Fix:** Check `transformKeepsHistory()` function
@@ -416,6 +505,7 @@ All tests pass when:
 ## 📝 Next Steps After Testing
 
 If all tests pass:
+
 1. ✅ Commit Phase 4 changes
 2. ✅ Update README with testing information
 3. ✅ Push to GitHub
@@ -423,6 +513,7 @@ If all tests pass:
 5. ✅ Document any Platform-specific deployment notes
 
 If tests fail:
+
 1. ❌ Document failing tests
 2. ❌ Fix issues
 3. ❌ Re-run tests

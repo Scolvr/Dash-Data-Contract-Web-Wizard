@@ -8947,6 +8947,25 @@
     const rawName = wizardState.form.tokenName || '';
     const tokenName = rawName.trim() || 'Unnamed Token';
 
+    // Helper: Encode AuthorizedActionTakers value into expected JSON shape
+    // Accepts: 'NoOne' | 'ContractOwner' | 'MainGroup' | number (group index) | identity string
+    function encodeAuthorizedActionTaker(actor) {
+      if (!actor && actor !== 0) return 'NoOne';
+      if (typeof actor === 'object' && (actor.Group !== undefined || actor.Identity !== undefined)) {
+        return actor;
+      }
+      if (actor === 'NoOne' || actor === 'ContractOwner' || actor === 'MainGroup') return actor;
+      // group index
+      if (typeof actor === 'number' && Number.isFinite(actor)) {
+        return { Group: actor };
+      }
+      // identity id string
+      if (typeof actor === 'string' && actor.length > 0) {
+        return { Identity: actor };
+      }
+      return 'NoOne';
+    }
+
     // Helper: Convert change control boolean to V0 rule object
     function createRuleV0(isEnabled, actionTaker = 'ContractOwner', governanceFlags = {}) {
       // Default governance flags to false if not provided
@@ -8962,8 +8981,8 @@
 
       return {
         V0: {
-          authorized_to_make_change: isEnabled ? actionTaker : 'NoOne',
-          admin_action_takers: isEnabled ? actionTaker : 'NoOne',
+          authorized_to_make_change: encodeAuthorizedActionTaker(isEnabled ? actionTaker : 'NoOne'),
+          admin_action_takers: encodeAuthorizedActionTaker(isEnabled ? actionTaker : 'NoOne'),
           changing_authorized_action_takers_to_no_one_allowed: changingAuthorizedToNoOneAllowed,
           changing_admin_action_takers_to_no_one_allowed: changingAdminToNoOneAllowed,
           self_changing_admin_action_takers_allowed: selfChangingAdminAllowed
@@ -8983,10 +9002,12 @@
         if (changeState.perform.type === 'owner') {
           authorizedToMakeChange = 'ContractOwner';
         } else if (changeState.perform.type === 'identity' && changeState.perform.identityId) {
-          authorizedToMakeChange = changeState.perform.identityId;
+          authorizedToMakeChange = { Identity: changeState.perform.identityId };
         } else if (changeState.perform.type === 'group' && changeState.perform.groupId) {
           // Group ID should be a number (group index)
-          authorizedToMakeChange = parseInt(changeState.perform.groupId, 10) || 0;
+          authorizedToMakeChange = { Group: (parseInt(changeState.perform.groupId, 10) || 0) };
+        } else if (changeState.perform.type === 'main-group') {
+          authorizedToMakeChange = 'MainGroup';
         }
       }
 
@@ -8996,9 +9017,11 @@
         if (changeState.changeRules.type === 'owner') {
           adminActionTakers = 'ContractOwner';
         } else if (changeState.changeRules.type === 'identity' && changeState.changeRules.identityId) {
-          adminActionTakers = changeState.changeRules.identityId;
+          adminActionTakers = { Identity: changeState.changeRules.identityId };
         } else if (changeState.changeRules.type === 'group' && changeState.changeRules.groupId) {
-          adminActionTakers = parseInt(changeState.changeRules.groupId, 10) || 0;
+          adminActionTakers = { Group: (parseInt(changeState.changeRules.groupId, 10) || 0) };
+        } else if (changeState.changeRules.type === 'main-group') {
+          adminActionTakers = 'MainGroup';
         }
       }
 
@@ -9015,8 +9038,8 @@
 
       return {
         V0: {
-          authorized_to_make_change: authorizedToMakeChange,
-          admin_action_takers: adminActionTakers,
+          authorized_to_make_change: encodeAuthorizedActionTaker(authorizedToMakeChange),
+          admin_action_takers: encodeAuthorizedActionTaker(adminActionTakers),
           changing_authorized_action_takers_to_no_one_allowed: changingAuthorizedToNoOneAllowed,
           changing_admin_action_takers_to_no_one_allowed: changingAdminToNoOneAllowed,
           self_changing_admin_action_takers_allowed: selfChangingAdminAllowed
@@ -9024,7 +9047,7 @@
       };
     }
 
-    // Helper: Convert authorization state to simple actor string (for mainControlGroupCanBeModified)
+    // Helper: Convert authorization state to actor
     function getActorFromAuthorization(authState) {
       if (!authState || !authState.type) {
         return 'NoOne';
@@ -9033,9 +9056,12 @@
       if (authState.type === 'owner') {
         return 'ContractOwner';
       } else if (authState.type === 'identity' && authState.identityId) {
-        return authState.identityId;
-      } else if (authState.type === 'group' && authState.groupId) {
-        return parseInt(authState.groupId, 10) || 0;
+        return { Identity: authState.identityId };
+      } else if (authState.type === 'group' && (authState.groupId !== undefined && authState.groupId !== null)) {
+        const gid = typeof authState.groupId === 'number' ? authState.groupId : (parseInt(authState.groupId, 10) || 0);
+        return { Group: gid };
+      } else if (authState.type === 'main-group') {
+        return 'MainGroup';
       }
 
       return 'NoOne';
@@ -9049,12 +9075,11 @@
       if (performerType === 'owner') {
         return 'ContractOwner';
       } else if (performerType === 'identity' && performerReference) {
-        return performerReference;
+        return { Identity: performerReference };
       } else if (performerType === 'group' && performerReference) {
-        return parseInt(performerReference, 10) || 0;
+        return { Group: (parseInt(performerReference, 10) || 0) };
       } else if (performerType === 'main-group') {
-        const mainIndex = wizardState.form.permissions.mainControlGroupIndex;
-        return mainIndex >= 0 ? mainIndex : 0;
+        return 'MainGroup';
       }
 
       return 'NoOne';
@@ -9090,9 +9115,7 @@
     // Helper: Transform distribution rules
     function transformDistributionRules() {
       const dist = wizardState.form.distribution;
-      if (!dist || !dist.emission || !dist.emission.type) {
-        return null;
-      }
+      if (!dist) return null;
 
       // Get minting destination configuration
       const manualMint = wizardState.form.permissions?.manualMint;
@@ -9113,8 +9136,15 @@
         changeDirectPurchasePricingRules: createPermissionChangeRule(wizardState.form.permissions.directPricing)
       };
 
+      const hasEmission = Boolean(dist.emission && dist.emission.type);
+      const hasPreProgrammed = Boolean(dist.preProgrammed && Array.isArray(dist.preProgrammed.entries) && dist.preProgrammed.entries.length > 0);
+
+      if (!hasEmission && !hasPreProgrammed) {
+        return null;
+      }
+
       // Build perpetual distribution if emission is configured
-      if (dist.emission && dist.emission.type) {
+      if (hasEmission) {
         let distributionType = {};
         const cadence = dist.cadence;
 
@@ -9126,21 +9156,24 @@
             function: buildEmissionFunction(dist.emission)
           };
         } else if (cadence.type === 'TimeBasedDistribution') {
-          const interval = parseInt(cadence.intervalSeconds, 10) || 3600; // Keep in seconds (Platform expects seconds)
+          // Platform expects milliseconds (TimestampMillisInterval)
+          const interval = (parseInt(cadence.intervalSeconds, 10) || 3600) * 1000;
           distributionType.TimeBasedDistribution = {
             interval: interval,
             function: buildEmissionFunction(dist.emission)
           };
         } else if (cadence.type === 'EpochBasedDistribution') {
+          // Expect numeric epoch interval; coerce strings (e.g., 'quarterly') to default 1
+          const interval = Number.isFinite(parseInt(cadence.epoch, 10)) ? parseInt(cadence.epoch, 10) : 1;
           distributionType.EpochBasedDistribution = {
-            epoch: cadence.epoch || 'monthly',
+            interval,
             function: buildEmissionFunction(dist.emission)
           };
         }
 
         // Determine recipient
         const recipient = dist.recipient?.type === 'specific-identity' && dist.recipient.identityId
-          ? dist.recipient.identityId
+          ? { Identity: dist.recipient.identityId }
           : 'ContractOwner';
 
         distributionRules.perpetualDistribution = {
@@ -9152,22 +9185,32 @@
       }
 
       // Build pre-programmed distribution if configured
-      if (dist.preProgrammed && Array.isArray(dist.preProgrammed.entries) && dist.preProgrammed.entries.length > 0) {
+      if (hasPreProgrammed) {
+        // Emit plain object with numeric string keys; rs-dpp accepts stringified numeric keys
         const distributions = {};
         dist.preProgrammed.entries.forEach(entry => {
           if (entry.timestamp && entry.identityId && entry.amount) {
-            const timestamp = String(entry.timestamp);
-            if (!distributions[timestamp]) {
-              distributions[timestamp] = {};
+            let ts;
+            if (typeof entry.timestamp === 'number') {
+              ts = entry.timestamp;
+            } else {
+              const parsed = Date.parse(entry.timestamp);
+              ts = Number.isFinite(parsed) ? parsed : null;
             }
-            distributions[timestamp][entry.identityId] = parseInt(entry.amount, 10) || 0;
+            if (ts === null) return;
+            const k = String(ts);
+            if (!distributions[k]) {
+              distributions[k] = {};
+            }
+            distributions[k][entry.identityId] = parseInt(entry.amount, 10) || 0;
           }
         });
 
-        if (Object.keys(distributions).length > 0) {
+        const hasAny = Object.keys(distributions).length > 0;
+        if (hasAny) {
           distributionRules.preProgrammedDistribution = {
             $format_version: '0',
-            distributions: distributions
+            distributions
           };
           distributionRules.preProgrammedDistributionRules = createRuleV0(true);
         }
@@ -9202,46 +9245,44 @@
       // StepDecreasing: Bitcoin-style halving
       else if (type === 'StepDecreasing') {
         const stepObj = {
-          stepCount: parseInt(emission.stepCount, 10) || 1,
-          decreasePerInterval: {
-            numerator: parseInt(emission.decreasePerIntervalNumerator, 10) || 1,
-            denominator: parseInt(emission.decreasePerIntervalDenominator, 10) || 2
-          },
-          distributionStartAmount: emission.distributionStartAmount ? BigInt(emission.distributionStartAmount) : BigInt(100),
-          trailingDistributionIntervalAmount: emission.trailingDistributionIntervalAmount ? BigInt(emission.trailingDistributionIntervalAmount) : BigInt(0)
+          step_count: parseInt(emission.stepCount, 10) || 1,
+          decrease_per_interval_numerator: parseInt(emission.decreasePerIntervalNumerator, 10) || 1,
+          decrease_per_interval_denominator: parseInt(emission.decreasePerIntervalDenominator, 10) || 2,
+          distribution_start_amount: parseInt(emission.distributionStartAmount, 10) || 100,
+          trailing_distribution_interval_amount: parseInt(emission.trailingDistributionIntervalAmount, 10) || 0
         };
 
         // Add optional fields if provided
         if (emission.stepOffset && emission.stepOffset !== '' && emission.stepOffset !== 'None') {
-          stepObj.startPeriodOffset = BigInt(emission.stepOffset);
+          stepObj.start_decreasing_offset = parseInt(emission.stepOffset, 10);
         }
         if (emission.stepMinValue && emission.stepMinValue !== '' && emission.stepMinValue !== 'None') {
-          stepObj.minValue = BigInt(emission.stepMinValue);
+          stepObj.min_value = parseInt(emission.stepMinValue, 10);
         }
         if (emission.stepMaxInterval && emission.stepMaxInterval !== '' && emission.stepMaxInterval !== 'None') {
-          stepObj.maxIntervalCount = BigInt(emission.stepMaxInterval);
+          stepObj.max_interval_count = parseInt(emission.stepMaxInterval, 10);
         }
 
-        return { StepDecreasing: stepObj };
+        return { StepDecreasingAmount: stepObj };
       }
 
       // Linear: f(x) = (a * (x - s) / d) + b
       else if (type === 'Linear') {
         const linearObj = {
           a: parseInt(emission.linearSlopeNumerator, 10) || 0,
-          d: emission.linearSlopeDivisor ? BigInt(emission.linearSlopeDivisor) : BigInt(1),
-          b: emission.linearStartingAmount ? BigInt(emission.linearStartingAmount) : BigInt(0)
+          d: parseInt(emission.linearSlopeDivisor, 10) || 1,
+          starting_amount: parseInt(emission.linearStartingAmount, 10) || 0
         };
 
         // Add optional fields if provided
         if (emission.linearStartStep && emission.linearStartStep !== '' && emission.linearStartStep !== 'None') {
-          linearObj.s = BigInt(emission.linearStartStep);
+          linearObj.start_step = parseInt(emission.linearStartStep, 10);
         }
         if (emission.linearMinValue && emission.linearMinValue !== '' && emission.linearMinValue !== 'None') {
-          linearObj.minValue = BigInt(emission.linearMinValue);
+          linearObj.min_value = parseInt(emission.linearMinValue, 10);
         }
         if (emission.linearMaxValue && emission.linearMaxValue !== '' && emission.linearMaxValue !== 'None') {
-          linearObj.maxValue = BigInt(emission.linearMaxValue);
+          linearObj.max_value = parseInt(emission.linearMaxValue, 10);
         }
 
         return { Linear: linearObj };
@@ -9253,20 +9294,20 @@
           a: parseInt(emission.expA, 10) || 0,
           m: parseInt(emission.expM, 10) || 2,
           n: parseInt(emission.expN, 10) || 1,
-          d: emission.expD ? BigInt(emission.expD) : BigInt(1),
-          o: emission.expO ? BigInt(emission.expO) : BigInt(0),
-          b: emission.expB ? BigInt(emission.expB) : BigInt(0)
+          d: parseInt(emission.expD, 10) || 1,
+          o: parseInt(emission.expO, 10) || 0,
+          b: parseInt(emission.expB, 10) || 0
         };
 
         // Add optional fields if provided
         if (emission.expS && emission.expS !== '' && emission.expS !== 'None') {
-          expObj.s = BigInt(emission.expS);
+          expObj.start_moment = parseInt(emission.expS, 10);
         }
         if (emission.expMinValue && emission.expMinValue !== '' && emission.expMinValue !== 'None') {
-          expObj.minValue = BigInt(emission.expMinValue);
+          expObj.min_value = parseInt(emission.expMinValue, 10);
         }
         if (emission.expMaxValue && emission.expMaxValue !== '' && emission.expMaxValue !== 'None') {
-          expObj.maxValue = BigInt(emission.expMaxValue);
+          expObj.max_value = parseInt(emission.expMaxValue, 10);
         }
 
         return { Exponential: expObj };
@@ -9278,20 +9319,20 @@
           a: parseInt(emission.polyA, 10) || 0,
           m: parseInt(emission.polyM, 10) || 2,
           n: parseInt(emission.polyN, 10) || 1,
-          d: emission.polyD ? BigInt(emission.polyD) : BigInt(1),
-          o: emission.polyO ? BigInt(emission.polyO) : BigInt(0),
-          b: emission.polyB ? BigInt(emission.polyB) : BigInt(0)
+          d: parseInt(emission.polyD, 10) || 1,
+          o: parseInt(emission.polyO, 10) || 0,
+          b: parseInt(emission.polyB, 10) || 0
         };
 
         // Add optional fields if provided
         if (emission.polyS && emission.polyS !== '' && emission.polyS !== 'None') {
-          polyObj.s = BigInt(emission.polyS);
+          polyObj.start_moment = parseInt(emission.polyS, 10);
         }
         if (emission.polyMinValue && emission.polyMinValue !== '' && emission.polyMinValue !== 'None') {
-          polyObj.minValue = BigInt(emission.polyMinValue);
+          polyObj.min_value = parseInt(emission.polyMinValue, 10);
         }
         if (emission.polyMaxValue && emission.polyMaxValue !== '' && emission.polyMaxValue !== 'None') {
-          polyObj.maxValue = BigInt(emission.polyMaxValue);
+          polyObj.max_value = parseInt(emission.polyMaxValue, 10);
         }
 
         return { Polynomial: polyObj };
@@ -9301,22 +9342,22 @@
       else if (type === 'Logarithmic') {
         const logObj = {
           a: parseInt(emission.logA, 10) || 0,
-          d: emission.logD ? BigInt(emission.logD) : BigInt(1),
-          m: emission.logM ? BigInt(emission.logM) : BigInt(1),
-          n: emission.logN ? BigInt(emission.logN) : BigInt(1),
-          o: emission.logO ? BigInt(emission.logO) : BigInt(0),
-          b: emission.logB ? BigInt(emission.logB) : BigInt(0)
+          d: parseInt(emission.logD, 10) || 1,
+          m: parseInt(emission.logM, 10) || 1,
+          n: parseInt(emission.logN, 10) || 1,
+          o: parseInt(emission.logO, 10) || 0,
+          b: parseInt(emission.logB, 10) || 0
         };
 
         // Add optional fields if provided
         if (emission.logS && emission.logS !== '' && emission.logS !== 'None') {
-          logObj.s = BigInt(emission.logS);
+          logObj.start_moment = parseInt(emission.logS, 10);
         }
         if (emission.logMinValue && emission.logMinValue !== '' && emission.logMinValue !== 'None') {
-          logObj.minValue = BigInt(emission.logMinValue);
+          logObj.min_value = parseInt(emission.logMinValue, 10);
         }
         if (emission.logMaxValue && emission.logMaxValue !== '' && emission.logMaxValue !== 'None') {
-          logObj.maxValue = BigInt(emission.logMaxValue);
+          logObj.max_value = parseInt(emission.logMaxValue, 10);
         }
 
         return { Logarithmic: logObj };
@@ -9326,22 +9367,22 @@
       else if (type === 'InvertedLogarithmic') {
         const invlogObj = {
           a: parseInt(emission.invlogA, 10) || 0,
-          d: emission.invlogD ? BigInt(emission.invlogD) : BigInt(1),
-          m: emission.invlogM ? BigInt(emission.invlogM) : BigInt(1),
-          n: emission.invlogN ? BigInt(emission.invlogN) : BigInt(1),
-          o: emission.invlogO ? BigInt(emission.invlogO) : BigInt(0),
-          b: emission.invlogB ? BigInt(emission.invlogB) : BigInt(0)
+          d: parseInt(emission.invlogD, 10) || 1,
+          m: parseInt(emission.invlogM, 10) || 1,
+          n: parseInt(emission.invlogN, 10) || 1,
+          o: parseInt(emission.invlogO, 10) || 0,
+          b: parseInt(emission.invlogB, 10) || 0
         };
 
         // Add optional fields if provided
         if (emission.invlogS && emission.invlogS !== '' && emission.invlogS !== 'None') {
-          invlogObj.s = BigInt(emission.invlogS);
+          invlogObj.start_moment = parseInt(emission.invlogS, 10);
         }
         if (emission.invlogMinValue && emission.invlogMinValue !== '' && emission.invlogMinValue !== 'None') {
-          invlogObj.minValue = BigInt(emission.invlogMinValue);
+          invlogObj.min_value = parseInt(emission.invlogMinValue, 10);
         }
         if (emission.invlogMaxValue && emission.invlogMaxValue !== '' && emission.invlogMaxValue !== 'None') {
-          invlogObj.maxValue = BigInt(emission.invlogMaxValue);
+          invlogObj.max_value = parseInt(emission.invlogMaxValue, 10);
         }
 
         return { InvertedLogarithmic: invlogObj };
@@ -9349,23 +9390,17 @@
 
       // Stepwise: Custom step-based schedule
       else if (type === 'Stepwise' && Array.isArray(emission.stepwise) && emission.stepwise.length > 0) {
-        const steps = emission.stepwise.map(step => ({
-          period: parseInt(step.period, 10) || 0,
-          amount: parseInt(step.amount, 10) || 0
-        }));
-        return {
-          Stepwise: {
-            steps: steps
-          }
-        };
+        // Emit plain object with numeric string keys; rs-dpp accepts stringified numeric keys
+        const stepsMap = {};
+        emission.stepwise.forEach(step => {
+          const k = String(parseInt(step.period, 10) || 0);
+          stepsMap[k] = parseInt(step.amount, 10) || 0;
+        });
+        return { Stepwise: stepsMap };
       }
 
       // Default fallback to FixedAmount
-      return {
-        FixedAmount: {
-          amount: 100
-        }
-      };
+      return { FixedAmount: { amount: 100 } };
     }
 
     // Helper: Transform marketplace rules
@@ -9425,7 +9460,6 @@
         ? parseInt(wizardState.form.permissions.maxSupply, 10) || null
         : null,
       keepsHistory: transformKeepsHistory(wizardState.form.permissions.keepsHistory || {}),
-      transferable: true,  // Tokens are transferable by default
       startAsPaused: Boolean(wizardState.form.permissions.startAsPaused),
       allowTransferToFrozenBalance: Boolean(wizardState.form.permissions.allowTransferToFrozenBalance),
       maxSupplyChangeRules: createRuleV0(
@@ -9474,7 +9508,7 @@
       ),
       mainControlGroup: null,
       mainControlGroupCanBeModified: wizardState.form.permissions.mainControl?.enabled
-        ? getActorFromAuthorization(wizardState.form.permissions.mainControl.changeRules)
+        ? encodeAuthorizedActionTaker(getActorFromAuthorization(wizardState.form.permissions.mainControl.changeRules))
         : 'NoOne'
     };
 
@@ -9487,11 +9521,7 @@
     // Add marketplace rules
     tokenConfig.marketplaceRules = transformMarketplaceRules();
 
-    // Add transfer notes configuration if enabled
-    const transferNotesConfig = transformTransferNotesConfig();
-    if (transferNotesConfig) {
-      tokenConfig.transferNotesConfig = transferNotesConfig;
-    }
+    // Note: transferNotesConfig is not supported by rs-dpp token configuration; omit it
 
     // Add description if user provided one, otherwise generate from token name
     const userDescription = wizardState.form.search.description?.trim();
@@ -9505,22 +9535,22 @@
     // Build groups at root level (if enabled)
     const groups = {};
     if (wizardState.form.group?.enabled && wizardState.form.group.members?.length > 0) {
-      const validMembers = wizardState.form.group.members
+      const memberPairs = wizardState.form.group.members
         .filter(m => m.identityId)
-        .map(m => ({
-          identity: m.identityId,
-          power: parseInt(m.power, 10) || 1
-        }));
+        .map(m => [m.identityId, parseInt(m.power, 10) || 1]);
 
-      if (validMembers.length > 0) {
+      if (memberPairs.length > 0) {
+        const membersMap = {};
+        memberPairs.forEach(([id, power]) => { membersMap[id] = power; });
         groups['0'] = {
-          members: validMembers,
-          requiredPower: parseInt(wizardState.form.group.threshold, 10) || 2
+          $format_version: '0',
+          members: membersMap,
+          required_power: parseInt(wizardState.form.group.threshold, 10) || 2
         };
         // Update mainControlGroup in token if group is defined
         tokenConfig.mainControlGroup = 0;
         tokenConfig.mainControlGroupCanBeModified = wizardState.form.permissions.mainControl?.enabled
-          ? getActorFromAuthorization(wizardState.form.permissions.mainControl.changeRules)
+          ? encodeAuthorizedActionTaker(getActorFromAuthorization(wizardState.form.permissions.mainControl.changeRules))
           : 'NoOne';
       }
     }
@@ -9550,12 +9580,12 @@
       version: 1,
       config: {
         $format_version: '0',
-        canBeDeletedByOwner: false,
+        canBeDeleted: false,
         readonly: false,
         keepsHistory: false,
         documentsKeepHistoryContractDefault: false,
         documentsMutableContractDefault: true,
-        documentsCanBeDeletedByOwnerDefault: false,
+        documentsCanBeDeletedContractDefault: false,
         requiresIdentityEncryptionBoundedKey: null,
         requiresIdentityDecryptionBoundedKey: null
       },
@@ -9651,7 +9681,7 @@
     console.log('✅ Checks:');
     console.log('- Has distributionRules:', Boolean(test2Output.tokens['0'].distributionRules));
     console.log('- Has perpetualDistribution:', Boolean(test2Output.tokens['0'].distributionRules?.perpetualDistribution));
-    console.log('- Emission is StepDecreasing:', Boolean(test2Output.tokens['0'].distributionRules?.perpetualDistribution?.distributionType?.BlockBasedDistribution?.function?.StepDecreasing));
+    console.log('- Emission is StepDecreasingAmount:', Boolean(test2Output.tokens['0'].distributionRules?.perpetualDistribution?.distributionType?.BlockBasedDistribution?.function?.StepDecreasingAmount));
     console.groupEnd();
 
     // Test 3: Token with groups
@@ -9678,7 +9708,7 @@
     console.log('- Has groups at root:', Boolean(test3Output.groups));
     console.log('- Groups has position 0:', Boolean(test3Output.groups['0']));
     console.log('- Token references mainControlGroup:', test3Output.tokens['0'].mainControlGroup === 0);
-    console.log('- Members have power:', test3Output.groups['0'].members.every(m => typeof m.power === 'number'));
+    console.log('- Members have power:', Object.values(test3Output.groups['0'].members || {}).every(p => typeof p === 'number'));
     console.groupEnd();
 
     // Test 4: All emission types
@@ -9695,7 +9725,8 @@
         }
       });
       const output = generateTestContract(testState);
-      const hasEmission = Boolean(output.tokens['0'].distributionRules?.perpetualDistribution?.distributionType?.BlockBasedDistribution?.function?.[type]);
+      const propertyName = type === 'StepDecreasing' ? 'StepDecreasingAmount' : type;
+      const hasEmission = Boolean(output.tokens['0'].distributionRules?.perpetualDistribution?.distributionType?.BlockBasedDistribution?.function?.[propertyName]);
       console.log(`  ${hasEmission ? '✅' : '❌'} ${type} emission function`);
     });
     console.groupEnd();
@@ -9712,8 +9743,7 @@
     const test5Output = generateTestContract(test5State);
     console.log('Generated Contract:', test5Output);
     console.log('✅ Checks:');
-    console.log('- Has transferNotesConfig:', Boolean(test5Output.tokens['0'].transferNotesConfig));
-    console.log('- Allowed types:', test5Output.tokens['0'].transferNotesConfig?.allowedNoteTypes);
+    console.log('ℹ️ transferNotesConfig omitted in rs-dpp token configuration');
     console.groupEnd();
 
     // Test 6: Critical Platform Schema Fields
@@ -9734,8 +9764,8 @@
     console.log('- startAsPaused value:', test6Output.tokens['0'].startAsPaused);
     console.groupEnd();
 
-    // Test 7: StepDecreasing with maxIntervalCount
-    console.group('Test 7: StepDecreasing with maxIntervalCount');
+    // Test 7: StepDecreasingAmount with max_interval_count
+    console.group('Test 7: StepDecreasingAmount with max_interval_count');
     const test7State = createTestState({
       tokenName: 'HalvingToken',
       distribution: {
@@ -9754,12 +9784,12 @@
     });
     const test7Output = generateTestContract(test7State);
     console.log('Generated Contract:', test7Output);
-    const stepDecreasing = test7Output.tokens['0'].distributionRules?.perpetualDistribution?.distributionType?.BlockBasedDistribution?.function?.StepDecreasing;
+    const stepDecreasing = test7Output.tokens['0'].distributionRules?.perpetualDistribution?.distributionType?.BlockBasedDistribution?.function?.StepDecreasingAmount;
     console.log('✅ Checks:');
-    console.log('- Has StepDecreasing:', Boolean(stepDecreasing));
-    console.log('- Has maxIntervalCount:', 'maxIntervalCount' in stepDecreasing);
-    console.log('- maxIntervalCount value:', stepDecreasing?.maxIntervalCount);
-    console.log('- maxIntervalCount is BigInt:', typeof stepDecreasing?.maxIntervalCount === 'bigint');
+    console.log('- Has StepDecreasingAmount:', Boolean(stepDecreasing));
+    console.log('- Has max_interval_count:', 'max_interval_count' in stepDecreasing);
+    console.log('- max_interval_count value:', stepDecreasing?.max_interval_count);
+    console.log('- max_interval_count is BigInt:', typeof stepDecreasing?.max_interval_count === 'bigint');
     console.groupEnd();
 
     // Test 8: Emission functions with min/max values
@@ -9784,10 +9814,10 @@
     const linearOutput = generateTestContract(linearState);
     const linearEmission = linearOutput.tokens['0'].distributionRules?.perpetualDistribution?.distributionType?.BlockBasedDistribution?.function?.Linear;
     console.log('Linear Emission Checks:');
-    console.log('  - Has minValue:', 'minValue' in linearEmission);
-    console.log('  - Has maxValue:', 'maxValue' in linearEmission);
-    console.log('  - minValue:', linearEmission?.minValue);
-    console.log('  - maxValue:', linearEmission?.maxValue);
+    console.log('  - Has min_value:', 'min_value' in linearEmission);
+    console.log('  - Has max_value:', 'max_value' in linearEmission);
+    console.log('  - min_value:', linearEmission?.min_value);
+    console.log('  - max_value:', linearEmission?.max_value);
 
     // Test Exponential with constraints
     const expState = createTestState({
@@ -9811,10 +9841,10 @@
     const expOutput = generateTestContract(expState);
     const expEmission = expOutput.tokens['0'].distributionRules?.perpetualDistribution?.distributionType?.BlockBasedDistribution?.function?.Exponential;
     console.log('Exponential Emission Checks:');
-    console.log('  - Has minValue:', 'minValue' in expEmission);
-    console.log('  - Has maxValue:', 'maxValue' in expEmission);
-    console.log('  - minValue:', expEmission?.minValue);
-    console.log('  - maxValue:', expEmission?.maxValue);
+    console.log('  - Has min_value:', 'min_value' in expEmission);
+    console.log('  - Has max_value:', 'max_value' in expEmission);
+    console.log('  - min_value:', expEmission?.min_value);
+    console.log('  - max_value:', expEmission?.max_value);
     console.groupEnd();
 
     console.log('\n📊 Test Summary:');
@@ -9822,7 +9852,7 @@
     console.log('\n🎯 New Features Tested:');
     console.log('  ✅ allowTransferToFrozenBalance field');
     console.log('  ✅ startAsPaused field');
-    console.log('  ✅ StepDecreasing maxIntervalCount');
+    console.log('  ✅ StepDecreasingAmount max_interval_count');
     console.log('  ✅ Linear emission min/max values');
     console.log('  ✅ Exponential emission min/max values');
     console.log('  ✅ Transfer notes configuration');
@@ -10046,6 +10076,8 @@
   window.hydrateFormsFromState = hydrateFormsFromState;
   window.announce = announce;
   window.wizardState = wizardState;
+
+  // (temporary normalizer removed; rs-dpp now accepts numeric-string keys)
 
   // ========================================
   // Live Contract Preview System
