@@ -513,24 +513,15 @@
           <!-- Right Side Guide Panel -->
           <aside class="page-guide" aria-label="Page guide">
             <div class="page-guide__content">
-              <h2 class="page-guide__title">Token Owner & Name</h2>
-              <p class="page-guide__intro">Identify yourself as the contract owner and give your token its identity.</p>
+              <h2 class="page-guide__title">Token Name</h2>
+              <p class="page-guide__intro">Give your token its identity with a memorable name and display settings.</p>
 
               <div class="page-guide__section">
                 <h3 class="page-guide__section-title">Guide</h3>
-                <p><strong>Start by entering your owner identity ID, then provide your token name.</strong> Without a
-                  valid identity ID, you cannot proceed to registration.</p>
+                <p><strong>Provide your token name and configure how it will be displayed.</strong> This will be your English localization which is required.</p>
 
                 <h4 class="page-guide__step-heading">What to Enter</h4>
                 <ol class="page-guide__steps">
-                  <li>
-                    <strong>Owner Identity ID</strong>
-                    <p><strong>REQUIRED FIRST:</strong> Your Base58-encoded Dash Platform identity ID (43-44
-                      characters). This permanently identifies you as the contract owner.</p>
-                    <p><em>Example: "4hKFP3mFB9vku8VJKcZvwVN123..."</em></p>
-                    <p style="color: var(--color-warning); margin-top: var(--space-2);"><strong>⚠️ Without a valid
-                        identity ID, you cannot access the Registration step.</strong></p>
-                  </li>
                   <li>
                     <strong>Token Name</strong>
                     <p>Choose a unique and descriptive name for your token (2–64 characters). This is the primary
@@ -564,32 +555,10 @@
 
           <div class="wizard-screen__inner">
             <form class="wizard-form" id="naming-form" novalidate>
-              <h1 class="wizard-screen__title" id="title-naming" tabindex="-1">Token Owner & Name
+              <h1 class="wizard-screen__title" id="title-naming" tabindex="-1">Token Name
               </h1>
-              <p class="wizard-screen__subtitle">Identify yourself as the contract owner and give your token a memorable
-                name.
+              <p class="wizard-screen__subtitle">Give your token a memorable name and define how it should be displayed.
               </p>
-
-              <!-- Owner Identity Card -->
-              <div class="form-card" style="max-width: 100%;">
-                <div class="form-card__header">
-                  <h3 class="form-card__title">Contract Owner</h3>
-                  <p class="form-card__description">Your Dash Platform identity ID - this identifies you as the contract
-                    owner and cannot be changed later</p>
-                </div>
-                <div class="form-card__body">
-                  <div class="field-group">
-                    <label class="wizard-field__label" for="owner-identity-id">
-                      Owner Identity ID *
-                    </label>
-                    <input class="wizard-field__input" id="owner-identity-id" name="owner-identity-id" type="text"
-                      inputmode="text" autocomplete="off" placeholder="e.g., 4hKFP3mFB9vku8VJKcZvwVN123..." required
-                      minlength="43" maxlength="44" aria-describedby="owner-identity-message">
-                    <span class="field-hint">43-44 characters • Your Base58-encoded Dash Platform identity ID</span>
-                    <p class="wizard-field__message" id="owner-identity-message" role="status" aria-live="polite"></p>
-                  </div>
-                </div>
-              </div>
 
               <!-- Token Name Card -->
               <div class="form-card" style="max-width: 100%;">
@@ -1629,13 +1598,65 @@
                       </div>
                     </fieldset>
 
+                    <!-- New Tokens Destination Identity Rules (Always Visible) -->
+                    <fieldset class="wizard-fieldset" style="margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
+                      <legend class="wizard-field__label">New Tokens Destination Identity Rules</legend>
+                      <p class="wizard-subsection__body" style="margin-bottom: var(--space-4);">Control who can change the default mint destination identity</p>
+
+                      <div class="field-group">
+                        <label for="mint-destination-perform-action">Authorized to perform action:</label>
+                        <select id="mint-destination-perform-action" class="wizard-field__input">
+                          <option value="no-one">No One</option>
+                          <option value="owner" selected>Contract Owner</option>
+                          <option value="identity">Specific Identity</option>
+                          <option value="group">Specific Group</option>
+                          <option value="main-group">Main Contract Group</option>
+                        </select>
+                      </div>
+
+                      <div class="field-group">
+                        <label for="mint-destination-change-rules">Authorized to change rules:</label>
+                        <select id="mint-destination-change-rules" class="wizard-field__input">
+                          <option value="no-one">No One</option>
+                          <option value="owner" selected>Contract Owner</option>
+                          <option value="identity">Specific Identity</option>
+                          <option value="group">Specific Group</option>
+                          <option value="main-group">Main Contract Group</option>
+                        </select>
+                      </div>
+
+                      <!-- Governance Safeguards -->
+                      <div style="margin-top: var(--space-6);">
+                        <h5>Governance Safeguards</h5>
+                        <div class="field-group" style="margin-bottom: var(--space-6);">
+                          <label class="wizard-checkbox">
+                            <input type="checkbox" id="mint-destination-allow-change-authorized-to-none">
+                            <span>Changing authorized action takers to no one allowed</span>
+                          </label>
+                        </div>
+                        <div class="field-group" style="margin-bottom: var(--space-6);">
+                          <label class="wizard-checkbox">
+                            <input type="checkbox" id="mint-destination-allow-change-admin-to-none">
+                            <span>Changing admin action takers to no one allowed</span>
+                          </label>
+                        </div>
+                        <div class="field-group" style="margin-bottom: var(--space-6);">
+                          <label class="wizard-checkbox">
+                            <input type="checkbox" id="mint-destination-allow-self-change-admin">
+                            <span>Self-changing admin action takers allowed</span>
+                          </label>
+                        </div>
+                      </div>
+                    </fieldset>
+
                     <!-- Allow Custom Destination Checkbox -->
                     <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
                       <legend class="wizard-field__label">Minting flexibility</legend>
                       <div class="wizard-field wizard-field--checkbox">
                         <label class="wizard-checkbox">
                           <input class="wizard-checkbox__input" type="checkbox"
-                            id="manual-mint-allow-custom-destination">
+                            id="manual-mint-allow-custom-destination"
+                            data-toggle-panel="mint-destination-rules-panel">
                           <span class="wizard-checkbox__label">
                             <span class="wizard-checkbox__title">Allow choosing different destination on each
                               mint</span>
@@ -1645,6 +1666,62 @@
                               operation</span>
                           </span>
                         </label>
+                      </div>
+
+                      <!-- Allow Choosing Destination Rules (shown when checkbox is checked) -->
+                      <div id="mint-destination-rules-panel" class="distribution-inline-panel" hidden style="margin-top: var(--space-6);">
+
+                        <!-- Allow Choosing Destination Rules -->
+                        <div style="padding: var(--space-5); background: var(--color-background-subtle); border-radius: var(--radius-md);">
+                          <h4 style="margin: 0 0 var(--space-3) 0;">Allow Choosing Destination Rules</h4>
+                          <p style="margin: 0 0 var(--space-4) 0; color: var(--color-text-subtle); font-size: 0.875rem;">Control who can change the "allow custom destination" setting</p>
+
+                          <div class="field-group">
+                            <label for="allow-choosing-perform-action">Authorized to perform action:</label>
+                            <select id="allow-choosing-perform-action" class="wizard-field__input">
+                              <option value="no-one">No One</option>
+                              <option value="owner" selected>Contract Owner</option>
+                              <option value="identity">Specific Identity</option>
+                              <option value="group">Specific Group</option>
+                              <option value="main-group">Main Contract Group</option>
+                            </select>
+                          </div>
+
+                          <div class="field-group">
+                            <label for="allow-choosing-change-rules">Authorized to change rules:</label>
+                            <select id="allow-choosing-change-rules" class="wizard-field__input">
+                              <option value="no-one">No One</option>
+                              <option value="owner" selected>Contract Owner</option>
+                              <option value="identity">Specific Identity</option>
+                              <option value="group">Specific Group</option>
+                              <option value="main-group">Main Contract Group</option>
+                            </select>
+                          </div>
+
+                          <!-- Governance Safeguards -->
+                          <div style="margin-top: var(--space-6);">
+                            <h5>Governance Safeguards</h5>
+                            <div class="field-group" style="margin-bottom: var(--space-6);">
+                              <label class="wizard-checkbox">
+                                <input type="checkbox" id="allow-choosing-allow-change-authorized-to-none">
+                                <span>Changing authorized action takers to no one allowed</span>
+                              </label>
+                            </div>
+                            <div class="field-group" style="margin-bottom: var(--space-6);">
+                              <label class="wizard-checkbox">
+                                <input type="checkbox" id="allow-choosing-allow-change-admin-to-none">
+                                <span>Changing admin action takers to no one allowed</span>
+                              </label>
+                            </div>
+                            <div class="field-group" style="margin-bottom: var(--space-6);">
+                              <label class="wizard-checkbox">
+                                <input type="checkbox" id="allow-choosing-allow-self-change-admin">
+                                <span>Self-changing admin action takers allowed</span>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+
                       </div>
                     </fieldset>
                   </div>
@@ -2185,6 +2262,37 @@
                       </label>
                     </fieldset>
 
+                    <!-- Governance Safeguards for Freezing -->
+                    <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
+                      <legend class="wizard-field__label">Governance Safeguards</legend>
+                      <p class="wizard-subsection__body" style="margin-bottom: var(--space-4);">Control what rule
+                        modifications are permitted after deployment</p>
+
+                      <div class="wizard-field wizard-field--checkbox">
+                        <label class="wizard-checkbox" for="freeze-allow-authorized-none">
+                          <input class="wizard-checkbox__input" id="freeze-allow-authorized-none" type="checkbox">
+                          <span class="wizard-checkbox__label">Allow changing authorized freezer to "No One"</span>
+                        </label>
+                        <p class="field-hint">When enabled, authorized freezers can be permanently locked by changing to "No One"</p>
+                      </div>
+
+                      <div class="wizard-field wizard-field--checkbox">
+                        <label class="wizard-checkbox" for="freeze-allow-admin-none">
+                          <input class="wizard-checkbox__input" id="freeze-allow-admin-none" type="checkbox">
+                          <span class="wizard-checkbox__label">Allow changing rule changer to "No One"</span>
+                        </label>
+                        <p class="field-hint">When enabled, the rule changer can permanently lock themselves out by changing to "No One"</p>
+                      </div>
+
+                      <div class="wizard-field wizard-field--checkbox">
+                        <label class="wizard-checkbox" for="freeze-allow-self-change">
+                          <input class="wizard-checkbox__input" id="freeze-allow-self-change" type="checkbox">
+                          <span class="wizard-checkbox__label">Allow rule changer to modify themselves</span>
+                        </label>
+                        <p class="field-hint">When enabled, the current rule changer can reassign rule-changing authority to a different identity or group</p>
+                      </div>
+                    </fieldset>
+
                     <!-- Unfreezing Section (inside freeze permissions panel) -->
                     <fieldset class="wizard-fieldset"
                       style="margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
@@ -2638,6 +2746,36 @@
                             </span>
                           </span>
                         </label>
+                      </div>
+
+                      <!-- Governance Safeguards for Allow Frozen (conditional) -->
+                      <div id="allow-frozen-safeguards-panel" hidden style="margin-top: var(--space-6); padding: var(--space-5); background: var(--color-background-subtle); border-radius: var(--radius-md);">
+                        <h4 style="margin: 0 0 var(--space-3) 0; font-size: var(--font-size-base); font-weight: 600;">Frozen Balance Transfer Governance</h4>
+                        <p class="wizard-subsection__body" style="margin-bottom: var(--space-4);">Control who can modify the frozen balance transfer setting after deployment</p>
+
+                        <div class="wizard-field wizard-field--checkbox">
+                          <label class="wizard-checkbox" for="allow-frozen-allow-change-authorized-none">
+                            <input class="wizard-checkbox__input" id="allow-frozen-allow-change-authorized-none" type="checkbox">
+                            <span class="wizard-checkbox__label">Allow changing authorized modifier to "No One"</span>
+                          </label>
+                          <p class="field-hint">When enabled, the ability to modify this setting can be permanently locked by changing to "No One"</p>
+                        </div>
+
+                        <div class="wizard-field wizard-field--checkbox">
+                          <label class="wizard-checkbox" for="allow-frozen-allow-change-admin-none">
+                            <input class="wizard-checkbox__input" id="allow-frozen-allow-change-admin-none" type="checkbox">
+                            <span class="wizard-checkbox__label">Allow changing rule changer to "No One"</span>
+                          </label>
+                          <p class="field-hint">When enabled, the rule changer can permanently lock themselves out by changing to "No One"</p>
+                        </div>
+
+                        <div class="wizard-field wizard-field--checkbox">
+                          <label class="wizard-checkbox" for="allow-frozen-allow-self-change">
+                            <input class="wizard-checkbox__input" id="allow-frozen-allow-self-change" type="checkbox">
+                            <span class="wizard-checkbox__label">Allow rule changer to modify themselves</span>
+                          </label>
+                          <p class="field-hint">When enabled, the current rule changer can reassign rule-changing authority to a different identity or group</p>
+                        </div>
                       </div>
                     </fieldset>
                   </div>
@@ -4270,6 +4408,65 @@
                 </div>
               </div>
 
+              <!-- Pre-programmed Distribution Rules Card -->
+              <div class="form-card">
+                <div class="form-card__header">
+                  <h3 class="form-card__title">Pre-programmed Distribution Rules</h3>
+                  <p class="form-card__description">Control who can change pre-programmed distribution schedules</p>
+                </div>
+                <div class="form-card__body">
+                  <fieldset class="wizard-fieldset">
+                    <legend class="wizard-field__label">Change Control</legend>
+                    <p class="wizard-subsection__body" style="margin-bottom: var(--space-4);">Define who has authority to modify pre-programmed distribution settings after deployment</p>
+
+                    <div class="field-group">
+                      <label for="preprogrammed-perform-action">Authorized to perform action:</label>
+                      <select id="preprogrammed-perform-action" class="wizard-field__input">
+                        <option value="no-one" selected>No One</option>
+                        <option value="owner">Contract Owner</option>
+                        <option value="identity">Specific Identity</option>
+                        <option value="group">Specific Group</option>
+                        <option value="main-group">Main Contract Group</option>
+                      </select>
+                    </div>
+
+                    <div class="field-group">
+                      <label for="preprogrammed-change-rules">Authorized to change rules:</label>
+                      <select id="preprogrammed-change-rules" class="wizard-field__input">
+                        <option value="no-one" selected>No One</option>
+                        <option value="owner">Contract Owner</option>
+                        <option value="identity">Specific Identity</option>
+                        <option value="group">Specific Group</option>
+                        <option value="main-group">Main Contract Group</option>
+                      </select>
+                    </div>
+
+                    <!-- Governance Safeguards -->
+                    <div style="margin-top: var(--space-6);">
+                      <h5>Governance Safeguards</h5>
+                      <div class="field-group" style="margin-bottom: var(--space-6);">
+                        <label class="wizard-checkbox">
+                          <input type="checkbox" id="preprogrammed-allow-change-authorized-to-none">
+                          <span>Changing authorized action takers to no one allowed</span>
+                        </label>
+                      </div>
+                      <div class="field-group" style="margin-bottom: var(--space-6);">
+                        <label class="wizard-checkbox">
+                          <input type="checkbox" id="preprogrammed-allow-change-admin-to-none">
+                          <span>Changing admin action takers to no one allowed</span>
+                        </label>
+                      </div>
+                      <div class="field-group" style="margin-bottom: var(--space-6);">
+                        <label class="wizard-checkbox">
+                          <input type="checkbox" id="preprogrammed-allow-self-change-admin">
+                          <span>Self-changing admin action takers allowed</span>
+                        </label>
+                      </div>
+                    </div>
+                  </fieldset>
+                </div>
+              </div>
+
               <p class="wizard-field__message" id="distribution-preprogrammed-message" role="status" aria-live="polite">
               </p>
 
@@ -4909,6 +5106,130 @@
                           </div>
 
                         </fieldset>
+                      </div>
+
+                      <!-- Distribution Recipient Section -->
+                      <div style="margin-top: var(--space-6); margin-bottom: var(--space-4);">
+                        <h4 style="font-size: 1rem; font-weight: 600; margin: 0 0 var(--space-2) 0;">Distribution Recipient
+                        </h4>
+                        <p style="font-size: 0.875rem; color: var(--color-text-subtle); margin: 0 0 var(--space-3) 0;">
+                          Who receives the distributed tokens?</p>
+
+                        <fieldset class="wizard-fieldset">
+                          <legend class="wizard-field__label">Recipient type</legend>
+
+                          <!-- Contract Owner Option -->
+                          <label class="wizard-choice">
+                            <input class="wizard-choice__input" type="radio" name="recipient-type-perpetual"
+                              value="contract-owner" checked>
+                            <span class="wizard-choice__content">
+                              <span class="wizard-choice__title">Contract Owner</span>
+                              <span class="wizard-choice__hint">Tokens go to the contract owner's identity</span>
+                            </span>
+                          </label>
+
+                          <!-- Specific Identity Option -->
+                          <label class="wizard-choice" id="recipient-identity-choice-perpetual">
+                            <input class="wizard-choice__input" type="radio" name="recipient-type-perpetual"
+                              value="specific-identity" data-toggle-panel="recipient-identity-panel-perpetual">
+                            <span class="wizard-choice__content">
+                              <span class="wizard-choice__title">Specific Identity</span>
+                              <span class="wizard-choice__hint">Tokens go to a designated Dash identity</span>
+                            </span>
+                          </label>
+                          <div class="distribution-inline-panel" id="recipient-identity-panel-perpetual" hidden>
+                            <div class="field-group">
+                              <label class="wizard-field__label" for="recipient-identity-id-perpetual">Identity ID</label>
+                              <input class="wizard-field__input" type="text" id="recipient-identity-id-perpetual"
+                                placeholder="Enter Dash identity ID (Base58)">
+                              <span class="field-hint">A valid Dash Platform identity ID (43-44 characters, Base58
+                                encoded)</span>
+                            </div>
+                          </div>
+
+                          <!-- Evonodes by Participation Option (Epoch-only) -->
+                          <label class="wizard-choice" id="recipient-evonodes-choice-perpetual" hidden>
+                            <input class="wizard-choice__input" type="radio" name="recipient-type-perpetual"
+                              value="evonodes-by-participation">
+                            <span class="wizard-choice__content">
+                              <span class="wizard-choice__title">Evonodes by Participation</span>
+                              <span class="wizard-choice__hint">Distribute tokens to evonodes based on their participation
+                                in the network (Epoch-based distribution only)</span>
+                            </span>
+                          </label>
+                        </fieldset>
+                      </div>
+
+                      <!-- Perpetual Distribution Rules Section -->
+                      <div style="margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--color-border-subtle);">
+                        <h4 style="font-size: 1rem; font-weight: 600; margin: 0 0 var(--space-2) 0;">Perpetual Distribution Rules
+                        </h4>
+                        <p style="font-size: 0.875rem; color: var(--color-text-subtle); margin: 0 0 var(--space-4) 0;">
+                          Control who can perform and modify perpetual distribution</p>
+
+                        <!-- Authorized to perform action -->
+                        <div class="field-group" style="margin-bottom: var(--space-5);">
+                          <label class="wizard-field__label" for="perpetual-perform-action">Authorized to perform action:</label>
+                          <select class="wizard-field__input" id="perpetual-perform-action" name="perpetual-perform-action">
+                            <option value="no-one">No One</option>
+                            <option value="owner" selected>Contract Owner</option>
+                            <option value="identity">Specific Identity</option>
+                            <option value="group">Specific Group</option>
+                            <option value="main-group">Main Contract Group</option>
+                          </select>
+                          <span class="field-hint">Who can trigger perpetual distribution actions</span>
+                        </div>
+
+                        <!-- Authorized to change rules -->
+                        <div class="field-group" style="margin-bottom: var(--space-5);">
+                          <label class="wizard-field__label" for="perpetual-change-rules">Authorized to change rules:</label>
+                          <select class="wizard-field__input" id="perpetual-change-rules" name="perpetual-change-rules">
+                            <option value="no-one">No One</option>
+                            <option value="owner" selected>Contract Owner</option>
+                            <option value="identity">Specific Identity</option>
+                            <option value="group">Specific Group</option>
+                            <option value="main-group">Main Contract Group</option>
+                          </select>
+                          <span class="field-hint">Who can modify perpetual distribution rules</span>
+                        </div>
+
+                        <!-- Governance Safeguards -->
+                        <div style="margin-top: var(--space-6);">
+                          <h5 style="font-size: 0.9rem; font-weight: 600; margin: 0 0 var(--space-5) 0;">Governance Safeguards</h5>
+
+                          <div class="field-group" style="margin-bottom: var(--space-6);">
+                            <label class="wizard-checkbox">
+                              <input class="wizard-checkbox__input" type="checkbox"
+                                id="perpetual-allow-change-authorized-to-none">
+                              <span class="wizard-checkbox__label">
+                                <span class="wizard-checkbox__title">Changing authorized action takers to no one allowed</span>
+                                <span class="wizard-checkbox__hint">Allows permanently locking perpetual distribution by removing
+                                  all authorized performers</span>
+                              </span>
+                            </label>
+                          </div>
+
+                          <div class="field-group" style="margin-bottom: var(--space-6);">
+                            <label class="wizard-checkbox">
+                              <input class="wizard-checkbox__input" type="checkbox"
+                                id="perpetual-allow-change-admin-to-none">
+                              <span class="wizard-checkbox__label">
+                                <span class="wizard-checkbox__title">Changing admin action takers to no one allowed</span>
+                                <span class="wizard-checkbox__hint">Allows rule changers to permanently lock the rules</span>
+                              </span>
+                            </label>
+                          </div>
+
+                          <div class="field-group">
+                            <label class="wizard-checkbox">
+                              <input class="wizard-checkbox__input" type="checkbox" id="perpetual-allow-self-change-admin">
+                              <span class="wizard-checkbox__label">
+                                <span class="wizard-checkbox__title">Self-changing admin action takers allowed</span>
+                                <span class="wizard-checkbox__hint">Rule changers can modify who can change the rules</span>
+                              </span>
+                            </label>
+                          </div>
+                        </div>
                       </div>
 
                     </div>
@@ -5596,6 +5917,17 @@
                         <span class="field-hint">The Dash Platform identity that will receive tokens</span>
                       </div>
                     </div>
+
+                    <!-- Evonodes by Participation Option (Epoch-only) -->
+                    <label class="wizard-choice" id="recipient-evonodes-choice" hidden>
+                      <input class="wizard-choice__input" type="radio" name="recipient-type"
+                        value="evonodes-by-participation">
+                      <span class="wizard-choice__content">
+                        <span class="wizard-choice__title">Evonodes by Participation</span>
+                        <span class="wizard-choice__hint">Distribute tokens to evonodes based on their participation
+                          in the network (Epoch-based distribution only)</span>
+                      </span>
+                    </label>
                   </fieldset>
                 </div>
               </div>
@@ -5708,19 +6040,6 @@
                   </div>
 
                   <div class="field-group" style="margin-bottom: var(--space-4);">
-                    <label class="wizard-checkbox" for="history-pricing-changes">
-                      <input class="wizard-checkbox__input" type="checkbox" id="history-pricing-changes"
-                        name="history-pricing-changes">
-                      <span class="wizard-checkbox__label">
-                        <span class="wizard-checkbox__title">Would you like to keep a queryable history of
-                          direct-pricing changes?</span>
-                        <span class="wizard-checkbox__hint">Track when token pricing is modified for marketplace and
-                          valuation transparency</span>
-                      </span>
-                    </label>
-                  </div>
-
-                  <div class="field-group">
                     <label class="wizard-checkbox" for="history-purchases">
                       <input class="wizard-checkbox__input" type="checkbox" id="history-purchases"
                         name="history-purchases">
@@ -5729,6 +6048,19 @@
                           purchases?</span>
                         <span class="wizard-checkbox__hint">Track all direct token purchases for transaction records and
                           revenue reporting</span>
+                      </span>
+                    </label>
+                  </div>
+
+                  <div class="field-group">
+                    <label class="wizard-checkbox" for="history-direct-pricing">
+                      <input class="wizard-checkbox__input" type="checkbox" id="history-direct-pricing"
+                        name="history-direct-pricing">
+                      <span class="wizard-checkbox__label">
+                        <span class="wizard-checkbox__title">Would you like to keep a queryable history of direct pricing
+                          changes?</span>
+                        <span class="wizard-checkbox__hint">Track when token pricing is modified for marketplace
+                          transparency and historical valuation records</span>
                       </span>
                     </label>
                   </div>
@@ -5812,6 +6144,43 @@
                     </p>
                   </fieldset>
                   <input type="hidden" id="advanced-trade-mode" name="advanced-trade-mode" value="closed">
+                </div>
+              </div>
+
+              <!-- Advanced Contract Settings Card -->
+              <div class="form-card">
+                <div class="form-card__header">
+                  <h3 class="form-card__title">Advanced Contract Settings</h3>
+                  <p class="form-card__description">Configure optional platform-level contract requirements</p>
+                </div>
+                <div class="form-card__body">
+                  <fieldset class="wizard-fieldset">
+                    <legend class="wizard-field__label">Identity Bounded Key Requirements</legend>
+                    <p class="wizard-subsection__body" style="margin-bottom: var(--space-4);">Specify storage key requirements for identity encryption/decryption (advanced users only)</p>
+
+                    <div class="field-group">
+                      <label class="wizard-field__label" for="encryption-bounded-key">Encryption bounded key requirement (StorageKeyRequirements u8)</label>
+                      <input class="wizard-field__input" type="number" id="encryption-bounded-key" min="0" max="255" placeholder="Leave empty for none">
+                      <span class="field-hint">Optional numeric code (0-255) for identity encryption bounded key requirement</span>
+                    </div>
+
+                    <div class="field-group">
+                      <label class="wizard-field__label" for="decryption-bounded-key">Decryption bounded key requirement (StorageKeyRequirements u8)</label>
+                      <input class="wizard-field__input" type="number" id="decryption-bounded-key" min="0" max="255" placeholder="Leave empty for none">
+                      <span class="field-hint">Optional numeric code (0-255) for identity decryption bounded key requirement</span>
+                    </div>
+                  </fieldset>
+
+                  <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
+                    <legend class="wizard-field__label">Integer Types</legend>
+                    <div class="field-group">
+                      <label class="wizard-checkbox" for="sized-integer-types">
+                        <input class="wizard-checkbox__input" type="checkbox" id="sized-integer-types" checked>
+                        <span class="wizard-checkbox__label">Use sized integer types</span>
+                      </label>
+                      <span class="field-hint">When enabled, integers in the contract will use sized types (recommended)</span>
+                    </div>
+                  </fieldset>
                 </div>
               </div>
 

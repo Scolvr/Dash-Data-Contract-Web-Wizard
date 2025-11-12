@@ -355,7 +355,8 @@
     mints: false,
     burns: false,
     freezes: false,
-    purchases: false
+    purchases: false,
+    directPricing: false
   };
 
   const DEFAULT_CHANGE_CONTROL_FLAGS = {
@@ -1384,6 +1385,162 @@
     });
   });
 
+  // Add event listeners for perpetual distribution safeguard checkboxes
+  const perpetualSafeguardCheckboxes = [
+    document.getElementById('perpetual-allow-change-authorized-to-none'),
+    document.getElementById('perpetual-allow-change-admin-to-none'),
+    document.getElementById('perpetual-allow-self-change-admin')
+  ];
+
+  perpetualSafeguardCheckboxes.forEach(checkbox => {
+    if (checkbox) {
+      checkbox.addEventListener('change', () => {
+        persistState();
+      });
+    }
+  });
+
+  // Add event listeners for perpetual distribution rule dropdowns
+  const perpetualPerformActionSelect = document.getElementById('perpetual-perform-action');
+  const perpetualChangeRulesSelect = document.getElementById('perpetual-change-rules');
+
+  if (perpetualPerformActionSelect) {
+    perpetualPerformActionSelect.addEventListener('change', () => {
+      persistState();
+    });
+  }
+
+  if (perpetualChangeRulesSelect) {
+    perpetualChangeRulesSelect.addEventListener('change', () => {
+      persistState();
+    });
+  }
+
+  // Add event listeners for pre-programmed distribution rules
+  const preprogrammedPerformActionSelect = document.getElementById('preprogrammed-perform-action');
+  const preprogrammedChangeRulesSelect = document.getElementById('preprogrammed-change-rules');
+  const preprogrammedSafeguardCheckboxes = [
+    document.getElementById('preprogrammed-allow-change-authorized-to-none'),
+    document.getElementById('preprogrammed-allow-change-admin-to-none'),
+    document.getElementById('preprogrammed-allow-self-change-admin')
+  ];
+
+  if (preprogrammedPerformActionSelect) {
+    preprogrammedPerformActionSelect.addEventListener('change', () => {
+      persistState();
+    });
+  }
+
+  if (preprogrammedChangeRulesSelect) {
+    preprogrammedChangeRulesSelect.addEventListener('change', () => {
+      persistState();
+    });
+  }
+
+  preprogrammedSafeguardCheckboxes.forEach(checkbox => {
+    if (checkbox) {
+      checkbox.addEventListener('change', () => {
+        persistState();
+      });
+    }
+  });
+
+  // Add event listeners for mint destination rules
+  const mintDestinationPerformActionSelect = document.getElementById('mint-destination-perform-action');
+  const mintDestinationChangeRulesSelect = document.getElementById('mint-destination-change-rules');
+  const mintDestinationSafeguardCheckboxes = [
+    document.getElementById('mint-destination-allow-change-authorized-to-none'),
+    document.getElementById('mint-destination-allow-change-admin-to-none'),
+    document.getElementById('mint-destination-allow-self-change-admin')
+  ];
+
+  if (mintDestinationPerformActionSelect) {
+    mintDestinationPerformActionSelect.addEventListener('change', () => {
+      persistState();
+    });
+  }
+
+  if (mintDestinationChangeRulesSelect) {
+    mintDestinationChangeRulesSelect.addEventListener('change', () => {
+      persistState();
+    });
+  }
+
+  mintDestinationSafeguardCheckboxes.forEach(checkbox => {
+    if (checkbox) {
+      checkbox.addEventListener('change', () => {
+        persistState();
+      });
+    }
+  });
+
+  // Add event listeners for allow choosing destination rules
+  const allowChoosingPerformActionSelect = document.getElementById('allow-choosing-perform-action');
+  const allowChoosingChangeRulesSelect = document.getElementById('allow-choosing-change-rules');
+  const allowChoosingSafeguardCheckboxes = [
+    document.getElementById('allow-choosing-allow-change-authorized-to-none'),
+    document.getElementById('allow-choosing-allow-change-admin-to-none'),
+    document.getElementById('allow-choosing-allow-self-change-admin')
+  ];
+
+  if (allowChoosingPerformActionSelect) {
+    allowChoosingPerformActionSelect.addEventListener('change', () => {
+      persistState();
+    });
+  }
+
+  if (allowChoosingChangeRulesSelect) {
+    allowChoosingChangeRulesSelect.addEventListener('change', () => {
+      persistState();
+    });
+  }
+
+  allowChoosingSafeguardCheckboxes.forEach(checkbox => {
+    if (checkbox) {
+      checkbox.addEventListener('change', () => {
+        persistState();
+      });
+    }
+  });
+
+  // Add event listeners for advanced contract settings
+  const encryptionBoundedKeyInput = document.getElementById('encryption-bounded-key');
+  const decryptionBoundedKeyInput = document.getElementById('decryption-bounded-key');
+  const sizedIntegerTypesCheckbox = document.getElementById('sized-integer-types');
+
+  if (encryptionBoundedKeyInput) {
+    encryptionBoundedKeyInput.addEventListener('input', () => {
+      persistState();
+    });
+  }
+
+  if (decryptionBoundedKeyInput) {
+    decryptionBoundedKeyInput.addEventListener('input', () => {
+      persistState();
+    });
+  }
+
+  if (sizedIntegerTypesCheckbox) {
+    sizedIntegerTypesCheckbox.addEventListener('change', () => {
+      persistState();
+    });
+  }
+
+  // Add event listener for mint destination rules panel toggle
+  const allowCustomDestinationCheckbox = document.getElementById('manual-mint-allow-custom-destination');
+  const mintDestinationRulesPanel = document.getElementById('mint-destination-rules-panel');
+
+  if (allowCustomDestinationCheckbox && mintDestinationRulesPanel) {
+    allowCustomDestinationCheckbox.addEventListener('change', () => {
+      if (allowCustomDestinationCheckbox.checked) {
+        mintDestinationRulesPanel.removeAttribute('hidden');
+      } else {
+        mintDestinationRulesPanel.setAttribute('hidden', '');
+      }
+      persistState();
+    });
+  }
+
   // PROFESSIONAL REWRITE: Use event delegation on the wizard container to handle ALL form submissions
   const wizardContainer = document.querySelector('.wizard-shell');
 
@@ -1919,7 +2076,9 @@
     syncIdentityUI();
 
     tokenNameInput.value = wizardState.form.tokenName || '';
-    ownerIdentityInput.value = wizardState.form.ownerIdentityId || '';
+    if (ownerIdentityInput) {
+      ownerIdentityInput.value = wizardState.form.ownerIdentityId || '';
+    }
 
     ensureNamingFormState();
     renderLocalizationRows(wizardState.form.naming.rows);
@@ -2447,30 +2606,40 @@
 
     wizardState.form.tokenName = rawValue;
 
-    // Validate owner identity ID
-    const rawIdentity = ownerIdentityInput.value;
-    const identityResult = validateBase58Identity(rawIdentity);
+    // Validate owner identity ID (optional - field may not exist in UI)
+    let identityResult = { valid: true, message: '' };
+    if (ownerIdentityInput) {
+      const rawIdentity = ownerIdentityInput.value;
+      identityResult = validateBase58Identity(rawIdentity);
 
-    if (touched || !silent) {
-      ownerIdentityMessage.textContent = identityResult.valid ? '' : identityResult.message;
-    } else {
-      ownerIdentityMessage.textContent = '';
-    }
-
-    // Visual feedback for identity
-    if (rawIdentity.trim().length > 0) {
-      if (identityResult.valid) {
-        ownerIdentityInput.classList.remove('wizard-field__input--error');
-        ownerIdentityInput.classList.add('wizard-field__input--valid');
+      if (touched || !silent) {
+        if (ownerIdentityMessage) {
+          ownerIdentityMessage.textContent = identityResult.valid ? '' : identityResult.message;
+        }
       } else {
-        ownerIdentityInput.classList.remove('wizard-field__input--valid');
-        ownerIdentityInput.classList.add('wizard-field__input--error');
+        if (ownerIdentityMessage) {
+          ownerIdentityMessage.textContent = '';
+        }
       }
-    } else {
-      ownerIdentityInput.classList.remove('wizard-field__input--valid', 'wizard-field__input--error');
-    }
 
-    wizardState.form.ownerIdentityId = rawIdentity;
+      // Visual feedback for identity
+      if (rawIdentity.trim().length > 0) {
+        if (identityResult.valid) {
+          ownerIdentityInput.classList.remove('wizard-field__input--error');
+          ownerIdentityInput.classList.add('wizard-field__input--valid');
+        } else {
+          ownerIdentityInput.classList.remove('wizard-field__input--valid');
+          ownerIdentityInput.classList.add('wizard-field__input--error');
+        }
+      } else {
+        ownerIdentityInput.classList.remove('wizard-field__input--valid', 'wizard-field__input--error');
+      }
+
+      wizardState.form.ownerIdentityId = rawIdentity;
+    } else {
+      // Owner identity input not in UI, set to empty string
+      wizardState.form.ownerIdentityId = '';
+    }
 
     // Validate plural form (using token name as singular)
     const plural = tokenPluralInput.value.trim();
@@ -4933,6 +5102,24 @@
       });
     }
 
+    // Update recipient visibility when showing distribution-emission screen
+    if (screenId === 'distribution-emission') {
+      requestAnimationFrame(() => {
+        if (distributionUI && typeof distributionUI.updateRecipientVisibility === 'function') {
+          distributionUI.updateRecipientVisibility();
+        }
+      });
+    }
+
+    // Update recipient visibility when showing distribution-perpetual screen
+    if (screenId === 'distribution-perpetual') {
+      requestAnimationFrame(() => {
+        if (distributionUI && typeof distributionUI.updateRecipientVisibility === 'function') {
+          distributionUI.updateRecipientVisibility();
+        }
+      });
+    }
+
     // Sync preprogrammed distribution form when showing preprogrammed screen
     if (screenId === 'distribution-preprogrammed' || getPrimaryStepId(screenId) === 'distribution') {
       requestAnimationFrame(() => {
@@ -6314,6 +6501,7 @@
     const historyBurnsInput = document.getElementById('history-burns');
     const historyFreezesInput = document.getElementById('history-freezes');
     const historyPurchasesInput = document.getElementById('history-purchases');
+    const historyDirectPricingInput = document.getElementById('history-direct-pricing');
     const startPausedInput = document.getElementById('permissions-start-paused');
     const allowFrozenInput = document.getElementById('permissions-allow-frozen');
 
@@ -6322,7 +6510,8 @@
       mints: historyMintsInput,
       burns: historyBurnsInput,
       freezes: historyFreezesInput,
-      purchases: historyPurchasesInput
+      purchases: historyPurchasesInput,
+      directPricing: historyDirectPricingInput
     };
 
     if (!decimalsInput || !baseSupplyInput) {
@@ -6561,6 +6750,102 @@
       });
     }
 
+    // Change Max Supply Permission (perform action) Radio Buttons
+    const changeMaxSupplyPermissionRadios = document.getElementsByName('change-max-supply-permission');
+    changeMaxSupplyPermissionRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        if (!radio.checked) return;
+        const value = radio.value;
+        if (!wizardState.form.permissions.changeMaxSupply.perform) {
+          wizardState.form.permissions.changeMaxSupply.perform = {};
+        }
+        if (value === 'owner-only') {
+          wizardState.form.permissions.changeMaxSupply.perform.type = 'owner';
+          wizardState.form.permissions.changeMaxSupply.perform.identityId = '';
+          wizardState.form.permissions.changeMaxSupply.perform.groupId = null;
+        } else if (value === 'specific-identity') {
+          wizardState.form.permissions.changeMaxSupply.perform.type = 'identity';
+        } else if (value === 'group') {
+          wizardState.form.permissions.changeMaxSupply.perform.type = 'group';
+        } else if (value === 'no-one') {
+          wizardState.form.permissions.changeMaxSupply.perform.type = 'none';
+        }
+        persistState();
+      });
+    });
+
+    // Change Max Supply Identity ID Input
+    const changeMaxSupplyIdentityIdInput = document.getElementById('change-max-supply-identity-id');
+    if (changeMaxSupplyIdentityIdInput) {
+      changeMaxSupplyIdentityIdInput.addEventListener('input', () => {
+        if (!wizardState.form.permissions.changeMaxSupply.perform) {
+          wizardState.form.permissions.changeMaxSupply.perform = {};
+        }
+        wizardState.form.permissions.changeMaxSupply.perform.identityId = changeMaxSupplyIdentityIdInput.value.trim();
+        persistState();
+      });
+    }
+
+    // Change Max Supply Group Select
+    const changeMaxSupplyGroupSelect = document.getElementById('change-max-supply-group-id');
+    if (changeMaxSupplyGroupSelect) {
+      changeMaxSupplyGroupSelect.addEventListener('change', () => {
+        if (!wizardState.form.permissions.changeMaxSupply.perform) {
+          wizardState.form.permissions.changeMaxSupply.perform = {};
+        }
+        wizardState.form.permissions.changeMaxSupply.perform.groupId = parseInt(changeMaxSupplyGroupSelect.value, 10) || null;
+        persistState();
+      });
+    }
+
+    // Change Max Supply Rule Changer (admin) Radio Buttons
+    const changeMaxSupplyRuleChangerRadios = document.getElementsByName('change-max-supply-rule-changer');
+    changeMaxSupplyRuleChangerRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        if (!radio.checked) return;
+        const value = radio.value;
+        if (!wizardState.form.permissions.changeMaxSupply.changeRules) {
+          wizardState.form.permissions.changeMaxSupply.changeRules = {};
+        }
+        if (value === 'owner-only') {
+          wizardState.form.permissions.changeMaxSupply.changeRules.type = 'owner';
+          wizardState.form.permissions.changeMaxSupply.changeRules.identityId = '';
+          wizardState.form.permissions.changeMaxSupply.changeRules.groupId = null;
+        } else if (value === 'specific-identity') {
+          wizardState.form.permissions.changeMaxSupply.changeRules.type = 'identity';
+        } else if (value === 'group') {
+          wizardState.form.permissions.changeMaxSupply.changeRules.type = 'group';
+        } else if (value === 'no-one') {
+          wizardState.form.permissions.changeMaxSupply.changeRules.type = 'none';
+        }
+        persistState();
+      });
+    });
+
+    // Change Max Supply Rule Identity ID Input
+    const changeMaxSupplyRuleIdentityIdInput = document.getElementById('change-max-supply-rule-identity-id');
+    if (changeMaxSupplyRuleIdentityIdInput) {
+      changeMaxSupplyRuleIdentityIdInput.addEventListener('input', () => {
+        if (!wizardState.form.permissions.changeMaxSupply.changeRules) {
+          wizardState.form.permissions.changeMaxSupply.changeRules = {};
+        }
+        wizardState.form.permissions.changeMaxSupply.changeRules.identityId = changeMaxSupplyRuleIdentityIdInput.value.trim();
+        persistState();
+      });
+    }
+
+    // Change Max Supply Rule Group Select
+    const changeMaxSupplyRuleGroupSelect = document.getElementById('change-max-supply-rule-group-id');
+    if (changeMaxSupplyRuleGroupSelect) {
+      changeMaxSupplyRuleGroupSelect.addEventListener('change', () => {
+        if (!wizardState.form.permissions.changeMaxSupply.changeRules) {
+          wizardState.form.permissions.changeMaxSupply.changeRules = {};
+        }
+        wizardState.form.permissions.changeMaxSupply.changeRules.groupId = parseInt(changeMaxSupplyRuleGroupSelect.value, 10) || null;
+        persistState();
+      });
+    }
+
     // Unfreeze Enable/Disable Radio Buttons
     const unfreezeEnabledRadios = document.getElementsByName('manual-unfreeze-enabled');
     unfreezeEnabledRadios.forEach(radio => {
@@ -6609,6 +6894,84 @@
     if (unfreezeAllowSelfChange) {
       unfreezeAllowSelfChange.addEventListener('change', () => {
         wizardState.form.permissions.unfreeze.allowSelfChangeAdmin = unfreezeAllowSelfChange.checked;
+        persistState();
+      });
+    }
+
+    // Freeze Governance Checkboxes
+    const freezeAllowAuthorizedNone = document.getElementById('freeze-allow-authorized-none');
+    const freezeAllowAdminNone = document.getElementById('freeze-allow-admin-none');
+    const freezeAllowSelfChange = document.getElementById('freeze-allow-self-change');
+
+    if (freezeAllowAuthorizedNone) {
+      freezeAllowAuthorizedNone.addEventListener('change', () => {
+        wizardState.form.permissions.manualFreeze.allowChangeAuthorizedToNone = freezeAllowAuthorizedNone.checked;
+        persistState();
+      });
+    }
+    if (freezeAllowAdminNone) {
+      freezeAllowAdminNone.addEventListener('change', () => {
+        wizardState.form.permissions.manualFreeze.allowChangeAdminToNone = freezeAllowAdminNone.checked;
+        persistState();
+      });
+    }
+    if (freezeAllowSelfChange) {
+      freezeAllowSelfChange.addEventListener('change', () => {
+        wizardState.form.permissions.manualFreeze.allowSelfChangeAdmin = freezeAllowSelfChange.checked;
+        persistState();
+      });
+    }
+
+    // Allow Frozen Balance Transfers Checkbox + Safeguards Panel Toggle
+    const allowFrozenCheckbox = document.getElementById('permissions-allow-frozen');
+    const allowFrozenSafeguardsPanel = document.getElementById('allow-frozen-safeguards-panel');
+
+    if (allowFrozenCheckbox) {
+      allowFrozenCheckbox.addEventListener('change', () => {
+        wizardState.form.permissions.allowTransferToFrozenBalance = allowFrozenCheckbox.checked;
+
+        // Toggle safeguards panel visibility
+        if (allowFrozenSafeguardsPanel) {
+          if (allowFrozenCheckbox.checked) {
+            allowFrozenSafeguardsPanel.removeAttribute('hidden');
+          } else {
+            allowFrozenSafeguardsPanel.setAttribute('hidden', '');
+          }
+        }
+
+        persistState();
+      });
+    }
+
+    // Allow Frozen Balance Transfer Governance Checkboxes
+    const allowFrozenAllowChangeAuthorizedNone = document.getElementById('allow-frozen-allow-change-authorized-none');
+    const allowFrozenAllowChangeAdminNone = document.getElementById('allow-frozen-allow-change-admin-none');
+    const allowFrozenAllowSelfChange = document.getElementById('allow-frozen-allow-self-change');
+
+    if (allowFrozenAllowChangeAuthorizedNone) {
+      allowFrozenAllowChangeAuthorizedNone.addEventListener('change', () => {
+        if (!wizardState.form.permissions.allowTransferToFrozenBalanceChangeRules) {
+          wizardState.form.permissions.allowTransferToFrozenBalanceChangeRules = {};
+        }
+        wizardState.form.permissions.allowTransferToFrozenBalanceChangeRules.allowChangeAuthorizedToNone = allowFrozenAllowChangeAuthorizedNone.checked;
+        persistState();
+      });
+    }
+    if (allowFrozenAllowChangeAdminNone) {
+      allowFrozenAllowChangeAdminNone.addEventListener('change', () => {
+        if (!wizardState.form.permissions.allowTransferToFrozenBalanceChangeRules) {
+          wizardState.form.permissions.allowTransferToFrozenBalanceChangeRules = {};
+        }
+        wizardState.form.permissions.allowTransferToFrozenBalanceChangeRules.allowChangeAdminToNone = allowFrozenAllowChangeAdminNone.checked;
+        persistState();
+      });
+    }
+    if (allowFrozenAllowSelfChange) {
+      allowFrozenAllowSelfChange.addEventListener('change', () => {
+        if (!wizardState.form.permissions.allowTransferToFrozenBalanceChangeRules) {
+          wizardState.form.permissions.allowTransferToFrozenBalanceChangeRules = {};
+        }
+        wizardState.form.permissions.allowTransferToFrozenBalanceChangeRules.allowSelfChangeAdmin = allowFrozenAllowSelfChange.checked;
         persistState();
       });
     }
@@ -6695,6 +7058,37 @@
         unfreezeAllowSelfChange.checked = Boolean(wizardState.form.permissions.unfreeze?.allowSelfChangeAdmin);
       }
 
+      // Restore freeze governance checkboxes
+      if (freezeAllowAuthorizedNone) {
+        freezeAllowAuthorizedNone.checked = Boolean(wizardState.form.permissions.manualFreeze?.allowChangeAuthorizedToNone);
+      }
+      if (freezeAllowAdminNone) {
+        freezeAllowAdminNone.checked = Boolean(wizardState.form.permissions.manualFreeze?.allowChangeAdminToNone);
+      }
+      if (freezeAllowSelfChange) {
+        freezeAllowSelfChange.checked = Boolean(wizardState.form.permissions.manualFreeze?.allowSelfChangeAdmin);
+      }
+
+      // Restore allow-frozen governance checkboxes
+      if (allowFrozenAllowChangeAuthorizedNone) {
+        allowFrozenAllowChangeAuthorizedNone.checked = Boolean(wizardState.form.permissions.allowTransferToFrozenBalanceChangeRules?.allowChangeAuthorizedToNone);
+      }
+      if (allowFrozenAllowChangeAdminNone) {
+        allowFrozenAllowChangeAdminNone.checked = Boolean(wizardState.form.permissions.allowTransferToFrozenBalanceChangeRules?.allowChangeAdminToNone);
+      }
+      if (allowFrozenAllowSelfChange) {
+        allowFrozenAllowSelfChange.checked = Boolean(wizardState.form.permissions.allowTransferToFrozenBalanceChangeRules?.allowSelfChangeAdmin);
+      }
+
+      // Restore allow-frozen panel visibility
+      if (allowFrozenSafeguardsPanel && allowFrozenCheckbox) {
+        if (allowFrozenCheckbox.checked) {
+          allowFrozenSafeguardsPanel.removeAttribute('hidden');
+        } else {
+          allowFrozenSafeguardsPanel.setAttribute('hidden', '');
+        }
+      }
+
       updateSupplyUI();
       evaluatePermissions({ touched: false });
     }, 100);
@@ -6738,7 +7132,8 @@
             mints: Boolean(historyMintsInput && historyMintsInput.checked),
             burns: Boolean(historyBurnsInput && historyBurnsInput.checked),
             freezes: Boolean(historyFreezesInput && historyFreezesInput.checked),
-            purchases: Boolean(historyPurchasesInput && historyPurchasesInput.checked)
+            purchases: Boolean(historyPurchasesInput && historyPurchasesInput.checked),
+            directPricing: Boolean(historyDirectPricingInput && historyDirectPricingInput.checked)
           },
           startAsPaused: Boolean(startPausedInput && startPausedInput.checked),
           allowTransferToFrozenBalance: Boolean(allowFrozenInput && allowFrozenInput.checked)
@@ -7507,7 +7902,7 @@
     // Use HTML elements that are already in index.html
     const typeRadios = Array.from(document.querySelectorAll('input[name="distribution-type"]'));
     const functionRadios = Array.from(document.querySelectorAll('input[name="emission-type"]'));
-    const recipientRadios = Array.from(document.querySelectorAll('input[name="recipient-type"]'));
+    const recipientRadios = Array.from(document.querySelectorAll('input[name="recipient-type"], input[name="recipient-type-perpetual"]'));
 
     // FIXED: Helper functions to get selected radio button value and map to correct type names
     const getSelectedTypeValue = () => {
@@ -7594,6 +7989,76 @@
         evaluateDistribution({ touched: true });
       });
     });
+
+    // Update recipient options visibility based on cadence type
+    function updateRecipientOptionsVisibility(cadenceType) {
+      // Handle both emission page and perpetual page evonodes options
+      const evonodesChoice = document.getElementById('recipient-evonodes-choice');
+      const evonodesChoicePerpetual = document.getElementById('recipient-evonodes-choice-perpetual');
+      const evonodesRadios = Array.from(document.querySelectorAll('input[value="evonodes-by-participation"]'));
+
+      // If cadenceType not provided, get it from wizard state or currently selected radio
+      if (!cadenceType) {
+        cadenceType = wizardState.form.distribution?.cadence?.type || getSelectedTypeValue();
+      }
+
+      if (cadenceType === 'EpochBasedDistribution') {
+        // Show evonodes option for epoch-based on both pages
+        if (evonodesChoice) {
+          evonodesChoice.removeAttribute('hidden');
+        }
+        if (evonodesChoicePerpetual) {
+          evonodesChoicePerpetual.removeAttribute('hidden');
+        }
+        evonodesRadios.forEach(radio => {
+          if (radio) radio.removeAttribute('disabled');
+        });
+      } else {
+        // Hide evonodes option for block/time-based on both pages
+        if (evonodesChoice) {
+          evonodesChoice.setAttribute('hidden', '');
+        }
+        if (evonodesChoicePerpetual) {
+          evonodesChoicePerpetual.setAttribute('hidden', '');
+        }
+        evonodesRadios.forEach(radio => {
+          if (radio) radio.setAttribute('disabled', '');
+        });
+
+        // Reset to owner if evonodes was selected (check both pages)
+        evonodesRadios.forEach(evonodesRadio => {
+          if (evonodesRadio && evonodesRadio.checked) {
+            // Find the corresponding owner radio on the same page
+            const ownerRadio = document.querySelector(
+              `input[name="${evonodesRadio.name}"][value="contract-owner"]`
+            );
+            if (ownerRadio) {
+              ownerRadio.checked = true;
+              ownerRadio.dispatchEvent(new Event('change'));
+            }
+          }
+        });
+      }
+    }
+
+    // Wire up recipient radio changes
+    recipientRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        evaluateDistribution({ touched: true });
+      });
+    });
+
+    // Update recipient visibility when cadence changes
+    typeRadios.forEach(radio => {
+      const originalListener = radio.onchange;
+      radio.addEventListener('change', () => {
+        const cadenceType = getSelectedTypeValue();
+        updateRecipientOptionsVisibility(cadenceType);
+      });
+    });
+
+    // Initialize recipient visibility on load
+    updateRecipientOptionsVisibility(getSelectedTypeValue());
 
     const watchedInputs = [
       blockIntervalInput,
@@ -7732,6 +8197,55 @@
           }
         }
 
+        // Collect recipient information from both pages
+        const checkedRecipientRadio = recipientRadios.find(r => r.checked);
+        const recipientType = checkedRecipientRadio ? checkedRecipientRadio.value : 'contract-owner';
+
+        // Get identity ID from either page
+        const identityIdInput = document.querySelector('#recipient-identity-id') ||
+                                document.querySelector('#recipient-identity-id-perpetual');
+        const identityId = identityIdInput ? identityIdInput.value.trim() : '';
+
+        // Collect perpetual distribution rules
+        const performAction = document.getElementById('perpetual-perform-action')?.value || 'owner';
+        const changeRules = document.getElementById('perpetual-change-rules')?.value || 'owner';
+
+        // Collect safeguard checkbox states
+        const safeguards = {
+          performAction: performAction,
+          changeRules: changeRules,
+          allowChangeAuthorizedToNone: document.getElementById('perpetual-allow-change-authorized-to-none')?.checked || false,
+          allowChangeAdminToNone: document.getElementById('perpetual-allow-change-admin-to-none')?.checked || false,
+          allowSelfChangeAdmin: document.getElementById('perpetual-allow-self-change-admin')?.checked || false
+        };
+
+        // Collect pre-programmed distribution rules
+        const preProgrammedRules = {
+          performAction: document.getElementById('preprogrammed-perform-action')?.value || 'no-one',
+          changeRules: document.getElementById('preprogrammed-change-rules')?.value || 'no-one',
+          allowChangeAuthorizedToNone: document.getElementById('preprogrammed-allow-change-authorized-to-none')?.checked || false,
+          allowChangeAdminToNone: document.getElementById('preprogrammed-allow-change-admin-to-none')?.checked || false,
+          allowSelfChangeAdmin: document.getElementById('preprogrammed-allow-self-change-admin')?.checked || false
+        };
+
+        // Collect new tokens destination identity rules
+        const mintDestinationRules = {
+          performAction: document.getElementById('mint-destination-perform-action')?.value || 'owner',
+          changeRules: document.getElementById('mint-destination-change-rules')?.value || 'owner',
+          allowChangeAuthorizedToNone: document.getElementById('mint-destination-allow-change-authorized-to-none')?.checked || false,
+          allowChangeAdminToNone: document.getElementById('mint-destination-allow-change-admin-to-none')?.checked || false,
+          allowSelfChangeAdmin: document.getElementById('mint-destination-allow-self-change-admin')?.checked || false
+        };
+
+        // Collect allow choosing destination rules
+        const allowChoosingRules = {
+          performAction: document.getElementById('allow-choosing-perform-action')?.value || 'owner',
+          changeRules: document.getElementById('allow-choosing-change-rules')?.value || 'owner',
+          allowChangeAuthorizedToNone: document.getElementById('allow-choosing-allow-change-authorized-to-none')?.checked || false,
+          allowChangeAdminToNone: document.getElementById('allow-choosing-allow-change-admin-to-none')?.checked || false,
+          allowSelfChangeAdmin: document.getElementById('allow-choosing-allow-self-change-admin')?.checked || false
+        };
+
         return {
           cadence: {
             type: getSelectedTypeValue(),
@@ -7754,8 +8268,19 @@
             startDecreasingOffset: stepOffsetInput ? stepOffsetInput.value.trim() : '',
             maxIntervalCount: stepMaxIntervalInput ? stepMaxIntervalInput.value.trim() : '',
             minValue: stepMinValueInput ? stepMinValueInput.value.trim() : ''
-          }
+          },
+          recipient: {
+            type: recipientType,
+            identityId: identityId
+          },
+          safeguards: safeguards,
+          preProgrammedRules: preProgrammedRules,
+          mintDestinationRules: mintDestinationRules,
+          allowChoosingRules: allowChoosingRules
         };
+      },
+      updateRecipientVisibility() {
+        updateRecipientOptionsVisibility();
       }
     };
   }
@@ -8110,7 +8635,7 @@
 
     // Validate recipient if specified
     if (values.recipient) {
-      if (values.recipient.type === 'identity' && !values.recipient.identityId) {
+      if ((values.recipient.type === 'identity' || values.recipient.type === 'specific-identity') && !values.recipient.identityId) {
         return { valid: false, message: 'Enter a recipient identity ID.' };
       }
     }
@@ -8180,11 +8705,22 @@
     if (!cadence || !emission) {
       return null;
     }
+
+    // Determine recipient based on form state
+    let recipientPayload = { type: 'ContractOwner' };
+    if (distribution.recipient) {
+      if (distribution.recipient.type === 'evonodes-by-participation') {
+        recipientPayload = { type: 'EvonodesByParticipation' };
+      } else if ((distribution.recipient.type === 'identity' || distribution.recipient.type === 'specific-identity') && distribution.recipient.identityId) {
+        recipientPayload = { type: 'Identity', id: distribution.recipient.identityId };
+      }
+    }
+
     return {
       perpetual: [
         {
           id: 'primary',
-          recipient: { type: 'EvonodesByParticipation' },
+          recipient: recipientPayload,
           cadence,
           emission
         }
@@ -9093,7 +9629,7 @@
         keepsMintingHistory: Boolean(keepsHistory.mints),
         keepsBurningHistory: Boolean(keepsHistory.burns),
         keepsFreezingHistory: Boolean(keepsHistory.freezes),
-        keepsDirectPricingHistory: true,
+        keepsDirectPricingHistory: Boolean(keepsHistory.directPricing),
         keepsDirectPurchaseHistory: Boolean(keepsHistory.purchases)
       };
     }
@@ -9123,16 +9659,61 @@
       const mintDestinationIdentity = manualMint?.destinationIdentity || '';
       const allowCustomDestination = Boolean(manualMint?.allowCustomDestination);
 
+      // Get distribution rule configurations
+      const perpetualSafeguards = wizardState.form.distribution?.safeguards || {};
+      const preProgrammedRules = wizardState.form.distribution?.preProgrammedRules || {};
+      const mintDestinationRules = wizardState.form.distribution?.mintDestinationRules || {};
+      const allowChoosingRules = wizardState.form.distribution?.allowChoosingRules || {};
+
+      // Map dropdown values to expected format
+      const mapActorValue = (value) => {
+        switch (value) {
+          case 'no-one': return 'NoOne';
+          case 'owner': return 'ContractOwner';
+          case 'main-group': return 'MainGroup';
+          case 'identity': return 'NoOne'; // Would need identity ID, defaults to NoOne
+          case 'group': return 'NoOne'; // Would need group index, defaults to NoOne
+          default: return 'ContractOwner';
+        }
+      };
+
+      // Helper to build rule V0 structure from rule config
+      const buildRuleV0 = (ruleConfig) => {
+        const performActor = mapActorValue(ruleConfig.performAction || 'owner');
+        const changeRulesActor = mapActorValue(ruleConfig.changeRules || 'owner');
+
+        return {
+          V0: {
+            authorized_to_make_change: encodeAuthorizedActionTaker(performActor),
+            admin_action_takers: encodeAuthorizedActionTaker(changeRulesActor),
+            changing_authorized_action_takers_to_no_one_allowed: Boolean(ruleConfig.allowChangeAuthorizedToNone),
+            changing_admin_action_takers_to_no_one_allowed: Boolean(ruleConfig.allowChangeAdminToNone),
+            self_changing_admin_action_takers_allowed: Boolean(ruleConfig.allowSelfChangeAdmin)
+          }
+        };
+      };
+
+      const performActor = mapActorValue(perpetualSafeguards.performAction || 'owner');
+      const changeRulesActor = mapActorValue(perpetualSafeguards.changeRules || 'owner');
+
       const distributionRules = {
         $format_version: '0',
         perpetualDistribution: null,
-        perpetualDistributionRules: createRuleV0(false),
+        perpetualDistributionRules: {
+          V0: {
+            authorized_to_make_change: encodeAuthorizedActionTaker(performActor),
+            admin_action_takers: encodeAuthorizedActionTaker(changeRulesActor),
+            changing_authorized_action_takers_to_no_one_allowed: Boolean(perpetualSafeguards.allowChangeAuthorizedToNone),
+            changing_admin_action_takers_to_no_one_allowed: Boolean(perpetualSafeguards.allowChangeAdminToNone),
+            self_changing_admin_action_takers_allowed: Boolean(perpetualSafeguards.allowSelfChangeAdmin)
+          }
+        },
         preProgrammedDistribution: null,
-        preProgrammedDistributionRules: createRuleV0(false),
+        preProgrammedDistributionRules: buildRuleV0(preProgrammedRules),
         newTokensDestinationIdentity: mintDestinationType === 'default-identity' && mintDestinationIdentity ? mintDestinationIdentity : null,
-        newTokensDestinationIdentityRules: createRuleV0(true),
+        newTokensDestinationIdentityRules: buildRuleV0(mintDestinationRules),
         mintingAllowChoosingDestination: allowCustomDestination,
-        mintingAllowChoosingDestinationRules: createRuleV0(true),
+        mintingAllowChoosingDestinationRules: buildRuleV0(allowChoosingRules),
         changeDirectPurchasePricingRules: createPermissionChangeRule(wizardState.form.permissions.directPricing)
       };
 
@@ -9172,16 +9753,21 @@
         }
 
         // Determine recipient
-        const recipient = dist.recipient?.type === 'specific-identity' && dist.recipient.identityId
-          ? { Identity: dist.recipient.identityId }
-          : 'ContractOwner';
+        let recipient;
+        if (dist.recipient?.type === 'evonodes-by-participation') {
+          recipient = 'EvonodesByParticipation';
+        } else if ((dist.recipient?.type === 'identity' || dist.recipient?.type === 'specific-identity') && dist.recipient.identityId) {
+          recipient = { Identity: dist.recipient.identityId };
+        } else {
+          recipient = 'ContractOwner';
+        }
 
         distributionRules.perpetualDistribution = {
           $format_version: '0',
           distributionType: distributionType,
           distributionRecipient: recipient
         };
-        distributionRules.perpetualDistributionRules = createRuleV0(true);
+        // Don't overwrite perpetualDistributionRules - it was already set above with safeguards
       }
 
       // Build pre-programmed distribution if configured
@@ -9462,11 +10048,12 @@
       keepsHistory: transformKeepsHistory(wizardState.form.permissions.keepsHistory || {}),
       startAsPaused: Boolean(wizardState.form.permissions.startAsPaused),
       allowTransferToFrozenBalance: Boolean(wizardState.form.permissions.allowTransferToFrozenBalance),
-      maxSupplyChangeRules: createRuleV0(
-        false,  // Currently max supply changes are disabled in UI
+      allowTransferToFrozenBalanceChangeRules: createRuleV0(
+        Boolean(wizardState.form.permissions.allowTransferToFrozenBalance),
         'ContractOwner',
-        wizardState.form.permissions.changeMaxSupply || {}
+        wizardState.form.permissions.allowTransferToFrozenBalanceChangeRules || {}
       ),
+      maxSupplyChangeRules: createPermissionChangeRule(wizardState.form.permissions.changeMaxSupply),
       manualMintingRules: createRuleV0(
         Boolean(wizardState.form.permissions.manualMint?.enabled),
         'ContractOwner',
@@ -9586,8 +10173,15 @@
         documentsKeepHistoryContractDefault: false,
         documentsMutableContractDefault: true,
         documentsCanBeDeletedContractDefault: false,
-        requiresIdentityEncryptionBoundedKey: null,
-        requiresIdentityDecryptionBoundedKey: null
+        requiresIdentityEncryptionBoundedKey: (() => {
+          const val = document.getElementById('encryption-bounded-key')?.value;
+          return (val && val.trim() !== '') ? parseInt(val, 10) : null;
+        })(),
+        requiresIdentityDecryptionBoundedKey: (() => {
+          const val = document.getElementById('decryption-bounded-key')?.value;
+          return (val && val.trim() !== '') ? parseInt(val, 10) : null;
+        })(),
+        sizedIntegerTypes: document.getElementById('sized-integer-types')?.checked ?? true
       },
       schemaDefs: {},  // Reusable schema definitions for document types
       documentSchemas: {},  // Will be populated if document types are defined
