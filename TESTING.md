@@ -518,3 +518,375 @@ If tests fail:
 2. ❌ Fix issues
 3. ❌ Re-run tests
 4. ❌ Repeat until all pass
+
+---
+
+# Testing MISSING.md Features
+
+This section provides step-by-step testing procedures for the 5 features implemented from MISSING.md.
+
+## Feature 1: EvonodesByParticipation (Epoch-only Recipient)
+
+### Location
+**Distribution → Perpetual Distribution → Recipient Selection**
+
+### Test Steps
+
+1. Navigate to **Distribution** step
+2. Click **Perpetual Distribution** tab
+3. Under "Emission Cadence", select **Epoch-Based Distribution**
+   - Enter Epoch Count (e.g., "10")
+4. Scroll to **"Who receives the distributed tokens?"** section
+5. You should see **three recipient options**:
+   - Contract Owner
+   - Specific Identity
+   - **Evonodes by Participation** ← NEW
+
+### Verification
+
+**Test 1A: Epoch with Evonodes**
+- Select "Epoch-Based Distribution"
+- Select "Evonodes by Participation" recipient
+- Click "Contract Preview" button
+- Find `distributionRecipient` under perpetual distribution in JSON
+- ✅ **Expected**: `"distributionRecipient": "EvonodesByParticipation"`
+
+**Test 1B: Block/Time hides Evonodes**
+- Change cadence to "Block-Based Distribution"
+- Evonodes option should be **hidden**
+- Change to "Time-Based Distribution"
+- Evonodes option should be **hidden**
+- Only "Contract Owner" and "Specific Identity" visible
+
+**Test 1C: Cadence switch resets recipient**
+- Select Epoch + Evonodes
+- Switch to Block cadence
+- Switch back to Epoch
+- ✅ **Expected**: Recipient resets to "Contract Owner"
+
+---
+
+## Feature 2: Max Supply Change Rules
+
+### Location
+**Permissions → Supply & Controls → Max Supply Change Rules**
+
+### Test Steps
+
+1. Navigate to **Permissions** step
+2. Click **Supply & Controls** substep
+3. Enter Max Supply (e.g., "10000000")
+4. Find **"Max Supply Change Rules"** card
+5. UI elements:
+   - Radio: "Enabled" / "Disabled"
+   - Dropdown: "Authorized to perform action"
+   - Dropdown: "Who can change these rules?"
+   - 3 governance checkboxes
+
+### Verification
+
+**Test 2A: Disabled (default)**
+- Keep "Disabled" selected
+- Click "Contract Preview"
+- Find `maxSupplyChangeRules`
+- ✅ **Expected**:
+  ```json
+  "maxSupplyChangeRules": {
+    "V0": {
+      "authorized_to_make_change": "NoOne",
+      "admin_action_takers": "ContractOwner"
+    }
+  }
+  ```
+
+**Test 2B: Enabled with Owner**
+- Select "Enabled"
+- Set perform → "Contract Owner"
+- Set change rules → "Contract Owner"
+- ✅ **Expected**: `"authorized_to_make_change": "ContractOwner"`
+
+**Test 2C: Enabled with Identity**
+- Select "Enabled"
+- Set perform → "Specific Identity"
+- Enter ID: "GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31EC"
+- ✅ **Expected**:
+  ```json
+  "authorized_to_make_change": {
+    "Identity": "GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31EC"
+  }
+  ```
+
+**Test 2D: Governance flags**
+- Check all 3 safeguard checkboxes
+- ✅ **Expected**:
+  ```json
+  "changing_authorized_action_takers_to_no_one_allowed": true,
+  "changing_admin_action_takers_to_no_one_allowed": true,
+  "self_changing_admin_action_takers_allowed": true
+  ```
+
+---
+
+## Feature 3: Distribution Change-Control Rules
+
+### 3A: Pre-programmed Distribution Rules
+
+**Location**: Distribution → Pre-programmed Distribution → Bottom
+
+1. Navigate to **Distribution** → **Pre-programmed Distribution**
+2. Scroll to bottom
+3. Find **"Pre-programmed Distribution Rules"** card
+4. Configure:
+   - Perform action → "Specific Identity"
+   - Enter Identity ID
+   - Change rules → "Contract Owner"
+   - Toggle safeguards
+5. Click "Contract Preview"
+6. Find `preProgrammedDistributionRules`
+7. ✅ **Expected**: Values match selections
+
+### 3B: New Tokens Destination Identity Rules
+
+**Location**: Permissions → Manual Mint → After "Default destination"
+
+1. Navigate to **Permissions** → **Manual Mint**
+2. Scroll past "Default destination for minted tokens"
+3. Find **"New Tokens Destination Identity Rules"** (always visible)
+4. Configure:
+   - Perform → "Group"
+   - Select group
+   - Change rules → "Main Group"
+5. Click "Contract Preview"
+6. Find `newTokensDestinationIdentityRules`
+7. ✅ **Expected**: Matches configuration
+
+### 3C: Allow Choosing Destination Rules
+
+**Location**: Permissions → Manual Mint → Conditional panel
+
+1. Navigate to **Permissions** → **Manual Mint**
+2. Find checkbox: **"Allow choosing different destination on each mint"**
+3. **Test visibility**:
+   - Unchecked → Panel HIDDEN
+   - Check it → Panel APPEARS
+4. In panel, configure:
+   - Perform → "No One"
+   - Change rules → "Specific Identity"
+5. Click "Contract Preview"
+6. Find `mintingAllowChoosingDestinationRules`
+7. ✅ **Expected**: Matches configuration
+
+---
+
+## Feature 4: Root Config Advanced
+
+### Location
+**Advanced → Trading Rules → Contract Advanced Settings**
+
+### Test Steps
+
+1. Navigate to **Advanced** step
+2. Click **Trading Rules** substep (this is the main Advanced screen)
+3. Scroll down past the Trading Permissions card
+4. Find **"Contract Advanced Settings"** card
+5. Fields:
+   - Number: "Encryption bounded key requirement"
+   - Number: "Decryption bounded key requirement"
+   - Checkbox: "Use sized integer types"
+
+### Verification
+
+**Test 4A: Default values**
+- Leave encryption/decryption empty
+- "Sized integer types" checked (default)
+- Click "Contract Preview"
+- Find `config` section
+- ✅ **Expected**:
+  ```json
+  "config": {
+    "requiresIdentityEncryptionBoundedKey": null,
+    "requiresIdentityDecryptionBoundedKey": null,
+    "sizedIntegerTypes": true
+  }
+  ```
+
+**Test 4B: Custom values**
+- Encryption → 3
+- Decryption → 5
+- Uncheck "sized integers"
+- ✅ **Expected**:
+  ```json
+  "requiresIdentityEncryptionBoundedKey": 3,
+  "requiresIdentityDecryptionBoundedKey": 5,
+  "sizedIntegerTypes": false
+  ```
+
+**Test 4C: Cleared values**
+- Clear both inputs
+- ✅ **Expected**: Both `null`
+
+---
+
+## Feature 5: Keep Direct Pricing History
+
+### Location
+**Permissions → History → History Tracking Options**
+
+### Test Steps
+
+1. Navigate to **Permissions** → **History**
+2. Find **"History Tracking Options"** card
+3. See 6 checkboxes:
+   - Keep transfer history
+   - Keep freeze/unfreeze history
+   - Keep mints history
+   - Keep burns history
+   - Keep direct purchases history
+   - **Keep direct pricing changes history** ← Feature 5
+
+### Verification
+
+**Test 5A: Unchecked (default)**
+- All unchecked
+- Click "Contract Preview"
+- Find `keepsHistory`
+- ✅ **Expected**: `"keepsDirectPricingHistory": false`
+
+**Test 5B: Checked**
+- Check "Keep direct pricing changes"
+- ✅ **Expected**: `"keepsDirectPricingHistory": true`
+
+**Test 5C: Mixed selections**
+- Check: transfers, mints, direct pricing
+- Uncheck: others
+- ✅ **Expected**:
+  ```json
+  "keepsTransferHistory": true,
+  "keepsMintingHistory": true,
+  "keepsDirectPricingHistory": true,
+  "keepsBurningHistory": false
+  ```
+
+---
+
+## Full Integration Test
+
+Test all 5 features together:
+
+### Setup
+1. Start fresh (clear localStorage or incognito)
+2. Fill wizard with all features:
+
+**Naming**
+- Token: "TestToken"
+- Symbol: "TEST"
+
+**Permissions**
+- Decimals: 8
+- Base: 1000000
+- Max: 10000000
+- ✅ Feature 2: Enable max supply change rules
+- ✅ Feature 5: Check direct pricing history
+- ✅ Feature 3B: Configure destination rules
+- ✅ Feature 3C: Enable + configure choosing rules
+
+**Distribution**
+- ✅ Feature 1: Epoch + Evonodes
+- ✅ Feature 3A: Configure pre-programmed rules
+
+**Advanced → Trading Rules**
+- ✅ Feature 4: Encryption=2, Decryption=4, Uncheck sized integers
+
+### Verify JSON
+
+Click "Contract Preview" and verify:
+- ✅ `distributionRecipient: "EvonodesByParticipation"`
+- ✅ `maxSupplyChangeRules.V0.authorized_to_make_change: "ContractOwner"`
+- ✅ `preProgrammedDistributionRules` configured
+- ✅ `newTokensDestinationIdentityRules` configured
+- ✅ `mintingAllowChoosingDestinationRules` configured
+- ✅ `config.requiresIdentityEncryptionBoundedKey: 2`
+- ✅ `config.requiresIdentityDecryptionBoundedKey: 4`
+- ✅ `config.sizedIntegerTypes: false`
+- ✅ `keepsHistory.keepsDirectPricingHistory: true`
+
+---
+
+## Quick Visual Checklist
+
+Open wizard and verify UI elements exist:
+
+- [ ] Distribution → Perpetual → "Evonodes by Participation" (when Epoch)
+- [ ] Permissions → Supply → "Max Supply Change Rules" card
+- [ ] Permissions → Manual Mint → "New Tokens Destination Rules" (always visible)
+- [ ] Permissions → Manual Mint → "Allow Choosing Rules" panel (conditional)
+- [ ] Distribution → Pre-programmed → "Pre-programmed Rules" card
+- [ ] Advanced → Trading Rules → "Contract Advanced Settings" card (scroll down)
+- [ ] Permissions → History → "Keep direct pricing" checkbox (6th item)
+
+---
+
+## Success Criteria
+
+All features working if:
+
+1. ✅ All UI elements visible in correct locations
+2. ✅ Conditional visibility works correctly
+3. ✅ Form values persist across navigation
+4. ✅ Contract Preview JSON contains all values
+5. ✅ JSON structure matches rs-dpp specs
+6. ✅ No console errors
+7. ✅ Validation allows progression
+8. ✅ State persists after reload
+
+---
+
+## Debugging
+
+If features don't work:
+
+1. Check browser console for errors
+2. Verify element IDs match code expectations
+3. Test state persistence (navigate away and back)
+4. Clear localStorage if corrupted:
+   ```javascript
+   localStorage.clear();
+   location.reload();
+   ```
+5. Use Contract Preview after every change
+
+---
+
+## Expected JSON Structure
+
+Complete example with all features:
+
+```json
+{
+  "config": {
+    "requiresIdentityEncryptionBoundedKey": 2,
+    "requiresIdentityDecryptionBoundedKey": 4,
+    "sizedIntegerTypes": false
+  },
+  "tokens": {
+    "0": {
+      "maxSupplyChangeRules": {
+        "V0": { /* Feature 2 */ }
+      },
+      "keepsHistory": {
+        "keepsDirectPricingHistory": true  /* Feature 5 */
+      },
+      "distributionRules": {
+        "V0": {
+          "preProgrammedDistributionRules": { /* Feature 3A */ },
+          "newTokensDestinationIdentityRules": { /* Feature 3B */ },
+          "mintingAllowChoosingDestinationRules": { /* Feature 3C */ }
+        }
+      },
+      "perpetualDistribution": {
+        "distributionRecipient": "EvonodesByParticipation"  /* Feature 1 */
+      }
+    }
+  }
+}
+```
