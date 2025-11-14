@@ -1416,35 +1416,6 @@
     });
   }
 
-  // Add event listeners for pre-programmed distribution rules
-  const preprogrammedPerformActionSelect = document.getElementById('preprogrammed-perform-action');
-  const preprogrammedChangeRulesSelect = document.getElementById('preprogrammed-change-rules');
-  const preprogrammedSafeguardCheckboxes = [
-    document.getElementById('preprogrammed-allow-change-authorized-to-none'),
-    document.getElementById('preprogrammed-allow-change-admin-to-none'),
-    document.getElementById('preprogrammed-allow-self-change-admin')
-  ];
-
-  if (preprogrammedPerformActionSelect) {
-    preprogrammedPerformActionSelect.addEventListener('change', () => {
-      persistState();
-    });
-  }
-
-  if (preprogrammedChangeRulesSelect) {
-    preprogrammedChangeRulesSelect.addEventListener('change', () => {
-      persistState();
-    });
-  }
-
-  preprogrammedSafeguardCheckboxes.forEach(checkbox => {
-    if (checkbox) {
-      checkbox.addEventListener('change', () => {
-        persistState();
-      });
-    }
-  });
-
   // Add event listeners for mint destination rules
   const mintDestinationPerformActionSelect = document.getElementById('mint-destination-perform-action');
   const mintDestinationChangeRulesSelect = document.getElementById('mint-destination-change-rules');
@@ -8219,13 +8190,13 @@
           allowSelfChangeAdmin: document.getElementById('perpetual-allow-self-change-admin')?.checked || false
         };
 
-        // Collect pre-programmed distribution rules
+        // Pre-programmed distribution rules default to no-one
         const preProgrammedRules = {
-          performAction: document.getElementById('preprogrammed-perform-action')?.value || 'no-one',
-          changeRules: document.getElementById('preprogrammed-change-rules')?.value || 'no-one',
-          allowChangeAuthorizedToNone: document.getElementById('preprogrammed-allow-change-authorized-to-none')?.checked || false,
-          allowChangeAdminToNone: document.getElementById('preprogrammed-allow-change-admin-to-none')?.checked || false,
-          allowSelfChangeAdmin: document.getElementById('preprogrammed-allow-self-change-admin')?.checked || false
+          performAction: 'no-one',
+          changeRules: 'no-one',
+          allowChangeAuthorizedToNone: false,
+          allowChangeAdminToNone: false,
+          allowSelfChangeAdmin: false
         };
 
         // Collect new tokens destination identity rules
@@ -13174,8 +13145,9 @@
           <li>Good for reward systems and utility tokens</li>
         </ul>
         <div class="help-tooltip-permanent">
-          Cannot be changed after token is registered
+          ⚠️ Can only be changed after registration if you configure governance rules below
         </div>
+        <p><strong>See:</strong> "Can the max supply be changed?" section for governance controls</p>
       `
     },
 
@@ -13270,6 +13242,360 @@
         <p><strong>Use case:</strong> Pause until you're ready to officially launch (prepare marketing, set up pools, etc.)</p>
         <p><strong>⚠️ Important:</strong> You need unpause permissions enabled to resume operations.</p>
       `
+    },
+
+    // Priority 1: Critical Concepts
+    'change-max-supply': {
+      title: 'Max Supply Change Rules',
+      content: `
+        <p>Control who can modify the max supply cap after deployment.</p>
+        <p><strong>Options:</strong> Owner / Identity / Group / Main Group / No One</p>
+        <div class="help-tooltip-permanent">
+          ⚠️ Setting to "No One" makes max supply immutable forever
+        </div>
+        <p>This is a critical security and economic decision that affects your token's scarcity guarantees.</p>
+      `
+    },
+
+    'manual-freeze': {
+      title: 'Manual Freezing',
+      content: `
+        <p>Allow locking specific token balances to prevent transfers.</p>
+        <p><strong>Use cases:</strong></p>
+        <ul style="margin: 8px 0; padding-left: 20px;">
+          <li>Regulatory compliance</li>
+          <li>Security investigations</li>
+          <li>Vesting lockups</li>
+        </ul>
+        <div class="help-tooltip-permanent">
+          ⚠️ Freezing can restrict user access to their tokens - use responsibly
+        </div>
+      `
+    },
+
+    'actor-types': {
+      title: 'Who Can Perform Actions',
+      content: `
+        <p><strong>Owner:</strong> The contract owner's identity (single person)</p>
+        <p><strong>Identity:</strong> A specific Dash Platform identity ID</p>
+        <p><strong>Group:</strong> A defined control group (requires group configuration)</p>
+        <p><strong>Main Group:</strong> The primary control group for governance</p>
+        <p><strong>No One:</strong> Action is permanently disabled</p>
+        <div class="help-tooltip-permanent">
+          ⚠️ "No One" is irreversible - the action becomes permanently locked
+        </div>
+      `
+    },
+
+    'governance-safeguards': {
+      title: 'Governance Safeguards',
+      content: `
+        <p>Advanced governance controls that determine if permissions can be permanently locked:</p>
+        <ul style="margin: 8px 0; padding-left: 20px;">
+          <li><strong>Allow changing authorized to "No One":</strong> Permits disabling the action forever</li>
+          <li><strong>Allow changing admin to "No One":</strong> Permits permanently locking rule changes</li>
+          <li><strong>Allow self-changing admin:</strong> Admin can change their own permissions</li>
+        </ul>
+        <div class="help-tooltip-permanent">
+          ⚠️ For experts only - default is safe (unchecked). Only enable if you understand the implications.
+        </div>
+      `
+    },
+
+    'owner-identity-id': {
+      title: 'Owner Identity ID',
+      content: `
+        <p>Your Dash Platform identity ID that will own this token contract.</p>
+        <p><strong>Format:</strong> Base58, 43-44 characters</p>
+        <div class="help-tooltip-example">
+          <strong>Example:</strong>
+          <p><code>GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec</code></p>
+        </div>
+        <p><strong>Get your identity from:</strong></p>
+        <ul style="margin: 8px 0; padding-left: 20px;">
+          <li>Dash Platform wallet (mobile/desktop)</li>
+          <li>dash-evo-tool command line tool</li>
+          <li>Leave empty to create new identity during self-service registration</li>
+        </ul>
+        <div class="help-tooltip-permanent">
+          ⚠️ This identity will have permanent ownership - double-check before submitting
+        </div>
+      `
+    },
+
+    // Priority 2: Distribution & Economics
+    'cadence-type': {
+      title: 'Distribution Cadence Type',
+      content: `
+        <p>How to schedule token distributions:</p>
+        <p><strong>Block-based:</strong> Release tokens every N blocks (~4 hours per 100 blocks on Dash)</p>
+        <p><strong>Time-based:</strong> Release tokens every N seconds (e.g., 3600 = 1 hour)</p>
+        <p><strong>Epoch-based:</strong> Release tokens based on Dash Platform epochs (advanced)</p>
+        <div class="help-tooltip-example">
+          <strong>Example:</strong>
+          <p>Every 100 blocks = approximately 4 hours between distributions</p>
+        </div>
+      `
+    },
+
+    'epoch-based-distribution': {
+      title: 'Epoch-based Distribution',
+      content: `
+        <p>Distribute tokens based on Dash Platform epochs.</p>
+        <p><strong>What are epochs?</strong> Periods defined by the Dash network for validator rotation and governance.</p>
+        <div class="help-tooltip-permanent">
+          ⚠️ Advanced feature - requires deep understanding of Dash Platform architecture
+        </div>
+        <p>Only use if you understand Dash Platform's epoch system.</p>
+      `
+    },
+
+    'evonodes-recipient': {
+      title: 'Evonodes by Participation',
+      content: `
+        <p>Distribute tokens to Dash evonodes (validator nodes) based on their participation in the network.</p>
+        <p><strong>Requirement:</strong> Must use Epoch-based cadence</p>
+        <p><strong>Use case:</strong> Incentivizing network validators, decentralized distribution</p>
+        <p>This rewards network validators proportionally to their contribution.</p>
+      `
+    },
+
+    'emission-function': {
+      title: 'Emission Functions',
+      content: `
+        <p><strong>Fixed Amount:</strong> Same amount every time (e.g., 100 tokens)</p>
+        <p><strong>Random Amount:</strong> Random amount between min/max each time</p>
+        <p><strong>Step Decreasing:</strong> Amount reduces over time (like Bitcoin halving)</p>
+        <div class="help-tooltip-example">
+          <strong>Bitcoin-style Example:</strong>
+          <p>Start at 50 tokens, halve every 210,000 distributions → 50, 25, 12.5, 6.25...</p>
+        </div>
+        <p>Choose based on your economic model.</p>
+      `
+    },
+
+    'step-decreasing-emission': {
+      title: 'Step Decreasing Amount',
+      content: `
+        <p>Create a halving-style emission schedule where the distributed amount decreases over time.</p>
+        <p><strong>Configure:</strong></p>
+        <ul style="margin: 8px 0; padding-left: 20px;">
+          <li><strong>Step count:</strong> How many distributions before amount decreases</li>
+          <li><strong>Numerator/Denominator:</strong> Reduction fraction (e.g., 1/2 = halve the amount)</li>
+          <li><strong>Start amount:</strong> Initial distribution amount</li>
+          <li><strong>Trailing amount:</strong> Minimum amount after all reductions</li>
+        </ul>
+        <p>This creates predictable, deflationary emissions like Bitcoin.</p>
+      `
+    },
+
+    'perpetual-distribution-rules': {
+      title: 'Perpetual Distribution Rules',
+      content: `
+        <p>Control who can perform distributions and who can change distribution rules after deployment.</p>
+        <p>This governance layer determines if your distribution schedule is fixed or can be modified later.</p>
+        <div class="help-tooltip-permanent">
+          ⚠️ Setting to "No One" makes distribution schedule immutable
+        </div>
+      `
+    },
+
+    // Priority 3: History & Advanced
+    'keeps-history-transfers': {
+      title: 'Keep Transfer History',
+      content: `
+        <p>Record all token transfers on-chain for complete transaction history.</p>
+        <p><strong>Tradeoff:</strong> Historical data vs. storage cost</p>
+        <p>Enables tracking but increases storage costs. Turn off to reduce blockchain storage fees if you don't need transfer records.</p>
+      `
+    },
+
+    'keeps-history-direct-pricing': {
+      title: 'Keep Direct Pricing History',
+      content: `
+        <p>Record pricing changes for your token on-chain.</p>
+        <p><strong>Use case:</strong> Price discovery, historical analytics</p>
+        <p>Useful if you plan to implement direct pricing mechanisms or want to track price history. Increases storage requirements.</p>
+      `
+    },
+
+    'encryption-bounded-key': {
+      title: 'Encryption Bounded Key',
+      content: `
+        <p>Advanced cryptography: Specify a storage key requirement (0-255) for identity-based encryption.</p>
+        <div class="help-tooltip-permanent">
+          ⚠️ Expert feature - incorrect values can break functionality
+        </div>
+        <p>Only use if you understand Dash Platform's encryption-bounded storage system. Leave empty for standard configurations.</p>
+      `
+    },
+
+    'decryption-bounded-key': {
+      title: 'Decryption Bounded Key',
+      content: `
+        <p>Advanced cryptography: Specify a storage key requirement (0-255) for identity-based decryption.</p>
+        <div class="help-tooltip-permanent">
+          ⚠️ Expert feature - incorrect values can break functionality
+        </div>
+        <p>Only use if you understand Dash Platform's encryption-bounded storage system. Leave empty for standard configurations.</p>
+      `
+    },
+
+    'sized-integer-types': {
+      title: 'Sized Integer Types',
+      content: `
+        <p>Use explicit integer size declarations (uint32, uint64) instead of variable-length integers.</p>
+        <p><strong>Tradeoff:</strong> Performance vs. forward compatibility</p>
+        <p>Improves performance and reduces storage costs, but may affect compatibility with future Dash Platform versions.</p>
+        <p><strong>Default:</strong> Checked (recommended)</p>
+      `
+    },
+
+    // Priority 4: Naming & Localization
+    'localization': {
+      title: 'Multi-language Localization',
+      content: `
+        <p>Add multi-language support for your token name.</p>
+        <p><strong>Format:</strong> Language code must be 2 lowercase letters (ISO 639-1)</p>
+        <div class="help-tooltip-example">
+          <strong>Examples:</strong>
+          <p>en: Token/Tokens<br>es: Ficha/Fichas<br>fr: Jeton/Jetons</p>
+        </div>
+        <p>Improves international accessibility and user experience.</p>
+      `
+    },
+
+    'update-naming': {
+      title: 'Update Naming Rules',
+      content: `
+        <p>Allow token names to be updated after deployment.</p>
+        <p><strong>Enable:</strong> Flexibility to rebrand or correct names later</p>
+        <p><strong>Disable:</strong> Names become immutable and permanent</p>
+        <p><strong>Tradeoff:</strong> Flexibility vs. permanence (immutable names prevent confusion)</p>
+      `
+    },
+
+    // Priority 5: Permissions Details
+    'mint-destination': {
+      title: 'Mint Destination',
+      content: `
+        <p>Where newly minted tokens are sent:</p>
+        <ul style="margin: 8px 0; padding-left: 20px;">
+          <li><strong>Contract Owner:</strong> Tokens go to the owner's identity</li>
+          <li><strong>Specific Identity:</strong> Tokens go to a designated identity ID</li>
+          <li><strong>Allow Custom Destination:</strong> Minter can choose destination each time</li>
+        </ul>
+        <p>Choose based on your distribution strategy.</p>
+      `
+    },
+
+    'mint-allow-custom': {
+      title: 'Allow Custom Destination',
+      content: `
+        <p>Let the authorized minter choose where tokens are sent each time they mint.</p>
+        <p><strong>Tradeoff:</strong> Flexibility vs. control</p>
+        <p>Enables flexible distribution but gives minter more control. Disable to always send to a fixed destination.</p>
+      `
+    },
+
+    'unfreeze-rules': {
+      title: 'Unfreeze Rules',
+      content: `
+        <p>Control who can unfreeze frozen tokens.</p>
+        <p>This is separate from freeze permissions - you might want different people to freeze vs. unfreeze.</p>
+        <p><strong>Use case:</strong> Separation of duties, multi-sig unfreezing</p>
+      `
+    },
+
+    'destroy-frozen-rules': {
+      title: 'Destroy Frozen Funds Rules',
+      content: `
+        <p>Control who can permanently destroy frozen tokens.</p>
+        <div class="help-tooltip-permanent">
+          ⚠️ This is irreversible - destroyed tokens cannot be recovered under any circumstances
+        </div>
+        <p>This is an extreme action - frozen tokens are completely removed from circulation. Use for regulatory compliance or security incidents only.</p>
+      `
+    },
+
+    'emergency-action-rules': {
+      title: 'Emergency Action Rules',
+      content: `
+        <p>Emergency override permissions for critical situations.</p>
+        <p><strong>Use cases:</strong></p>
+        <ul style="margin: 8px 0; padding-left: 20px;">
+          <li>Security incidents</li>
+          <li>Regulatory compliance</li>
+          <li>Critical bug fixes</li>
+        </ul>
+        <div class="help-tooltip-permanent">
+          ⚠️ Emergency actions should have strong governance - consider requiring multi-sig approval
+        </div>
+      `
+    },
+
+    // Priority 6: Registration
+    'registration-mobile': {
+      title: 'Mobile QR Code Registration',
+      content: `
+        <p>Generate animated QR codes containing your token configuration.</p>
+        <p><strong>Workflow:</strong></p>
+        <ol style="margin: 8px 0; padding-left: 20px;">
+          <li>Complete wizard configuration</li>
+          <li>Generate QR codes</li>
+          <li>Open Dash wallet on mobile device</li>
+          <li>Scan QR code sequence</li>
+          <li>Confirm registration in wallet</li>
+        </ol>
+        <p><strong>Limitation:</strong> Very large configurations may create QR codes too complex to scan.</p>
+      `
+    },
+
+    'registration-det': {
+      title: 'DET Registration (Dash Evo Tool)',
+      content: `
+        <p>Export your token configuration as raw JSON for use with dash-evo-tool, the official Dash Platform command-line tool.</p>
+        <p><strong>Best for:</strong> Advanced users, automated deployments, programmatic registration</p>
+        <p><strong>Requirements:</strong></p>
+        <ul style="margin: 8px 0; padding-left: 20px;">
+          <li>Install dash-evo-tool: <code>npm install -g dash-evo-tool</code></li>
+          <li>Have a funded Dash Platform identity</li>
+        </ul>
+      `
+    },
+
+    'registration-self-service': {
+      title: 'Self-service Registration',
+      content: `
+        <p>Import your wallet mnemonic phrase and register directly from the browser using Dash SDK.</p>
+        <div class="help-tooltip-permanent">
+          ⚠️ Security warnings:
+          <ul style="margin: 4px 0 0 20px; padding: 0;">
+            <li>Only use on trusted, secure devices</li>
+            <li>Mnemonic is stored in memory only (not saved)</li>
+            <li>Close browser immediately after registration</li>
+            <li>Consider using DET method for high-value tokens</li>
+          </ul>
+        </div>
+        <p><strong>Requirements:</strong> 12 or 24-word BIP39 mnemonic phrase</p>
+      `
+    },
+
+    'wallet-mnemonic': {
+      title: 'Wallet Mnemonic Phrase',
+      content: `
+        <p>Your 12 or 24-word recovery phrase for your Dash wallet.</p>
+        <div class="help-tooltip-permanent">
+          ⚠️ NEVER share your mnemonic with anyone
+          <ul style="margin: 4px 0 0 20px; padding: 0;">
+            <li>Only enter on trusted, secure devices</li>
+            <li>Not sent to any server - stays in browser memory</li>
+            <li>Close browser tab immediately after registration</li>
+          </ul>
+        </div>
+        <p><strong>Format:</strong> 12 or 24 words separated by spaces (BIP39 word list)</p>
+        <p><strong>Alternative:</strong> Use DET or Mobile registration to avoid entering mnemonic in browser</p>
+      `
     }
   };
 
@@ -13343,6 +13669,7 @@
   // Initialize help icons
   function initializeHelpIcons() {
     document.querySelectorAll('.help-icon').forEach(icon => {
+      // Click handler
       icon.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -13354,6 +13681,23 @@
           hideAllTooltips();
         } else {
           showHelpTooltip(icon, contentKey);
+        }
+      });
+
+      // Keyboard handler for Enter and Space keys
+      icon.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          e.stopPropagation();
+
+          const contentKey = icon.getAttribute('data-help');
+
+          // Toggle tooltip
+          if (icon._activeTooltip) {
+            hideAllTooltips();
+          } else {
+            showHelpTooltip(icon, contentKey);
+          }
         }
       });
     });
@@ -13394,4 +13738,270 @@
   });
 
   console.log('✓ Inline help system initialized');
+})();
+
+// ═══════════════════════════════════════════════════════
+// DUAL INFO/GUIDE PANEL SYSTEM
+// ═══════════════════════════════════════════════════════
+
+(function initializeGuidePanel() {
+  const STORAGE_KEY_COLLAPSED = 'dash-wizard-guide-collapsed';
+  const STORAGE_KEY_ACTIVE_PANEL = 'dash-wizard-active-panel';
+
+  // Restore saved state from localStorage
+  function restoreState() {
+    const collapsedState = localStorage.getItem(STORAGE_KEY_COLLAPSED);
+    const activePanel = localStorage.getItem(STORAGE_KEY_ACTIVE_PANEL) || 'info';
+
+    document.querySelectorAll('.page-guide').forEach(guide => {
+      // Restore collapsed state
+      if (collapsedState === 'true') {
+        guide.setAttribute('data-collapsed', 'true');
+        const collapseBtn = guide.querySelector('.page-guide__collapse');
+        if (collapseBtn) {
+          collapseBtn.setAttribute('aria-expanded', 'false');
+        }
+      }
+
+      // Restore active panel (INFO or GUIDE)
+      switchPanel(guide, activePanel, false);
+    });
+
+    // Restore body class for content recentering
+    if (collapsedState === 'true') {
+      document.body.classList.add('guide-panel-collapsed');
+    } else {
+      document.body.classList.remove('guide-panel-collapsed');
+    }
+  }
+
+  // Toggle panel collapse/expand
+  function toggleCollapse(guidePanel) {
+    const isCollapsed = guidePanel.getAttribute('data-collapsed') === 'true';
+    const newState = !isCollapsed;
+
+    // Update all panels to match (keeps state consistent across wizard steps)
+    document.querySelectorAll('.page-guide').forEach(guide => {
+      guide.setAttribute('data-collapsed', String(newState));
+      const collapseBtn = guide.querySelector('.page-guide__collapse');
+      if (collapseBtn) {
+        collapseBtn.setAttribute('aria-expanded', String(!newState));
+      }
+    });
+
+    // Toggle body class to recenter wizard content
+    if (newState) {
+      document.body.classList.add('guide-panel-collapsed');
+    } else {
+      document.body.classList.remove('guide-panel-collapsed');
+    }
+
+    // Save to localStorage
+    localStorage.setItem(STORAGE_KEY_COLLAPSED, String(newState));
+  }
+
+  // Switch between INFO and GUIDE panels
+  function switchPanel(guidePanel, panelType, saveState = true) {
+    // Update tab button states
+    const infoTab = guidePanel.querySelector('.page-guide__tab--info');
+    const guideTab = guidePanel.querySelector('.page-guide__tab--guide');
+    const infoPanel = guidePanel.querySelector('.page-guide__panel--info');
+    const guidePanel2 = guidePanel.querySelector('.page-guide__panel--guide');
+
+    if (!infoTab || !guideTab || !infoPanel || !guidePanel2) return;
+
+    if (panelType === 'info') {
+      // Update tab states
+      infoTab.classList.add('active');
+      infoTab.setAttribute('aria-pressed', 'true');
+      guideTab.classList.remove('active');
+      guideTab.setAttribute('aria-pressed', 'false');
+
+      // Update panel visibility
+      infoPanel.classList.add('active');
+      infoPanel.removeAttribute('hidden');
+      guidePanel2.classList.remove('active');
+      guidePanel2.setAttribute('hidden', '');
+    } else {
+      // Update tab states
+      guideTab.classList.add('active');
+      guideTab.setAttribute('aria-pressed', 'true');
+      infoTab.classList.remove('active');
+      infoTab.setAttribute('aria-pressed', 'false');
+
+      // Update panel visibility
+      guidePanel2.classList.add('active');
+      guidePanel2.removeAttribute('hidden');
+      infoPanel.classList.remove('active');
+      infoPanel.setAttribute('hidden', '');
+    }
+
+    // Save to localStorage
+    if (saveState) {
+      localStorage.setItem(STORAGE_KEY_ACTIVE_PANEL, panelType);
+
+      // Update all other panels to match
+      document.querySelectorAll('.page-guide').forEach(guide => {
+        if (guide !== guidePanel) {
+          switchPanel(guide, panelType, false);
+        }
+      });
+    }
+  }
+
+  // Expand panel if collapsed (used by help icons)
+  function expandGuidePanel() {
+    const currentGuide = document.querySelector('.wizard-screen--active .page-guide');
+    if (currentGuide && currentGuide.getAttribute('data-collapsed') === 'true') {
+      toggleCollapse(currentGuide);
+    }
+    // Always switch to INFO panel when help icon is clicked
+    if (currentGuide) {
+      switchPanel(currentGuide, 'info');
+    }
+  }
+
+  // Initialize tab buttons
+  function initializeToggleButtons() {
+    // INFO/GUIDE vertical tab buttons
+    document.querySelectorAll('.page-guide__tab').forEach(tab => {
+      const newTab = tab.cloneNode(true);
+      tab.parentNode.replaceChild(newTab, tab);
+
+      newTab.addEventListener('click', (e) => {
+        e.preventDefault();
+        const panel = newTab.closest('.page-guide');
+        const panelType = newTab.getAttribute('data-panel');
+        if (panelType) {
+          switchPanel(panel, panelType);
+        }
+      });
+    });
+
+    // Collapse buttons
+    document.querySelectorAll('.page-guide__collapse').forEach(collapseBtn => {
+      const newBtn = collapseBtn.cloneNode(true);
+      collapseBtn.parentNode.replaceChild(newBtn, collapseBtn);
+
+      newBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const panel = newBtn.closest('.page-guide');
+        toggleCollapse(panel);
+      });
+    });
+  }
+
+  // Update help icon behavior for desktop
+  function isDesktop() {
+    return window.innerWidth > 1200;
+  }
+
+  // Clear any existing highlights
+  function clearHighlights() {
+    document.querySelectorAll('.page-guide__step-heading--highlighted').forEach(heading => {
+      heading.classList.remove('page-guide__step-heading--highlighted');
+    });
+  }
+
+  // Highlight and scroll to guide section
+  function highlightGuideSection(targetId) {
+    if (!targetId) return;
+
+    // Find the target section
+    const targetSection = document.getElementById(targetId);
+    if (!targetSection) {
+      console.warn(`Guide section not found: ${targetId}`);
+      return;
+    }
+
+    // Clear any existing highlights
+    clearHighlights();
+
+    // Add highlight class to the target section
+    targetSection.classList.add('page-guide__step-heading--highlighted');
+    console.log('✓ Added highlight class to:', targetId);
+
+    // Scroll the guide panel to show the highlighted section
+    const guidePanel = targetSection.closest('.page-guide');
+    if (guidePanel) {
+      // Small delay to allow panel expansion animation to complete
+      setTimeout(() => {
+        // Calculate position relative to the guide panel's scroll container
+        const targetOffset = targetSection.offsetTop;
+        const toggleHeight = 60; // Approximate height of sticky toggle button
+
+        // Scroll the guide panel container
+        guidePanel.scrollTo({
+          top: targetOffset - toggleHeight - 20, // 20px padding
+          behavior: 'smooth'
+        });
+
+        console.log('✓ Scrolled to section:', targetId);
+      }, 350); // Slightly longer delay for expansion animation
+    }
+
+    // Auto-remove highlight after 3 seconds
+    setTimeout(() => {
+      targetSection.classList.remove('page-guide__step-heading--highlighted');
+      console.log('✓ Removed highlight from:', targetId);
+    }, 3500);
+  }
+
+  // Override help icon clicks on desktop to scroll guide panel
+  function enhanceHelpIcons() {
+    document.querySelectorAll('.help-icon').forEach(icon => {
+      const originalHandler = icon.onclick;
+
+      icon.addEventListener('click', (e) => {
+        if (isDesktop()) {
+          // On desktop: expand panel, highlight, and scroll to relevant section
+          e.preventDefault();
+          e.stopPropagation();
+
+          // Get the guide target from data attribute
+          const guideTarget = icon.getAttribute('data-guide-target');
+
+          // Expand the panel if collapsed
+          expandGuidePanel();
+
+          // Highlight and scroll to the target section
+          if (guideTarget) {
+            highlightGuideSection(guideTarget);
+          }
+        }
+        // On mobile (<1200px): let the original tooltip behavior work
+      }, true); // Use capture phase to run before original handler
+    });
+  }
+
+  // Initialize on DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      restoreState();
+      initializeToggleButtons();
+      enhanceHelpIcons();
+    });
+  } else {
+    restoreState();
+    initializeToggleButtons();
+    enhanceHelpIcons();
+  }
+
+  // Re-initialize tab buttons when wizard screens change
+  const screenObserver = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === 1 && node.querySelector && (node.querySelector('.page-guide__tab') || node.querySelector('.page-guide__collapse'))) {
+          initializeToggleButtons();
+        }
+      });
+    });
+  });
+
+  screenObserver.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+
+  console.log('✓ Dual INFO/GUIDE panel system initialized');
 })();
