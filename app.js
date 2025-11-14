@@ -8999,6 +8999,47 @@
     };
   }
 
+  function buildMaxSupplyChangeRules(maxSupplyState, permissions) {
+    if (!maxSupplyState || !maxSupplyState.enabled) {
+      return {
+        authorizedToMakeChange: { kind: 'NoOne' },
+        adminActionTakers: { kind: 'NoOne' },
+        changingAuthorizedActionTakersToNoOneAllowed: false,
+        changingAdminActionTakersToNoOneAllowed: false,
+        selfChangingAdminActionTakersAllowed: false
+      };
+    }
+
+    // Determine reference based on type
+    const performReference = maxSupplyState.perform.type === 'identity'
+      ? maxSupplyState.perform.identityId
+      : maxSupplyState.perform.type === 'group'
+        ? maxSupplyState.perform.groupId
+        : '';
+
+    const changeRulesReference = maxSupplyState.changeRules.type === 'identity'
+      ? maxSupplyState.changeRules.identityId
+      : maxSupplyState.changeRules.type === 'group'
+        ? maxSupplyState.changeRules.groupId
+        : '';
+
+    return {
+      authorizedToMakeChange: buildAuthorizedActionTakersFromConfig(
+        maxSupplyState.changeRules.type,
+        changeRulesReference,
+        permissions
+      ),
+      adminActionTakers: buildAuthorizedActionTakersFromConfig(
+        maxSupplyState.perform.type,
+        performReference,
+        permissions
+      ),
+      changingAuthorizedActionTakersToNoOneAllowed: Boolean(maxSupplyState.allowChangeAuthorizedToNone),
+      changingAdminActionTakersToNoOneAllowed: Boolean(maxSupplyState.allowChangeAdminToNone),
+      selfChangingAdminActionTakersAllowed: Boolean(maxSupplyState.allowSelfChangeAdmin)
+    };
+  }
+
   function buildAdvancedConfiguration() {
     const permissions = wizardState.form.permissions || {};
     const advanced = wizardState.form.advanced || {};
@@ -9027,6 +9068,7 @@
     const directPurchaseRule = createChangeRule(changeControl.directPurchase);
     const manualMintRules = buildManualActionRulesConfig(permissions.manualMint, permissions);
     const manualBurnRules = buildManualActionRulesConfig(permissions.manualBurn, permissions);
+    const maxSupplyRules = buildMaxSupplyChangeRules(permissions.changeMaxSupply, permissions);
 
     return {
       conventions: {
@@ -9041,7 +9083,7 @@
       keepsHistory,
       startAsPaused: Boolean(permissions.startAsPaused),
       allowTransferToFrozenBalance: Boolean(permissions.allowTransferToFrozenBalance),
-      maxSupplyChangeRules: adminRule,
+      maxSupplyChangeRules: maxSupplyRules,
       distributionRules,
       marketplaceRules: buildMarketplaceRules(tradeMode),
       manualMintingRules: manualMintRules,
