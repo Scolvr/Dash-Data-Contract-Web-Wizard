@@ -145,6 +145,10 @@
     }
   }
 
+  // Screen transition lock to prevent rapid consecutive transitions
+  let isTransitioning = false;
+  let pendingTransition = null;
+
   // Storage with localStorage fallback (keeps UI state across reloads; never persist secrets)
   const storage = (() => {
     try {
@@ -207,6 +211,354 @@
 
     return String(numericValue);
   }
+
+  // ═══════════════════════════════════════════════════════
+  // Loading State Utilities
+  // ═══════════════════════════════════════════════════════
+
+  /**
+   * Shows loading overlay with optional custom message
+   * @param {string} message - Message to display (default: "Loading...")
+   */
+  function showLoadingOverlay(message = 'Loading...') {
+    const overlay = document.querySelector('.loading-overlay');
+    const messageEl = overlay?.querySelector('.loading-overlay__message');
+
+    if (!overlay) return;
+
+    if (messageEl && message) {
+      messageEl.textContent = message;
+    }
+
+    overlay.setAttribute('aria-hidden', 'false');
+  }
+
+  /**
+   * Hides the loading overlay
+   */
+  function hideLoadingOverlay() {
+    const overlay = document.querySelector('.loading-overlay');
+    if (!overlay) return;
+
+    overlay.setAttribute('aria-hidden', 'true');
+  }
+
+  /**
+   * Sets a button to loading state
+   * @param {HTMLElement} button - The button element
+   */
+  function setButtonLoading(button) {
+    if (!button) return;
+    button.setAttribute('aria-busy', 'true');
+    button.disabled = true;
+  }
+
+  /**
+   * Removes loading state from a button
+   * @param {HTMLElement} button - The button element
+   */
+  function setButtonReady(button) {
+    if (!button) return;
+    button.setAttribute('aria-busy', 'false');
+    button.disabled = false;
+  }
+
+  /**
+   * Shows loading spinner in an element
+   * @param {HTMLElement} element - Container element
+   * @param {string} size - Spinner size: 'small', 'medium', 'large'
+   */
+  function showLoadingSpinner(element, size = 'medium') {
+    if (!element) return;
+
+    const spinner = document.createElement('div');
+    spinner.className = `spinner spinner--${size}`;
+    spinner.setAttribute('role', 'status');
+    spinner.setAttribute('aria-label', 'Loading');
+
+    element.innerHTML = '';
+    element.appendChild(spinner);
+  }
+
+  /**
+   * Hides loading spinner from an element
+   * @param {HTMLElement} element - Container element
+   */
+  function hideLoadingSpinner(element) {
+    if (!element) return;
+    element.innerHTML = '';
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // End Loading State Utilities
+  // ═══════════════════════════════════════════════════════
+
+  // ═══════════════════════════════════════════════════════
+  // Toast Notification System
+  // ═══════════════════════════════════════════════════════
+
+  /**
+   * Shows a toast notification
+   * @param {Object} options - Toast configuration
+   * @param {string} options.type - Toast type: 'success', 'error', 'warning', 'info'
+   * @param {string} options.title - Toast title
+   * @param {string} options.message - Toast message (optional)
+   * @param {number} options.duration - Auto-dismiss duration in ms (default: 5000, 0 = no auto-dismiss)
+   */
+  function showToast({ type = 'info', title, message = '', duration = 5000 }) {
+    const container = document.querySelector('.toast-container');
+    if (!container) return;
+
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `toast toast--${type}`;
+    toast.setAttribute('role', 'status');
+    toast.setAttribute('aria-live', 'polite');
+
+    // Icon SVGs for each type
+    const icons = {
+      success: '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+      error: '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+      warning: '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>',
+      info: '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+    };
+
+    // Build toast HTML
+    toast.innerHTML = `
+      <div class="toast__icon">${icons[type]}</div>
+      <div class="toast__content">
+        <h4 class="toast__title">${title}</h4>
+        ${message ? `<p class="toast__message">${message}</p>` : ''}
+      </div>
+      <button class="toast__close" aria-label="Close notification">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    `;
+
+    // Add toast to container
+    container.appendChild(toast);
+
+    // Trigger slide-in animation
+    requestAnimationFrame(() => {
+      toast.classList.add('toast--show');
+    });
+
+    // Close button handler
+    const closeBtn = toast.querySelector('.toast__close');
+    closeBtn.addEventListener('click', () => {
+      dismissToast(toast);
+    });
+
+    // Auto-dismiss
+    if (duration > 0) {
+      setTimeout(() => {
+        dismissToast(toast);
+      }, duration);
+    }
+
+    return toast;
+  }
+
+  /**
+   * Dismisses a toast notification
+   * @param {HTMLElement} toast - The toast element to dismiss
+   */
+  function dismissToast(toast) {
+    if (!toast) return;
+
+    // Trigger slide-out animation
+    toast.classList.remove('toast--show');
+    toast.classList.add('toast--hide');
+
+    // Remove from DOM after animation
+    setTimeout(() => {
+      toast.remove();
+    }, 300);
+  }
+
+  /**
+   * Convenience functions for specific toast types
+   */
+  function showSuccessToast(title, message, duration) {
+    return showToast({ type: 'success', title, message, duration });
+  }
+
+  function showErrorToast(title, message, duration) {
+    return showToast({ type: 'error', title, message, duration });
+  }
+
+  function showWarningToast(title, message, duration) {
+    return showToast({ type: 'warning', title, message, duration });
+  }
+
+  function showInfoToast(title, message, duration) {
+    return showToast({ type: 'info', title, message, duration });
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // End Toast Notification System
+  // ═══════════════════════════════════════════════════════
+
+  // ═══════════════════════════════════════════════════════
+  // Mobile Hamburger Menu
+  // ═══════════════════════════════════════════════════════
+
+  /**
+   * Initializes mobile menu functionality
+   */
+  function initMobileMenu() {
+    const menuToggle = document.querySelector('.mobile-menu-toggle');
+    const sidebar = document.querySelector('.wizard-sidebar');
+    const overlay = document.querySelector('.mobile-menu-overlay');
+
+    if (!menuToggle || !sidebar || !overlay) return;
+
+    // Toggle mobile menu
+    function toggleMobileMenu() {
+      const isOpen = sidebar.classList.contains('mobile-menu-open');
+
+      if (isOpen) {
+        closeMobileMenu();
+      } else {
+        openMobileMenu();
+      }
+    }
+
+    function openMobileMenu() {
+      sidebar.classList.add('mobile-menu-open');
+      overlay.classList.add('active');
+      menuToggle.setAttribute('aria-expanded', 'true');
+      overlay.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden'; // Prevent scrolling
+    }
+
+    function closeMobileMenu() {
+      sidebar.classList.remove('mobile-menu-open');
+      overlay.classList.remove('active');
+      menuToggle.setAttribute('aria-expanded', 'false');
+      overlay.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+
+    // Event listeners
+    menuToggle.addEventListener('click', toggleMobileMenu);
+    overlay.addEventListener('click', closeMobileMenu);
+
+    // Close menu when navigation item is clicked
+    const navItems = document.querySelectorAll('.wizard-nav-item, .wizard-nav-subitem');
+    navItems.forEach(item => {
+      item.addEventListener('click', () => {
+        if (window.innerWidth <= 900) {
+          closeMobileMenu();
+        }
+      });
+    });
+
+    // Close menu on escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && sidebar.classList.contains('mobile-menu-open')) {
+        closeMobileMenu();
+      }
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 900 && sidebar.classList.contains('mobile-menu-open')) {
+        closeMobileMenu();
+      }
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // End Mobile Hamburger Menu
+  // ═══════════════════════════════════════════════════════
+
+  // ═══════════════════════════════════════════════════════
+  // Progress Indicator Utilities
+  // ═══════════════════════════════════════════════════════
+
+  /**
+   * Map of step IDs to their position in the main wizard flow
+   */
+  const PROGRESS_STEP_MAP = {
+    'welcome': 0,
+    'naming': 1,
+    'permissions': 2,
+    'distribution': 3,
+    'advanced': 4,
+    'registration': 5
+  };
+
+  /**
+   * Updates the compact progress indicator based on current step
+   * @param {string} currentStepId - The current step ID
+   */
+  function updateProgressIndicator(currentStepId) {
+    const progressBar = document.querySelector('.wizard-progress-compact');
+    const progressSteps = document.querySelectorAll('.wizard-progress-compact__step');
+
+    if (!progressBar) return;
+
+    // Get step position (0-5)
+    const stepPosition = PROGRESS_STEP_MAP[currentStepId] || 0;
+
+    // Update aria-valuenow
+    progressBar.setAttribute('aria-valuenow', stepPosition);
+
+    // Update step states
+    progressSteps.forEach((stepBtn, index) => {
+      const stepNum = index + 1;
+
+      // Remove all states
+      stepBtn.removeAttribute('data-current');
+      stepBtn.removeAttribute('data-completed');
+
+      if (stepNum < stepPosition) {
+        // Completed step
+        stepBtn.setAttribute('data-completed', 'true');
+        stepBtn.disabled = false;
+        // Hide the number, show checkmark via CSS
+        const dotEl = stepBtn.querySelector('.wizard-progress-compact__dot');
+        if (dotEl) dotEl.textContent = '';
+      } else if (stepNum === stepPosition) {
+        // Current step
+        stepBtn.setAttribute('data-current', 'true');
+        stepBtn.disabled = false;
+        const dotEl = stepBtn.querySelector('.wizard-progress-compact__dot');
+        if (dotEl) dotEl.textContent = stepNum;
+      } else {
+        // Future step (disabled)
+        stepBtn.disabled = true;
+        const dotEl = stepBtn.querySelector('.wizard-progress-compact__dot');
+        if (dotEl) dotEl.textContent = stepNum;
+      }
+    });
+  }
+
+  /**
+   * Initialize compact progress indicator click handlers
+   */
+  function initProgressIndicator() {
+    const progressSteps = document.querySelectorAll('.wizard-progress-compact__step');
+
+    progressSteps.forEach((stepBtn) => {
+      stepBtn.addEventListener('click', () => {
+        if (stepBtn.disabled) return;
+
+        const targetStep = stepBtn.dataset.step;
+        if (targetStep) {
+          // Navigate to the step using showScreen
+          showScreen(targetStep);
+        }
+      });
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // End Progress Indicator Utilities
+  // ═══════════════════════════════════════════════════════
 
   function normalisePermissionMember(member = {}) {
     return {
@@ -4976,10 +5328,18 @@
     };
   }
 
-
   function showScreen(screenId, { suppressFocus = false, force = false, isManualNavigation = false } = {}) {
     const requestedScreenId = screenId;
     console.log('showScreen called with:', screenId, 'manual:', isManualNavigation);
+
+    // If a transition is in progress, queue this one
+    if (isTransitioning) {
+      console.log('Transition in progress, queueing:', screenId);
+      pendingTransition = { screenId, suppressFocus, force, isManualNavigation };
+      return;
+    }
+
+    isTransitioning = true;
 
     if (!force) {
       screenId = resolveStepTargetId(screenId);
@@ -4994,6 +5354,7 @@
       console.warn('Screen not found in activeScreens:', screenId);
       if (activeScreens.length === 0) {
         console.error('No active screens available!');
+        isTransitioning = false; // Unlock before returning
         return;
       }
       screenId = activeScreens[0].id;
@@ -5007,26 +5368,52 @@
     currentScreenId = screenId;
     console.log('Setting currentScreenId to:', currentScreenId);
 
+    // DEFENSIVE: Remove any lingering 'hidden' attributes from all screens
+    // This ensures CSS classes have full control over visibility
+    screenDefinitions.forEach((definition) => {
+      if (definition.element && definition.element.hasAttribute('hidden')) {
+        definition.element.removeAttribute('hidden');
+      }
+    });
+
+    // Simple class swap - CSS handles all transition timing
     screenDefinitions.forEach((definition) => {
       const isActiveDefinition = activeScreens.some((active) => active.id === definition.id);
       const shouldShow = isActiveDefinition && definition.id === screenId;
 
       if (definition.element) {
         if (shouldShow) {
+          // Make this screen active
           definition.element.classList.add('wizard-screen--active');
-          definition.element.removeAttribute('hidden');
+
+          // Focus handling
           if (!suppressFocus) {
             const targetHeading = definition.element.querySelector('h1');
             if (targetHeading) {
-              requestAnimationFrame(() => targetHeading.focus({ preventScroll: false }));
+              // Wait for transition to complete before focusing
+              setTimeout(() => targetHeading.focus({ preventScroll: false }), 220);
             }
           }
         } else {
+          // Remove active class - CSS will handle fade out
           definition.element.classList.remove('wizard-screen--active');
-          definition.element.setAttribute('hidden', '');
         }
       }
     });
+
+    // DEFENSIVE: Verify only one screen is active (catch any future bugs)
+    const activeScreenElements = document.querySelectorAll('.wizard-screen--active');
+    if (activeScreenElements.length !== 1) {
+      console.error('CRITICAL: Multiple or zero active screens detected:', activeScreenElements.length);
+      console.error('Active screens:', Array.from(activeScreenElements).map(el => el.id));
+      // Force-fix: Remove active class from all except the current one
+      activeScreenElements.forEach((el) => {
+        if (el.id !== 'screen-' + screenId) {
+          el.classList.remove('wizard-screen--active');
+          console.warn('Force-removed active class from:', el.id);
+        }
+      });
+    }
 
     // FIXED: Track previous parent step from current active screen
     const previousActiveScreen = wizardState.active;
@@ -5040,6 +5427,9 @@
     }
 
     wizardElement.dataset.activeStep = screenId;
+
+    // Update progress indicator
+    updateProgressIndicator(getPrimaryStepId(screenId));
 
     // Update configuration overview when showing overview step
     if (screenId === 'overview' || getPrimaryStepId(screenId) === 'overview') {
@@ -5136,6 +5526,22 @@
       touched: activeStepState ? activeStepState.touched : false,
       silent: activeStepState ? !activeStepState.touched : false
     });
+
+    // Unlock transitions after animation completes
+    setTimeout(() => {
+      isTransitioning = false;
+
+      // Process pending transition if any
+      if (pendingTransition) {
+        const pending = pendingTransition;
+        pendingTransition = null;
+        showScreen(pending.screenId, {
+          suppressFocus: pending.suppressFocus,
+          force: pending.force,
+          isManualNavigation: pending.isManualNavigation
+        });
+      }
+    }, 250); // Slightly longer than animation duration for safety
   }
 
   function updateProgressIndicator(activeStepId, previousParentStep = null, shouldFoldSections = false, shouldAutoExpandOnSwitch = false) {
@@ -10891,6 +11297,10 @@
 
   // Expose the update function globally for manual triggers
   window.updateLiveContractPreview = updateLiveContractPreview;
+
+  // Initialize mobile menu
+  initMobileMenu();
+  console.log('✓ Mobile menu initialized');
 })();
 
 // Export Configuration Screen - Button Handlers and Live Preview

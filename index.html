@@ -13,13 +13,31 @@
 </head>
 
 <body>
-  <a href="#wizard" class="skip-link">Skip to main content</a>
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" aria-hidden="true" role="alert" aria-live="assertive">
+    <div class="loading-overlay__content">
+      <div class="spinner spinner--large loading-overlay__spinner"></div>
+      <p class="loading-overlay__message">Loading...</p>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Mobile Menu Overlay -->
+  <div class="mobile-menu-overlay" aria-hidden="true"></div>
+
   <div class="wizard-shell">
     <aside class="wizard-sidebar" aria-label="Wizard navigation">
       <!-- Token Sidebar -->
       <div class="sidebar-section" data-sidebar="token">
         <!-- Sidebar Header with Branding -->
         <div class="wizard-sidebar__header">
+          <button class="mobile-menu-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
+            <span class="mobile-menu-toggle__bar"></span>
+            <span class="mobile-menu-toggle__bar"></span>
+            <span class="mobile-menu-toggle__bar"></span>
+          </button>
           <div class="brand">
             <div class="brand__icon">
               <img src="https://media.dash.org/wp-content/uploads/dash-d-rounded-square-1000.png" alt="Dash" width="32"
@@ -39,6 +57,7 @@
             aria-label="Search navigation">
         </div>
 
+        <!-- Compact Progress Steps -->
         <!-- Navigation -->
         <nav class="wizard-nav" aria-label="Wizard progress">
           <div class="wizard-nav__label">Menu</div>
@@ -7569,7 +7588,7 @@
 
                   <p><strong>6. Exponential</strong></p>
                   <p><em>Formula:</em> f(x) = (a * base^((m/n) * (x - s)) / d) + o + b</p>
-                  <p><em>Description:</em> Rapid growth (m/n > 0) or decay (m/n < 0). Most aggressive emission curves.</p>
+                  <p><em>Description:</em> Rapid growth (m/n &gt; 0) or decay (m/n &lt; 0). Most aggressive emission curves.</p>
                   <p><em>Use case:</em> Exponential decay for long-tail emissions, aggressive early rewards</p>
                   <p><em>Parameters:</em> a (scaling factor, u64), m (exponent rate numerator, i8), n (exponent rate denominator, u8), d (divisor, u64), s (start period offset, optional u64), o (offset, i64), b (base amount, u64)</p>
                   <p><em>Example:</em> Exponential decay: m=-1, n=2 creates half-life decay</p>
@@ -12004,33 +12023,19 @@
 
             const substep = this.getAttribute('data-substep');
             if (substep) {
-              // Hide all wizard screens
-              const allScreens = document.querySelectorAll('.wizard-screen');
-              allScreens.forEach(screen => {
-                screen.hidden = true;
-                screen.classList.remove('wizard-screen--active');
-              });
-
-              // Show the target sub-step screen
+              // Dispatch event to let app.js handle navigation (single source of truth)
               const targetScreen = document.getElementById('screen-' + substep);
               if (targetScreen) {
-                targetScreen.hidden = false;
-                targetScreen.classList.add('wizard-screen--active');
-
-                // Focus on the screen title for accessibility
-                const title = targetScreen.querySelector('.wizard-screen__title');
-                if (title) {
-                  setTimeout(() => title.focus(), 100);
-                }
-              }
-
-              // Update the parent nav item's active state
-              const parentStep = targetScreen ? targetScreen.getAttribute('data-step') : null;
-              if (parentStep) {
-                allNavButtons.forEach(btn => btn.removeAttribute('aria-current'));
-                const parentNavItem = document.querySelector('.wizard-nav-item[data-step="' + parentStep + '"]');
-                if (parentNavItem) {
-                  parentNavItem.setAttribute('aria-current', 'step');
+                const parentStep = targetScreen.getAttribute('data-step');
+                if (parentStep) {
+                  // Trigger app.js navigation
+                  const event = new CustomEvent('navigate-to-step', {
+                    detail: {
+                      step: parentStep,
+                      substep: substep
+                    }
+                  });
+                  document.dispatchEvent(event);
                 }
               }
             }
@@ -12079,13 +12084,7 @@
               activeSidebar.hidden = false;
             }
 
-            // Hide all screens
-            allScreens.forEach(screen => {
-              screen.hidden = true;
-              screen.classList.remove('wizard-screen--active');
-            });
-
-            // Show the last active screen for this tab
+            // Find the target screen for this tab
             const lastActiveScreen = tabStateMemory[tabName];
             let targetScreen = document.getElementById(lastActiveScreen);
 
@@ -12104,14 +12103,18 @@
               }
             }
 
+            // Dispatch event to let app.js handle screen navigation
             if (targetScreen) {
-              targetScreen.hidden = false;
-              targetScreen.classList.add('wizard-screen--active');
-
-              // Focus on screen title for accessibility
-              const title = targetScreen.querySelector('.wizard-screen__title');
-              if (title) {
-                setTimeout(() => title.focus(), 100);
+              const screenId = targetScreen.id.replace('screen-', '');
+              const parentStep = targetScreen.getAttribute('data-step');
+              if (parentStep) {
+                const event = new CustomEvent('navigate-to-step', {
+                  detail: {
+                    step: parentStep,
+                    substep: screenId
+                  }
+                });
+                document.dispatchEvent(event);
               }
             }
 
