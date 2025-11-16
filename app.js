@@ -1966,8 +1966,8 @@
       });
       return;
     }
-    // FIXED: Use currentScreenId (which includes substeps) instead of stepId
-    button.addEventListener('click', () => goToPreviousScreen(currentScreenId));
+    // Use stepId from button attribute instead of global currentScreenId to avoid state desync
+    button.addEventListener('click', () => goToPreviousScreen(stepId));
   });
 
   const returnButtons = Array.from(document.querySelectorAll('[data-step-return]'));

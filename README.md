@@ -166,7 +166,7 @@ open http://localhost:5173
 ```
 /
 ├── index.html              # Main application entry point
-├── app.js                  # Complete wizard logic (~7000 lines)
+├── app.js                  # Complete wizard logic (~4900+ lines)
 ├── styles.css              # Complete styling with theme support
 ├── server.js               # Development server (optional)
 ├── contracts/              # Reference Rust data structures
@@ -306,12 +306,58 @@ Contributions are welcome! Please:
 - [x] Three registration methods
 - [x] Theme support and responsive design
 
+## Common Issues
+
+### Validation Errors
+
+**"Base supply cannot exceed max supply"**
+- Ensure your initial supply is less than or equal to the max supply cap
+- Either increase max supply or decrease base supply
+
+**"Invalid identity ID format"**
+- Identity IDs must be Base58 format, 43-44 characters
+- Example: `GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec`
+- Get your identity ID from a Dash Platform wallet or dash-evo-tool
+
+**"Decimals must be between 0 and 18"**
+- Choose 0-18 decimal places (8 is common for currency-like tokens)
+
+**"Evonodes recipient only available for Epoch-based distribution"**
+- Change cadence to Epoch-based, or choose a different recipient type
+
+### Browser Compatibility
+
+**Recommended browsers:**
+- Chrome 120+ (Recommended)
+- Firefox 120+
+- Safari 17+
+- Edge 120+
+
+**Known issues:**
+- IE 11 not supported (use a modern browser)
+- Safari < 16 may have glassmorphism rendering issues
+
+### Performance
+
+**Wizard loads slowly**
+- Clear browser cache and localStorage
+- Disable unnecessary browser extensions
+- Check network connection (Dash SDK loads from CDN)
+
+**QR code not appearing**
+- Complete all required fields and fix validation errors first
+- For very large configurations, use DET or Self-service registration instead
+
+For more detailed troubleshooting, see the [docs/COMMON_ERRORS.md](docs/COMMON_ERRORS.md) file.
+
 ## Security Considerations
 
 - **Never share your wallet mnemonic**: The self-service registration stores your mnemonic in browser memory only during the session
 - **Use testnet first**: Always test your token configuration on testnet before deploying to mainnet
 - **Review JSON output**: Double-check the generated JSON before submission
 - **Secure your device**: This application runs client-side - ensure your device is secure
+- **Identity IDs are public**: They are visible on the blockchain - do not use personally identifiable information
+- **Testnet tokens have no value**: This wizard connects to Dash Platform Testnet
 
 ## License
 
