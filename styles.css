@@ -2204,7 +2204,7 @@ html[data-theme='dark'] .wizard-progress-compact__dot {
 
 .wizard-screen {
   /* Always use flex display - never change to 'none' */
-  display: flex !important;
+  display: none !important;
   flex-direction: column;
   width: 100%;
   max-width: var(--content-max-width);
@@ -2212,33 +2212,14 @@ html[data-theme='dark'] .wizard-progress-compact__dot {
   border-radius: var(--radius-lg);
   border: none;
   padding: 0;
-
-  /* Inactive screens are hidden but remain in document flow */
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  height: 0;
-  overflow: hidden;
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-
-  /* Smooth transition for opacity and visibility */
-  transition: opacity 0.2s ease-in, visibility 0s linear 0.2s;
 }
 
 .wizard-screen--active {
   /* Active screen is visible and controls container height */
-  position: relative;
+  display: flex !important;
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
-  height: auto;
-  overflow: visible;
-
-  /* No delay on visibility when becoming active */
-  transition: opacity 0.2s ease-in, visibility 0s linear;
 }
 
 /* Remove conflicting rules - no longer needed */
@@ -2325,8 +2306,8 @@ html[data-theme='dark'] .wizard-progress-compact__dot {
 
 .template-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-6);
   margin-top: var(--space-6);
 }
 
@@ -2341,16 +2322,16 @@ html[data-theme='dark'] .wizard-progress-compact__dot {
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-4);
-  padding: var(--space-5);
+  padding: var(--space-8);
   background: var(--color-surface);
   border: 2px solid var(--color-border);
   border-radius: var(--radius-lg);
   text-align: left;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .template-card::before {
@@ -2367,8 +2348,8 @@ html[data-theme='dark'] .wizard-progress-compact__dot {
 
 .template-card:hover {
   border-color: var(--color-primary);
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08);
+  transform: translateY(-8px);
 }
 
 .template-card:hover::before {
@@ -2377,6 +2358,11 @@ html[data-theme='dark'] .wizard-progress-compact__dot {
 
 .template-card:active {
   transform: translateY(0);
+}
+
+.template-card:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
 }
 
 /* Selected template card */
@@ -2409,33 +2395,14 @@ html[data-theme='dark'] .wizard-progress-compact__dot {
   font-size: 1.25rem;
   font-weight: 600;
   margin: 0;
-  color: #1A1F36;
+  color: var(--color-text);
 }
 
 .template-card__description {
   font-size: 0.9375rem;
   margin: 0;
-  color: #4A5568;
+  color: var(--color-text-secondary);
   line-height: 1.5;
-}
-
-/* Dark mode overrides for template card text */
-html[data-theme='dark'] .template-card__title {
-  color: #F1F5F9;
-}
-
-html[data-theme='dark'] .template-card__description {
-  color: #94A3B8;
-}
-
-@media (prefers-color-scheme: dark) {
-  html[data-theme='auto'] .template-card__title {
-    color: #F1F5F9;
-  }
-
-  html[data-theme='auto'] .template-card__description {
-    color: #94A3B8;
-  }
 }
 
 .template-card__specs {
@@ -2449,27 +2416,212 @@ html[data-theme='dark'] .template-card__description {
   display: inline-flex;
   align-items: center;
   padding: 4px 10px;
-  background: #EEF2FF;
-  border: 1px solid #C7D2FE;
+  background: rgba(14, 118, 253, 0.1);
+  border: 1px solid rgba(14, 118, 253, 0.3);
   border-radius: var(--radius-full);
   font-size: 0.75rem;
   font-weight: 600;
-  color: #4338CA;
+  color: var(--color-primary);
+  transition: all 0.2s ease;
 }
 
-/* Dark mode for spec badges */
-html[data-theme='dark'] .spec-badge {
-  background: rgba(99, 102, 241, 0.15);
-  border-color: rgba(99, 102, 241, 0.3);
-  color: #A5B4FC;
+.spec-badge:hover {
+  background: rgba(14, 118, 253, 0.15);
+  border-color: var(--color-primary);
 }
 
-@media (prefers-color-scheme: dark) {
-  html[data-theme='auto'] .spec-badge {
-    background: rgba(99, 102, 241, 0.15);
-    border-color: rgba(99, 102, 241, 0.3);
-    color: #A5B4FC;
+/* Difficulty Badge */
+.difficulty-badge {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  transition: all 0.2s ease;
+}
+
+.difficulty-badge--beginner {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #16a34a;
+}
+
+.difficulty-badge--intermediate {
+  background: rgba(234, 179, 8, 0.1);
+  border: 1px solid rgba(234, 179, 8, 0.3);
+  color: #ca8a04;
+}
+
+.difficulty-badge--advanced {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #dc2626;
+}
+
+/* Time Estimate */
+.time-estimate {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.time-estimate::before {
+  content: "⏱";
+  font-size: 1rem;
+}
+
+/* Template Card Preview */
+.template-card__preview {
+  margin-top: var(--space-2);
+  padding: var(--space-4);
+  background: rgba(14, 118, 253, 0.03);
+  border: 1px solid rgba(14, 118, 253, 0.1);
+  border-radius: var(--radius-md);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.template-card:hover .template-card__preview {
+  max-height: 200px;
+  opacity: 1;
+  margin-top: var(--space-4);
+}
+
+.template-card__preview-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 var(--space-2) 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.template-card__preview-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.template-card__preview-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.template-card__preview-label {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.template-card__preview-value {
+  color: var(--color-text);
+  font-weight: 600;
+  text-align: right;
+}
+
+/* Template Card Icon */
+.template-card__icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(14, 118, 253, 0.1);
+  border-radius: 50%;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.template-card:hover .template-card__icon {
+  transform: scale(1.1);
+  background: rgba(14, 118, 253, 0.15);
+}
+
+.template-card__icon svg {
+  width: 24px;
+  height: 24px;
+  fill: var(--color-primary);
+}
+
+/* Staggered Fade-in Animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.template-card {
+  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+}
+
+.template-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.template-card:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.template-card:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.template-card:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+/* Enhanced Selection State */
+.template-card[aria-pressed="true"],
+.template-card.selected {
+  border-color: var(--color-primary);
+  background: rgba(14, 118, 253, 0.03);
+  box-shadow: 0 0 0 3px rgba(14, 118, 253, 0.1), 0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+}
+
+.template-card[aria-pressed="true"] .template-card__icon,
+.template-card.selected .template-card__icon {
+  background: rgba(14, 118, 253, 0.2);
+  transform: scale(1.05);
+}
+
+/* Difficulty Badge Pulse on Hover */
+.template-card:hover .difficulty-badge {
+  transform: scale(1.05);
+}
+
+/* Time Estimate Icon Animation */
+@keyframes tickTock {
+  0%, 100% {
+    transform: rotate(-5deg);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
+}
+
+.template-card:hover .time-estimate::before {
+  display: inline-block;
+  animation: tickTock 1s ease-in-out infinite;
 }
 
 @media (max-width: 768px) {
@@ -2496,7 +2648,8 @@ html[data-theme='dark'] .spec-badge {
   flex-direction: column;
   gap: var(--space-4);
   box-shadow: var(--shadow-xs);
-  transition: all var(--transition-base);
+  /* Changed from 'transition: all' to specific properties to prevent layout glitches with position:fixed buttons */
+  transition: box-shadow var(--transition-base), border-color var(--transition-base), background-color var(--transition-base);
   width: 100%;
   max-width: var(--content-max-width);
   margin: 0 auto;
@@ -3644,7 +3797,7 @@ textarea.wizard-field__input {
   gap: var(--space-sm);
   justify-content: flex-end;
   align-items: center;
-  flex-wrap: wrap;
+  /* Removed flex-wrap to prevent button layout glitches */
   margin-top: auto;
 }
 
@@ -3672,9 +3825,11 @@ textarea.wizard-field__input {
   padding-bottom: calc(var(--space-md) + env(safe-area-inset-bottom, 0px)) !important;
   background: var(--color-background) !important;
   border-top: 1px solid var(--color-border) !important;
-  box-shadow: 0 -14px 26px hsla(210, 94%, 14%, 0.12) !important;
+  box-shadow: var(--shadow-md) !important;
   z-index: 1000 !important;
   transform: none !important;
+  isolation: isolate !important; /* Create isolated stacking context for WebKit */
+  -webkit-font-smoothing: antialiased !important; /* WebKit rendering hint */
   transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
               right 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
@@ -5183,6 +5338,1925 @@ html[data-theme='dark'] .page-guide__header {
   font-size: 1rem;
 }
 
+/* Fix WebKit glitch on freezing page - use sticky instead of fixed */
+#screen-permissions-manual-freeze {
+  min-height: 100vh !important;
+}
+
+#screen-permissions-manual-freeze .wizard-screen__inner {
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#screen-permissions-manual-freeze .wizard-form {
+  flex: 1 !important;
+}
+
+/* Option 2: Compact Pill-Style Design (Minimalist Modern) */
+#screen-permissions-manual-freeze .wizard-actions--sticky {
+  position: sticky !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: auto !important;
+  padding: var(--space-3) var(--space-md) !important;
+  background: var(--color-surface) !important;
+  border-top: 2px solid var(--color-border) !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Pill-style buttons */
+#screen-permissions-manual-freeze .wizard-button {
+  border-radius: var(--radius-full);
+  padding: 10px 28px;
+  min-height: 42px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-permissions-manual-freeze .wizard-button--primary {
+  background: var(--color-primary);
+  border: none;
+  box-shadow:
+    0 1px 3px rgba(14, 118, 253, 0.3),
+    0 0 0 0 rgba(14, 118, 253, 0.4);
+}
+
+#screen-permissions-manual-freeze .wizard-button--primary:hover:not(:disabled) {
+  box-shadow:
+    0 4px 12px rgba(14, 118, 253, 0.25),
+    0 0 0 4px rgba(14, 118, 253, 0.1);
+  transform: scale(1.02);
+}
+
+#screen-permissions-manual-freeze .wizard-button--primary:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow:
+    0 1px 3px rgba(14, 118, 253, 0.3),
+    0 0 0 3px rgba(14, 118, 253, 0.15);
+}
+
+#screen-permissions-manual-freeze .wizard-button--secondary {
+  background: transparent;
+  border: 2px solid var(--color-border-strong);
+  color: var(--color-text);
+}
+
+#screen-permissions-manual-freeze .wizard-button--secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  transform: scale(1.02);
+}
+
+/* Enhanced form cards */
+#screen-permissions-manual-freeze .form-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-permissions-manual-freeze .form-card:hover {
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(14, 118, 253, 0.08);
+  border-color: rgba(14, 118, 253, 0.2);
+}
+
+/* Fix WebKit glitch on screen-distribution-perpetual - use sticky instead of fixed */
+#screen-distribution-perpetual {
+  min-height: 100vh !important;
+}
+
+#screen-distribution-perpetual .wizard-screen__inner {
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#screen-distribution-perpetual .wizard-form {
+  flex: 1 !important;
+}
+
+/* Option 2: Compact Pill-Style Design (Minimalist Modern) */
+#screen-distribution-perpetual .wizard-actions--sticky {
+  position: sticky !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: auto !important;
+  padding: var(--space-3) var(--space-md) !important;
+  background: var(--color-surface) !important;
+  border-top: 2px solid var(--color-border) !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Pill-style buttons */
+#screen-distribution-perpetual .wizard-button {
+  border-radius: var(--radius-full);
+  padding: 10px 28px;
+  min-height: 42px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-distribution-perpetual .wizard-button--primary {
+  background: var(--color-primary);
+  border: none;
+  box-shadow:
+    0 1px 3px rgba(14, 118, 253, 0.3),
+    0 0 0 0 rgba(14, 118, 253, 0.4);
+}
+
+#screen-distribution-perpetual .wizard-button--primary:hover:not(:disabled) {
+  box-shadow:
+    0 4px 12px rgba(14, 118, 253, 0.25),
+    0 0 0 4px rgba(14, 118, 253, 0.1);
+  transform: scale(1.02);
+}
+
+#screen-distribution-perpetual .wizard-button--primary:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow:
+    0 1px 3px rgba(14, 118, 253, 0.3),
+    0 0 0 3px rgba(14, 118, 253, 0.15);
+}
+
+#screen-distribution-perpetual .wizard-button--secondary {
+  background: transparent;
+  border: 2px solid var(--color-border-strong);
+  color: var(--color-text);
+}
+
+#screen-distribution-perpetual .wizard-button--secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  transform: scale(1.02);
+}
+
+/* Enhanced form cards */
+#screen-distribution-perpetual .form-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-distribution-perpetual .form-card:hover {
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(14, 118, 253, 0.08);
+  border-color: rgba(14, 118, 253, 0.2);
+}
+
+/* Fix WebKit glitch on screen-distribution-emission - use sticky instead of fixed */
+#screen-distribution-emission {
+  min-height: 100vh !important;
+}
+
+#screen-distribution-emission .wizard-screen__inner {
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#screen-distribution-emission .wizard-form {
+  flex: 1 !important;
+}
+
+/* Option 2: Compact Pill-Style Design (Minimalist Modern) */
+#screen-distribution-emission .wizard-actions--sticky {
+  position: sticky !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: auto !important;
+  padding: var(--space-3) var(--space-md) !important;
+  background: var(--color-surface) !important;
+  border-top: 2px solid var(--color-border) !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Pill-style buttons */
+#screen-distribution-emission .wizard-button {
+  border-radius: var(--radius-full);
+  padding: 10px 28px;
+  min-height: 42px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-distribution-emission .wizard-button--primary {
+  background: var(--color-primary);
+  border: none;
+  box-shadow:
+    0 1px 3px rgba(14, 118, 253, 0.3),
+    0 0 0 0 rgba(14, 118, 253, 0.4);
+}
+
+#screen-distribution-emission .wizard-button--primary:hover:not(:disabled) {
+  box-shadow:
+    0 4px 12px rgba(14, 118, 253, 0.25),
+    0 0 0 4px rgba(14, 118, 253, 0.1);
+  transform: scale(1.02);
+}
+
+#screen-distribution-emission .wizard-button--primary:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow:
+    0 1px 3px rgba(14, 118, 253, 0.3),
+    0 0 0 3px rgba(14, 118, 253, 0.15);
+}
+
+#screen-distribution-emission .wizard-button--secondary {
+  background: transparent;
+  border: 2px solid var(--color-border-strong);
+  color: var(--color-text);
+}
+
+#screen-distribution-emission .wizard-button--secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  transform: scale(1.02);
+}
+
+/* Enhanced form cards */
+#screen-distribution-emission .form-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-distribution-emission .form-card:hover {
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(14, 118, 253, 0.08);
+  border-color: rgba(14, 118, 253, 0.2);
+}
+
+/* Fix WebKit glitch on screen-permissions - use sticky instead of fixed */
+#screen-permissions {
+  min-height: 100vh !important;
+}
+
+#screen-permissions .wizard-screen__inner {
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#screen-permissions .wizard-form {
+  flex: 1 !important;
+}
+
+#screen-permissions .wizard-actions--sticky {
+  position: sticky !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: auto !important;
+  padding: var(--space-3) var(--space-md) !important;
+  background: var(--color-surface) !important;
+  border-top: 2px solid var(--color-border) !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+#screen-permissions .wizard-button {
+  border-radius: var(--radius-full);
+  padding: 10px 28px;
+  min-height: 42px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-permissions .wizard-button--primary {
+  background: var(--color-primary);
+  border: none;
+  box-shadow:
+    0 1px 3px rgba(14, 118, 253, 0.3),
+    0 0 0 0 rgba(14, 118, 253, 0.4);
+}
+
+#screen-permissions .wizard-button--primary:hover:not(:disabled) {
+  box-shadow:
+    0 4px 12px rgba(14, 118, 253, 0.25),
+    0 0 0 4px rgba(14, 118, 253, 0.1);
+  transform: scale(1.02);
+}
+
+#screen-permissions .wizard-button--primary:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow:
+    0 1px 3px rgba(14, 118, 253, 0.3),
+    0 0 0 3px rgba(14, 118, 253, 0.15);
+}
+
+#screen-permissions .wizard-button--secondary {
+  background: transparent;
+  border: 2px solid var(--color-border-strong);
+  color: var(--color-text);
+}
+
+#screen-permissions .wizard-button--secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  transform: scale(1.02);
+}
+
+#screen-permissions .form-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-permissions .form-card:hover {
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(14, 118, 253, 0.08);
+  border-color: rgba(14, 118, 253, 0.2);
+}
+
+/* Fix WebKit glitch on screen-registration - use sticky instead of fixed */
+#screen-registration {
+  min-height: 100vh !important;
+}
+
+#screen-registration .wizard-screen__inner {
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#screen-registration .wizard-form {
+  flex: 1 !important;
+}
+
+#screen-registration .wizard-actions--sticky {
+  position: sticky !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: auto !important;
+  padding: var(--space-3) var(--space-md) !important;
+  background: var(--color-surface) !important;
+  border-top: 2px solid var(--color-border) !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+#screen-registration .wizard-button {
+  border-radius: var(--radius-full);
+  padding: 10px 28px;
+  min-height: 42px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-registration .wizard-button--primary {
+  background: var(--color-primary);
+  border: none;
+  box-shadow:
+    0 1px 3px rgba(14, 118, 253, 0.3),
+    0 0 0 0 rgba(14, 118, 253, 0.4);
+}
+
+#screen-registration .wizard-button--primary:hover:not(:disabled) {
+  box-shadow:
+    0 4px 12px rgba(14, 118, 253, 0.25),
+    0 0 0 4px rgba(14, 118, 253, 0.1);
+  transform: scale(1.02);
+}
+
+#screen-registration .wizard-button--primary:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow:
+    0 1px 3px rgba(14, 118, 253, 0.3),
+    0 0 0 3px rgba(14, 118, 253, 0.15);
+}
+
+#screen-registration .wizard-button--secondary {
+  background: transparent;
+  border: 2px solid var(--color-border-strong);
+  color: var(--color-text);
+}
+
+#screen-registration .wizard-button--secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  transform: scale(1.02);
+}
+
+#screen-registration .form-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-registration .form-card:hover {
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(14, 118, 253, 0.08);
+  border-color: rgba(14, 118, 253, 0.2);
+}
+
+/* Fix WebKit glitch on screen-permissions-manual-mint - use sticky instead of fixed */
+#screen-permissions-manual-mint {
+  min-height: 100vh !important;
+}
+
+#screen-permissions-manual-mint .wizard-screen__inner {
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#screen-permissions-manual-mint .wizard-form {
+  flex: 1 !important;
+}
+
+#screen-permissions-manual-mint .wizard-actions--sticky {
+  position: sticky !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: auto !important;
+  padding: var(--space-3) var(--space-md) !important;
+  background: var(--color-surface) !important;
+  border-top: 2px solid var(--color-border) !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+#screen-permissions-manual-mint .wizard-button {
+  border-radius: var(--radius-full);
+  padding: 10px 28px;
+  min-height: 42px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-permissions-manual-mint .wizard-button--primary {
+  background: var(--color-primary);
+  border: none;
+  box-shadow:
+    0 1px 3px rgba(14, 118, 253, 0.3),
+    0 0 0 0 rgba(14, 118, 253, 0.4);
+}
+
+#screen-permissions-manual-mint .wizard-button--primary:hover:not(:disabled) {
+  box-shadow:
+    0 4px 12px rgba(14, 118, 253, 0.25),
+    0 0 0 4px rgba(14, 118, 253, 0.1);
+  transform: scale(1.02);
+}
+
+#screen-permissions-manual-mint .wizard-button--primary:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow:
+    0 1px 3px rgba(14, 118, 253, 0.3),
+    0 0 0 3px rgba(14, 118, 253, 0.15);
+}
+
+#screen-permissions-manual-mint .wizard-button--secondary {
+  background: transparent;
+  border: 2px solid var(--color-border-strong);
+  color: var(--color-text);
+}
+
+#screen-permissions-manual-mint .wizard-button--secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  transform: scale(1.02);
+}
+
+#screen-permissions-manual-mint .form-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-permissions-manual-mint .form-card:hover {
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(14, 118, 253, 0.08);
+  border-color: rgba(14, 118, 253, 0.2);
+}
+
+/* Fix WebKit glitch on screen-permissions-direct-pricing-change - use sticky instead of fixed */
+#screen-permissions-direct-pricing-change {
+  min-height: 100vh !important;
+}
+
+#screen-permissions-direct-pricing-change .wizard-screen__inner {
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#screen-permissions-direct-pricing-change .wizard-form {
+  flex: 1 !important;
+}
+
+#screen-permissions-direct-pricing-change .wizard-actions--sticky {
+  position: sticky !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: auto !important;
+  padding: var(--space-3) var(--space-md) !important;
+  background: var(--color-surface) !important;
+  border-top: 2px solid var(--color-border) !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+#screen-permissions-direct-pricing-change .wizard-button {
+  border-radius: var(--radius-full);
+  padding: 10px 28px;
+  min-height: 42px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-permissions-direct-pricing-change .wizard-button--primary {
+  background: var(--color-primary);
+  border: none;
+  box-shadow:
+    0 1px 3px rgba(14, 118, 253, 0.3),
+    0 0 0 0 rgba(14, 118, 253, 0.4);
+}
+
+#screen-permissions-direct-pricing-change .wizard-button--primary:hover:not(:disabled) {
+  box-shadow:
+    0 4px 12px rgba(14, 118, 253, 0.25),
+    0 0 0 4px rgba(14, 118, 253, 0.1);
+  transform: scale(1.02);
+}
+
+#screen-permissions-direct-pricing-change .wizard-button--primary:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow:
+    0 1px 3px rgba(14, 118, 253, 0.3),
+    0 0 0 3px rgba(14, 118, 253, 0.15);
+}
+
+#screen-permissions-direct-pricing-change .wizard-button--secondary {
+  background: transparent;
+  border: 2px solid var(--color-border-strong);
+  color: var(--color-text);
+}
+
+#screen-permissions-direct-pricing-change .wizard-button--secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  transform: scale(1.02);
+}
+
+#screen-permissions-direct-pricing-change .form-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-permissions-direct-pricing-change .form-card:hover {
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(14, 118, 253, 0.08);
+  border-color: rgba(14, 118, 253, 0.2);
+}
+
+/* Fix WebKit glitch on screen-permissions-manual-burn */
+#screen-permissions-manual-burn {
+  min-height: 100vh !important;
+}
+
+#screen-permissions-manual-burn .wizard-screen__inner {
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#screen-permissions-manual-burn .wizard-form {
+  flex: 1 !important;
+}
+
+#screen-permissions-manual-burn .wizard-actions--sticky {
+  position: sticky !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: auto !important;
+  padding: var(--space-3) var(--space-md) !important;
+  background: var(--color-surface) !important;
+  border-top: 2px solid var(--color-border) !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+#screen-permissions-manual-burn .wizard-button {
+  border-radius: var(--radius-full);
+  padding: 10px 28px;
+  min-height: 42px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-permissions-manual-burn .wizard-button--primary {
+  background: var(--color-primary);
+  border: none;
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 0 rgba(14, 118, 253, 0.4);
+}
+
+#screen-permissions-manual-burn .wizard-button--primary:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(14, 118, 253, 0.25), 0 0 0 4px rgba(14, 118, 253, 0.1);
+  transform: scale(1.02);
+}
+
+#screen-permissions-manual-burn .wizard-button--primary:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 3px rgba(14, 118, 253, 0.15);
+}
+
+#screen-permissions-manual-burn .wizard-button--secondary {
+  background: transparent;
+  border: 2px solid var(--color-border-strong);
+  color: var(--color-text);
+}
+
+#screen-permissions-manual-burn .wizard-button--secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  transform: scale(1.02);
+}
+
+#screen-permissions-manual-burn .form-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-permissions-manual-burn .form-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(14, 118, 253, 0.08);
+  border-color: rgba(14, 118, 253, 0.2);
+}
+
+/* Fix WebKit glitch on screen-permissions-emergency */
+#screen-permissions-emergency {
+  min-height: 100vh !important;
+}
+
+#screen-permissions-emergency .wizard-screen__inner {
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#screen-permissions-emergency .wizard-form {
+  flex: 1 !important;
+}
+
+#screen-permissions-emergency .wizard-actions--sticky {
+  position: sticky !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: auto !important;
+  padding: var(--space-3) var(--space-md) !important;
+  background: var(--color-surface) !important;
+  border-top: 2px solid var(--color-border) !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+#screen-permissions-emergency .wizard-button {
+  border-radius: var(--radius-full);
+  padding: 10px 28px;
+  min-height: 42px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-permissions-emergency .wizard-button--primary {
+  background: var(--color-primary);
+  border: none;
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 0 rgba(14, 118, 253, 0.4);
+}
+
+#screen-permissions-emergency .wizard-button--primary:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(14, 118, 253, 0.25), 0 0 0 4px rgba(14, 118, 253, 0.1);
+  transform: scale(1.02);
+}
+
+#screen-permissions-emergency .wizard-button--primary:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 3px rgba(14, 118, 253, 0.15);
+}
+
+#screen-permissions-emergency .wizard-button--secondary {
+  background: transparent;
+  border: 2px solid var(--color-border-strong);
+  color: var(--color-text);
+}
+
+#screen-permissions-emergency .wizard-button--secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  transform: scale(1.02);
+}
+
+#screen-permissions-emergency .form-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-permissions-emergency .form-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(14, 118, 253, 0.08);
+  border-color: rgba(14, 118, 253, 0.2);
+}
+
+/* Fix WebKit glitch on screen-permissions-conventions-change */
+#screen-permissions-conventions-change {
+  min-height: 100vh !important;
+}
+
+#screen-permissions-conventions-change .wizard-screen__inner {
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#screen-permissions-conventions-change .wizard-form {
+  flex: 1 !important;
+}
+
+#screen-permissions-conventions-change .wizard-actions--sticky {
+  position: sticky !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: auto !important;
+  padding: var(--space-3) var(--space-md) !important;
+  background: var(--color-surface) !important;
+  border-top: 2px solid var(--color-border) !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+#screen-permissions-conventions-change .wizard-button {
+  border-radius: var(--radius-full);
+  padding: 10px 28px;
+  min-height: 42px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-permissions-conventions-change .wizard-button--primary {
+  background: var(--color-primary);
+  border: none;
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 0 rgba(14, 118, 253, 0.4);
+}
+
+#screen-permissions-conventions-change .wizard-button--primary:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(14, 118, 253, 0.25), 0 0 0 4px rgba(14, 118, 253, 0.1);
+  transform: scale(1.02);
+}
+
+#screen-permissions-conventions-change .wizard-button--primary:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 3px rgba(14, 118, 253, 0.15);
+}
+
+#screen-permissions-conventions-change .wizard-button--secondary {
+  background: transparent;
+  border: 2px solid var(--color-border-strong);
+  color: var(--color-text);
+}
+
+#screen-permissions-conventions-change .wizard-button--secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  transform: scale(1.02);
+}
+
+#screen-permissions-conventions-change .form-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-permissions-conventions-change .form-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(14, 118, 253, 0.08);
+  border-color: rgba(14, 118, 253, 0.2);
+}
+
+/* Fix WebKit glitch on screen-permissions-marketplace-trade-mode-change */
+#screen-permissions-marketplace-trade-mode-change {
+  min-height: 100vh !important;
+}
+
+#screen-permissions-marketplace-trade-mode-change .wizard-screen__inner {
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#screen-permissions-marketplace-trade-mode-change .wizard-form {
+  flex: 1 !important;
+}
+
+#screen-permissions-marketplace-trade-mode-change .wizard-actions--sticky {
+  position: sticky !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: auto !important;
+  padding: var(--space-3) var(--space-md) !important;
+  background: var(--color-surface) !important;
+  border-top: 2px solid var(--color-border) !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+#screen-permissions-marketplace-trade-mode-change .wizard-button {
+  border-radius: var(--radius-full);
+  padding: 10px 28px;
+  min-height: 42px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-permissions-marketplace-trade-mode-change .wizard-button--primary {
+  background: var(--color-primary);
+  border: none;
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 0 rgba(14, 118, 253, 0.4);
+}
+
+#screen-permissions-marketplace-trade-mode-change .wizard-button--primary:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(14, 118, 253, 0.25), 0 0 0 4px rgba(14, 118, 253, 0.1);
+  transform: scale(1.02);
+}
+
+#screen-permissions-marketplace-trade-mode-change .wizard-button--primary:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 3px rgba(14, 118, 253, 0.15);
+}
+
+#screen-permissions-marketplace-trade-mode-change .wizard-button--secondary {
+  background: transparent;
+  border: 2px solid var(--color-border-strong);
+  color: var(--color-text);
+}
+
+#screen-permissions-marketplace-trade-mode-change .wizard-button--secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  transform: scale(1.02);
+}
+
+#screen-permissions-marketplace-trade-mode-change .form-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-permissions-marketplace-trade-mode-change .form-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(14, 118, 253, 0.08);
+  border-color: rgba(14, 118, 253, 0.2);
+}
+
+/* Fix WebKit glitch on screen-permissions-main-control-change */
+#screen-permissions-main-control-change {
+  min-height: 100vh !important;
+}
+
+#screen-permissions-main-control-change .wizard-screen__inner {
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#screen-permissions-main-control-change .wizard-form {
+  flex: 1 !important;
+}
+
+#screen-permissions-main-control-change .wizard-actions--sticky {
+  position: sticky !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: auto !important;
+  padding: var(--space-3) var(--space-md) !important;
+  background: var(--color-surface) !important;
+  border-top: 2px solid var(--color-border) !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+#screen-permissions-main-control-change .wizard-button {
+  border-radius: var(--radius-full);
+  padding: 10px 28px;
+  min-height: 42px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-permissions-main-control-change .wizard-button--primary {
+  background: var(--color-primary);
+  border: none;
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 0 rgba(14, 118, 253, 0.4);
+}
+
+#screen-permissions-main-control-change .wizard-button--primary:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(14, 118, 253, 0.25), 0 0 0 4px rgba(14, 118, 253, 0.1);
+  transform: scale(1.02);
+}
+
+#screen-permissions-main-control-change .wizard-button--primary:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 3px rgba(14, 118, 253, 0.15);
+}
+
+#screen-permissions-main-control-change .wizard-button--secondary {
+  background: transparent;
+  border: 2px solid var(--color-border-strong);
+  color: var(--color-text);
+}
+
+#screen-permissions-main-control-change .wizard-button--secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  transform: scale(1.02);
+}
+
+#screen-permissions-main-control-change .form-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-permissions-main-control-change .form-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(14, 118, 253, 0.08);
+  border-color: rgba(14, 118, 253, 0.2);
+}
+
+/* Fix WebKit glitch on screen-advanced-launch */
+#screen-advanced-launch {
+  min-height: 100vh !important;
+}
+
+#screen-advanced-launch .wizard-screen__inner {
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#screen-advanced-launch .wizard-form {
+  flex: 1 !important;
+}
+
+#screen-advanced-launch .wizard-actions--sticky {
+  position: sticky !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: auto !important;
+  padding: var(--space-3) var(--space-md) !important;
+  background: var(--color-surface) !important;
+  border-top: 2px solid var(--color-border) !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+#screen-advanced-launch .wizard-button {
+  border-radius: var(--radius-full);
+  padding: 10px 28px;
+  min-height: 42px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-advanced-launch .wizard-button--primary {
+  background: var(--color-primary);
+  border: none;
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 0 rgba(14, 118, 253, 0.4);
+}
+
+#screen-advanced-launch .wizard-button--primary:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(14, 118, 253, 0.25), 0 0 0 4px rgba(14, 118, 253, 0.1);
+  transform: scale(1.02);
+}
+
+#screen-advanced-launch .wizard-button--primary:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 3px rgba(14, 118, 253, 0.15);
+}
+
+#screen-advanced-launch .wizard-button--secondary {
+  background: transparent;
+  border: 2px solid var(--color-border-strong);
+  color: var(--color-text);
+}
+
+#screen-advanced-launch .wizard-button--secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  transform: scale(1.02);
+}
+
+#screen-advanced-launch .form-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-advanced-launch .form-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(14, 118, 253, 0.08);
+  border-color: rgba(14, 118, 253, 0.2);
+}
+
+/* Fix WebKit glitch on screen-distribution-preprogrammed */
+#screen-distribution-preprogrammed {
+  min-height: 100vh !important;
+}
+
+#screen-distribution-preprogrammed .wizard-screen__inner {
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#screen-distribution-preprogrammed .wizard-form {
+  flex: 1 !important;
+}
+
+#screen-distribution-preprogrammed .wizard-actions--sticky {
+  position: sticky !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: auto !important;
+  padding: var(--space-3) var(--space-md) !important;
+  background: var(--color-surface) !important;
+  border-top: 2px solid var(--color-border) !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+#screen-distribution-preprogrammed .wizard-button {
+  border-radius: var(--radius-full);
+  padding: 10px 28px;
+  min-height: 42px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-distribution-preprogrammed .wizard-button--primary {
+  background: var(--color-primary);
+  border: none;
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 0 rgba(14, 118, 253, 0.4);
+}
+
+#screen-distribution-preprogrammed .wizard-button--primary:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(14, 118, 253, 0.25), 0 0 0 4px rgba(14, 118, 253, 0.1);
+  transform: scale(1.02);
+}
+
+#screen-distribution-preprogrammed .wizard-button--primary:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 3px rgba(14, 118, 253, 0.15);
+}
+
+#screen-distribution-preprogrammed .wizard-button--secondary {
+  background: transparent;
+  border: 2px solid var(--color-border-strong);
+  color: var(--color-text);
+}
+
+#screen-distribution-preprogrammed .wizard-button--secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  transform: scale(1.02);
+}
+
+#screen-distribution-preprogrammed .form-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-distribution-preprogrammed .form-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(14, 118, 253, 0.08);
+  border-color: rgba(14, 118, 253, 0.2);
+}
+
+/* Fix WebKit glitch on screen-advanced-history */
+#screen-advanced-history {
+  min-height: 100vh !important;
+}
+
+#screen-advanced-history .wizard-screen__inner {
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#screen-advanced-history .wizard-form {
+  flex: 1 !important;
+}
+
+#screen-advanced-history .wizard-actions--sticky {
+  position: sticky !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: auto !important;
+  padding: var(--space-3) var(--space-md) !important;
+  background: var(--color-surface) !important;
+  border-top: 2px solid var(--color-border) !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+#screen-advanced-history .wizard-button {
+  border-radius: var(--radius-full);
+  padding: 10px 28px;
+  min-height: 42px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-advanced-history .wizard-button--primary {
+  background: var(--color-primary);
+  border: none;
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 0 rgba(14, 118, 253, 0.4);
+}
+
+#screen-advanced-history .wizard-button--primary:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(14, 118, 253, 0.25), 0 0 0 4px rgba(14, 118, 253, 0.1);
+  transform: scale(1.02);
+}
+
+#screen-advanced-history .wizard-button--primary:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 3px rgba(14, 118, 253, 0.15);
+}
+
+#screen-advanced-history .wizard-button--secondary {
+  background: transparent;
+  border: 2px solid var(--color-border-strong);
+  color: var(--color-text);
+}
+
+#screen-advanced-history .wizard-button--secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  transform: scale(1.02);
+}
+
+#screen-advanced-history .form-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-advanced-history .form-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(14, 118, 253, 0.08);
+  border-color: rgba(14, 118, 253, 0.2);
+}
+
+/* Fix WebKit glitch on screen-advanced */
+#screen-advanced {
+  min-height: 100vh !important;
+}
+
+#screen-advanced .wizard-screen__inner {
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#screen-advanced .wizard-form {
+  flex: 1 !important;
+}
+
+#screen-advanced .wizard-actions--sticky {
+  position: sticky !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: auto !important;
+  padding: var(--space-3) var(--space-md) !important;
+  background: var(--color-surface) !important;
+  border-top: 2px solid var(--color-border) !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+#screen-advanced .wizard-button {
+  border-radius: var(--radius-full);
+  padding: 10px 28px;
+  min-height: 42px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-advanced .wizard-button--primary {
+  background: var(--color-primary);
+  border: none;
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 0 rgba(14, 118, 253, 0.4);
+}
+
+#screen-advanced .wizard-button--primary:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(14, 118, 253, 0.25), 0 0 0 4px rgba(14, 118, 253, 0.1);
+  transform: scale(1.02);
+}
+
+#screen-advanced .wizard-button--primary:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 3px rgba(14, 118, 253, 0.15);
+}
+
+#screen-advanced .wizard-button--secondary {
+  background: transparent;
+  border: 2px solid var(--color-border-strong);
+  color: var(--color-text);
+}
+
+#screen-advanced .wizard-button--secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  transform: scale(1.02);
+}
+
+#screen-advanced .form-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-advanced .form-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(14, 118, 253, 0.08);
+  border-color: rgba(14, 118, 253, 0.2);
+}
+
+/* Fix WebKit glitch on screen-distribution */
+#screen-distribution {
+  min-height: 100vh !important;
+}
+
+#screen-distribution .wizard-screen__inner {
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#screen-distribution .wizard-form {
+  flex: 1 !important;
+}
+
+#screen-distribution .wizard-actions--sticky {
+  position: sticky !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: auto !important;
+  padding: var(--space-3) var(--space-md) !important;
+  background: var(--color-surface) !important;
+  border-top: 2px solid var(--color-border) !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+#screen-distribution .wizard-button {
+  border-radius: var(--radius-full);
+  padding: 10px 28px;
+  min-height: 42px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-distribution .wizard-button--primary {
+  background: var(--color-primary);
+  border: none;
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 0 rgba(14, 118, 253, 0.4);
+}
+
+#screen-distribution .wizard-button--primary:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(14, 118, 253, 0.25), 0 0 0 4px rgba(14, 118, 253, 0.1);
+  transform: scale(1.02);
+}
+
+#screen-distribution .wizard-button--primary:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 3px rgba(14, 118, 253, 0.15);
+}
+
+#screen-distribution .wizard-button--secondary {
+  background: transparent;
+  border: 2px solid var(--color-border-strong);
+  color: var(--color-text);
+}
+
+#screen-distribution .wizard-button--secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  transform: scale(1.02);
+}
+
+#screen-distribution .form-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-distribution .form-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(14, 118, 253, 0.08);
+  border-color: rgba(14, 118, 253, 0.2);
+}
+
+/* Fix WebKit glitch on screen-review */
+#screen-review {
+  min-height: 100vh !important;
+}
+
+#screen-review .wizard-screen__inner {
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#screen-review .wizard-form {
+  flex: 1 !important;
+}
+
+#screen-review .wizard-actions--sticky {
+  position: sticky !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: auto !important;
+  padding: var(--space-3) var(--space-md) !important;
+  background: var(--color-surface) !important;
+  border-top: 2px solid var(--color-border) !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+#screen-review .wizard-button {
+  border-radius: var(--radius-full);
+  padding: 10px 28px;
+  min-height: 42px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-review .wizard-button--primary {
+  background: var(--color-primary);
+  border: none;
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 0 rgba(14, 118, 253, 0.4);
+}
+
+#screen-review .wizard-button--primary:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(14, 118, 253, 0.25), 0 0 0 4px rgba(14, 118, 253, 0.1);
+  transform: scale(1.02);
+}
+
+#screen-review .wizard-button--primary:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 3px rgba(14, 118, 253, 0.15);
+}
+
+#screen-review .wizard-button--secondary {
+  background: transparent;
+  border: 2px solid var(--color-border-strong);
+  color: var(--color-text);
+}
+
+#screen-review .wizard-button--secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  transform: scale(1.02);
+}
+
+#screen-review .form-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-review .form-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(14, 118, 253, 0.08);
+  border-color: rgba(14, 118, 253, 0.2);
+}
+
+/* Fix WebKit glitch on screen-naming-update */
+#screen-naming-update {
+  min-height: 100vh !important;
+}
+
+#screen-naming-update .wizard-screen__inner {
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#screen-naming-update .wizard-form {
+  flex: 1 !important;
+}
+
+#screen-naming-update .wizard-actions--sticky {
+  position: sticky !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: auto !important;
+  padding: var(--space-3) var(--space-md) !important;
+  background: var(--color-surface) !important;
+  border-top: 2px solid var(--color-border) !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+#screen-naming-update .wizard-button {
+  border-radius: var(--radius-full);
+  padding: 10px 28px;
+  min-height: 42px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-naming-update .wizard-button--primary {
+  background: var(--color-primary);
+  border: none;
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 0 rgba(14, 118, 253, 0.4);
+}
+
+#screen-naming-update .wizard-button--primary:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(14, 118, 253, 0.25), 0 0 0 4px rgba(14, 118, 253, 0.1);
+  transform: scale(1.02);
+}
+
+#screen-naming-update .wizard-button--primary:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 3px rgba(14, 118, 253, 0.15);
+}
+
+#screen-naming-update .wizard-button--secondary {
+  background: transparent;
+  border: 2px solid var(--color-border-strong);
+  color: var(--color-text);
+}
+
+#screen-naming-update .wizard-button--secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  transform: scale(1.02);
+}
+
+#screen-naming-update .form-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-naming-update .form-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(14, 118, 253, 0.08);
+  border-color: rgba(14, 118, 253, 0.2);
+}
+
+/* Fix WebKit glitch on screen-naming */
+#screen-naming {
+  min-height: 100vh !important;
+}
+
+#screen-naming .wizard-screen__inner {
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#screen-naming .wizard-form {
+  flex: 1 !important;
+}
+
+#screen-naming .wizard-actions--sticky {
+  position: sticky !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: auto !important;
+  padding: var(--space-3) var(--space-md) !important;
+  background: var(--color-surface) !important;
+  border-top: 2px solid var(--color-border) !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+#screen-naming .wizard-button {
+  border-radius: var(--radius-full);
+  padding: 10px 28px;
+  min-height: 42px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-naming .wizard-button--primary {
+  background: var(--color-primary);
+  border: none;
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 0 rgba(14, 118, 253, 0.4);
+}
+
+#screen-naming .wizard-button--primary:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(14, 118, 253, 0.25), 0 0 0 4px rgba(14, 118, 253, 0.1);
+  transform: scale(1.02);
+}
+
+#screen-naming .wizard-button--primary:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 3px rgba(14, 118, 253, 0.15);
+}
+
+#screen-naming .wizard-button--secondary {
+  background: transparent;
+  border: 2px solid var(--color-border-strong);
+  color: var(--color-text);
+}
+
+#screen-naming .wizard-button--secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  transform: scale(1.02);
+}
+
+#screen-naming .form-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-naming .form-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(14, 118, 253, 0.08);
+  border-color: rgba(14, 118, 253, 0.2);
+}
+
+/* Fix WebKit glitch on screen-naming-localization */
+#screen-naming-localization {
+  min-height: 100vh !important;
+}
+
+#screen-naming-localization .wizard-screen__inner {
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#screen-naming-localization .wizard-form {
+  flex: 1 !important;
+}
+
+#screen-naming-localization .wizard-actions--sticky {
+  position: sticky !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: auto !important;
+  padding: var(--space-3) var(--space-md) !important;
+  background: var(--color-surface) !important;
+  border-top: 2px solid var(--color-border) !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+#screen-naming-localization .wizard-button {
+  border-radius: var(--radius-full);
+  padding: 10px 28px;
+  min-height: 42px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-naming-localization .wizard-button--primary {
+  background: var(--color-primary);
+  border: none;
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 0 rgba(14, 118, 253, 0.4);
+}
+
+#screen-naming-localization .wizard-button--primary:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(14, 118, 253, 0.25), 0 0 0 4px rgba(14, 118, 253, 0.1);
+  transform: scale(1.02);
+}
+
+#screen-naming-localization .wizard-button--primary:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 3px rgba(14, 118, 253, 0.15);
+}
+
+#screen-naming-localization .wizard-button--secondary {
+  background: transparent;
+  border: 2px solid var(--color-border-strong);
+  color: var(--color-text);
+}
+
+#screen-naming-localization .wizard-button--secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  transform: scale(1.02);
+}
+
+#screen-naming-localization .form-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-naming-localization .form-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(14, 118, 253, 0.08);
+  border-color: rgba(14, 118, 253, 0.2);
+}
+
+/* Fix WebKit glitch on screen-permissions-transfer */
+#screen-permissions-transfer {
+  min-height: 100vh !important;
+}
+
+#screen-permissions-transfer .wizard-screen__inner {
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#screen-permissions-transfer .wizard-form {
+  flex: 1 !important;
+}
+
+#screen-permissions-transfer .wizard-actions--sticky {
+  position: sticky !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: auto !important;
+  padding: var(--space-3) var(--space-md) !important;
+  background: var(--color-surface) !important;
+  border-top: 2px solid var(--color-border) !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+#screen-permissions-transfer .wizard-button {
+  border-radius: var(--radius-full);
+  padding: 10px 28px;
+  min-height: 42px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-permissions-transfer .wizard-button--primary {
+  background: var(--color-primary);
+  border: none;
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 0 rgba(14, 118, 253, 0.4);
+}
+
+#screen-permissions-transfer .wizard-button--primary:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(14, 118, 253, 0.25), 0 0 0 4px rgba(14, 118, 253, 0.1);
+  transform: scale(1.02);
+}
+
+#screen-permissions-transfer .wizard-button--primary:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 3px rgba(14, 118, 253, 0.15);
+}
+
+#screen-permissions-transfer .wizard-button--secondary {
+  background: transparent;
+  border: 2px solid var(--color-border-strong);
+  color: var(--color-text);
+}
+
+#screen-permissions-transfer .wizard-button--secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  transform: scale(1.02);
+}
+
+#screen-permissions-transfer .form-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-permissions-transfer .form-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(14, 118, 253, 0.08);
+  border-color: rgba(14, 118, 253, 0.2);
+}
+
+/* Fix WebKit glitch on screen-search */
+#screen-search {
+  min-height: 100vh !important;
+}
+
+#screen-search .wizard-screen__inner {
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#screen-search .wizard-form {
+  flex: 1 !important;
+}
+
+#screen-search .wizard-actions--sticky {
+  position: sticky !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: auto !important;
+  padding: var(--space-3) var(--space-md) !important;
+  background: var(--color-surface) !important;
+  border-top: 2px solid var(--color-border) !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+#screen-search .wizard-button {
+  border-radius: var(--radius-full);
+  padding: 10px 28px;
+  min-height: 42px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-search .wizard-button--primary {
+  background: var(--color-primary);
+  border: none;
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 0 rgba(14, 118, 253, 0.4);
+}
+
+#screen-search .wizard-button--primary:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(14, 118, 253, 0.25), 0 0 0 4px rgba(14, 118, 253, 0.1);
+  transform: scale(1.02);
+}
+
+#screen-search .wizard-button--primary:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow: 0 1px 3px rgba(14, 118, 253, 0.3), 0 0 0 3px rgba(14, 118, 253, 0.15);
+}
+
+#screen-search .wizard-button--secondary {
+  background: transparent;
+  border: 2px solid var(--color-border-strong);
+  color: var(--color-text);
+}
+
+#screen-search .wizard-button--secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  transform: scale(1.02);
+}
+
+#screen-search .form-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#screen-search .form-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(14, 118, 253, 0.08);
+  border-color: rgba(14, 118, 253, 0.2);
+}
+
 /* Hide guide on smaller screens */
 @media (max-width: 1200px) {
   .page-guide {
@@ -6625,15 +8699,15 @@ html[data-theme='dark'] .loading-overlay {
     0 1px 2px rgba(0, 0, 0, 0.02);
   transition:
     box-shadow var(--transition-base),
-    border-color var(--transition-base),
-    transform var(--transition-fast);
+    border-color var(--transition-base);
+  /* Removed transform transition to prevent position:fixed button glitches */
 }
 
 .form-card:hover {
   box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.06),
     0 2px 4px rgba(0, 0, 0, 0.03);
-  transform: translateY(-1px);
+  /* Removed transform: translateY(-1px) - it breaks position:fixed buttons */
 }
 
 .form-card:focus-within {
