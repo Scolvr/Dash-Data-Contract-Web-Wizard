@@ -2412,6 +2412,17 @@
     }
     ensurePermissionsGroupState();
     renderPermissionGroups();
+
+    // Sync manual actions UI (show/hide controls based on enabled state)
+    if (typeof syncManualActionUIs === 'function') {
+      syncManualActionUIs({ announce: false });
+    }
+
+    // Sync transfer notes UI
+    if (transferUI && typeof transferUI.load === 'function') {
+      transferUI.load();
+    }
+
     if (distributionUI && typeof distributionUI.setValues === 'function') {
       distributionUI.setValues(wizardState.form.distribution);
     }
@@ -7495,6 +7506,29 @@
         }
         if (maxSupplyInput) {
           maxSupplyInput.value = typeof values.maxSupply === 'string' ? values.maxSupply : '';
+        }
+
+        // Hydrate history tracking checkboxes
+        if (values.keepsHistory) {
+          if (historyTransfersInput) historyTransfersInput.checked = Boolean(values.keepsHistory.transfers);
+          if (historyMintsInput) historyMintsInput.checked = Boolean(values.keepsHistory.mints);
+          if (historyBurnsInput) historyBurnsInput.checked = Boolean(values.keepsHistory.burns);
+          if (historyFreezesInput) historyFreezesInput.checked = Boolean(values.keepsHistory.freezes);
+          if (historyPurchasesInput) historyPurchasesInput.checked = Boolean(values.keepsHistory.purchases);
+          if (historyDirectPricingInput) historyDirectPricingInput.checked = Boolean(values.keepsHistory.directPricing);
+        }
+
+        // Hydrate other checkboxes
+        if (startPausedInput) {
+          startPausedInput.checked = Boolean(values.startAsPaused);
+        }
+        if (allowFrozenInput) {
+          allowFrozenInput.checked = Boolean(values.allowTransferToFrozenBalance);
+        }
+
+        // Refresh supply UI after setting values
+        if (typeof updateSupplyUI === 'function') {
+          updateSupplyUI();
         }
       },
       getValues() {
@@ -13139,25 +13173,31 @@
 
     'simple-fixed': {
       name: 'SimpleToken',
-      description: 'A basic fixed-supply token',
-      keywords: ['simple', 'fixed', 'basic'],
+      description: 'A basic fixed-supply token with burn capability and transfer notes',
+      keywords: ['simple', 'fixed', 'basic', 'burnable'],
       decimals: 8,
       baseSupply: '1000000',
       maxSupply: '1000000',
       useMaxSupply: true,
       keepsHistory: {
         transfers: true,
-        mints: false,
-        burns: false,
+        mints: true,
+        burns: true,
         freezes: false,
         purchases: false
       },
       startAsPaused: false,
       manualMint: { enabled: false },
-      manualBurn: { enabled: false },
+      manualBurn: { enabled: true },
       manualFreeze: { enabled: false },
       destroyFrozen: { enabled: false },
       emergency: { enabled: false },
+      transferNotesEnabled: true,
+      transferNoteTypes: {
+        public: true,
+        sharedEncrypted: false,
+        privateEncrypted: false
+      },
       tradeMode: 'closed',
       changeControl: {
         mint: false,
@@ -13172,8 +13212,8 @@
 
     utility: {
       name: 'UtilityToken',
-      description: 'Token for platform access and payments',
-      keywords: ['utility', 'platform', 'service'],
+      description: 'Full-featured token for platform access, payments, and compliance',
+      keywords: ['utility', 'platform', 'service', 'compliance', 'freeze'],
       decimals: 2,
       baseSupply: '10000000',
       maxSupply: '100000000',
@@ -13182,23 +13222,30 @@
         transfers: true,
         mints: true,
         burns: true,
-        freezes: false,
+        freezes: true,
         purchases: true
       },
       startAsPaused: false,
+      allowTransferToFrozenBalance: true,
+      transferNotesEnabled: true,
+      transferNoteTypes: {
+        public: true,
+        sharedEncrypted: true,
+        privateEncrypted: false
+      },
       manualMint: { enabled: true },
       manualBurn: { enabled: true },
-      manualFreeze: { enabled: false },
-      destroyFrozen: { enabled: false },
-      emergency: { enabled: false },
+      manualFreeze: { enabled: true },
+      destroyFrozen: { enabled: true },
+      emergency: { enabled: true },
       tradeMode: 'closed',
       changeControl: {
-        mint: true,
-        burn: true,
-        freeze: false,
-        unfreeze: false,
-        destroyFrozen: false,
-        emergency: false
+        mint: false,
+        burn: false,
+        freeze: true,
+        unfreeze: true,
+        destroyFrozen: true,
+        emergency: true
       },
       distribution: null
     },
@@ -13296,6 +13343,13 @@
     state.form.permissions.manualFreeze = template.manualFreeze || { enabled: false };
     state.form.permissions.destroyFrozen = template.destroyFrozen || { enabled: false };
     state.form.permissions.emergency = template.emergency || { enabled: false };
+    state.form.permissions.allowTransferToFrozenBalance = template.allowTransferToFrozenBalance || false;
+    state.form.permissions.transferNotesEnabled = template.transferNotesEnabled || false;
+    state.form.permissions.transferNoteTypes = template.transferNoteTypes || {
+      public: false,
+      sharedEncrypted: false,
+      privateEncrypted: false
+    };
 
     // Distribution
     if (template.distribution) {
@@ -13408,11 +13462,45 @@
     confirmModalTitle.textContent = `Apply "${template.name}" Template?`;
     confirmModalDescription.textContent = 'This will replace your current configuration with the following template settings:';
 
-    // Build preview HTML
+    // Build preview HTML with comprehensive feature detection
     const features = [];
-    if (template.decimals) features.push(`${template.decimals} decimals`);
+
+    // Basic config
+    if (template.decimals !== undefined) features.push(`${template.decimals} decimals`);
     if (template.baseSupply) features.push(`Base supply: ${template.baseSupply}`);
     if (template.maxSupply) features.push(`Max supply: ${template.maxSupply}`);
+
+    // Manual actions
+    if (template.manualBurn?.enabled) features.push('Burn capability');
+    if (template.manualMint?.enabled) features.push('Mint capability');
+    if (template.manualFreeze?.enabled) features.push('Freeze controls');
+    if (template.destroyFrozen?.enabled) features.push('Destroy frozen tokens');
+    if (template.emergency?.enabled) features.push('Emergency actions');
+
+    // Transfer notes
+    if (template.transferNotesEnabled) {
+      if (template.transferNoteTypes?.sharedEncrypted) {
+        features.push('Transfer notes (encrypted)');
+      } else if (template.transferNoteTypes?.public) {
+        features.push('Transfer notes');
+      }
+    }
+
+    // History tracking highlights
+    const historyTypes = [];
+    if (template.keepsHistory?.mints) historyTypes.push('mints');
+    if (template.keepsHistory?.burns) historyTypes.push('burns');
+    if (template.keepsHistory?.freezes) historyTypes.push('freezes');
+    if (historyTypes.length > 0) {
+      features.push(`Track ${historyTypes.join(', ')}`);
+    }
+
+    // Change control (immutability)
+    if (template.changeControl?.mint === false && template.changeControl?.burn === false) {
+      features.push('Locked mint/burn rules');
+    }
+
+    // Distribution
     if (template.distribution) {
       if (template.distribution.cadence?.type) features.push(template.distribution.cadence.type.replace('BasedDistribution', ''));
       if (template.distribution.emission?.type) features.push(`${template.distribution.emission.type} emission`);
