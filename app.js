@@ -3691,17 +3691,17 @@
   function getStoredTheme() {
     try {
       const stored = storage.getItem(THEME_STORAGE_KEY);
-      if (stored === 'light' || stored === 'dark' || stored === 'auto') {
+      if (stored === 'light' || stored === 'dark') {
         return stored;
       }
     } catch (error) {
       // ignore storage errors
     }
-    return 'auto';
+    return 'dark';
   }
 
   function setTheme(preference, persist = true) {
-    const theme = preference === 'light' || preference === 'dark' ? preference : 'auto';
+    const theme = preference === 'light' || preference === 'dark' ? preference : 'dark';
     console.log('setTheme called - preference:', preference, 'theme:', theme, 'persist:', persist);
 
     const previousTheme = document.documentElement.getAttribute('data-theme');
