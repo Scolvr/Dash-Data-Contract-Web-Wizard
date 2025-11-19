@@ -814,7 +814,11 @@
           conventions: {
             localizations: {}
           },
-          rows: []
+          rows: [],
+          updateNames: {
+            performerType: 'owner',
+            performerReference: ''
+          }
         },
         permissions: {
           decimals: 2,
@@ -843,6 +847,8 @@
           },
           changeMaxSupply: {
             enabled: false,
+            perform: { type: 'owner', identityId: '', groupId: null },
+            changeRules: { type: 'owner', identityId: '', groupId: null },
             allowChangeAuthorizedToNone: false,
             allowChangeAdminToNone: false,
             allowSelfChangeAdmin: false
@@ -931,7 +937,30 @@
         documentTypes: {},
         advanced: {
           tradeMode: 'closed',
-          changeControl: { ...DEFAULT_CHANGE_CONTROL_FLAGS }
+          changeControl: { ...DEFAULT_CHANGE_CONTROL_FLAGS },
+          // Authorization settings for advanced permissions
+          conventions: {
+            performerType: 'owner',
+            performerReference: '',
+            ruleChangerType: 'owner',
+            ruleChangerReference: ''
+          },
+          marketplaceTradeMode: {
+            performerType: 'owner',
+            performerReference: '',
+            ruleChangerType: 'owner',
+            ruleChangerReference: ''
+          },
+          directPricing: {
+            performerType: 'owner',
+            performerReference: '',
+            ruleChangerType: 'owner',
+            ruleChangerReference: ''
+          },
+          mainControl: {
+            performerType: 'owner',
+            performerReference: ''
+          }
         },
         search: {
           keywords: '',
@@ -7138,29 +7167,30 @@
       });
     }
 
-    // Change Max Supply Permission (perform action) Radio Buttons
-    const changeMaxSupplyPermissionRadios = document.getElementsByName('change-max-supply-permission');
-    changeMaxSupplyPermissionRadios.forEach(radio => {
-      radio.addEventListener('change', () => {
-        if (!radio.checked) return;
-        const value = radio.value;
+    // Change Max Supply Permission (perform action) Select Dropdown
+    const changeMaxSupplyPermissionSelect = document.getElementById('change-max-supply-permission');
+    if (changeMaxSupplyPermissionSelect) {
+      changeMaxSupplyPermissionSelect.addEventListener('change', () => {
+        const value = changeMaxSupplyPermissionSelect.value;
         if (!wizardState.form.permissions.changeMaxSupply.perform) {
           wizardState.form.permissions.changeMaxSupply.perform = {};
         }
-        if (value === 'owner-only') {
+        if (value === 'owner') {
           wizardState.form.permissions.changeMaxSupply.perform.type = 'owner';
           wizardState.form.permissions.changeMaxSupply.perform.identityId = '';
           wizardState.form.permissions.changeMaxSupply.perform.groupId = null;
-        } else if (value === 'specific-identity') {
+        } else if (value === 'identity') {
           wizardState.form.permissions.changeMaxSupply.perform.type = 'identity';
         } else if (value === 'group') {
           wizardState.form.permissions.changeMaxSupply.perform.type = 'group';
         } else if (value === 'no-one') {
           wizardState.form.permissions.changeMaxSupply.perform.type = 'none';
+          wizardState.form.permissions.changeMaxSupply.perform.identityId = '';
+          wizardState.form.permissions.changeMaxSupply.perform.groupId = null;
         }
         persistState();
       });
-    });
+    }
 
     // Change Max Supply Identity ID Input
     const changeMaxSupplyIdentityIdInput = document.getElementById('change-max-supply-identity-id');
@@ -7186,29 +7216,30 @@
       });
     }
 
-    // Change Max Supply Rule Changer (admin) Radio Buttons
-    const changeMaxSupplyRuleChangerRadios = document.getElementsByName('change-max-supply-rule-changer');
-    changeMaxSupplyRuleChangerRadios.forEach(radio => {
-      radio.addEventListener('change', () => {
-        if (!radio.checked) return;
-        const value = radio.value;
+    // Change Max Supply Rule Changer (admin) Select Dropdown
+    const changeMaxSupplyRuleChangerSelect = document.getElementById('change-max-supply-rule-changer');
+    if (changeMaxSupplyRuleChangerSelect) {
+      changeMaxSupplyRuleChangerSelect.addEventListener('change', () => {
+        const value = changeMaxSupplyRuleChangerSelect.value;
         if (!wizardState.form.permissions.changeMaxSupply.changeRules) {
           wizardState.form.permissions.changeMaxSupply.changeRules = {};
         }
-        if (value === 'owner-only') {
+        if (value === 'owner') {
           wizardState.form.permissions.changeMaxSupply.changeRules.type = 'owner';
           wizardState.form.permissions.changeMaxSupply.changeRules.identityId = '';
           wizardState.form.permissions.changeMaxSupply.changeRules.groupId = null;
-        } else if (value === 'specific-identity') {
+        } else if (value === 'identity') {
           wizardState.form.permissions.changeMaxSupply.changeRules.type = 'identity';
         } else if (value === 'group') {
           wizardState.form.permissions.changeMaxSupply.changeRules.type = 'group';
         } else if (value === 'no-one') {
           wizardState.form.permissions.changeMaxSupply.changeRules.type = 'none';
+          wizardState.form.permissions.changeMaxSupply.changeRules.identityId = '';
+          wizardState.form.permissions.changeMaxSupply.changeRules.groupId = null;
         }
         persistState();
       });
-    });
+    }
 
     // Change Max Supply Rule Identity ID Input
     const changeMaxSupplyRuleIdentityIdInput = document.getElementById('change-max-supply-rule-identity-id');
@@ -7364,16 +7395,15 @@
       });
     }
 
-    // Unfreeze Permission Radio Buttons
-    const unfreezePermissionRadios = document.getElementsByName('manual-unfreeze-permission');
-    unfreezePermissionRadios.forEach(radio => {
-      radio.addEventListener('change', () => {
-        if (!radio.checked) return;
-        const value = radio.value;
-        if (value === 'owner-only') {
+    // Unfreeze Permission Select Dropdown
+    const unfreezePermissionSelect = document.getElementById('manual-unfreeze-permission');
+    if (unfreezePermissionSelect) {
+      unfreezePermissionSelect.addEventListener('change', () => {
+        const value = unfreezePermissionSelect.value;
+        if (value === 'owner') {
           wizardState.form.permissions.unfreeze.performerType = 'owner';
           wizardState.form.permissions.unfreeze.performerReference = '';
-        } else if (value === 'specific-identity') {
+        } else if (value === 'identity') {
           wizardState.form.permissions.unfreeze.performerType = 'identity';
           // performerReference will be set by the identity input field
         } else if (value === 'group') {
@@ -7385,18 +7415,17 @@
         }
         persistState();
       });
-    });
+    }
 
-    // Destroy Frozen Permission Radio Buttons
-    const destroyFrozenPermissionRadios = document.getElementsByName('destroy-frozen-permission');
-    destroyFrozenPermissionRadios.forEach(radio => {
-      radio.addEventListener('change', () => {
-        if (!radio.checked) return;
-        const value = radio.value;
-        if (value === 'owner-only') {
+    // Destroy Frozen Permission Select Dropdown
+    const destroyFrozenPermissionSelect = document.getElementById('destroy-frozen-permission');
+    if (destroyFrozenPermissionSelect) {
+      destroyFrozenPermissionSelect.addEventListener('change', () => {
+        const value = destroyFrozenPermissionSelect.value;
+        if (value === 'owner') {
           wizardState.form.permissions.destroyFrozen.performerType = 'owner';
           wizardState.form.permissions.destroyFrozen.performerReference = '';
-        } else if (value === 'specific-identity') {
+        } else if (value === 'identity') {
           wizardState.form.permissions.destroyFrozen.performerType = 'identity';
           // performerReference will be set by the identity input field
         } else if (value === 'group') {
@@ -7408,7 +7437,7 @@
         }
         persistState();
       });
-    });
+    }
 
     // Initialize UI
     setTimeout(() => {
@@ -10036,6 +10065,26 @@
       };
     }
 
+    // Helper: Convert new format state (performerType/ruleChangerType) to V0 rule
+    function createPermissionChangeRuleFromNewFormat(state) {
+      if (!state) {
+        return createRuleV0(false);
+      }
+
+      const authorizedToMakeChange = getActorFromPerformer(state.performerType, state.performerReference);
+      const adminActionTakers = getActorFromPerformer(state.ruleChangerType, state.ruleChangerReference);
+
+      return {
+        V0: {
+          authorized_to_make_change: encodeAuthorizedActionTaker(authorizedToMakeChange),
+          admin_action_takers: encodeAuthorizedActionTaker(adminActionTakers),
+          changing_authorized_action_takers_to_no_one_allowed: Boolean(state.allowChangeAuthorizedToNone),
+          changing_admin_action_takers_to_no_one_allowed: Boolean(state.allowChangeAdminToNone),
+          self_changing_admin_action_takers_allowed: Boolean(state.allowSelfChangeAdmin)
+        }
+      };
+    }
+
     // Helper: Convert authorization state to actor
     function getActorFromAuthorization(authState) {
       if (!authState || !authState.type) {
@@ -10167,7 +10216,7 @@
         newTokensDestinationIdentityRules: buildRuleV0(mintDestinationRules),
         mintingAllowChoosingDestination: allowCustomDestination,
         mintingAllowChoosingDestinationRules: buildRuleV0(allowChoosingRules),
-        changeDirectPurchasePricingRules: createPermissionChangeRule(wizardState.form.permissions.directPricing)
+        changeDirectPurchasePricingRules: createPermissionChangeRuleFromNewFormat(wizardState.form.advanced.directPricing)
       };
 
       const hasEmission = Boolean(dist.emission && dist.emission.type);
@@ -10452,7 +10501,7 @@
       return {
         $format_version: '0',
         tradeMode: 'NotTradeable',
-        tradeModeChangeRules: createPermissionChangeRule(wizardState.form.permissions.marketplaceTradeMode)
+        tradeModeChangeRules: createPermissionChangeRuleFromNewFormat(wizardState.form.advanced.marketplaceTradeMode)
       };
     }
 
@@ -10493,7 +10542,7 @@
         ),
         decimals: parseInt(wizardState.form.permissions.decimals, 10) || 2
       },
-      conventionsChangeRules: createPermissionChangeRule(wizardState.form.permissions.conventionsChange),
+      conventionsChangeRules: createPermissionChangeRuleFromNewFormat(wizardState.form.advanced.conventions),
       baseSupply: parseInt(wizardState.form.permissions.baseSupply, 10) || 0,
       maxSupply: wizardState.form.permissions.useMaxSupply
         ? parseInt(wizardState.form.permissions.maxSupply, 10) || null
@@ -10509,12 +10558,18 @@
       maxSupplyChangeRules: createPermissionChangeRule(wizardState.form.permissions.changeMaxSupply),
       manualMintingRules: createRuleV0(
         Boolean(wizardState.form.permissions.manualMint?.enabled),
-        'ContractOwner',
+        getActorFromPerformer(
+          wizardState.form.permissions.manualMint?.performerType,
+          wizardState.form.permissions.manualMint?.performerReference
+        ),
         wizardState.form.permissions.manualMint || {}
       ),
       manualBurningRules: createRuleV0(
         Boolean(wizardState.form.permissions.manualBurn?.enabled),
-        'ContractOwner',
+        getActorFromPerformer(
+          wizardState.form.permissions.manualBurn?.performerType,
+          wizardState.form.permissions.manualBurn?.performerReference
+        ),
         wizardState.form.permissions.manualBurn || {}
       ),
       freezeRules: createRuleV0(
@@ -10543,12 +10598,15 @@
       ),
       emergencyActionRules: createRuleV0(
         Boolean(wizardState.form.advanced?.changeControl?.emergency),
-        'ContractOwner',
+        getActorFromPerformer(
+          wizardState.form.permissions.emergencyAction?.performerType,
+          wizardState.form.permissions.emergencyAction?.performerReference
+        ),
         wizardState.form.permissions.emergencyAction || {}
       ),
       mainControlGroup: null,
-      mainControlGroupCanBeModified: wizardState.form.permissions.mainControl?.enabled
-        ? encodeAuthorizedActionTaker(getActorFromAuthorization(wizardState.form.permissions.mainControl.changeRules))
+      mainControlGroupCanBeModified: wizardState.form.advanced.mainControl?.performerType && wizardState.form.advanced.mainControl?.performerType !== 'none'
+        ? encodeAuthorizedActionTaker(getActorFromPerformer(wizardState.form.advanced.mainControl.performerType, wizardState.form.advanced.mainControl.performerReference))
         : 'NoOne'
     };
 
@@ -10589,8 +10647,8 @@
         };
         // Update mainControlGroup in token if group is defined
         tokenConfig.mainControlGroup = 0;
-        tokenConfig.mainControlGroupCanBeModified = wizardState.form.permissions.mainControl?.enabled
-          ? encodeAuthorizedActionTaker(getActorFromAuthorization(wizardState.form.permissions.mainControl.changeRules))
+        tokenConfig.mainControlGroupCanBeModified = wizardState.form.advanced.mainControl?.performerType && wizardState.form.advanced.mainControl?.performerType !== 'none'
+          ? encodeAuthorizedActionTaker(getActorFromPerformer(wizardState.form.advanced.mainControl.performerType, wizardState.form.advanced.mainControl.performerReference))
           : 'NoOne';
       }
     }
@@ -11792,6 +11850,395 @@
   });
 
   console.log('New emission functions initialized');
+})();
+
+// ========================================
+// AUTHORIZATION DROPDOWN PANEL TOGGLE
+// ========================================
+
+// Panel toggle functionality for authorization select dropdowns
+(function initializeAuthorizationDropdownPanels() {
+  // Map of select IDs to their associated panel IDs
+  const authorizationDropdowns = [
+    // Naming step
+    { selectId: 'update-names-permission', identityPanel: 'update-names-panel-identity', groupPanel: 'update-names-panel-group' },
+    // Permissions step - Change Max Supply
+    { selectId: 'change-max-supply-permission', identityPanel: 'change-max-supply-panel-identity', groupPanel: 'change-max-supply-panel-group' },
+    { selectId: 'change-max-supply-rule-changer', identityPanel: 'change-max-supply-rule-panel-identity', groupPanel: 'change-max-supply-rule-panel-group' },
+    // Permissions step - Manual Mint
+    { selectId: 'manual-mint-permission', identityPanel: 'manual-mint-panel-identity', groupPanel: 'manual-mint-panel-group' },
+    { selectId: 'manual-mint-rule-changer', identityPanel: 'manual-mint-rule-panel-identity', groupPanel: 'manual-mint-rule-panel-group' },
+    // Permissions step - Manual Burn
+    { selectId: 'manual-burn-permission', identityPanel: 'manual-burn-panel-identity', groupPanel: 'manual-burn-panel-group' },
+    { selectId: 'manual-burn-rule-changer', identityPanel: 'manual-burn-rule-panel-identity', groupPanel: 'manual-burn-rule-panel-group' },
+    // Permissions step - Manual Freeze
+    { selectId: 'manual-freeze-permission', identityPanel: 'manual-freeze-panel-identity', groupPanel: 'manual-freeze-panel-group' },
+    { selectId: 'manual-freeze-rule-changer', identityPanel: 'manual-freeze-rule-panel-identity', groupPanel: 'manual-freeze-rule-panel-group' },
+    // Permissions step - Manual Unfreeze
+    { selectId: 'manual-unfreeze-permission', identityPanel: 'manual-unfreeze-panel-identity', groupPanel: 'manual-unfreeze-panel-group' },
+    { selectId: 'manual-unfreeze-rule-changer', identityPanel: 'manual-unfreeze-rule-panel-identity', groupPanel: 'manual-unfreeze-rule-panel-group' },
+    // Permissions step - Destroy Frozen
+    { selectId: 'destroy-frozen-permission', identityPanel: 'destroy-frozen-panel-identity', groupPanel: 'destroy-frozen-panel-group' },
+    { selectId: 'destroy-frozen-rule-changer', identityPanel: 'destroy-frozen-rule-panel-identity', groupPanel: 'destroy-frozen-rule-panel-group' },
+    // Permissions step - Emergency
+    { selectId: 'emergency-permission', identityPanel: 'emergency-panel-identity', groupPanel: 'emergency-panel-group' },
+    { selectId: 'emergency-rule-changer', identityPanel: 'emergency-rule-panel-identity', groupPanel: 'emergency-rule-panel-group' },
+    // Advanced step - Conventions
+    { selectId: 'conventions-perform', identityPanel: 'conventions-perform-identity-panel', groupPanel: 'conventions-perform-group-panel' },
+    { selectId: 'conventions-change-rules', identityPanel: 'conventions-rules-identity-panel', groupPanel: 'conventions-rules-group-panel' },
+    // Advanced step - Marketplace Trade Mode
+    { selectId: 'marketplace-trade-mode-perform', identityPanel: 'marketplace-trade-mode-perform-identity-panel', groupPanel: 'marketplace-trade-mode-perform-group-panel' },
+    { selectId: 'marketplace-trade-mode-change-rules', identityPanel: 'marketplace-trade-mode-rules-identity-panel', groupPanel: 'marketplace-trade-mode-rules-group-panel' },
+    // Advanced step - Direct Pricing
+    { selectId: 'direct-pricing-perform', identityPanel: 'direct-pricing-perform-identity-panel', groupPanel: 'direct-pricing-perform-group-panel' },
+    { selectId: 'direct-pricing-change-rules', identityPanel: 'direct-pricing-rules-identity-panel', groupPanel: 'direct-pricing-rules-group-panel' },
+    // Advanced step - Main Control
+    { selectId: 'main-control-perform', identityPanel: 'main-control-perform-identity-panel', groupPanel: 'main-control-perform-group-panel' }
+  ];
+
+  // Function to toggle panels based on select value
+  function toggleAuthorizationPanels(selectId, value) {
+    const config = authorizationDropdowns.find(d => d.selectId === selectId);
+    if (!config) return;
+
+    const identityPanel = document.getElementById(config.identityPanel);
+    const groupPanel = document.getElementById(config.groupPanel);
+
+    if (identityPanel) {
+      identityPanel.hidden = value !== 'identity';
+    }
+    if (groupPanel) {
+      groupPanel.hidden = value !== 'group';
+    }
+  }
+
+  // Add event listeners to all authorization dropdowns
+  authorizationDropdowns.forEach(config => {
+    const select = document.getElementById(config.selectId);
+    if (select) {
+      select.addEventListener('change', function() {
+        toggleAuthorizationPanels(config.selectId, this.value);
+      });
+
+      // Initialize panels on page load based on current value
+      toggleAuthorizationPanels(config.selectId, select.value);
+    }
+  });
+
+  console.log('Authorization dropdown panel toggle initialized');
+})();
+
+// ========================================
+// AUTHORIZATION DROPDOWN STATE MANAGEMENT
+// ========================================
+
+// State management for authorization select dropdowns - updates wizardState when values change
+(function initializeAuthorizationDropdownStateManagement() {
+  const wizardState = window.wizardState;
+  if (!wizardState) {
+    console.warn('wizardState not available for authorization dropdown state management');
+    return;
+  }
+
+  // Helper function to persist state
+  function persistState() {
+    if (typeof window.persistState === 'function') {
+      window.persistState();
+    }
+  }
+
+  // Helper to get or create nested state object
+  function ensureStateObject(path) {
+    const parts = path.split('.');
+    let current = wizardState;
+    for (const part of parts) {
+      if (!current[part]) {
+        current[part] = {};
+      }
+      current = current[part];
+    }
+    return current;
+  }
+
+  // Configuration for all authorization dropdowns that need state management
+  const authorizationStateConfig = [
+    // Naming step - Update Names Permission
+    {
+      selectId: 'update-names-permission',
+      statePath: 'form.naming.updateNames',
+      stateKey: 'performerType',
+      referenceKey: 'performerReference',
+      identityInputId: 'update-names-identity-id',
+      groupSelectId: 'update-names-group-id'
+    },
+    // Permissions step - Manual Mint
+    {
+      selectId: 'manual-mint-permission',
+      statePath: 'form.permissions.manualMint',
+      stateKey: 'performerType',
+      referenceKey: 'performerReference',
+      identityInputId: 'manual-mint-identity-id',
+      groupSelectId: 'manual-mint-group-id'
+    },
+    {
+      selectId: 'manual-mint-rule-changer',
+      statePath: 'form.permissions.manualMint',
+      stateKey: 'ruleChangerType',
+      referenceKey: 'ruleChangerReference',
+      identityInputId: 'manual-mint-rule-identity-id',
+      groupSelectId: 'manual-mint-rule-group-id'
+    },
+    // Permissions step - Manual Burn
+    {
+      selectId: 'manual-burn-permission',
+      statePath: 'form.permissions.manualBurn',
+      stateKey: 'performerType',
+      referenceKey: 'performerReference',
+      identityInputId: 'manual-burn-identity-id',
+      groupSelectId: 'manual-burn-group-id'
+    },
+    {
+      selectId: 'manual-burn-rule-changer',
+      statePath: 'form.permissions.manualBurn',
+      stateKey: 'ruleChangerType',
+      referenceKey: 'ruleChangerReference',
+      identityInputId: 'manual-burn-rule-identity-id',
+      groupSelectId: 'manual-burn-rule-group-id'
+    },
+    // Permissions step - Manual Freeze
+    {
+      selectId: 'manual-freeze-permission',
+      statePath: 'form.permissions.manualFreeze',
+      stateKey: 'performerType',
+      referenceKey: 'performerReference',
+      identityInputId: 'manual-freeze-identity-id',
+      groupSelectId: 'manual-freeze-group-id'
+    },
+    {
+      selectId: 'manual-freeze-rule-changer',
+      statePath: 'form.permissions.manualFreeze',
+      stateKey: 'ruleChangerType',
+      referenceKey: 'ruleChangerReference',
+      identityInputId: 'manual-freeze-rule-identity-id',
+      groupSelectId: 'manual-freeze-rule-group-id'
+    },
+    // Permissions step - Manual Unfreeze
+    {
+      selectId: 'manual-unfreeze-permission',
+      statePath: 'form.permissions.unfreeze',
+      stateKey: 'performerType',
+      referenceKey: 'performerReference',
+      identityInputId: 'manual-unfreeze-identity-id',
+      groupSelectId: 'manual-unfreeze-group-id'
+    },
+    {
+      selectId: 'manual-unfreeze-rule-changer',
+      statePath: 'form.permissions.unfreeze',
+      stateKey: 'ruleChangerType',
+      referenceKey: 'ruleChangerReference',
+      identityInputId: 'manual-unfreeze-rule-identity-id',
+      groupSelectId: 'manual-unfreeze-rule-group-id'
+    },
+    // Permissions step - Destroy Frozen
+    {
+      selectId: 'destroy-frozen-permission',
+      statePath: 'form.permissions.destroyFrozen',
+      stateKey: 'performerType',
+      referenceKey: 'performerReference',
+      identityInputId: 'destroy-frozen-identity-id',
+      groupSelectId: 'destroy-frozen-group-id'
+    },
+    {
+      selectId: 'destroy-frozen-rule-changer',
+      statePath: 'form.permissions.destroyFrozen',
+      stateKey: 'ruleChangerType',
+      referenceKey: 'ruleChangerReference',
+      identityInputId: 'destroy-frozen-rule-identity-id',
+      groupSelectId: 'destroy-frozen-rule-group-id'
+    },
+    // Permissions step - Emergency Actions
+    {
+      selectId: 'emergency-permission',
+      statePath: 'form.permissions.emergencyAction',
+      stateKey: 'performerType',
+      referenceKey: 'performerReference',
+      identityInputId: 'emergency-identity-id',
+      groupSelectId: 'emergency-group-id'
+    },
+    {
+      selectId: 'emergency-rule-changer',
+      statePath: 'form.permissions.emergencyAction',
+      stateKey: 'ruleChangerType',
+      referenceKey: 'ruleChangerReference',
+      identityInputId: 'emergency-rule-identity-id',
+      groupSelectId: 'emergency-rule-group-id'
+    },
+    // Advanced step - Conventions
+    {
+      selectId: 'conventions-perform',
+      statePath: 'form.advanced.conventions',
+      stateKey: 'performerType',
+      referenceKey: 'performerReference',
+      identityInputId: 'conventions-perform-identity-id',
+      groupSelectId: 'conventions-perform-group-id'
+    },
+    {
+      selectId: 'conventions-change-rules',
+      statePath: 'form.advanced.conventions',
+      stateKey: 'ruleChangerType',
+      referenceKey: 'ruleChangerReference',
+      identityInputId: 'conventions-rules-identity-id',
+      groupSelectId: 'conventions-rules-group-id'
+    },
+    // Advanced step - Marketplace Trade Mode
+    {
+      selectId: 'marketplace-trade-mode-perform',
+      statePath: 'form.advanced.marketplaceTradeMode',
+      stateKey: 'performerType',
+      referenceKey: 'performerReference',
+      identityInputId: 'marketplace-trade-mode-perform-identity-id',
+      groupSelectId: 'marketplace-trade-mode-perform-group-id'
+    },
+    {
+      selectId: 'marketplace-trade-mode-change-rules',
+      statePath: 'form.advanced.marketplaceTradeMode',
+      stateKey: 'ruleChangerType',
+      referenceKey: 'ruleChangerReference',
+      identityInputId: 'marketplace-trade-mode-rules-identity-id',
+      groupSelectId: 'marketplace-trade-mode-rules-group-id'
+    },
+    // Advanced step - Direct Purchase Pricing
+    {
+      selectId: 'direct-pricing-perform',
+      statePath: 'form.advanced.directPricing',
+      stateKey: 'performerType',
+      referenceKey: 'performerReference',
+      identityInputId: 'direct-pricing-perform-identity-id',
+      groupSelectId: 'direct-pricing-perform-group-id'
+    },
+    {
+      selectId: 'direct-pricing-change-rules',
+      statePath: 'form.advanced.directPricing',
+      stateKey: 'ruleChangerType',
+      referenceKey: 'ruleChangerReference',
+      identityInputId: 'direct-pricing-rules-identity-id',
+      groupSelectId: 'direct-pricing-rules-group-id'
+    },
+    // Advanced step - Main Control Group
+    {
+      selectId: 'main-control-perform',
+      statePath: 'form.advanced.mainControl',
+      stateKey: 'performerType',
+      referenceKey: 'performerReference',
+      identityInputId: 'main-control-perform-identity-id',
+      groupSelectId: 'main-control-perform-group-id'
+    }
+  ];
+
+  // Add event listeners for each authorization dropdown
+  authorizationStateConfig.forEach(config => {
+    const select = document.getElementById(config.selectId);
+    if (!select) return;
+
+    // Handler for select dropdown changes
+    select.addEventListener('change', () => {
+      const value = select.value;
+      const stateObj = ensureStateObject(config.statePath);
+
+      // Map select value to state type
+      let typeValue = value;
+      if (value === 'no-one') {
+        typeValue = 'none';
+      }
+
+      stateObj[config.stateKey] = typeValue;
+
+      // Clear reference when switching to owner or none
+      if (value === 'owner' || value === 'no-one') {
+        stateObj[config.referenceKey] = '';
+      }
+
+      persistState();
+    });
+
+    // Handler for identity input
+    if (config.identityInputId) {
+      const identityInput = document.getElementById(config.identityInputId);
+      if (identityInput) {
+        identityInput.addEventListener('input', () => {
+          const stateObj = ensureStateObject(config.statePath);
+          stateObj[config.referenceKey] = identityInput.value.trim();
+          persistState();
+        });
+      }
+    }
+
+    // Handler for group select
+    if (config.groupSelectId) {
+      const groupSelect = document.getElementById(config.groupSelectId);
+      if (groupSelect) {
+        groupSelect.addEventListener('change', () => {
+          const stateObj = ensureStateObject(config.statePath);
+          stateObj[config.referenceKey] = groupSelect.value;
+          persistState();
+        });
+      }
+    }
+  });
+
+  // Hydrate dropdowns from state on page load
+  function hydrateAuthorizationDropdowns() {
+    authorizationStateConfig.forEach(config => {
+      const select = document.getElementById(config.selectId);
+      if (!select) return;
+
+      // Get the current state value
+      const parts = config.statePath.split('.');
+      let stateObj = wizardState;
+      for (const part of parts) {
+        if (!stateObj || !stateObj[part]) {
+          stateObj = null;
+          break;
+        }
+        stateObj = stateObj[part];
+      }
+
+      if (stateObj) {
+        // Get type value and convert to select value
+        let typeValue = stateObj[config.stateKey] || 'owner';
+        if (typeValue === 'none') {
+          typeValue = 'no-one';
+        }
+
+        // Set the select value
+        select.value = typeValue;
+
+        // Also hydrate identity input if present
+        if (config.identityInputId && stateObj[config.referenceKey]) {
+          const identityInput = document.getElementById(config.identityInputId);
+          if (identityInput && typeValue === 'identity') {
+            identityInput.value = stateObj[config.referenceKey];
+          }
+        }
+
+        // Also hydrate group select if present
+        if (config.groupSelectId && stateObj[config.referenceKey]) {
+          const groupSelect = document.getElementById(config.groupSelectId);
+          if (groupSelect && typeValue === 'group') {
+            groupSelect.value = stateObj[config.referenceKey];
+          }
+        }
+      }
+    });
+  }
+
+  // Expose hydration function globally for use by other initialization code
+  window.hydrateAuthorizationDropdowns = hydrateAuthorizationDropdowns;
+
+  // Hydrate on initial load (after a short delay to ensure DOM is ready)
+  setTimeout(hydrateAuthorizationDropdowns, 200);
+
+  console.log('Authorization dropdown state management initialized');
 })();
 
 // ========================================

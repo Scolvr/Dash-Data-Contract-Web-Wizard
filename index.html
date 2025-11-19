@@ -223,11 +223,11 @@
                 <path d="M12.5 12.5l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
               </svg>
               <span class="wizard-nav-item__text">Search Ability</span>
+              <span class="wizard-path__pill pill" id="status-search" aria-live="polite"></span>
               <svg class="wizard-nav-item__chevron" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                <path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                   stroke-linejoin="round" />
               </svg>
-              <span class="wizard-path__pill pill" id="status-search" aria-live="polite"></span>
             </button>
 
             <div class="wizard-nav-submenu" id="search-submenu">
@@ -1147,55 +1147,45 @@
 
                   <!-- Permission Configuration (shown only when Yes is selected) -->
                   <div class="distribution-inline-panel" id="update-names-permissions-panel" hidden>
-                    <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
-                      <legend class="wizard-field__label">Who is allowed to update token names?</legend>
+                    <div class="authorization-group">
+                      <!-- Authorized to perform action -->
+                      <div class="field-group">
+                        <label class="wizard-field__label" for="update-names-permission">
+                          Authorized to perform action
+                          <button type="button" class="help-icon" data-help="update-names-permission" data-guide-target="guide-update-naming" aria-label="Help: Update Names Permission" tabindex="0">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
+                              <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </label>
+                        <select class="wizard-field__input" id="update-names-permission" name="update-names-permission">
+                          <option value="no-one">No One</option>
+                          <option value="owner" selected>Contract Owner</option>
+                          <option value="identity">Specific Identity</option>
+                          <option value="group">Specific Group</option>
+                        </select>
+                        <span class="field-hint">Choose who can update token names after deployment</span>
+                      </div>
 
-                      <!-- Owner Only Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="update-names-permission"
-                          value="owner-only" checked>
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Owner Only</span>
-                          <span class="wizard-choice__hint">Only the contract owner can change token names</span>
-                        </span>
-                      </label>
-
-                      <!-- Specific Identity Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="update-names-permission"
-                          value="specific-identity" data-toggle-panel="update-names-panel-identity">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Specific Identity</span>
-                          <span class="wizard-choice__hint">Only a designated identity can change token names</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="update-names-panel-identity" hidden>
+                      <!-- Identity Panel -->
+                      <div class="authorization-inline-panel" id="update-names-panel-identity" hidden>
                         <div class="field-group">
                           <label class="wizard-field__label" for="update-names-identity-id">Identity ID</label>
                           <input class="wizard-field__input" type="text" id="update-names-identity-id"
                             name="update-names-identity-id" placeholder="Enter the Base58 ID">
-                          <span class="field-hint">Enter the Dash Platform identity ID that can change token
-                            names</span>
+                          <span class="field-hint">Enter the Dash Platform identity ID that can change token names</span>
                         </div>
                       </div>
 
-                      <!-- Group Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="update-names-permission" value="group"
-                          data-toggle-panel="update-names-panel-group">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Group</span>
-                          <span class="wizard-choice__hint">Members of a designated group can change token names</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="update-names-panel-group" hidden>
+                      <!-- Group Panel -->
+                      <div class="authorization-inline-panel" id="update-names-panel-group" hidden>
                         <div class="field-group" id="update-names-group-selector-container">
                           <label class="wizard-field__label" for="update-names-group-id">Select group</label>
                           <select class="wizard-field__input" id="update-names-group-id" name="update-names-group-id">
                             <option value="">Select a group...</option>
                           </select>
-                          <span class="field-hint" id="update-names-group-hint">Choose which group can perform this
-                            action</span>
+                          <span class="field-hint" id="update-names-group-hint">Choose which group can perform this action</span>
                         </div>
                         <div class="field-message field-message--info" id="update-names-no-groups-message" hidden>
                           <p>No group has been created yet.</p>
@@ -1203,7 +1193,7 @@
                             id="update-names-create-group-btn">Create Group</button>
                         </div>
                       </div>
-                    </fieldset>
+                    </div>
                   </div>
                 </div>
 
@@ -1556,64 +1546,45 @@
 
                   <!-- Permission Configuration (shown only when Yes is selected) -->
                   <div class="distribution-inline-panel" id="change-max-supply-permissions-panel" hidden>
-                    <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
-                      <legend class="wizard-field__label with-help">Who can change the max supply?
-                        <button type="button" class="help-icon" data-help="actor-types" data-guide-target="guide-actor-types" aria-label="Help: Who Can Perform Actions" tabindex="0">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
-                            <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                          </svg>
-                        </button>
-                      </legend>
+                    <div class="authorization-group">
+                      <!-- Authorized to perform action -->
+                      <div class="field-group">
+                        <label class="wizard-field__label" for="change-max-supply-permission">
+                          Authorized to perform action
+                          <button type="button" class="help-icon" data-help="actor-types" data-guide-target="guide-actor-types" aria-label="Help: Who Can Perform Actions" tabindex="0">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
+                              <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </label>
+                        <select class="wizard-field__input" id="change-max-supply-permission" name="change-max-supply-permission">
+                          <option value="no-one">No One</option>
+                          <option value="owner" selected>Contract Owner</option>
+                          <option value="identity">Specific Identity</option>
+                          <option value="group">Specific Group</option>
+                        </select>
+                        <span class="field-hint">Choose who can change the max supply after deployment</span>
+                      </div>
 
-                      <!-- Owner Only Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="change-max-supply-permission"
-                          value="owner-only" checked>
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Owner Only</span>
-                          <span class="wizard-choice__hint">Only the contract owner can change the max supply</span>
-                        </span>
-                      </label>
-
-                      <!-- Specific Identity Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="change-max-supply-permission"
-                          value="specific-identity" data-toggle-panel="change-max-supply-panel-identity">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Specific Identity</span>
-                          <span class="wizard-choice__hint">Only a designated identity can change the max supply</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="change-max-supply-panel-identity" hidden>
+                      <!-- Identity Panel -->
+                      <div class="authorization-inline-panel" id="change-max-supply-panel-identity" hidden>
                         <div class="field-group">
                           <label class="wizard-field__label" for="change-max-supply-identity-id">Identity ID</label>
                           <input class="wizard-field__input" type="text" id="change-max-supply-identity-id"
                             name="change-max-supply-identity-id" placeholder="Enter the Base58 ID">
-                          <span class="field-hint">Enter the Dash Platform identity ID that can change the max
-                            supply</span>
+                          <span class="field-hint">Enter the Dash Platform identity ID that can change the max supply</span>
                         </div>
                       </div>
 
-                      <!-- Group Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="change-max-supply-permission"
-                          value="group" data-toggle-panel="change-max-supply-panel-group">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Group</span>
-                          <span class="wizard-choice__hint">Members of a designated group can change the max
-                            supply</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="change-max-supply-panel-group" hidden>
+                      <!-- Group Panel -->
+                      <div class="authorization-inline-panel" id="change-max-supply-panel-group" hidden>
                         <div class="field-group" id="change-max-supply-group-selector-container">
                           <label class="wizard-field__label" for="change-max-supply-group-id">Select group</label>
-                          <select class="wizard-field__input" id="change-max-supply-group-id"
-                            name="change-max-supply-group-id">
+                          <select class="wizard-field__input" id="change-max-supply-group-id" name="change-max-supply-group-id">
                             <option value="">Select a group...</option>
                           </select>
-                          <span class="field-hint" id="change-max-supply-group-hint">Choose which group can perform this
-                            action</span>
+                          <span class="field-hint" id="change-max-supply-group-hint">Choose which group can perform this action</span>
                         </div>
                         <div class="field-message field-message--info" id="change-max-supply-no-groups-message" hidden>
                           <p>No group has been created yet.</p>
@@ -1622,94 +1593,52 @@
                         </div>
                       </div>
 
-                      <!-- No One Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="change-max-supply-permission"
-                          value="no-one">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">No One</span>
-                          <span class="wizard-choice__hint">Max supply changes are disabled (can be enabled later by
-                            rule changer)</span>
-                        </span>
-                      </label>
-                    </fieldset>
+                      <!-- Authorized to change rules -->
+                      <div class="field-group" style="margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
+                        <label class="wizard-field__label" for="change-max-supply-rule-changer">
+                          Authorized to change rules
+                          <button type="button" class="help-icon" data-help="rule-changer" data-guide-target="guide-governance-safeguards-max-supply" aria-label="Help: Rule Changer" tabindex="0">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
+                              <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </label>
+                        <select class="wizard-field__input" id="change-max-supply-rule-changer" name="change-max-supply-rule-changer">
+                          <option value="no-one">No One</option>
+                          <option value="owner" selected>Contract Owner</option>
+                          <option value="identity">Specific Identity</option>
+                          <option value="group">Specific Group</option>
+                        </select>
+                        <span class="field-hint">Define who has authority to modify max supply change permissions after deployment</span>
+                      </div>
 
-                    <!-- Rule Change Authorization Section (inside max supply permissions panel) -->
-                    <fieldset class="wizard-fieldset"
-                      style="margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
-                      <legend class="wizard-field__label">Who can change max supply rules?</legend>
-                      <p class="wizard-subsection__body" style="margin-bottom: var(--space-4);">Define who has authority
-                        to modify max supply change permissions after deployment</p>
-
-                      <!-- Owner Only Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="change-max-supply-rule-changer"
-                          value="owner-only" checked>
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Owner Only</span>
-                          <span class="wizard-choice__hint">Only the contract owner can modify max supply rules</span>
-                        </span>
-                      </label>
-
-                      <!-- Specific Identity Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="change-max-supply-rule-changer"
-                          value="specific-identity" data-toggle-panel="change-max-supply-rule-panel-identity">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Specific Identity</span>
-                          <span class="wizard-choice__hint">Only a designated identity can change max supply
-                            rules</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="change-max-supply-rule-panel-identity" hidden>
+                      <!-- Rule Changer Identity Panel -->
+                      <div class="authorization-inline-panel" id="change-max-supply-rule-panel-identity" hidden>
                         <div class="field-group">
-                          <label class="wizard-field__label" for="change-max-supply-rule-identity-id">Identity
-                            ID</label>
+                          <label class="wizard-field__label" for="change-max-supply-rule-identity-id">Identity ID</label>
                           <input class="wizard-field__input" type="text" id="change-max-supply-rule-identity-id"
                             name="change-max-supply-rule-identity-id" placeholder="Enter the Base58 ID">
-                          <span class="field-hint">Enter the Dash Platform identity ID that can modify max supply
-                            rules</span>
+                          <span class="field-hint">Enter the Dash Platform identity ID that can modify max supply rules</span>
                         </div>
                       </div>
 
-                      <!-- Group Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="change-max-supply-rule-changer"
-                          value="group" data-toggle-panel="change-max-supply-rule-panel-group">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Group</span>
-                          <span class="wizard-choice__hint">Members of a designated group can change max supply
-                            rules</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="change-max-supply-rule-panel-group" hidden>
+                      <!-- Rule Changer Group Panel -->
+                      <div class="authorization-inline-panel" id="change-max-supply-rule-panel-group" hidden>
                         <div class="field-group" id="change-max-supply-rule-group-selector-container">
                           <label class="wizard-field__label" for="change-max-supply-rule-group-id">Select group</label>
-                          <select class="wizard-field__input" id="change-max-supply-rule-group-id"
-                            name="change-max-supply-rule-group-id">
+                          <select class="wizard-field__input" id="change-max-supply-rule-group-id" name="change-max-supply-rule-group-id">
                             <option value="">Select a group...</option>
                           </select>
-                          <span class="field-hint" id="change-max-supply-rule-group-hint">Choose which group can modify
-                            max supply rules</span>
+                          <span class="field-hint" id="change-max-supply-rule-group-hint">Choose which group can modify max supply rules</span>
                         </div>
-                        <div class="field-message field-message--info" id="change-max-supply-rule-no-groups-message"
-                          hidden>
+                        <div class="field-message field-message--info" id="change-max-supply-rule-no-groups-message" hidden>
                           <p>No group has been created yet.</p>
                           <button class="wizard-button wizard-button--secondary wizard-button--small" type="button"
                             id="change-max-supply-rule-create-group-btn">Create Group</button>
                         </div>
                       </div>
-
-                      <!-- No One Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="change-max-supply-rule-changer"
-                          value="no-one">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">No One</span>
-                          <span class="wizard-choice__hint">Max supply rules are immutable and cannot be changed</span>
-                        </span>
-                      </label>
-                    </fieldset>
+                    </div>
 
                     <!-- Governance Safeguards -->
                     <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
@@ -1952,29 +1881,29 @@
 
                   <!-- Permission Configuration (shown only when Yes is selected) -->
                   <div class="distribution-inline-panel" id="manual-mint-permissions-panel" hidden>
-                    <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
-                      <legend class="wizard-field__label">Who is allowed to mint the token?</legend>
+                    <div class="authorization-group">
+                      <!-- Authorized to perform action -->
+                      <div class="field-group">
+                        <label class="wizard-field__label" for="manual-mint-permission">
+                          Authorized to perform action
+                          <button type="button" class="help-icon" data-help="mint-permission" data-guide-target="guide-minting" aria-label="Help: Mint Permission" tabindex="0">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
+                              <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </label>
+                        <select class="wizard-field__input" id="manual-mint-permission" name="manual-mint-permission">
+                          <option value="no-one">No One</option>
+                          <option value="owner" selected>Contract Owner</option>
+                          <option value="identity">Specific Identity</option>
+                          <option value="group">Specific Group</option>
+                        </select>
+                        <span class="field-hint">Choose who can mint tokens after deployment</span>
+                      </div>
 
-                      <!-- Owner Only Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="manual-mint-permission"
-                          value="owner-only" checked>
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Owner Only</span>
-                          <span class="wizard-choice__hint">Only the contract owner can mint tokens</span>
-                        </span>
-                      </label>
-
-                      <!-- Specific Identity Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="manual-mint-permission"
-                          value="specific-identity" data-toggle-panel="manual-mint-panel-identity">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Specific Identity</span>
-                          <span class="wizard-choice__hint">Only a designated identity can mint tokens</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="manual-mint-panel-identity" hidden>
+                      <!-- Identity Panel -->
+                      <div class="authorization-inline-panel" id="manual-mint-panel-identity" hidden>
                         <div class="field-group">
                           <label class="wizard-field__label" for="manual-mint-identity-id">Identity ID</label>
                           <input class="wizard-field__input" type="text" id="manual-mint-identity-id"
@@ -1983,23 +1912,14 @@
                         </div>
                       </div>
 
-                      <!-- Group Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="manual-mint-permission" value="group"
-                          data-toggle-panel="manual-mint-panel-group">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Group</span>
-                          <span class="wizard-choice__hint">Members of a designated group can mint</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="manual-mint-panel-group" hidden>
+                      <!-- Group Panel -->
+                      <div class="authorization-inline-panel" id="manual-mint-panel-group" hidden>
                         <div class="field-group" id="manual-mint-group-selector-container">
                           <label class="wizard-field__label" for="manual-mint-group-id">Select group</label>
                           <select class="wizard-field__input" id="manual-mint-group-id" name="manual-mint-group-id">
                             <option value="">Select a group...</option>
                           </select>
-                          <span class="field-hint" id="manual-mint-group-hint">Choose which group can perform this
-                            action</span>
+                          <span class="field-hint" id="manual-mint-group-hint">Choose which group can perform this action</span>
                         </div>
                         <div class="field-message field-message--info" id="manual-mint-no-groups-message" hidden>
                           <p>No group has been created yet.</p>
@@ -2008,72 +1928,44 @@
                         </div>
                       </div>
 
-                      <!-- No One Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="manual-mint-permission" value="no-one">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">No One</span>
-                          <span class="wizard-choice__hint">Minting is disabled (can be enabled later by rule
-                            changer)</span>
-                        </span>
-                      </label>
-                    </fieldset>
+                      <!-- Authorized to change rules -->
+                      <div class="field-group" style="margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
+                        <label class="wizard-field__label" for="manual-mint-rule-changer">
+                          Authorized to change rules
+                          <button type="button" class="help-icon" data-help="mint-rule-changer" data-guide-target="guide-governance-safeguards-minting" aria-label="Help: Mint Rule Changer" tabindex="0">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
+                              <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </label>
+                        <select class="wizard-field__input" id="manual-mint-rule-changer" name="manual-mint-rule-changer">
+                          <option value="no-one">No One</option>
+                          <option value="owner" selected>Contract Owner</option>
+                          <option value="identity">Specific Identity</option>
+                          <option value="group">Specific Group</option>
+                        </select>
+                        <span class="field-hint">Define who has authority to modify minting permissions after deployment</span>
+                      </div>
 
-                    <!-- Rule Change Authorization Section for Mint (inside mint permissions panel) -->
-                    <fieldset class="wizard-fieldset"
-                      style="margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
-                      <legend class="wizard-field__label">Who can change minting rules?</legend>
-                      <p class="wizard-subsection__body" style="margin-bottom: var(--space-4);">Define who has authority
-                        to modify minting permissions after deployment</p>
-
-                      <!-- Owner Only Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="manual-mint-rule-changer"
-                          value="owner-only" checked>
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Owner Only</span>
-                          <span class="wizard-choice__hint">Only the contract owner can modify minting rules</span>
-                        </span>
-                      </label>
-
-                      <!-- Specific Identity Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="manual-mint-rule-changer"
-                          value="specific-identity" data-toggle-panel="manual-mint-rule-panel-identity">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Specific Identity</span>
-                          <span class="wizard-choice__hint">Only a designated identity can change minting rules</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="manual-mint-rule-panel-identity" hidden>
+                      <!-- Rule Changer Identity Panel -->
+                      <div class="authorization-inline-panel" id="manual-mint-rule-panel-identity" hidden>
                         <div class="field-group">
                           <label class="wizard-field__label" for="manual-mint-rule-identity-id">Identity ID</label>
                           <input class="wizard-field__input" type="text" id="manual-mint-rule-identity-id"
                             name="manual-mint-rule-identity-id" placeholder="Enter the Base58 ID">
-                          <span class="field-hint">Enter the Dash Platform identity ID that can modify minting
-                            rules</span>
+                          <span class="field-hint">Enter the Dash Platform identity ID that can modify minting rules</span>
                         </div>
                       </div>
 
-                      <!-- Group Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="manual-mint-rule-changer" value="group"
-                          data-toggle-panel="manual-mint-rule-panel-group">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Group</span>
-                          <span class="wizard-choice__hint">Members of a designated group can change minting
-                            rules</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="manual-mint-rule-panel-group" hidden>
+                      <!-- Rule Changer Group Panel -->
+                      <div class="authorization-inline-panel" id="manual-mint-rule-panel-group" hidden>
                         <div class="field-group" id="manual-mint-rule-group-selector-container">
                           <label class="wizard-field__label" for="manual-mint-rule-group-id">Select group</label>
-                          <select class="wizard-field__input" id="manual-mint-rule-group-id"
-                            name="manual-mint-rule-group-id">
+                          <select class="wizard-field__input" id="manual-mint-rule-group-id" name="manual-mint-rule-group-id">
                             <option value="">Select a group...</option>
                           </select>
-                          <span class="field-hint" id="manual-mint-rule-group-hint">Choose which group can modify
-                            minting rules</span>
+                          <span class="field-hint" id="manual-mint-rule-group-hint">Choose which group can modify minting rules</span>
                         </div>
                         <div class="field-message field-message--info" id="manual-mint-rule-no-groups-message" hidden>
                           <p>No group has been created yet.</p>
@@ -2081,16 +1973,7 @@
                             id="manual-mint-rule-create-group-btn">Create Group</button>
                         </div>
                       </div>
-
-                      <!-- No One Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="manual-mint-rule-changer" value="no-one">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">No One</span>
-                          <span class="wizard-choice__hint">Minting rules are immutable and cannot be changed</span>
-                        </span>
-                      </label>
-                    </fieldset>
+                    </div>
 
                     <!-- Governance Safeguards -->
                     <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
@@ -2477,29 +2360,29 @@
 
                   <!-- Permission Configuration (shown only when Yes is selected) -->
                   <div class="distribution-inline-panel" id="manual-burn-permissions-panel" hidden>
-                    <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
-                      <legend class="wizard-field__label">Who is allowed to burn the token?</legend>
+                    <div class="authorization-group">
+                      <!-- Authorized to perform action -->
+                      <div class="field-group">
+                        <label class="wizard-field__label" for="manual-burn-permission">
+                          Authorized to perform action
+                          <button type="button" class="help-icon" data-help="burn-permission" data-guide-target="guide-burning" aria-label="Help: Burn Permission" tabindex="0">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
+                              <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </label>
+                        <select class="wizard-field__input" id="manual-burn-permission" name="manual-burn-permission">
+                          <option value="no-one">No One</option>
+                          <option value="owner" selected>Contract Owner</option>
+                          <option value="identity">Specific Identity</option>
+                          <option value="group">Specific Group</option>
+                        </select>
+                        <span class="field-hint">Choose who can burn tokens after deployment</span>
+                      </div>
 
-                      <!-- Owner Only Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="manual-burn-permission"
-                          value="owner-only" checked>
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Owner Only</span>
-                          <span class="wizard-choice__hint">Only the contract owner can burn tokens</span>
-                        </span>
-                      </label>
-
-                      <!-- Specific Identity Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="manual-burn-permission"
-                          value="specific-identity" data-toggle-panel="manual-burn-panel-identity">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Specific Identity</span>
-                          <span class="wizard-choice__hint">Only a designated identity can burn tokens</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="manual-burn-panel-identity" hidden>
+                      <!-- Identity Panel -->
+                      <div class="authorization-inline-panel" id="manual-burn-panel-identity" hidden>
                         <div class="field-group">
                           <label class="wizard-field__label" for="manual-burn-identity-id">Identity ID</label>
                           <input class="wizard-field__input" type="text" id="manual-burn-identity-id"
@@ -2508,23 +2391,14 @@
                         </div>
                       </div>
 
-                      <!-- Group Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="manual-burn-permission" value="group"
-                          data-toggle-panel="manual-burn-panel-group">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Group</span>
-                          <span class="wizard-choice__hint">Members of a designated group can burn</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="manual-burn-panel-group" hidden>
+                      <!-- Group Panel -->
+                      <div class="authorization-inline-panel" id="manual-burn-panel-group" hidden>
                         <div class="field-group" id="manual-burn-group-selector-container">
                           <label class="wizard-field__label" for="manual-burn-group-id">Select group</label>
                           <select class="wizard-field__input" id="manual-burn-group-id" name="manual-burn-group-id">
                             <option value="">Select a group...</option>
                           </select>
-                          <span class="field-hint" id="manual-burn-group-hint">Choose which group can perform this
-                            action</span>
+                          <span class="field-hint" id="manual-burn-group-hint">Choose which group can perform this action</span>
                         </div>
                         <div class="field-message field-message--info" id="manual-burn-no-groups-message" hidden>
                           <p>No group has been created yet.</p>
@@ -2533,72 +2407,44 @@
                         </div>
                       </div>
 
-                      <!-- No One Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="manual-burn-permission" value="no-one">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">No One</span>
-                          <span class="wizard-choice__hint">Burning is disabled (can be enabled later by rule
-                            changer)</span>
-                        </span>
-                      </label>
-                    </fieldset>
+                      <!-- Authorized to change rules -->
+                      <div class="field-group" style="margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
+                        <label class="wizard-field__label" for="manual-burn-rule-changer">
+                          Authorized to change rules
+                          <button type="button" class="help-icon" data-help="burn-rule-changer" data-guide-target="guide-governance-safeguards-burning" aria-label="Help: Burn Rule Changer" tabindex="0">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
+                              <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </label>
+                        <select class="wizard-field__input" id="manual-burn-rule-changer" name="manual-burn-rule-changer">
+                          <option value="no-one">No One</option>
+                          <option value="owner" selected>Contract Owner</option>
+                          <option value="identity">Specific Identity</option>
+                          <option value="group">Specific Group</option>
+                        </select>
+                        <span class="field-hint">Define who has authority to modify burning permissions after deployment</span>
+                      </div>
 
-                    <!-- Rule Change Authorization Section (inside burn permissions panel) -->
-                    <fieldset class="wizard-fieldset"
-                      style="margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
-                      <legend class="wizard-field__label">Who can change burning rules?</legend>
-                      <p class="wizard-subsection__body" style="margin-bottom: var(--space-4);">Define who has authority
-                        to modify burning permissions after deployment</p>
-
-                      <!-- Owner Only Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="manual-burn-rule-changer"
-                          value="owner-only" checked>
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Owner Only</span>
-                          <span class="wizard-choice__hint">Only the contract owner can modify burning rules</span>
-                        </span>
-                      </label>
-
-                      <!-- Specific Identity Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="manual-burn-rule-changer"
-                          value="specific-identity" data-toggle-panel="manual-burn-rule-panel-identity">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Specific Identity</span>
-                          <span class="wizard-choice__hint">Only a designated identity can change burning rules</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="manual-burn-rule-panel-identity" hidden>
+                      <!-- Rule Changer Identity Panel -->
+                      <div class="authorization-inline-panel" id="manual-burn-rule-panel-identity" hidden>
                         <div class="field-group">
                           <label class="wizard-field__label" for="manual-burn-rule-identity-id">Identity ID</label>
                           <input class="wizard-field__input" type="text" id="manual-burn-rule-identity-id"
                             name="manual-burn-rule-identity-id" placeholder="Enter the Base58 ID">
-                          <span class="field-hint">Enter the Dash Platform identity ID that can modify burning
-                            rules</span>
+                          <span class="field-hint">Enter the Dash Platform identity ID that can modify burning rules</span>
                         </div>
                       </div>
 
-                      <!-- Group Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="manual-burn-rule-changer" value="group"
-                          data-toggle-panel="manual-burn-rule-panel-group">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Group</span>
-                          <span class="wizard-choice__hint">Members of a designated group can change burning
-                            rules</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="manual-burn-rule-panel-group" hidden>
+                      <!-- Rule Changer Group Panel -->
+                      <div class="authorization-inline-panel" id="manual-burn-rule-panel-group" hidden>
                         <div class="field-group" id="manual-burn-rule-group-selector-container">
                           <label class="wizard-field__label" for="manual-burn-rule-group-id">Select group</label>
-                          <select class="wizard-field__input" id="manual-burn-rule-group-id"
-                            name="manual-burn-rule-group-id">
+                          <select class="wizard-field__input" id="manual-burn-rule-group-id" name="manual-burn-rule-group-id">
                             <option value="">Select a group...</option>
                           </select>
-                          <span class="field-hint" id="manual-burn-rule-group-hint">Choose which group can modify
-                            burning rules</span>
+                          <span class="field-hint" id="manual-burn-rule-group-hint">Choose which group can modify burning rules</span>
                         </div>
                         <div class="field-message field-message--info" id="manual-burn-rule-no-groups-message" hidden>
                           <p>No group has been created yet.</p>
@@ -2606,16 +2452,7 @@
                             id="manual-burn-rule-create-group-btn">Create Group</button>
                         </div>
                       </div>
-
-                      <!-- No One Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="manual-burn-rule-changer" value="no-one">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">No One</span>
-                          <span class="wizard-choice__hint">Burning rules are immutable and cannot be changed</span>
-                        </span>
-                      </label>
-                    </fieldset>
+                    </div>
 
                     <!-- Governance Safeguards -->
                     <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
@@ -2893,29 +2730,29 @@
 
                   <!-- Permission Configuration (shown only when Yes is selected) -->
                   <div class="distribution-inline-panel" id="manual-freeze-permissions-panel" hidden>
-                    <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
-                      <legend class="wizard-field__label">Who is allowed to freeze balances?</legend>
+                    <div class="authorization-group">
+                      <!-- Authorized to perform action -->
+                      <div class="field-group">
+                        <label class="wizard-field__label" for="manual-freeze-permission">
+                          Authorized to perform action
+                          <button type="button" class="help-icon" data-help="freeze-permission" data-guide-target="guide-freezing" aria-label="Help: Freeze Permission" tabindex="0">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
+                              <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </label>
+                        <select class="wizard-field__input" id="manual-freeze-permission" name="manual-freeze-permission">
+                          <option value="no-one">No One</option>
+                          <option value="owner" selected>Contract Owner</option>
+                          <option value="identity">Specific Identity</option>
+                          <option value="group">Specific Group</option>
+                        </select>
+                        <span class="field-hint">Choose who can freeze balances after deployment</span>
+                      </div>
 
-                      <!-- Owner Only Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="manual-freeze-permission"
-                          value="owner-only" checked>
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Owner Only</span>
-                          <span class="wizard-choice__hint">Only the contract owner can freeze balances</span>
-                        </span>
-                      </label>
-
-                      <!-- Specific Identity Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="manual-freeze-permission"
-                          value="specific-identity" data-toggle-panel="manual-freeze-panel-identity">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Specific Identity</span>
-                          <span class="wizard-choice__hint">Only a designated identity can freeze balances</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="manual-freeze-panel-identity" hidden>
+                      <!-- Identity Panel -->
+                      <div class="authorization-inline-panel" id="manual-freeze-panel-identity" hidden>
                         <div class="field-group">
                           <label class="wizard-field__label" for="manual-freeze-identity-id">Identity ID</label>
                           <input class="wizard-field__input" type="text" id="manual-freeze-identity-id"
@@ -2924,23 +2761,14 @@
                         </div>
                       </div>
 
-                      <!-- Group Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="manual-freeze-permission" value="group"
-                          data-toggle-panel="manual-freeze-panel-group">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Group</span>
-                          <span class="wizard-choice__hint">Members of a designated group can freeze balances</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="manual-freeze-panel-group" hidden>
+                      <!-- Group Panel -->
+                      <div class="authorization-inline-panel" id="manual-freeze-panel-group" hidden>
                         <div class="field-group" id="manual-freeze-group-selector-container">
                           <label class="wizard-field__label" for="manual-freeze-group-id">Select group</label>
                           <select class="wizard-field__input" id="manual-freeze-group-id" name="manual-freeze-group-id">
                             <option value="">Select a group...</option>
                           </select>
-                          <span class="field-hint" id="manual-freeze-group-hint">Choose which group can perform this
-                            action</span>
+                          <span class="field-hint" id="manual-freeze-group-hint">Choose which group can perform this action</span>
                         </div>
                         <div class="field-message field-message--info" id="manual-freeze-no-groups-message" hidden>
                           <p>No group has been created yet.</p>
@@ -2949,72 +2777,44 @@
                         </div>
                       </div>
 
-                      <!-- No One Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="manual-freeze-permission" value="no-one">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">No One</span>
-                          <span class="wizard-choice__hint">Freezing is disabled (can be enabled later by rule
-                            changer)</span>
-                        </span>
-                      </label>
-                    </fieldset>
+                      <!-- Authorized to change rules -->
+                      <div class="field-group" style="margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
+                        <label class="wizard-field__label" for="manual-freeze-rule-changer">
+                          Authorized to change rules
+                          <button type="button" class="help-icon" data-help="freeze-rule-changer" data-guide-target="guide-governance-safeguards-freezing" aria-label="Help: Freeze Rule Changer" tabindex="0">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
+                              <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </label>
+                        <select class="wizard-field__input" id="manual-freeze-rule-changer" name="manual-freeze-rule-changer">
+                          <option value="no-one">No One</option>
+                          <option value="owner" selected>Contract Owner</option>
+                          <option value="identity">Specific Identity</option>
+                          <option value="group">Specific Group</option>
+                        </select>
+                        <span class="field-hint">Define who has authority to modify freezing permissions after deployment</span>
+                      </div>
 
-                    <!-- Rule Change Authorization Section for Freeze -->
-                    <fieldset class="wizard-fieldset"
-                      style="margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
-                      <legend class="wizard-field__label">Who can change freezing rules?</legend>
-                      <p class="wizard-subsection__body" style="margin-bottom: var(--space-4);">Define who has authority
-                        to modify freezing permissions after deployment</p>
-
-                      <!-- Owner Only Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="manual-freeze-rule-changer"
-                          value="owner-only" checked>
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Owner Only</span>
-                          <span class="wizard-choice__hint">Only the contract owner can modify freezing rules</span>
-                        </span>
-                      </label>
-
-                      <!-- Specific Identity Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="manual-freeze-rule-changer"
-                          value="specific-identity" data-toggle-panel="manual-freeze-rule-panel-identity">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Specific Identity</span>
-                          <span class="wizard-choice__hint">Only a designated identity can change freezing rules</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="manual-freeze-rule-panel-identity" hidden>
+                      <!-- Rule Changer Identity Panel -->
+                      <div class="authorization-inline-panel" id="manual-freeze-rule-panel-identity" hidden>
                         <div class="field-group">
                           <label class="wizard-field__label" for="manual-freeze-rule-identity-id">Identity ID</label>
                           <input class="wizard-field__input" type="text" id="manual-freeze-rule-identity-id"
                             name="manual-freeze-rule-identity-id" placeholder="Enter the Base58 ID">
-                          <span class="field-hint">Enter the Dash Platform identity ID that can modify freezing
-                            rules</span>
+                          <span class="field-hint">Enter the Dash Platform identity ID that can modify freezing rules</span>
                         </div>
                       </div>
 
-                      <!-- Group Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="manual-freeze-rule-changer" value="group"
-                          data-toggle-panel="manual-freeze-rule-panel-group">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Group</span>
-                          <span class="wizard-choice__hint">Members of a designated group can change freezing
-                            rules</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="manual-freeze-rule-panel-group" hidden>
+                      <!-- Rule Changer Group Panel -->
+                      <div class="authorization-inline-panel" id="manual-freeze-rule-panel-group" hidden>
                         <div class="field-group" id="manual-freeze-rule-group-selector-container">
                           <label class="wizard-field__label" for="manual-freeze-rule-group-id">Select group</label>
-                          <select class="wizard-field__input" id="manual-freeze-rule-group-id"
-                            name="manual-freeze-rule-group-id">
+                          <select class="wizard-field__input" id="manual-freeze-rule-group-id" name="manual-freeze-rule-group-id">
                             <option value="">Select a group...</option>
                           </select>
-                          <span class="field-hint" id="manual-freeze-rule-group-hint">Choose which group can modify
-                            freezing rules</span>
+                          <span class="field-hint" id="manual-freeze-rule-group-hint">Choose which group can modify freezing rules</span>
                         </div>
                         <div class="field-message field-message--info" id="manual-freeze-rule-no-groups-message" hidden>
                           <p>No group has been created yet.</p>
@@ -3022,17 +2822,7 @@
                             id="manual-freeze-rule-create-group-btn">Create Group</button>
                         </div>
                       </div>
-
-                      <!-- No One Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="manual-freeze-rule-changer"
-                          value="no-one">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">No One</span>
-                          <span class="wizard-choice__hint">Freezing rules are immutable and cannot be changed</span>
-                        </span>
-                      </label>
-                    </fieldset>
+                    </div>
 
                     <!-- Governance Safeguards for Freezing -->
                     <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
@@ -3097,63 +2887,45 @@
 
                     <!-- Permission Configuration (shown only when Yes is selected) -->
                     <div class="distribution-inline-panel" id="manual-unfreeze-permissions-panel" hidden>
-                      <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
-                        <legend class="wizard-field__label with-help">Who is allowed to unfreeze balances?
-                          <button type="button" class="help-icon" data-help="unfreeze-rules" data-guide-target="guide-unfreeze-rules" aria-label="Help: Unfreeze Rules" tabindex="0">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                              <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
-                              <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                            </svg>
-                          </button>
-                        </legend>
+                      <div class="authorization-group">
+                        <!-- Authorized to perform action -->
+                        <div class="field-group">
+                          <label class="wizard-field__label" for="manual-unfreeze-permission">
+                            Authorized to perform action
+                            <button type="button" class="help-icon" data-help="unfreeze-rules" data-guide-target="guide-unfreeze-rules" aria-label="Help: Unfreeze Rules" tabindex="0">
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
+                                <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                              </svg>
+                            </button>
+                          </label>
+                          <select class="wizard-field__input" id="manual-unfreeze-permission" name="manual-unfreeze-permission">
+                            <option value="no-one">No One</option>
+                            <option value="owner" selected>Contract Owner</option>
+                            <option value="identity">Specific Identity</option>
+                            <option value="group">Specific Group</option>
+                          </select>
+                          <span class="field-hint">Choose who can unfreeze balances after deployment</span>
+                        </div>
 
-                        <!-- Owner Only Option -->
-                        <label class="wizard-choice">
-                          <input class="wizard-choice__input" type="radio" name="manual-unfreeze-permission"
-                            value="owner-only" checked>
-                          <span class="wizard-choice__content">
-                            <span class="wizard-choice__title">Owner Only</span>
-                            <span class="wizard-choice__hint">Only the contract owner can unfreeze balances</span>
-                          </span>
-                        </label>
-
-                        <!-- Specific Identity Option -->
-                        <label class="wizard-choice">
-                          <input class="wizard-choice__input" type="radio" name="manual-unfreeze-permission"
-                            value="specific-identity" data-toggle-panel="manual-unfreeze-panel-identity">
-                          <span class="wizard-choice__content">
-                            <span class="wizard-choice__title">Specific Identity</span>
-                            <span class="wizard-choice__hint">Only a designated identity can unfreeze balances</span>
-                          </span>
-                        </label>
-                        <div class="distribution-inline-panel" id="manual-unfreeze-panel-identity" hidden>
+                        <!-- Identity Panel -->
+                        <div class="authorization-inline-panel" id="manual-unfreeze-panel-identity" hidden>
                           <div class="field-group">
                             <label class="wizard-field__label" for="manual-unfreeze-identity-id">Identity ID</label>
                             <input class="wizard-field__input" type="text" id="manual-unfreeze-identity-id"
                               name="manual-unfreeze-identity-id" placeholder="Enter the Base58 ID">
-                            <span class="field-hint">Enter the Dash Platform identity ID that can unfreeze
-                              balances</span>
+                            <span class="field-hint">Enter the Dash Platform identity ID that can unfreeze balances</span>
                           </div>
                         </div>
 
-                        <!-- Group Option -->
-                        <label class="wizard-choice">
-                          <input class="wizard-choice__input" type="radio" name="manual-unfreeze-permission"
-                            value="group" data-toggle-panel="manual-unfreeze-panel-group">
-                          <span class="wizard-choice__content">
-                            <span class="wizard-choice__title">Group</span>
-                            <span class="wizard-choice__hint">Members of a designated group can unfreeze balances</span>
-                          </span>
-                        </label>
-                        <div class="distribution-inline-panel" id="manual-unfreeze-panel-group" hidden>
+                        <!-- Group Panel -->
+                        <div class="authorization-inline-panel" id="manual-unfreeze-panel-group" hidden>
                           <div class="field-group" id="manual-unfreeze-group-selector-container">
                             <label class="wizard-field__label" for="manual-unfreeze-group-id">Select group</label>
-                            <select class="wizard-field__input" id="manual-unfreeze-group-id"
-                              name="manual-unfreeze-group-id">
+                            <select class="wizard-field__input" id="manual-unfreeze-group-id" name="manual-unfreeze-group-id">
                               <option value="">Select a group...</option>
                             </select>
-                            <span class="field-hint" id="manual-unfreeze-group-hint">Choose which group can perform this
-                              action</span>
+                            <span class="field-hint" id="manual-unfreeze-group-hint">Choose which group can perform this action</span>
                           </div>
                           <div class="field-message field-message--info" id="manual-unfreeze-no-groups-message" hidden>
                             <p>No group has been created yet.</p>
@@ -3162,95 +2934,52 @@
                           </div>
                         </div>
 
-                        <!-- No One Option -->
-                        <label class="wizard-choice">
-                          <input class="wizard-choice__input" type="radio" name="manual-unfreeze-permission"
-                            value="no-one">
-                          <span class="wizard-choice__content">
-                            <span class="wizard-choice__title">No One</span>
-                            <span class="wizard-choice__hint">Unfreezing is disabled (can be enabled later by rule
-                              changer)</span>
-                          </span>
-                        </label>
-                      </fieldset>
+                        <!-- Authorized to change rules -->
+                        <div class="field-group" style="margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
+                          <label class="wizard-field__label" for="manual-unfreeze-rule-changer">
+                            Authorized to change rules
+                            <button type="button" class="help-icon" data-help="unfreeze-rule-changer" data-guide-target="guide-governance-safeguards-unfreezing" aria-label="Help: Unfreeze Rule Changer" tabindex="0">
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
+                                <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                              </svg>
+                            </button>
+                          </label>
+                          <select class="wizard-field__input" id="manual-unfreeze-rule-changer" name="manual-unfreeze-rule-changer">
+                            <option value="no-one">No One</option>
+                            <option value="owner" selected>Contract Owner</option>
+                            <option value="identity">Specific Identity</option>
+                            <option value="group">Specific Group</option>
+                          </select>
+                          <span class="field-hint">Define who has authority to modify unfreezing permissions after deployment</span>
+                        </div>
 
-                      <!-- Rule Change Authorization Section for Unfreeze -->
-                      <fieldset class="wizard-fieldset"
-                        style="margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
-                        <legend class="wizard-field__label">Who can change unfreezing rules?</legend>
-                        <p class="wizard-subsection__body" style="margin-bottom: var(--space-4);">Define who has
-                          authority to modify unfreezing permissions after deployment</p>
-
-                        <!-- Owner Only Option -->
-                        <label class="wizard-choice">
-                          <input class="wizard-choice__input" type="radio" name="manual-unfreeze-rule-changer"
-                            value="owner-only" checked>
-                          <span class="wizard-choice__content">
-                            <span class="wizard-choice__title">Owner Only</span>
-                            <span class="wizard-choice__hint">Only the contract owner can modify unfreezing rules</span>
-                          </span>
-                        </label>
-
-                        <!-- Specific Identity Option -->
-                        <label class="wizard-choice">
-                          <input class="wizard-choice__input" type="radio" name="manual-unfreeze-rule-changer"
-                            value="specific-identity" data-toggle-panel="manual-unfreeze-rule-panel-identity">
-                          <span class="wizard-choice__content">
-                            <span class="wizard-choice__title">Specific Identity</span>
-                            <span class="wizard-choice__hint">Only a designated identity can change unfreezing
-                              rules</span>
-                          </span>
-                        </label>
-                        <div class="distribution-inline-panel" id="manual-unfreeze-rule-panel-identity" hidden>
+                        <!-- Rule Changer Identity Panel -->
+                        <div class="authorization-inline-panel" id="manual-unfreeze-rule-panel-identity" hidden>
                           <div class="field-group">
-                            <label class="wizard-field__label" for="manual-unfreeze-rule-identity-id">Identity
-                              ID</label>
+                            <label class="wizard-field__label" for="manual-unfreeze-rule-identity-id">Identity ID</label>
                             <input class="wizard-field__input" type="text" id="manual-unfreeze-rule-identity-id"
                               name="manual-unfreeze-rule-identity-id" placeholder="Enter the Base58 ID">
-                            <span class="field-hint">Enter the Dash Platform identity ID that can modify unfreezing
-                              rules</span>
+                            <span class="field-hint">Enter the Dash Platform identity ID that can modify unfreezing rules</span>
                           </div>
                         </div>
 
-                        <!-- Group Option -->
-                        <label class="wizard-choice">
-                          <input class="wizard-choice__input" type="radio" name="manual-unfreeze-rule-changer"
-                            value="group" data-toggle-panel="manual-unfreeze-rule-panel-group">
-                          <span class="wizard-choice__content">
-                            <span class="wizard-choice__title">Group</span>
-                            <span class="wizard-choice__hint">Members of a designated group can change unfreezing
-                              rules</span>
-                          </span>
-                        </label>
-                        <div class="distribution-inline-panel" id="manual-unfreeze-rule-panel-group" hidden>
+                        <!-- Rule Changer Group Panel -->
+                        <div class="authorization-inline-panel" id="manual-unfreeze-rule-panel-group" hidden>
                           <div class="field-group" id="manual-unfreeze-rule-group-selector-container">
                             <label class="wizard-field__label" for="manual-unfreeze-rule-group-id">Select group</label>
-                            <select class="wizard-field__input" id="manual-unfreeze-rule-group-id"
-                              name="manual-unfreeze-rule-group-id">
+                            <select class="wizard-field__input" id="manual-unfreeze-rule-group-id" name="manual-unfreeze-rule-group-id">
                               <option value="">Select a group...</option>
                             </select>
-                            <span class="field-hint" id="manual-unfreeze-rule-group-hint">Choose which group can modify
-                              unfreezing rules</span>
+                            <span class="field-hint" id="manual-unfreeze-rule-group-hint">Choose which group can modify unfreezing rules</span>
                           </div>
-                          <div class="field-message field-message--info" id="manual-unfreeze-rule-no-groups-message"
-                            hidden>
+                          <div class="field-message field-message--info" id="manual-unfreeze-rule-no-groups-message" hidden>
                             <p>No group has been created yet.</p>
                             <button class="wizard-button wizard-button--secondary wizard-button--small" type="button"
                               id="manual-unfreeze-rule-create-group-btn">Create Group</button>
                           </div>
                         </div>
-
-                        <!-- No One Option -->
-                        <label class="wizard-choice">
-                          <input class="wizard-choice__input" type="radio" name="manual-unfreeze-rule-changer"
-                            value="no-one">
-                          <span class="wizard-choice__content">
-                            <span class="wizard-choice__title">No One</span>
-                            <span class="wizard-choice__hint">Unfreezing rules are immutable and cannot be
-                              changed</span>
-                          </span>
-                        </label>
-                      </fieldset>
+                      </div>
 
                       <!-- Governance Safeguards for Unfreezing -->
                       <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
@@ -3325,57 +3054,45 @@
 
                     <!-- Permission Configuration (shown only when Yes is selected) -->
                     <div class="distribution-inline-panel" id="destroy-frozen-permissions-panel" hidden>
-                      <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
-                        <legend class="wizard-field__label">Who is allowed to destroy frozen funds?</legend>
+                      <div class="authorization-group">
+                        <!-- Authorized to perform action -->
+                        <div class="field-group">
+                          <label class="wizard-field__label" for="destroy-frozen-permission">
+                            Authorized to perform action
+                            <button type="button" class="help-icon" data-help="destroy-frozen-permission" data-guide-target="guide-destroy-frozen-rules" aria-label="Help: Destroy Frozen Permission" tabindex="0">
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
+                                <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                              </svg>
+                            </button>
+                          </label>
+                          <select class="wizard-field__input" id="destroy-frozen-permission" name="destroy-frozen-permission">
+                            <option value="no-one">No One</option>
+                            <option value="owner" selected>Contract Owner</option>
+                            <option value="identity">Specific Identity</option>
+                            <option value="group">Specific Group</option>
+                          </select>
+                          <span class="field-hint">Choose who can destroy frozen funds after deployment</span>
+                        </div>
 
-                        <!-- Owner Only Option -->
-                        <label class="wizard-choice">
-                          <input class="wizard-choice__input" type="radio" name="destroy-frozen-permission"
-                            value="owner-only" checked>
-                          <span class="wizard-choice__content">
-                            <span class="wizard-choice__title">Owner Only</span>
-                            <span class="wizard-choice__hint">Only the contract owner can destroy frozen funds</span>
-                          </span>
-                        </label>
-
-                        <!-- Specific Identity Option -->
-                        <label class="wizard-choice">
-                          <input class="wizard-choice__input" type="radio" name="destroy-frozen-permission"
-                            value="specific-identity" data-toggle-panel="destroy-frozen-panel-identity">
-                          <span class="wizard-choice__content">
-                            <span class="wizard-choice__title">Specific Identity</span>
-                            <span class="wizard-choice__hint">Only a designated identity can destroy frozen funds</span>
-                          </span>
-                        </label>
-                        <div class="distribution-inline-panel" id="destroy-frozen-panel-identity" hidden>
+                        <!-- Identity Panel -->
+                        <div class="authorization-inline-panel" id="destroy-frozen-panel-identity" hidden>
                           <div class="field-group">
                             <label class="wizard-field__label" for="destroy-frozen-identity-id">Identity ID</label>
                             <input class="wizard-field__input" type="text" id="destroy-frozen-identity-id"
                               name="destroy-frozen-identity-id" placeholder="Enter the Base58 ID">
-                            <span class="field-hint">Enter the Dash Platform identity ID that can destroy frozen
-                              funds</span>
+                            <span class="field-hint">Enter the Dash Platform identity ID that can destroy frozen funds</span>
                           </div>
                         </div>
 
-                        <!-- Group Option -->
-                        <label class="wizard-choice">
-                          <input class="wizard-choice__input" type="radio" name="destroy-frozen-permission"
-                            value="group" data-toggle-panel="destroy-frozen-panel-group">
-                          <span class="wizard-choice__content">
-                            <span class="wizard-choice__title">Group</span>
-                            <span class="wizard-choice__hint">Members of a designated group can destroy frozen
-                              funds</span>
-                          </span>
-                        </label>
-                        <div class="distribution-inline-panel" id="destroy-frozen-panel-group" hidden>
+                        <!-- Group Panel -->
+                        <div class="authorization-inline-panel" id="destroy-frozen-panel-group" hidden>
                           <div class="field-group" id="destroy-frozen-group-selector-container">
                             <label class="wizard-field__label" for="destroy-frozen-group-id">Select group</label>
-                            <select class="wizard-field__input" id="destroy-frozen-group-id"
-                              name="destroy-frozen-group-id">
+                            <select class="wizard-field__input" id="destroy-frozen-group-id" name="destroy-frozen-group-id">
                               <option value="">Select a group...</option>
                             </select>
-                            <span class="field-hint" id="destroy-frozen-group-hint">Choose which group can perform this
-                              action</span>
+                            <span class="field-hint" id="destroy-frozen-group-hint">Choose which group can perform this action</span>
                           </div>
                           <div class="field-message field-message--info" id="destroy-frozen-no-groups-message" hidden>
                             <p>No group has been created yet.</p>
@@ -3384,95 +3101,52 @@
                           </div>
                         </div>
 
-                        <!-- No One Option -->
-                        <label class="wizard-choice">
-                          <input class="wizard-choice__input" type="radio" name="destroy-frozen-permission"
-                            value="no-one">
-                          <span class="wizard-choice__content">
-                            <span class="wizard-choice__title">No One</span>
-                            <span class="wizard-choice__hint">Destroying frozen funds is disabled (can be enabled later
-                              by rule changer)</span>
-                          </span>
-                        </label>
-                      </fieldset>
+                        <!-- Authorized to change rules -->
+                        <div class="field-group" style="margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
+                          <label class="wizard-field__label" for="destroy-frozen-rule-changer">
+                            Authorized to change rules
+                            <button type="button" class="help-icon" data-help="destroy-frozen-rule-changer" data-guide-target="guide-governance-safeguards-destroy-frozen" aria-label="Help: Destroy Frozen Rule Changer" tabindex="0">
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
+                                <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                              </svg>
+                            </button>
+                          </label>
+                          <select class="wizard-field__input" id="destroy-frozen-rule-changer" name="destroy-frozen-rule-changer">
+                            <option value="no-one">No One</option>
+                            <option value="owner" selected>Contract Owner</option>
+                            <option value="identity">Specific Identity</option>
+                            <option value="group">Specific Group</option>
+                          </select>
+                          <span class="field-hint">Define who has authority to modify destroy frozen permissions after deployment</span>
+                        </div>
 
-                      <!-- Rule Change Authorization Section for Destroy Frozen -->
-                      <fieldset class="wizard-fieldset"
-                        style="margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
-                        <legend class="wizard-field__label">Who can change destroy frozen rules?</legend>
-                        <p class="wizard-subsection__body" style="margin-bottom: var(--space-4);">Define who has
-                          authority to modify destroy frozen permissions after deployment</p>
-
-                        <!-- Owner Only Option -->
-                        <label class="wizard-choice">
-                          <input class="wizard-choice__input" type="radio" name="destroy-frozen-rule-changer"
-                            value="owner-only" checked>
-                          <span class="wizard-choice__content">
-                            <span class="wizard-choice__title">Owner Only</span>
-                            <span class="wizard-choice__hint">Only the contract owner can modify destroy frozen
-                              rules</span>
-                          </span>
-                        </label>
-
-                        <!-- Specific Identity Option -->
-                        <label class="wizard-choice">
-                          <input class="wizard-choice__input" type="radio" name="destroy-frozen-rule-changer"
-                            value="specific-identity" data-toggle-panel="destroy-frozen-rule-panel-identity">
-                          <span class="wizard-choice__content">
-                            <span class="wizard-choice__title">Specific Identity</span>
-                            <span class="wizard-choice__hint">Only a designated identity can change destroy frozen
-                              rules</span>
-                          </span>
-                        </label>
-                        <div class="distribution-inline-panel" id="destroy-frozen-rule-panel-identity" hidden>
+                        <!-- Rule Changer Identity Panel -->
+                        <div class="authorization-inline-panel" id="destroy-frozen-rule-panel-identity" hidden>
                           <div class="field-group">
                             <label class="wizard-field__label" for="destroy-frozen-rule-identity-id">Identity ID</label>
                             <input class="wizard-field__input" type="text" id="destroy-frozen-rule-identity-id"
                               name="destroy-frozen-rule-identity-id" placeholder="Enter the Base58 ID">
-                            <span class="field-hint">Enter the Dash Platform identity ID that can modify destroy frozen
-                              rules</span>
+                            <span class="field-hint">Enter the Dash Platform identity ID that can modify destroy frozen rules</span>
                           </div>
                         </div>
 
-                        <!-- Group Option -->
-                        <label class="wizard-choice">
-                          <input class="wizard-choice__input" type="radio" name="destroy-frozen-rule-changer"
-                            value="group" data-toggle-panel="destroy-frozen-rule-panel-group">
-                          <span class="wizard-choice__content">
-                            <span class="wizard-choice__title">Group</span>
-                            <span class="wizard-choice__hint">Members of a designated group can change destroy frozen
-                              rules</span>
-                          </span>
-                        </label>
-                        <div class="distribution-inline-panel" id="destroy-frozen-rule-panel-group" hidden>
+                        <!-- Rule Changer Group Panel -->
+                        <div class="authorization-inline-panel" id="destroy-frozen-rule-panel-group" hidden>
                           <div class="field-group" id="destroy-frozen-rule-group-selector-container">
                             <label class="wizard-field__label" for="destroy-frozen-rule-group-id">Select group</label>
-                            <select class="wizard-field__input" id="destroy-frozen-rule-group-id"
-                              name="destroy-frozen-rule-group-id">
+                            <select class="wizard-field__input" id="destroy-frozen-rule-group-id" name="destroy-frozen-rule-group-id">
                               <option value="">Select a group...</option>
                             </select>
-                            <span class="field-hint" id="destroy-frozen-rule-group-hint">Choose which group can modify
-                              destroy frozen rules</span>
+                            <span class="field-hint" id="destroy-frozen-rule-group-hint">Choose which group can modify destroy frozen rules</span>
                           </div>
-                          <div class="field-message field-message--info" id="destroy-frozen-rule-no-groups-message"
-                            hidden>
+                          <div class="field-message field-message--info" id="destroy-frozen-rule-no-groups-message" hidden>
                             <p>No group has been created yet.</p>
                             <button class="wizard-button wizard-button--secondary wizard-button--small" type="button"
                               id="destroy-frozen-rule-create-group-btn">Create Group</button>
                           </div>
                         </div>
-
-                        <!-- No One Option -->
-                        <label class="wizard-choice">
-                          <input class="wizard-choice__input" type="radio" name="destroy-frozen-rule-changer"
-                            value="no-one">
-                          <span class="wizard-choice__content">
-                            <span class="wizard-choice__title">No One</span>
-                            <span class="wizard-choice__hint">Destroy frozen rules are immutable and cannot be
-                              changed</span>
-                          </span>
-                        </label>
-                      </fieldset>
+                      </div>
 
                       <!-- Governance Safeguards -->
                       <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
@@ -3733,58 +3407,45 @@
 
                   <!-- Permission Configuration (shown only when Yes is selected) -->
                   <div class="distribution-inline-panel" id="emergency-permissions-panel" hidden>
-                    <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
-                      <legend class="wizard-field__label">Who is allowed to perform emergency actions?</legend>
+                    <div class="authorization-group">
+                      <!-- Authorized to perform action -->
+                      <div class="field-group">
+                        <label class="wizard-field__label" for="emergency-permission">
+                          Authorized to perform action
+                          <button type="button" class="help-icon" data-help="emergency-permission" data-guide-target="guide-emergency-action-rules" aria-label="Help: Emergency Permission" tabindex="0">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
+                              <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </label>
+                        <select class="wizard-field__input" id="emergency-permission" name="emergency-permission">
+                          <option value="no-one">No One</option>
+                          <option value="owner" selected>Contract Owner</option>
+                          <option value="identity">Specific Identity</option>
+                          <option value="group">Specific Group</option>
+                        </select>
+                        <span class="field-hint">Choose who can perform emergency pause/resume actions</span>
+                      </div>
 
-                      <!-- Owner Only Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="emergency-permission" value="owner-only"
-                          checked>
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Owner Only</span>
-                          <span class="wizard-choice__hint">Only the contract owner can freeze/unfreeze all transfers
-                            globally</span>
-                        </span>
-                      </label>
-
-                      <!-- Specific Identity Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="emergency-permission"
-                          value="specific-identity" data-toggle-panel="emergency-panel-identity">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Specific Identity</span>
-                          <span class="wizard-choice__hint">Only a designated identity can trigger emergency
-                            pause/resume</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="emergency-panel-identity" hidden>
+                      <!-- Identity Panel -->
+                      <div class="authorization-inline-panel" id="emergency-panel-identity" hidden>
                         <div class="field-group">
                           <label class="wizard-field__label" for="emergency-identity-id">Identity ID</label>
                           <input class="wizard-field__input" type="text" id="emergency-identity-id"
                             name="emergency-identity-id" placeholder="Enter the Base58 ID">
-                          <span class="field-hint">Enter the Dash Platform identity ID that can perform emergency
-                            actions</span>
+                          <span class="field-hint">Enter the Dash Platform identity ID that can perform emergency actions</span>
                         </div>
                       </div>
 
-                      <!-- Group Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="emergency-permission" value="group"
-                          data-toggle-panel="emergency-panel-group">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Group</span>
-                          <span class="wizard-choice__hint">Members of a designated group can freeze/unfreeze all
-                            transfers globally</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="emergency-panel-group" hidden>
+                      <!-- Group Panel -->
+                      <div class="authorization-inline-panel" id="emergency-panel-group" hidden>
                         <div class="field-group" id="emergency-group-selector-container">
                           <label class="wizard-field__label" for="emergency-group-id">Select group</label>
                           <select class="wizard-field__input" id="emergency-group-id" name="emergency-group-id">
                             <option value="">Select a group...</option>
                           </select>
-                          <span class="field-hint" id="emergency-group-hint">Choose which group can perform this
-                            action</span>
+                          <span class="field-hint" id="emergency-group-hint">Choose which group can perform this action</span>
                         </div>
                         <div class="field-message field-message--info" id="emergency-no-groups-message" hidden>
                           <p>No group has been created yet.</p>
@@ -3793,74 +3454,44 @@
                         </div>
                       </div>
 
-                      <!-- No One Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="emergency-permission" value="no-one">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">No One</span>
-                          <span class="wizard-choice__hint">Emergency actions are disabled (can be enabled later by rule
-                            changer)</span>
-                        </span>
-                      </label>
-                    </fieldset>
+                      <!-- Authorized to change rules -->
+                      <div class="field-group" style="margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
+                        <label class="wizard-field__label" for="emergency-rule-changer">
+                          Authorized to change rules
+                          <button type="button" class="help-icon" data-help="emergency-rule-changer" data-guide-target="guide-governance-safeguards-emergency" aria-label="Help: Emergency Rule Changer" tabindex="0">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
+                              <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </label>
+                        <select class="wizard-field__input" id="emergency-rule-changer" name="emergency-rule-changer">
+                          <option value="no-one">No One</option>
+                          <option value="owner" selected>Contract Owner</option>
+                          <option value="identity">Specific Identity</option>
+                          <option value="group">Specific Group</option>
+                        </select>
+                        <span class="field-hint">Define who has authority to modify emergency action permissions after deployment</span>
+                      </div>
 
-                    <!-- Rule Change Authorization Section for Emergency (inside emergency permissions panel) -->
-                    <fieldset class="wizard-fieldset"
-                      style="margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
-                      <legend class="wizard-field__label">Who can change emergency action rules?</legend>
-                      <p class="wizard-subsection__body" style="margin-bottom: var(--space-4);">Define who has authority
-                        to modify emergency action permissions after deployment</p>
-
-                      <!-- Owner Only Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="emergency-rule-changer"
-                          value="owner-only" checked>
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Owner Only</span>
-                          <span class="wizard-choice__hint">Only the contract owner can modify emergency action
-                            rules</span>
-                        </span>
-                      </label>
-
-                      <!-- Specific Identity Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="emergency-rule-changer"
-                          value="specific-identity" data-toggle-panel="emergency-rule-panel-identity">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Specific Identity</span>
-                          <span class="wizard-choice__hint">Only a designated identity can change emergency action
-                            rules</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="emergency-rule-panel-identity" hidden>
+                      <!-- Rule Changer Identity Panel -->
+                      <div class="authorization-inline-panel" id="emergency-rule-panel-identity" hidden>
                         <div class="field-group">
                           <label class="wizard-field__label" for="emergency-rule-identity-id">Identity ID</label>
                           <input class="wizard-field__input" type="text" id="emergency-rule-identity-id"
                             name="emergency-rule-identity-id" placeholder="Enter the Base58 ID">
-                          <span class="field-hint">Enter the Dash Platform identity ID that can modify emergency action
-                            rules</span>
+                          <span class="field-hint">Enter the Dash Platform identity ID that can modify emergency action rules</span>
                         </div>
                       </div>
 
-                      <!-- Group Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="emergency-rule-changer" value="group"
-                          data-toggle-panel="emergency-rule-panel-group">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Group</span>
-                          <span class="wizard-choice__hint">Members of a designated group can change emergency action
-                            rules</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="emergency-rule-panel-group" hidden>
+                      <!-- Rule Changer Group Panel -->
+                      <div class="authorization-inline-panel" id="emergency-rule-panel-group" hidden>
                         <div class="field-group" id="emergency-rule-group-selector-container">
                           <label class="wizard-field__label" for="emergency-rule-group-id">Select group</label>
-                          <select class="wizard-field__input" id="emergency-rule-group-id"
-                            name="emergency-rule-group-id">
+                          <select class="wizard-field__input" id="emergency-rule-group-id" name="emergency-rule-group-id">
                             <option value="">Select a group...</option>
                           </select>
-                          <span class="field-hint" id="emergency-rule-group-hint">Choose which group can modify
-                            emergency action rules</span>
+                          <span class="field-hint" id="emergency-rule-group-hint">Choose which group can modify emergency action rules</span>
                         </div>
                         <div class="field-message field-message--info" id="emergency-rule-no-groups-message" hidden>
                           <p>No group has been created yet.</p>
@@ -3868,17 +3499,7 @@
                             id="emergency-rule-create-group-btn">Create Group</button>
                         </div>
                       </div>
-
-                      <!-- No One Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="emergency-rule-changer" value="no-one">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">No One</span>
-                          <span class="wizard-choice__hint">Emergency action rules are immutable and cannot be
-                            changed</span>
-                        </span>
-                      </label>
-                    </fieldset>
+                    </div>
 
                     <!-- Governance Safeguards -->
                     <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
@@ -4096,40 +3717,29 @@
                   <!-- Conventions Change Configuration (shown when Yes is selected) -->
                   <div class="distribution-inline-panel" id="conventions-change-config-container" hidden>
 
-                    <!-- Authorized to perform action -->
-                    <fieldset class="wizard-fieldset" style="margin-bottom: var(--space-6);">
-                      <legend class="wizard-field__label">Authorized to perform action
-                        <button type="button" class="help-icon" data-help="conventions-who-can-change" data-guide-target="guide-conventions-who-can-change" aria-label="Help: Who Can Perform Conventions Changes" tabindex="0">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
-                            <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                          </svg>
-                        </button>
-                      </legend>
-                      <p class="field-hint" style="margin-bottom: var(--space-3);">Who can execute conventions changes?
-                      </p>
+                    <div class="authorization-group">
+                      <!-- Authorized to perform action -->
+                      <div class="field-group">
+                        <label class="wizard-field__label" for="conventions-perform">
+                          Authorized to perform action
+                          <button type="button" class="help-icon" data-help="conventions-who-can-change" data-guide-target="guide-conventions-who-can-change" aria-label="Help: Who Can Perform Conventions Changes" tabindex="0">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
+                              <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </label>
+                        <select class="wizard-field__input" id="conventions-perform" name="conventions-perform">
+                          <option value="no-one">No One</option>
+                          <option value="owner" selected>Contract Owner</option>
+                          <option value="identity">Specific Identity</option>
+                          <option value="group">Specific Group</option>
+                        </select>
+                        <span class="field-hint">Who can execute conventions changes?</span>
+                      </div>
 
-                      <!-- Contract Owner Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="conventions-perform" value="owner"
-                          checked>
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Contract Owner</span>
-                          <span class="wizard-choice__hint">Only the contract owner can perform conventions
-                            changes</span>
-                        </span>
-                      </label>
-
-                      <!-- Specific Identity Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="conventions-perform" value="identity"
-                          data-toggle-panel="conventions-perform-identity-panel">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Identity</span>
-                          <span class="wizard-choice__hint">A specific identity can perform conventions changes</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="conventions-perform-identity-panel" hidden>
+                      <!-- Identity Panel -->
+                      <div class="authorization-inline-panel" id="conventions-perform-identity-panel" hidden>
                         <div class="field-group">
                           <label class="wizard-field__label" for="conventions-perform-identity-id">Identity ID</label>
                           <input class="wizard-field__input" type="text" id="conventions-perform-identity-id"
@@ -4138,16 +3748,8 @@
                         </div>
                       </div>
 
-                      <!-- Group Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="conventions-perform" value="group"
-                          data-toggle-panel="conventions-perform-group-panel">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Group</span>
-                          <span class="wizard-choice__hint">Members of a group can perform conventions changes</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="conventions-perform-group-panel" hidden>
+                      <!-- Group Panel -->
+                      <div class="authorization-inline-panel" id="conventions-perform-group-panel" hidden>
                         <div class="field-group">
                           <label class="wizard-field__label" for="conventions-perform-group-id">Select group</label>
                           <select class="wizard-field__input" id="conventions-perform-group-id">
@@ -4157,50 +3759,28 @@
                         </div>
                       </div>
 
-                      <!-- No One Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="conventions-perform" value="no-one">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">No One</span>
-                          <span class="wizard-choice__hint">Conventions changes are disabled (can be enabled later by
-                            rule changer)</span>
-                        </span>
-                      </label>
-                    </fieldset>
+                      <!-- Authorized to change rules -->
+                      <div class="field-group" style="margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
+                        <label class="wizard-field__label" for="conventions-change-rules">
+                          Authorized to change rules
+                          <button type="button" class="help-icon" data-help="conventions-update-rules" data-guide-target="guide-conventions-update-rules" aria-label="Help: Who Can Update Rules" tabindex="0">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
+                              <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </label>
+                        <select class="wizard-field__input" id="conventions-change-rules" name="conventions-change-rules">
+                          <option value="no-one">No One</option>
+                          <option value="owner" selected>Contract Owner</option>
+                          <option value="identity">Specific Identity</option>
+                          <option value="group">Specific Group</option>
+                        </select>
+                        <span class="field-hint">Who can modify the authorization rules for conventions changes?</span>
+                      </div>
 
-                    <!-- Authorized to change rules -->
-                    <fieldset class="wizard-fieldset">
-                      <legend class="wizard-field__label">Authorized to change rules
-                        <button type="button" class="help-icon" data-help="conventions-update-rules" data-guide-target="guide-conventions-update-rules" aria-label="Help: Who Can Update Rules" tabindex="0">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
-                            <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                          </svg>
-                        </button>
-                      </legend>
-                      <p class="field-hint" style="margin-bottom: var(--space-3);">Who can modify the authorization
-                        rules for conventions changes?</p>
-
-                      <!-- Owner Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="conventions-change-rules" value="owner"
-                          checked>
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Owner</span>
-                          <span class="wizard-choice__hint">Only the owner can change authorization rules</span>
-                        </span>
-                      </label>
-
-                      <!-- Identity Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="conventions-change-rules"
-                          value="identity" data-toggle-panel="conventions-rules-identity-panel">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Identity</span>
-                          <span class="wizard-choice__hint">A specific identity can change authorization rules</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="conventions-rules-identity-panel" hidden>
+                      <!-- Rule Changer Identity Panel -->
+                      <div class="authorization-inline-panel" id="conventions-rules-identity-panel" hidden>
                         <div class="field-group">
                           <label class="wizard-field__label" for="conventions-rules-identity-id">Identity ID</label>
                           <input class="wizard-field__input" type="text" id="conventions-rules-identity-id"
@@ -4209,16 +3789,8 @@
                         </div>
                       </div>
 
-                      <!-- Group Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="conventions-change-rules" value="group"
-                          data-toggle-panel="conventions-rules-group-panel">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Group</span>
-                          <span class="wizard-choice__hint">Members of a group can change authorization rules</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="conventions-rules-group-panel" hidden>
+                      <!-- Rule Changer Group Panel -->
+                      <div class="authorization-inline-panel" id="conventions-rules-group-panel" hidden>
                         <div class="field-group">
                           <label class="wizard-field__label" for="conventions-rules-group-id">Select group</label>
                           <select class="wizard-field__input" id="conventions-rules-group-id">
@@ -4227,16 +3799,7 @@
                           <span class="field-hint">Choose which group can modify rules</span>
                         </div>
                       </div>
-
-                      <!-- No One Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="conventions-change-rules" value="no-one">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">No One</span>
-                          <span class="wizard-choice__hint">Authorization rules are locked and cannot be changed</span>
-                        </span>
-                      </label>
-                    </fieldset>
+                    </div>
 
                     <!-- Governance Safeguards -->
                     <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
@@ -4455,57 +4018,41 @@
                   <!-- Marketplace Trade Mode Configuration (shown when Yes is selected) -->
                   <div class="distribution-inline-panel" id="marketplace-trade-mode-config-container" hidden>
 
-                    <!-- Authorized to perform action -->
-                    <fieldset class="wizard-fieldset" style="margin-bottom: var(--space-6);">
-                      <legend class="wizard-field__label">Authorized to perform action</legend>
-                      <p class="field-hint" style="margin-bottom: var(--space-3);">Who can execute marketplace trade
-                        mode changes?</p>
+                    <div class="authorization-group">
+                      <!-- Authorized to perform action -->
+                      <div class="field-group">
+                        <label class="wizard-field__label" for="marketplace-trade-mode-perform">
+                          Authorized to perform action
+                          <button type="button" class="help-icon" data-help="marketplace-trade-mode-perform" data-guide-target="guide-marketplace-trade-mode" aria-label="Help: Marketplace Trade Mode" tabindex="0">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
+                              <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </label>
+                        <select class="wizard-field__input" id="marketplace-trade-mode-perform" name="marketplace-trade-mode-perform">
+                          <option value="no-one">No One</option>
+                          <option value="owner" selected>Contract Owner</option>
+                          <option value="identity">Specific Identity</option>
+                          <option value="group">Specific Group</option>
+                        </select>
+                        <span class="field-hint">Who can execute marketplace trade mode changes?</span>
+                      </div>
 
-                      <!-- Contract Owner Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="marketplace-trade-mode-perform"
-                          value="owner" checked>
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Contract Owner</span>
-                          <span class="wizard-choice__hint">Only the contract owner can perform marketplace trade mode
-                            changes</span>
-                        </span>
-                      </label>
-
-                      <!-- Specific Identity Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="marketplace-trade-mode-perform"
-                          value="identity" data-toggle-panel="marketplace-trade-mode-perform-identity-panel">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Identity</span>
-                          <span class="wizard-choice__hint">A specific identity can perform marketplace trade mode
-                            changes</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="marketplace-trade-mode-perform-identity-panel" hidden>
+                      <!-- Identity Panel -->
+                      <div class="authorization-inline-panel" id="marketplace-trade-mode-perform-identity-panel" hidden>
                         <div class="field-group">
-                          <label class="wizard-field__label" for="marketplace-trade-mode-perform-identity-id">Identity
-                            ID</label>
+                          <label class="wizard-field__label" for="marketplace-trade-mode-perform-identity-id">Identity ID</label>
                           <input class="wizard-field__input" type="text" id="marketplace-trade-mode-perform-identity-id"
                             placeholder="Enter the Base58 ID">
                           <span class="field-hint">Enter the Dash Platform identity ID</span>
                         </div>
                       </div>
 
-                      <!-- Group Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="marketplace-trade-mode-perform"
-                          value="group" data-toggle-panel="marketplace-trade-mode-perform-group-panel">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Group</span>
-                          <span class="wizard-choice__hint">Members of a group can perform marketplace trade mode
-                            changes</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="marketplace-trade-mode-perform-group-panel" hidden>
+                      <!-- Group Panel -->
+                      <div class="authorization-inline-panel" id="marketplace-trade-mode-perform-group-panel" hidden>
                         <div class="field-group">
-                          <label class="wizard-field__label" for="marketplace-trade-mode-perform-group-id">Select
-                            group</label>
+                          <label class="wizard-field__label" for="marketplace-trade-mode-perform-group-id">Select group</label>
                           <select class="wizard-field__input" id="marketplace-trade-mode-perform-group-id">
                             <option value="">Select a group...</option>
                           </select>
@@ -4513,83 +4060,47 @@
                         </div>
                       </div>
 
-                      <!-- No One Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="marketplace-trade-mode-perform"
-                          value="no-one">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">No One</span>
-                          <span class="wizard-choice__hint">Marketplace trade mode changes are disabled (can be enabled
-                            later by rule changer)</span>
-                        </span>
-                      </label>
-                    </fieldset>
+                      <!-- Authorized to change rules -->
+                      <div class="field-group" style="margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
+                        <label class="wizard-field__label" for="marketplace-trade-mode-change-rules">
+                          Authorized to change rules
+                          <button type="button" class="help-icon" data-help="marketplace-trade-mode-rules" data-guide-target="guide-governance-safeguards-marketplace" aria-label="Help: Marketplace Trade Mode Rules" tabindex="0">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
+                              <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </label>
+                        <select class="wizard-field__input" id="marketplace-trade-mode-change-rules" name="marketplace-trade-mode-change-rules">
+                          <option value="no-one">No One</option>
+                          <option value="owner" selected>Contract Owner</option>
+                          <option value="identity">Specific Identity</option>
+                          <option value="group">Specific Group</option>
+                        </select>
+                        <span class="field-hint">Who can modify the authorization rules for marketplace trade mode changes?</span>
+                      </div>
 
-                    <!-- Authorized to change rules -->
-                    <fieldset class="wizard-fieldset">
-                      <legend class="wizard-field__label">Authorized to change rules</legend>
-                      <p class="field-hint" style="margin-bottom: var(--space-3);">Who can modify the authorization
-                        rules for marketplace trade mode changes?</p>
-
-                      <!-- Owner Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="marketplace-trade-mode-change-rules"
-                          value="owner" checked>
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Owner</span>
-                          <span class="wizard-choice__hint">Only the owner can change authorization rules</span>
-                        </span>
-                      </label>
-
-                      <!-- Identity Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="marketplace-trade-mode-change-rules"
-                          value="identity" data-toggle-panel="marketplace-trade-mode-rules-identity-panel">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Identity</span>
-                          <span class="wizard-choice__hint">A specific identity can change authorization rules</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="marketplace-trade-mode-rules-identity-panel" hidden>
+                      <!-- Rule Changer Identity Panel -->
+                      <div class="authorization-inline-panel" id="marketplace-trade-mode-rules-identity-panel" hidden>
                         <div class="field-group">
-                          <label class="wizard-field__label" for="marketplace-trade-mode-rules-identity-id">Identity
-                            ID</label>
+                          <label class="wizard-field__label" for="marketplace-trade-mode-rules-identity-id">Identity ID</label>
                           <input class="wizard-field__input" type="text" id="marketplace-trade-mode-rules-identity-id"
                             placeholder="Enter the Base58 ID">
                           <span class="field-hint">Enter the Dash Platform identity ID</span>
                         </div>
                       </div>
 
-                      <!-- Group Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="marketplace-trade-mode-change-rules"
-                          value="group" data-toggle-panel="marketplace-trade-mode-rules-group-panel">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Group</span>
-                          <span class="wizard-choice__hint">Members of a group can change authorization rules</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="marketplace-trade-mode-rules-group-panel" hidden>
+                      <!-- Rule Changer Group Panel -->
+                      <div class="authorization-inline-panel" id="marketplace-trade-mode-rules-group-panel" hidden>
                         <div class="field-group">
-                          <label class="wizard-field__label" for="marketplace-trade-mode-rules-group-id">Select
-                            group</label>
+                          <label class="wizard-field__label" for="marketplace-trade-mode-rules-group-id">Select group</label>
                           <select class="wizard-field__input" id="marketplace-trade-mode-rules-group-id">
                             <option value="">Select a group...</option>
                           </select>
                           <span class="field-hint">Choose which group can modify rules</span>
                         </div>
                       </div>
-
-                      <!-- No One Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="marketplace-trade-mode-change-rules"
-                          value="no-one">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">No One</span>
-                          <span class="wizard-choice__hint">Authorization rules are locked and cannot be changed</span>
-                        </span>
-                      </label>
-                    </fieldset>
+                    </div>
 
                     <!-- Governance Safeguards -->
                     <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
@@ -4817,61 +4328,39 @@
                   <!-- Direct Pricing Configuration (shown when Yes is selected) -->
                   <div class="distribution-inline-panel" id="direct-pricing-config-container" hidden>
 
-                    <!-- Authorized to perform action -->
-                    <fieldset class="wizard-fieldset" style="margin-bottom: var(--space-6);">
-                      <legend class="wizard-field__label">Authorized to perform action
-                        <button type="button" class="help-icon" data-help="direct-pricing-who" data-guide-target="guide-who-can-change-pricing" aria-label="Help: Who Can Change Pricing" tabindex="0">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
-                            <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                          </svg>
-                        </button>
-                      </legend>
-                      <p class="field-hint" style="margin-bottom: var(--space-3);">Who can execute direct purchase
-                        pricing changes?</p>
+                    <div class="authorization-group">
+                      <!-- Authorized to perform action -->
+                      <div class="field-group">
+                        <label class="wizard-field__label" for="direct-pricing-perform">
+                          Authorized to perform action
+                          <button type="button" class="help-icon" data-help="direct-pricing-who" data-guide-target="guide-who-can-change-pricing" aria-label="Help: Who Can Change Pricing" tabindex="0">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
+                              <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </label>
+                        <select class="wizard-field__input" id="direct-pricing-perform" name="direct-pricing-perform">
+                          <option value="no-one">No One</option>
+                          <option value="owner" selected>Contract Owner</option>
+                          <option value="identity">Specific Identity</option>
+                          <option value="group">Specific Group</option>
+                        </select>
+                        <span class="field-hint">Who can execute direct purchase pricing changes?</span>
+                      </div>
 
-                      <!-- Contract Owner Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="direct-pricing-perform" value="owner"
-                          checked>
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Contract Owner</span>
-                          <span class="wizard-choice__hint">Only the contract owner can perform direct purchase pricing
-                            changes</span>
-                        </span>
-                      </label>
-
-                      <!-- Specific Identity Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="direct-pricing-perform" value="identity"
-                          data-toggle-panel="direct-pricing-perform-identity-panel">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Identity</span>
-                          <span class="wizard-choice__hint">A specific identity can perform direct purchase pricing
-                            changes</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="direct-pricing-perform-identity-panel" hidden>
+                      <!-- Identity Panel -->
+                      <div class="authorization-inline-panel" id="direct-pricing-perform-identity-panel" hidden>
                         <div class="field-group">
-                          <label class="wizard-field__label" for="direct-pricing-perform-identity-id">Identity
-                            ID</label>
+                          <label class="wizard-field__label" for="direct-pricing-perform-identity-id">Identity ID</label>
                           <input class="wizard-field__input" type="text" id="direct-pricing-perform-identity-id"
                             placeholder="Enter the Base58 ID">
                           <span class="field-hint">Enter the Dash Platform identity ID</span>
                         </div>
                       </div>
 
-                      <!-- Group Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="direct-pricing-perform" value="group"
-                          data-toggle-panel="direct-pricing-perform-group-panel">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Group</span>
-                          <span class="wizard-choice__hint">Members of a group can perform direct purchase pricing
-                            changes</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="direct-pricing-perform-group-panel" hidden>
+                      <!-- Group Panel -->
+                      <div class="authorization-inline-panel" id="direct-pricing-perform-group-panel" hidden>
                         <div class="field-group">
                           <label class="wizard-field__label" for="direct-pricing-perform-group-id">Select group</label>
                           <select class="wizard-field__input" id="direct-pricing-perform-group-id">
@@ -4881,50 +4370,28 @@
                         </div>
                       </div>
 
-                      <!-- No One Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="direct-pricing-perform" value="no-one">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">No One</span>
-                          <span class="wizard-choice__hint">Direct purchase pricing changes are disabled (can be enabled
-                            later by rule changer)</span>
-                        </span>
-                      </label>
-                    </fieldset>
+                      <!-- Authorized to change rules -->
+                      <div class="field-group" style="margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
+                        <label class="wizard-field__label" for="direct-pricing-change-rules">
+                          Authorized to change rules
+                          <button type="button" class="help-icon" data-help="direct-pricing-rules" data-guide-target="guide-pricing-rules-update" aria-label="Help: Who Can Update Pricing Rules" tabindex="0">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
+                              <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </label>
+                        <select class="wizard-field__input" id="direct-pricing-change-rules" name="direct-pricing-change-rules">
+                          <option value="no-one">No One</option>
+                          <option value="owner" selected>Contract Owner</option>
+                          <option value="identity">Specific Identity</option>
+                          <option value="group">Specific Group</option>
+                        </select>
+                        <span class="field-hint">Who can modify the authorization rules for direct purchase pricing changes?</span>
+                      </div>
 
-                    <!-- Authorized to change rules -->
-                    <fieldset class="wizard-fieldset">
-                      <legend class="wizard-field__label">Authorized to change rules
-                        <button type="button" class="help-icon" data-help="direct-pricing-rules" data-guide-target="guide-pricing-rules-update" aria-label="Help: Who Can Update Pricing Rules" tabindex="0">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
-                            <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                          </svg>
-                        </button>
-                      </legend>
-                      <p class="field-hint" style="margin-bottom: var(--space-3);">Who can modify the authorization
-                        rules for direct purchase pricing changes?</p>
-
-                      <!-- Owner Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="direct-pricing-change-rules"
-                          value="owner" checked>
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Owner</span>
-                          <span class="wizard-choice__hint">Only the owner can change authorization rules</span>
-                        </span>
-                      </label>
-
-                      <!-- Identity Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="direct-pricing-change-rules"
-                          value="identity" data-toggle-panel="direct-pricing-rules-identity-panel">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Identity</span>
-                          <span class="wizard-choice__hint">A specific identity can change authorization rules</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="direct-pricing-rules-identity-panel" hidden>
+                      <!-- Rule Changer Identity Panel -->
+                      <div class="authorization-inline-panel" id="direct-pricing-rules-identity-panel" hidden>
                         <div class="field-group">
                           <label class="wizard-field__label" for="direct-pricing-rules-identity-id">Identity ID</label>
                           <input class="wizard-field__input" type="text" id="direct-pricing-rules-identity-id"
@@ -4933,16 +4400,8 @@
                         </div>
                       </div>
 
-                      <!-- Group Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="direct-pricing-change-rules"
-                          value="group" data-toggle-panel="direct-pricing-rules-group-panel">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Group</span>
-                          <span class="wizard-choice__hint">Members of a group can change authorization rules</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="direct-pricing-rules-group-panel" hidden>
+                      <!-- Rule Changer Group Panel -->
+                      <div class="authorization-inline-panel" id="direct-pricing-rules-group-panel" hidden>
                         <div class="field-group">
                           <label class="wizard-field__label" for="direct-pricing-rules-group-id">Select group</label>
                           <select class="wizard-field__input" id="direct-pricing-rules-group-id">
@@ -4951,17 +4410,7 @@
                           <span class="field-hint">Choose which group can modify rules</span>
                         </div>
                       </div>
-
-                      <!-- No One Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="direct-pricing-change-rules"
-                          value="no-one">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">No One</span>
-                          <span class="wizard-choice__hint">Authorization rules are locked and cannot be changed</span>
-                        </span>
-                      </label>
-                    </fieldset>
+                    </div>
 
                     <!-- Governance Safeguards -->
                     <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
@@ -5173,40 +4622,29 @@
                   <!-- Main Control Configuration (shown when Yes is selected) -->
                   <div class="distribution-inline-panel" id="main-control-config-container" hidden>
 
-                    <!-- Authorized to change the Main Control group -->
-                    <fieldset class="wizard-fieldset">
-                      <legend class="wizard-field__label">Authorized to change the Main Control group
-                        <button type="button" class="help-icon" data-help="main-control-who" data-guide-target="guide-who-can-change-group" aria-label="Help: Who Can Change Main Control Group" tabindex="0">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
-                            <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                          </svg>
-                        </button>
-                      </legend>
-                      <p class="field-hint" style="margin-bottom: var(--space-3);">Who can modify the main control
-                        group?</p>
+                    <div class="authorization-group">
+                      <!-- Authorized to change the Main Control group -->
+                      <div class="field-group">
+                        <label class="wizard-field__label" for="main-control-perform">
+                          Authorized to perform action
+                          <button type="button" class="help-icon" data-help="main-control-who" data-guide-target="guide-who-can-change-group" aria-label="Help: Who Can Change Main Control Group" tabindex="0">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
+                              <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </label>
+                        <select class="wizard-field__input" id="main-control-perform" name="main-control-perform">
+                          <option value="no-one">No One</option>
+                          <option value="owner" selected>Contract Owner</option>
+                          <option value="identity">Specific Identity</option>
+                          <option value="group">Specific Group</option>
+                        </select>
+                        <span class="field-hint">Who can modify the main control group?</span>
+                      </div>
 
-                      <!-- Contract Owner Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="main-control-perform" value="owner"
-                          checked>
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Contract Owner</span>
-                          <span class="wizard-choice__hint">Only the contract owner can change the main control
-                            group</span>
-                        </span>
-                      </label>
-
-                      <!-- Specific Identity Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="main-control-perform" value="identity"
-                          data-toggle-panel="main-control-perform-identity-panel">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Identity</span>
-                          <span class="wizard-choice__hint">A specific identity can change the main control group</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="main-control-perform-identity-panel" hidden>
+                      <!-- Identity Panel -->
+                      <div class="authorization-inline-panel" id="main-control-perform-identity-panel" hidden>
                         <div class="field-group">
                           <label class="wizard-field__label" for="main-control-perform-identity-id">Identity ID</label>
                           <input class="wizard-field__input" type="text" id="main-control-perform-identity-id"
@@ -5215,16 +4653,8 @@
                         </div>
                       </div>
 
-                      <!-- Group Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="main-control-perform" value="group"
-                          data-toggle-panel="main-control-perform-group-panel">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">Group</span>
-                          <span class="wizard-choice__hint">Members of a group can change the main control group</span>
-                        </span>
-                      </label>
-                      <div class="distribution-inline-panel" id="main-control-perform-group-panel" hidden>
+                      <!-- Group Panel -->
+                      <div class="authorization-inline-panel" id="main-control-perform-group-panel" hidden>
                         <div class="field-group">
                           <label class="wizard-field__label" for="main-control-perform-group-id">Select group</label>
                           <select class="wizard-field__input" id="main-control-perform-group-id">
@@ -5233,17 +4663,7 @@
                           <span class="field-hint">Choose which group can perform this action</span>
                         </div>
                       </div>
-
-                      <!-- No One Option -->
-                      <label class="wizard-choice">
-                        <input class="wizard-choice__input" type="radio" name="main-control-perform" value="no-one">
-                        <span class="wizard-choice__content">
-                          <span class="wizard-choice__title">No One</span>
-                          <span class="wizard-choice__hint">Main control group changes are disabled (main control group
-                            is locked)</span>
-                        </span>
-                      </label>
-                    </fieldset>
+                    </div>
 
                   </div>
                   </fieldset>
