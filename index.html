@@ -8058,8 +8058,8 @@
                 <h4 class="page-guide__step-heading" id="registration-methods">Registration Methods</h4>
                 <p><strong>Mobile App (QR Code):</strong> The recommended method for most users. The wizard generates animated QR codes containing your complete token configuration. You scan these codes with the Dash mobile wallet app, which automatically handles identity creation, funding, and contract submission.</p>
                 <p><strong>Use when:</strong> You prefer a mobile-first workflow, want the simplest experience, and don't want to expose sensitive keys to a web browser.</p>
-                <p style="margin-top: var(--space-3);"><strong>Dash Evo Tool (DET):</strong> A command-line interface for developers and advanced users. The wizard generates a downloadable contract JSON file with step-by-step CLI instructions for installation and deployment.</p>
-                <p><strong>Use when:</strong> You need programmatic deployment, want to integrate with CI/CD pipelines, require audit trails, or prefer working with command-line tools.</p>
+                <p style="margin-top: var(--space-3);"><strong>Dash Evo Tool (DET):</strong> A desktop application for developers and advanced users. The wizard generates a downloadable contract JSON file that you import into DET for deployment.</p>
+                <p><strong>Use when:</strong> You want a visual interface for contract deployment, need to manage multiple identities, or prefer a desktop application over mobile.</p>
 
                 <h4 class="page-guide__step-heading" id="network-selection">Network Selection</h4>
                 <p><strong>Testnet:</strong> A sandbox environment for testing. Use testnet to experiment with your token configuration, verify behavior, and test integrations without spending real funds or creating permanent contracts.</p>
@@ -8166,27 +8166,27 @@
 
                 <div class="page-guide__section">
                   <h3 class="page-guide__section-title">Method 2: Dash Evo Tool (DET) - For Developers</h3>
-                  <p>The DET method provides full control via command-line interface, ideal for automated deployments and CI/CD integration.</p>
+                  <p>The DET method provides a desktop application interface, ideal for developers who want visual control over contract deployment.</p>
 
                   <p><strong>Requirements:</strong></p>
                   <ul class="page-guide__list">
-                    <li>Node.js 16+ installed on your system</li>
-                    <li>Terminal/command-line access</li>
+                    <li>Dash Evo Tool desktop application (download from GitHub releases)</li>
                     <li>Dash wallet with funded address</li>
-                    <li>Basic familiarity with command-line tools</li>
+                    <li>Basic familiarity with blockchain applications</li>
                   </ul>
 
                   <p><strong>Step-by-step process:</strong></p>
                   <ol class="page-guide__list">
                     <li><strong>Select DET Method:</strong> On the Registration screen, choose "Dash Evo Tool (Advanced)"</li>
                     <li><strong>Download Contract JSON:</strong> Click "Download Contract JSON" in Step 1. This saves your token configuration as a .json file.</li>
-                    <li><strong>Install DET:</strong> Open your terminal and run: <code>npm install -g @dashevo/dashevo-tool</code></li>
-                    <li><strong>Configure DET:</strong> Set up your wallet mnemonic: <code>dashevo-tool config set mnemonic "your twelve word phrase here"</code></li>
-                    <li><strong>Select Network:</strong> Choose network: <code>dashevo-tool config set network testnet</code> (or mainnet)</li>
-                    <li><strong>Verify Balance:</strong> Check wallet balance: <code>dashevo-tool wallet balance</code> (ensure sufficient funds)</li>
-                    <li><strong>Register Identity:</strong> If you don't have an identity: <code>dashevo-tool identity register</code></li>
-                    <li><strong>Deploy Contract:</strong> Submit your contract: <code>dashevo-tool contract register --file ./your-token-contract.json</code></li>
-                    <li><strong>Wait for Confirmation:</strong> The tool will display transaction status and contract ID upon success.</li>
+                    <li><strong>Download DET:</strong> Get the Dash Evo Tool from <a href="https://github.com/dashpay/dash-evo-tool/releases" target="_blank">github.com/dashpay/dash-evo-tool/releases</a></li>
+                    <li><strong>Open DET:</strong> Launch the Dash Evo Tool application</li>
+                    <li><strong>Connect Wallet:</strong> Set up your wallet by importing your mnemonic or creating a new one</li>
+                    <li><strong>Select Network:</strong> Choose Testnet or Mainnet from the network selector</li>
+                    <li><strong>Navigate to Contracts:</strong> Click on "Contracts" in the main menu</li>
+                    <li><strong>Register Contract:</strong> Click the "Contracts" dropdown in the top right, then select "Register Contract"</li>
+                    <li><strong>Import JSON:</strong> Load your downloaded contract JSON file</li>
+                    <li><strong>Review and Submit:</strong> Verify the contract details and click to deploy</li>
                     <li><strong>Document Results:</strong> Save the contract ID and transaction hash for your records.</li>
                   </ol>
 
@@ -8199,7 +8199,7 @@
 
                   <p><strong>Troubleshooting:</strong></p>
                   <ul class="page-guide__list">
-                    <li><strong>DET installation fails:</strong> Check Node.js version (must be 16+) and ensure npm is properly configured.</li>
+                    <li><strong>DET won't open:</strong> Ensure you downloaded the correct version for your OS (Windows/Mac/Linux) from the GitHub releases page.</li>
                     <li><strong>Identity creation fails:</strong> Verify wallet has sufficient balance. Identity creation costs approximately 0.1 DASH. Total deployment cost = 0.1 (identity) + 0.1 (token) + 0.1 per keyword + 0.1 per distribution feature.</li>
                     <li><strong>Contract validation errors:</strong> Ensure your JSON file is valid. Use the "Show JSON" preview to check for syntax errors. Verify keywords are 3-50 characters and description is 3-100 characters.</li>
                     <li><strong>Network connection issues:</strong> Confirm you're connected to the correct network and that Dash Platform services are operational.</li>
@@ -8417,10 +8417,10 @@
                     <li><strong>Solution:</strong> Increase screen brightness, improve lighting, hold phone steady, ensure camera has permission to access. Try moving closer or farther from screen.</li>
                   </ul>
 
-                  <p><strong>Problem: DET Command Not Found</strong></p>
+                  <p><strong>Problem: DET Won't Open or Crashes</strong></p>
                   <ul class="page-guide__list">
-                    <li><strong>Cause:</strong> DET not installed or not in PATH</li>
-                    <li><strong>Solution:</strong> Run <code>npm install -g @dashevo/dashevo-tool</code> again. Verify with <code>dashevo-tool --version</code>. Restart terminal if needed.</li>
+                    <li><strong>Cause:</strong> Missing dependencies or corrupted installation</li>
+                    <li><strong>Solution:</strong> Re-download DET from the <a href="https://github.com/dashpay/dash-evo-tool/releases" target="_blank" rel="noopener">GitHub releases page</a>. Ensure you have the correct version for your operating system (Windows, macOS, or Linux).</li>
                   </ul>
 
                   <p><strong>Problem: Wrong Network After Deployment</strong></p>
@@ -8549,12 +8549,15 @@
                 <!-- Step 2: Install & Open DET -->
                 <div class="form-card">
                   <div class="form-card__header">
-                    <h3 class="form-card__title">Step 2: Install Dash Evo Tool</h3>
-                    <p class="form-card__description">Set up the command-line tool if you haven't already</p>
+                    <h3 class="form-card__title">Step 2: Download & Install Dash Evo Tool</h3>
+                    <p class="form-card__description">Get the desktop application for your operating system</p>
                   </div>
                   <div class="form-card__body">
-                    <pre
-                      style="background: var(--color-bg-secondary); padding: var(--space-3); border-radius: var(--radius-md);">npm install -g @dashevo/dashevo-tool</pre>
+                    <ol style="margin: 0; padding-left: var(--space-4);">
+                      <li>Visit the <a href="https://github.com/dashpay/dash-evo-tool/releases" target="_blank" rel="noopener" class="wizard-link">Dash Evo Tool GitHub Releases</a></li>
+                      <li>Download the appropriate version for your OS (Windows, macOS, or Linux)</li>
+                      <li>Install and launch the application</li>
+                    </ol>
                     <p class="field-hint" style="margin-top: var(--space-2);">
                       For more information, visit the <a href="https://docs.dash.org" target="_blank" rel="noopener"
                         class="wizard-link">Dash Platform Documentation</a>
@@ -8565,16 +8568,19 @@
                 <!-- Step 3: Import to DET -->
                 <div class="form-card">
                   <div class="form-card__header">
-                    <h3 class="form-card__title">Step 3: Import JSON into DET</h3>
-                    <p class="form-card__description">Use the DET command-line to register your token</p>
+                    <h3 class="form-card__title">Step 3: Register Contract in DET</h3>
+                    <p class="form-card__description">Use the DET GUI to register your token contract</p>
                   </div>
                   <div class="form-card__body">
-                    <p style="margin-bottom: var(--space-3);">Run the following command with your downloaded JSON file:
-                    </p>
-                    <pre
-                      style="background: var(--color-bg-secondary); padding: var(--space-3); border-radius: var(--radius-md);">dashevo-tool contract register --file ./your-token-contract.json</pre>
+                    <ol style="margin: 0; padding-left: var(--space-4);">
+                      <li>Open Dash Evo Tool and navigate to <strong>Contracts</strong> in the sidebar</li>
+                      <li>Click the <strong>Contracts</strong> dropdown in the top right corner</li>
+                      <li>Select <strong>Register Contract</strong></li>
+                      <li>Paste your downloaded JSON or load the file</li>
+                      <li>Review and confirm to deploy your contract</li>
+                    </ol>
                     <p class="field-hint" style="margin-top: var(--space-2);">
-                      Replace <code>your-token-contract.json</code> with the actual filename you downloaded
+                      Make sure you have an identity with sufficient credits before registering
                     </p>
                   </div>
                 </div>
