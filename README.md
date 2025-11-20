@@ -352,7 +352,6 @@ For more detailed troubleshooting, see the [docs/COMMON_ERRORS.md](docs/COMMON_E
 
 ## Security Considerations
 
-- **Never share your wallet mnemonic**: The self-service registration stores your mnemonic in browser memory only during the session
 - **Use testnet first**: Always test your token configuration on testnet before deploying to mainnet
 - **Review JSON output**: Double-check the generated JSON before submission
 - **Secure your device**: This application runs client-side - ensure your device is secure
@@ -373,7 +372,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Support
 
 - **Issues**: Report bugs or request features via [GitHub Issues](https://github.com/Scolvr/Dash-Data-Contract-Web-Wizard/issues)
-- **Discussions**: Join the conversation in [GitHub Discussions](https://github.com/Scolvr/Dash-Data-Contract-Web-Wizard/discussions)
 - **Dash Platform Docs**: <https://docs.dash.org/projects/platform/>
 
 ## Links
