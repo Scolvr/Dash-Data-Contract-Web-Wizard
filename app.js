@@ -817,7 +817,12 @@
           rows: [],
           updateNames: {
             performerType: 'owner',
-            performerReference: ''
+            performerReference: '',
+            ruleChangerType: 'owner',
+            ruleChangerReference: '',
+            allowChangeAuthorizedToNone: false,
+            allowChangeAdminToNone: false,
+            allowSelfChangeAdmin: false
           }
         },
         permissions: {
@@ -959,7 +964,12 @@
           },
           mainControl: {
             performerType: 'owner',
-            performerReference: ''
+            performerReference: '',
+            ruleChangerType: 'owner',
+            ruleChangerReference: '',
+            allowChangeAuthorizedToNone: false,
+            allowChangeAdminToNone: false,
+            allowSelfChangeAdmin: false
           }
         },
         search: {
@@ -7217,7 +7227,7 @@
     }
 
     // Change Max Supply Rule Changer (admin) Select Dropdown
-    const changeMaxSupplyRuleChangerSelect = document.getElementById('change-max-supply-rule-changer');
+    const changeMaxSupplyRuleChangerSelect = document.getElementById('change-max-supply-change-rules');
     if (changeMaxSupplyRuleChangerSelect) {
       changeMaxSupplyRuleChangerSelect.addEventListener('change', () => {
         const value = changeMaxSupplyRuleChangerSelect.value;
@@ -7242,7 +7252,7 @@
     }
 
     // Change Max Supply Rule Identity ID Input
-    const changeMaxSupplyRuleIdentityIdInput = document.getElementById('change-max-supply-rule-identity-id');
+    const changeMaxSupplyRuleIdentityIdInput = document.getElementById('change-max-supply-rules-identity-id');
     if (changeMaxSupplyRuleIdentityIdInput) {
       changeMaxSupplyRuleIdentityIdInput.addEventListener('input', () => {
         if (!wizardState.form.permissions.changeMaxSupply.changeRules) {
@@ -7254,7 +7264,7 @@
     }
 
     // Change Max Supply Rule Group Select
-    const changeMaxSupplyRuleGroupSelect = document.getElementById('change-max-supply-rule-group-id');
+    const changeMaxSupplyRuleGroupSelect = document.getElementById('change-max-supply-rules-group-id');
     if (changeMaxSupplyRuleGroupSelect) {
       changeMaxSupplyRuleGroupSelect.addEventListener('change', () => {
         if (!wizardState.form.permissions.changeMaxSupply.changeRules) {
@@ -11862,27 +11872,28 @@
   const authorizationDropdowns = [
     // Naming step
     { selectId: 'update-names-permission', identityPanel: 'update-names-panel-identity', groupPanel: 'update-names-panel-group' },
+    { selectId: 'update-names-rule-changer', identityPanel: 'update-names-rule-panel-identity', groupPanel: 'update-names-rule-panel-group' },
     // Permissions step - Change Max Supply
     { selectId: 'change-max-supply-permission', identityPanel: 'change-max-supply-panel-identity', groupPanel: 'change-max-supply-panel-group' },
-    { selectId: 'change-max-supply-rule-changer', identityPanel: 'change-max-supply-rule-panel-identity', groupPanel: 'change-max-supply-rule-panel-group' },
+    { selectId: 'change-max-supply-change-rules', identityPanel: 'change-max-supply-rules-identity-panel', groupPanel: 'change-max-supply-rules-group-panel' },
     // Permissions step - Manual Mint
     { selectId: 'manual-mint-permission', identityPanel: 'manual-mint-panel-identity', groupPanel: 'manual-mint-panel-group' },
-    { selectId: 'manual-mint-rule-changer', identityPanel: 'manual-mint-rule-panel-identity', groupPanel: 'manual-mint-rule-panel-group' },
+    { selectId: 'manual-mint-change-rules', identityPanel: 'manual-mint-rules-identity-panel', groupPanel: 'manual-mint-rules-group-panel' },
     // Permissions step - Manual Burn
     { selectId: 'manual-burn-permission', identityPanel: 'manual-burn-panel-identity', groupPanel: 'manual-burn-panel-group' },
-    { selectId: 'manual-burn-rule-changer', identityPanel: 'manual-burn-rule-panel-identity', groupPanel: 'manual-burn-rule-panel-group' },
+    { selectId: 'manual-burn-change-rules', identityPanel: 'manual-burn-rules-identity-panel', groupPanel: 'manual-burn-rules-group-panel' },
     // Permissions step - Manual Freeze
     { selectId: 'manual-freeze-permission', identityPanel: 'manual-freeze-panel-identity', groupPanel: 'manual-freeze-panel-group' },
-    { selectId: 'manual-freeze-rule-changer', identityPanel: 'manual-freeze-rule-panel-identity', groupPanel: 'manual-freeze-rule-panel-group' },
+    { selectId: 'manual-freeze-change-rules', identityPanel: 'manual-freeze-rules-identity-panel', groupPanel: 'manual-freeze-rules-group-panel' },
     // Permissions step - Manual Unfreeze
     { selectId: 'manual-unfreeze-permission', identityPanel: 'manual-unfreeze-panel-identity', groupPanel: 'manual-unfreeze-panel-group' },
-    { selectId: 'manual-unfreeze-rule-changer', identityPanel: 'manual-unfreeze-rule-panel-identity', groupPanel: 'manual-unfreeze-rule-panel-group' },
+    { selectId: 'manual-unfreeze-change-rules', identityPanel: 'manual-unfreeze-rules-identity-panel', groupPanel: 'manual-unfreeze-rules-group-panel' },
     // Permissions step - Destroy Frozen
     { selectId: 'destroy-frozen-permission', identityPanel: 'destroy-frozen-panel-identity', groupPanel: 'destroy-frozen-panel-group' },
-    { selectId: 'destroy-frozen-rule-changer', identityPanel: 'destroy-frozen-rule-panel-identity', groupPanel: 'destroy-frozen-rule-panel-group' },
+    { selectId: 'destroy-frozen-change-rules', identityPanel: 'destroy-frozen-rules-identity-panel', groupPanel: 'destroy-frozen-rules-group-panel' },
     // Permissions step - Emergency
     { selectId: 'emergency-permission', identityPanel: 'emergency-panel-identity', groupPanel: 'emergency-panel-group' },
-    { selectId: 'emergency-rule-changer', identityPanel: 'emergency-rule-panel-identity', groupPanel: 'emergency-rule-panel-group' },
+    { selectId: 'emergency-change-rules', identityPanel: 'emergency-rules-identity-panel', groupPanel: 'emergency-rules-group-panel' },
     // Advanced step - Conventions
     { selectId: 'conventions-perform', identityPanel: 'conventions-perform-identity-panel', groupPanel: 'conventions-perform-group-panel' },
     { selectId: 'conventions-change-rules', identityPanel: 'conventions-rules-identity-panel', groupPanel: 'conventions-rules-group-panel' },
@@ -11893,7 +11904,8 @@
     { selectId: 'direct-pricing-perform', identityPanel: 'direct-pricing-perform-identity-panel', groupPanel: 'direct-pricing-perform-group-panel' },
     { selectId: 'direct-pricing-change-rules', identityPanel: 'direct-pricing-rules-identity-panel', groupPanel: 'direct-pricing-rules-group-panel' },
     // Advanced step - Main Control
-    { selectId: 'main-control-perform', identityPanel: 'main-control-perform-identity-panel', groupPanel: 'main-control-perform-group-panel' }
+    { selectId: 'main-control-perform', identityPanel: 'main-control-perform-identity-panel', groupPanel: 'main-control-perform-group-panel' },
+    { selectId: 'main-control-change-rules', identityPanel: 'main-control-rules-identity-panel', groupPanel: 'main-control-rules-group-panel' }
   ];
 
   // Function to toggle panels based on select value
@@ -11971,6 +11983,14 @@
       identityInputId: 'update-names-identity-id',
       groupSelectId: 'update-names-group-id'
     },
+    {
+      selectId: 'update-names-rule-changer',
+      statePath: 'form.naming.updateNames',
+      stateKey: 'ruleChangerType',
+      referenceKey: 'ruleChangerReference',
+      identityInputId: 'update-names-rule-identity-id',
+      groupSelectId: 'update-names-rule-group-id'
+    },
     // Permissions step - Manual Mint
     {
       selectId: 'manual-mint-permission',
@@ -11981,12 +12001,12 @@
       groupSelectId: 'manual-mint-group-id'
     },
     {
-      selectId: 'manual-mint-rule-changer',
+      selectId: 'manual-mint-change-rules',
       statePath: 'form.permissions.manualMint',
       stateKey: 'ruleChangerType',
       referenceKey: 'ruleChangerReference',
-      identityInputId: 'manual-mint-rule-identity-id',
-      groupSelectId: 'manual-mint-rule-group-id'
+      identityInputId: 'manual-mint-rules-identity-id',
+      groupSelectId: 'manual-mint-rules-group-id'
     },
     // Permissions step - Manual Burn
     {
@@ -11998,12 +12018,12 @@
       groupSelectId: 'manual-burn-group-id'
     },
     {
-      selectId: 'manual-burn-rule-changer',
+      selectId: 'manual-burn-change-rules',
       statePath: 'form.permissions.manualBurn',
       stateKey: 'ruleChangerType',
       referenceKey: 'ruleChangerReference',
-      identityInputId: 'manual-burn-rule-identity-id',
-      groupSelectId: 'manual-burn-rule-group-id'
+      identityInputId: 'manual-burn-rules-identity-id',
+      groupSelectId: 'manual-burn-rules-group-id'
     },
     // Permissions step - Manual Freeze
     {
@@ -12015,12 +12035,12 @@
       groupSelectId: 'manual-freeze-group-id'
     },
     {
-      selectId: 'manual-freeze-rule-changer',
+      selectId: 'manual-freeze-change-rules',
       statePath: 'form.permissions.manualFreeze',
       stateKey: 'ruleChangerType',
       referenceKey: 'ruleChangerReference',
-      identityInputId: 'manual-freeze-rule-identity-id',
-      groupSelectId: 'manual-freeze-rule-group-id'
+      identityInputId: 'manual-freeze-rules-identity-id',
+      groupSelectId: 'manual-freeze-rules-group-id'
     },
     // Permissions step - Manual Unfreeze
     {
@@ -12032,12 +12052,12 @@
       groupSelectId: 'manual-unfreeze-group-id'
     },
     {
-      selectId: 'manual-unfreeze-rule-changer',
+      selectId: 'manual-unfreeze-change-rules',
       statePath: 'form.permissions.unfreeze',
       stateKey: 'ruleChangerType',
       referenceKey: 'ruleChangerReference',
-      identityInputId: 'manual-unfreeze-rule-identity-id',
-      groupSelectId: 'manual-unfreeze-rule-group-id'
+      identityInputId: 'manual-unfreeze-rules-identity-id',
+      groupSelectId: 'manual-unfreeze-rules-group-id'
     },
     // Permissions step - Destroy Frozen
     {
@@ -12049,12 +12069,12 @@
       groupSelectId: 'destroy-frozen-group-id'
     },
     {
-      selectId: 'destroy-frozen-rule-changer',
+      selectId: 'destroy-frozen-change-rules',
       statePath: 'form.permissions.destroyFrozen',
       stateKey: 'ruleChangerType',
       referenceKey: 'ruleChangerReference',
-      identityInputId: 'destroy-frozen-rule-identity-id',
-      groupSelectId: 'destroy-frozen-rule-group-id'
+      identityInputId: 'destroy-frozen-rules-identity-id',
+      groupSelectId: 'destroy-frozen-rules-group-id'
     },
     // Permissions step - Emergency Actions
     {
@@ -12066,12 +12086,12 @@
       groupSelectId: 'emergency-group-id'
     },
     {
-      selectId: 'emergency-rule-changer',
+      selectId: 'emergency-change-rules',
       statePath: 'form.permissions.emergencyAction',
       stateKey: 'ruleChangerType',
       referenceKey: 'ruleChangerReference',
-      identityInputId: 'emergency-rule-identity-id',
-      groupSelectId: 'emergency-rule-group-id'
+      identityInputId: 'emergency-rules-identity-id',
+      groupSelectId: 'emergency-rules-group-id'
     },
     // Advanced step - Conventions
     {
@@ -12132,6 +12152,14 @@
       referenceKey: 'performerReference',
       identityInputId: 'main-control-perform-identity-id',
       groupSelectId: 'main-control-perform-group-id'
+    },
+    {
+      selectId: 'main-control-change-rules',
+      statePath: 'form.advanced.mainControl',
+      stateKey: 'ruleChangerType',
+      referenceKey: 'ruleChangerReference',
+      identityInputId: 'main-control-rules-identity-id',
+      groupSelectId: 'main-control-rules-group-id'
     }
   ];
 
@@ -12242,6 +12270,114 @@
 })();
 
 // ========================================
+// UPDATE NAMES & MAIN CONTROL GOVERNANCE SAFEGUARDS
+// ========================================
+
+(function initializeGovernanceSafeguardCheckboxes() {
+  const wizardState = window.wizardState;
+  if (!wizardState) {
+    console.warn('wizardState not available for governance safeguard initialization');
+    return;
+  }
+
+  // Update Names Governance Checkboxes
+  const updateNamesAllowAuthorizedNone = document.getElementById('update-names-allow-authorized-none');
+  const updateNamesAllowAdminNone = document.getElementById('update-names-allow-admin-none');
+  const updateNamesAllowSelfChange = document.getElementById('update-names-allow-self-change');
+
+  if (updateNamesAllowAuthorizedNone) {
+    updateNamesAllowAuthorizedNone.addEventListener('change', () => {
+      if (!wizardState.form.naming.updateNames) {
+        wizardState.form.naming.updateNames = {};
+      }
+      wizardState.form.naming.updateNames.allowChangeAuthorizedToNone = updateNamesAllowAuthorizedNone.checked;
+      persistState();
+    });
+  }
+  if (updateNamesAllowAdminNone) {
+    updateNamesAllowAdminNone.addEventListener('change', () => {
+      if (!wizardState.form.naming.updateNames) {
+        wizardState.form.naming.updateNames = {};
+      }
+      wizardState.form.naming.updateNames.allowChangeAdminToNone = updateNamesAllowAdminNone.checked;
+      persistState();
+    });
+  }
+  if (updateNamesAllowSelfChange) {
+    updateNamesAllowSelfChange.addEventListener('change', () => {
+      if (!wizardState.form.naming.updateNames) {
+        wizardState.form.naming.updateNames = {};
+      }
+      wizardState.form.naming.updateNames.allowSelfChangeAdmin = updateNamesAllowSelfChange.checked;
+      persistState();
+    });
+  }
+
+  // Main Control Governance Checkboxes
+  const mainControlAllowAuthorizedNone = document.getElementById('main-control-allow-authorized-none');
+  const mainControlAllowAdminNone = document.getElementById('main-control-allow-admin-none');
+  const mainControlAllowSelfChange = document.getElementById('main-control-allow-self-change');
+
+  if (mainControlAllowAuthorizedNone) {
+    mainControlAllowAuthorizedNone.addEventListener('change', () => {
+      if (!wizardState.form.advanced.mainControl) {
+        wizardState.form.advanced.mainControl = {};
+      }
+      wizardState.form.advanced.mainControl.allowChangeAuthorizedToNone = mainControlAllowAuthorizedNone.checked;
+      persistState();
+    });
+  }
+  if (mainControlAllowAdminNone) {
+    mainControlAllowAdminNone.addEventListener('change', () => {
+      if (!wizardState.form.advanced.mainControl) {
+        wizardState.form.advanced.mainControl = {};
+      }
+      wizardState.form.advanced.mainControl.allowChangeAdminToNone = mainControlAllowAdminNone.checked;
+      persistState();
+    });
+  }
+  if (mainControlAllowSelfChange) {
+    mainControlAllowSelfChange.addEventListener('change', () => {
+      if (!wizardState.form.advanced.mainControl) {
+        wizardState.form.advanced.mainControl = {};
+      }
+      wizardState.form.advanced.mainControl.allowSelfChangeAdmin = mainControlAllowSelfChange.checked;
+      persistState();
+    });
+  }
+
+  // Hydrate checkboxes from state on page load
+  function hydrateGovernanceSafeguardCheckboxes() {
+    // Update Names checkboxes
+    if (updateNamesAllowAuthorizedNone && wizardState.form.naming.updateNames) {
+      updateNamesAllowAuthorizedNone.checked = wizardState.form.naming.updateNames.allowChangeAuthorizedToNone || false;
+    }
+    if (updateNamesAllowAdminNone && wizardState.form.naming.updateNames) {
+      updateNamesAllowAdminNone.checked = wizardState.form.naming.updateNames.allowChangeAdminToNone || false;
+    }
+    if (updateNamesAllowSelfChange && wizardState.form.naming.updateNames) {
+      updateNamesAllowSelfChange.checked = wizardState.form.naming.updateNames.allowSelfChangeAdmin || false;
+    }
+
+    // Main Control checkboxes
+    if (mainControlAllowAuthorizedNone && wizardState.form.advanced.mainControl) {
+      mainControlAllowAuthorizedNone.checked = wizardState.form.advanced.mainControl.allowChangeAuthorizedToNone || false;
+    }
+    if (mainControlAllowAdminNone && wizardState.form.advanced.mainControl) {
+      mainControlAllowAdminNone.checked = wizardState.form.advanced.mainControl.allowChangeAdminToNone || false;
+    }
+    if (mainControlAllowSelfChange && wizardState.form.advanced.mainControl) {
+      mainControlAllowSelfChange.checked = wizardState.form.advanced.mainControl.allowSelfChangeAdmin || false;
+    }
+  }
+
+  // Hydrate on initial load (after a short delay to ensure DOM and state are ready)
+  setTimeout(hydrateGovernanceSafeguardCheckboxes, 250);
+
+  console.log('Update Names and Main Control governance safeguard checkboxes initialized');
+})();
+
+// ========================================
 // GROUP ACTION TAKER SELECTORS
 // ========================================
 
@@ -12260,7 +12396,11 @@
     { selectId: 'marketplace-trade-mode-rules-group-id' },
     { selectId: 'direct-pricing-perform-group-id' },
     { selectId: 'direct-pricing-rules-group-id' },
-    { selectId: 'main-control-group-id' }
+    { selectId: 'main-control-perform-group-id' },
+    { selectId: 'main-control-rules-group-id' },
+    // Update Names group selectors
+    { selectId: 'update-names-group-id', containerId: 'update-names-group-selector-container', hintId: 'update-names-group-hint', noGroupsMessageId: 'update-names-no-groups-message' },
+    { selectId: 'update-names-rule-group-id', containerId: 'update-names-rule-group-selector-container', hintId: 'update-names-rule-group-hint', noGroupsMessageId: 'update-names-rule-no-groups-message' }
   ];
 
   // Function to update all group selectors with current groups
