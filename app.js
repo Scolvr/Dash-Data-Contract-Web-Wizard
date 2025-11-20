@@ -732,7 +732,7 @@
     enabled: false,
     performerType: 'none',
     performerReference: '',
-    ruleChangerType: 'owner',
+    ruleChangerType: 'none',
     ruleChangerReference: '',
     allowChangeAuthorizedToNone: false,
     allowChangeAdminToNone: false,
@@ -749,7 +749,7 @@
       identity: ''
     },
     changeRules: {
-      type: 'owner',
+      type: 'none',
       identity: ''
     },
     flags: {
@@ -816,9 +816,9 @@
           },
           rows: [],
           updateNames: {
-            performerType: 'owner',
+            performerType: 'none',
             performerReference: '',
-            ruleChangerType: 'owner',
+            ruleChangerType: 'none',
             ruleChangerReference: '',
             allowChangeAuthorizedToNone: false,
             allowChangeAdminToNone: false,
@@ -846,14 +846,16 @@
             enabled: false,
             performerType: 'none',
             performerReference: '',
+            ruleChangerType: 'none',
+            ruleChangerReference: '',
             allowChangeAuthorizedToNone: false,
             allowChangeAdminToNone: false,
             allowSelfChangeAdmin: false
           },
           changeMaxSupply: {
             enabled: false,
-            perform: { type: 'owner', identityId: '', groupId: null },
-            changeRules: { type: 'owner', identityId: '', groupId: null },
+            perform: { type: 'none', identityId: '', groupId: null },
+            changeRules: { type: 'none', identityId: '', groupId: null },
             allowChangeAuthorizedToNone: false,
             allowChangeAdminToNone: false,
             allowSelfChangeAdmin: false
@@ -945,27 +947,27 @@
           changeControl: { ...DEFAULT_CHANGE_CONTROL_FLAGS },
           // Authorization settings for advanced permissions
           conventions: {
-            performerType: 'owner',
+            performerType: 'none',
             performerReference: '',
-            ruleChangerType: 'owner',
+            ruleChangerType: 'none',
             ruleChangerReference: ''
           },
           marketplaceTradeMode: {
-            performerType: 'owner',
+            performerType: 'none',
             performerReference: '',
-            ruleChangerType: 'owner',
+            ruleChangerType: 'none',
             ruleChangerReference: ''
           },
           directPricing: {
-            performerType: 'owner',
+            performerType: 'none',
             performerReference: '',
-            ruleChangerType: 'owner',
+            ruleChangerType: 'none',
             ruleChangerReference: ''
           },
           mainControl: {
-            performerType: 'owner',
+            performerType: 'none',
             performerReference: '',
-            ruleChangerType: 'owner',
+            ruleChangerType: 'none',
             ruleChangerReference: '',
             allowChangeAuthorizedToNone: false,
             allowChangeAdminToNone: false,
@@ -4227,13 +4229,13 @@
         if (fallbackGroup) {
           normalized.ruleChangerReference = fallbackGroup.id;
         } else {
-          normalized.ruleChangerType = normalized.enabled ? 'owner' : 'none';
+          normalized.ruleChangerType = 'none';
           normalized.ruleChangerReference = '';
         }
       }
     } else if (normalized.ruleChangerType === 'main-group') {
       if (mainGroupIndex < 0 || mainGroupIndex >= groups.length) {
-        normalized.ruleChangerType = groups.length ? 'group' : 'owner';
+        normalized.ruleChangerType = groups.length ? 'group' : 'none';
         normalized.ruleChangerReference = groups.length ? groups[0].id : '';
       }
     }
@@ -4246,8 +4248,8 @@
       normalized.performerReference = groups.length ? groups[0].id : '';
     }
 
+    // Keep ruleChangerType as 'none' when disabled - don't convert to 'owner'
     if (!normalized.enabled && normalized.ruleChangerType === 'none') {
-      normalized.ruleChangerType = 'owner';
       normalized.ruleChangerReference = '';
     }
 
@@ -8657,8 +8659,8 @@
         const identityId = identityIdInput ? identityIdInput.value.trim() : '';
 
         // Collect perpetual distribution rules
-        const performAction = document.getElementById('perpetual-perform-action')?.value || 'owner';
-        const changeRules = document.getElementById('perpetual-change-rules')?.value || 'owner';
+        const performAction = document.getElementById('perpetual-perform-action')?.value || 'no-one';
+        const changeRules = document.getElementById('perpetual-change-rules')?.value || 'no-one';
 
         // Collect safeguard checkbox states
         const safeguards = {
@@ -8680,8 +8682,8 @@
 
         // Collect new tokens destination identity rules
         const mintDestinationRules = {
-          performAction: document.getElementById('mint-destination-perform-action')?.value || 'owner',
-          changeRules: document.getElementById('mint-destination-change-rules')?.value || 'owner',
+          performAction: document.getElementById('mint-destination-perform-action')?.value || 'no-one',
+          changeRules: document.getElementById('mint-destination-change-rules')?.value || 'no-one',
           allowChangeAuthorizedToNone: document.getElementById('mint-destination-allow-change-authorized-to-none')?.checked || false,
           allowChangeAdminToNone: document.getElementById('mint-destination-allow-change-admin-to-none')?.checked || false,
           allowSelfChangeAdmin: document.getElementById('mint-destination-allow-self-change-admin')?.checked || false
@@ -8689,8 +8691,8 @@
 
         // Collect allow choosing destination rules
         const allowChoosingRules = {
-          performAction: document.getElementById('allow-choosing-perform-action')?.value || 'owner',
-          changeRules: document.getElementById('allow-choosing-change-rules')?.value || 'owner',
+          performAction: document.getElementById('allow-choosing-perform-action')?.value || 'no-one',
+          changeRules: document.getElementById('allow-choosing-change-rules')?.value || 'no-one',
           allowChangeAuthorizedToNone: document.getElementById('allow-choosing-allow-change-authorized-to-none')?.checked || false,
           allowChangeAdminToNone: document.getElementById('allow-choosing-allow-change-admin-to-none')?.checked || false,
           allowSelfChangeAdmin: document.getElementById('allow-choosing-allow-self-change-admin')?.checked || false
@@ -10191,8 +10193,8 @@
 
       // Helper to build rule V0 structure from rule config
       const buildRuleV0 = (ruleConfig) => {
-        const performActor = mapActorValue(ruleConfig.performAction || 'owner');
-        const changeRulesActor = mapActorValue(ruleConfig.changeRules || 'owner');
+        const performActor = mapActorValue(ruleConfig.performAction || 'no-one');
+        const changeRulesActor = mapActorValue(ruleConfig.changeRules || 'no-one');
 
         return {
           V0: {
@@ -10205,8 +10207,8 @@
         };
       };
 
-      const performActor = mapActorValue(perpetualSafeguards.performAction || 'owner');
-      const changeRulesActor = mapActorValue(perpetualSafeguards.changeRules || 'owner');
+      const performActor = mapActorValue(perpetualSafeguards.performAction || 'no-one');
+      const changeRulesActor = mapActorValue(perpetualSafeguards.changeRules || 'no-one');
 
       const distributionRules = {
         $format_version: '0',
@@ -12233,7 +12235,7 @@
 
       if (stateObj) {
         // Get type value and convert to select value
-        let typeValue = stateObj[config.stateKey] || 'owner';
+        let typeValue = stateObj[config.stateKey] || 'none';
         if (typeValue === 'none') {
           typeValue = 'no-one';
         }
@@ -12570,12 +12572,12 @@
         wizardState.form.permissions[page.key] = {
           enabled: false,
           perform: {
-            type: 'owner',  // owner, identity, or group
+            type: 'none',  // none, owner, identity, or group
             identityId: '',
             groupId: ''
           },
           changeRules: {
-            type: 'owner',
+            type: 'none',
             identityId: '',
             groupId: ''
           }

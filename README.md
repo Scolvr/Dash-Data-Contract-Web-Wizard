@@ -26,10 +26,14 @@ The Dash Token Wizard is a **zero-dependency, static web application** that prov
 
 - **✓ Permissions & Controls**
   - **Group-based permissions** - Create control groups with specific roles
+  - **Standardized authorization system** - Consistent dropdowns across all permission types
+  - **Four authorization options**: No One, Contract Owner, Specific Identity, Specific Group
+  - **Governance safeguards** - Separate "who can perform action" vs "who can change rules"
   - Freeze/unfreeze token balances
   - Pause/unpause token operations
   - Transfer controls including frozen balance transfers
   - Mint, burn, and history tracking toggles
+  - Emergency actions and destroy frozen tokens controls
 
 - **✓ Distribution Schedules**
   - **Block-based distribution** - Release tokens every N blocks
@@ -156,9 +160,11 @@ open http://localhost:5173
 ### Technology Stack
 
 - **Frontend**: Pure HTML5, CSS3, vanilla JavaScript (ES6+)
-- **Styling**: Custom CSS with CSS variables and dark mode support
-- **State Management**: Client-side state machine with localStorage persistence
+- **Architecture**: Modular ES6 with enhancement system
+- **Styling**: Custom CSS with CSS variables, glassmorphism, and dark mode support
+- **State Management**: Hybrid client-side state machine with localStorage persistence and security-conscious mnemonic handling
 - **SDK**: Dash JavaScript SDK v5 (loaded from CDN)
+- **Testing**: Playwright for E2E, Vitest for unit tests
 - **Server** (optional): Minimal Node.js HTTP server for development
 
 ### File Structure
@@ -166,15 +172,28 @@ open http://localhost:5173
 ```
 /
 ├── index.html              # Main application entry point
-├── app.js                  # Complete wizard logic (~4900+ lines)
+├── app.js                  # Complete wizard logic (~15,000+ lines)
 ├── styles.css              # Complete styling with theme support
 ├── server.js               # Development server (optional)
+├── js/                     # ES6 module system
+│   ├── wizard-enhancements.js  # Main enhancement loader
+│   ├── state/              # State management modules
+│   ├── ui/                 # UI component modules
+│   ├── utils/              # Utility functions
+│   ├── validation/         # Validation logic
+│   └── integration/        # Third-party integrations
+├── docs/                   # Project documentation
+│   ├── FEATURE_LIST.md     # Comprehensive feature inventory
+│   ├── COMMON_ERRORS.md    # Troubleshooting guide
+│   ├── TOOLTIP_CONTENT.md  # Help text and tooltips
+│   └── TOOLTIP_FIELDS.md   # Field-specific help
 ├── contracts/              # Reference Rust data structures
 │   ├── token_configuration_v0.rs
 │   └── token_distribution_rules_v0.rs
-├── CLAUDE.md              # Project instructions for Claude Code
-├── LICENSE                # MIT License
-└── README.md              # This file
+├── .claude/                # Claude Code configuration
+├── CLAUDE.md               # Project instructions for Claude Code
+├── LICENSE                 # MIT License
+└── README.md               # This file
 ```
 
 ### Key Design Principles
@@ -246,9 +265,11 @@ The development server provides:
 
 ### Testing
 
-#### Automated Playwright suite
+#### Automated Test Suites
 
-The e2e suite fuzzes several token configurations and ensures the registration step never shows “Contract validation failed”.
+**E2E Tests (Playwright)**
+
+The e2e suite fuzzes several token configurations and ensures the registration step never shows "Contract validation failed".
 
 ```bash
 npm run test:e2e
@@ -260,11 +281,23 @@ If you install a fresh version of Playwright, download the browser binaries once
 npx playwright install
 ```
 
-#### Manual smoke test
+**Unit Tests (Vitest)**
+
+Unit tests for validation logic, state management, and utility functions.
+
+```bash
+npm run test        # Run all unit tests
+npm run test:watch  # Run in watch mode
+```
+
+#### Manual Smoke Test
 
 - Open the wizard in your browser
 - Walk through the multi-step flow
 - Try different registration methods
+- Test authorization dropdowns (No One, Contract Owner, Specific Identity, Specific Group)
+- Verify identity panel shows when selecting "Specific Identity"
+- Verify group panel shows when selecting "Specific Group"
 - The mock `/api/validate` endpoint returns valid responses during local development
 
 ### Contributing
@@ -297,14 +330,20 @@ Contributions are welcome! Please:
 - [ ] **Export/Import** - Save and load token configurations
 - [ ] **Mainnet Support** - Production deployment on Dash mainnet
 
-### In Progress
+### Completed
 
 - [x] Core wizard functionality
 - [x] All common token configurations
-- [x] Group-based permissions
+- [x] Group-based permissions with UI
 - [x] Distribution schedules and emission functions
-- [x] Three registration methods
-- [x] Theme support and responsive design
+- [x] Three registration methods (QR, DET, Self-service)
+- [x] Theme support (auto/light/dark) and responsive design
+- [x] Standardized authorization dropdown system
+- [x] Governance safeguards (action vs rule change permissions)
+- [x] Modular ES6 architecture with enhancement system
+- [x] Hybrid storage with security-conscious mnemonic handling
+- [x] Comprehensive help system with tooltips and guides
+- [x] Automated testing (Playwright E2E, Vitest unit tests)
 
 ## Common Issues
 
