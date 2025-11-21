@@ -1314,8 +1314,6 @@
   let advancedUI = createAdvancedUI(advancedForm);
   const manualActionUIs = {};
 
-  const validationTimers = {};
-  const validationFingerprints = {};
 
   /** @type {{ hasQr: boolean; hasJson: boolean; hasIdentity: boolean; hasPrivateKey: boolean }} */
   const wizardReadiness = {
@@ -2763,9 +2761,6 @@
       syncWalletInsights();
       syncIdentityUI();
       persistState();
-      if (wizardState.steps.registration.touched) {
-        scheduleRegistrationValidation();
-      }
       return validation;
     }
 
@@ -2787,9 +2782,6 @@
       initialiseWalletClientWithFingerprint(fingerprint);
     }
 
-    if (wizardState.steps.registration.touched) {
-      scheduleRegistrationValidation();
-    }
     evaluateRegistration({ touched: wizardState.steps.registration.touched, silent: true });
     return validation;
   }
@@ -3067,21 +3059,6 @@
 
     updateStepStatusFromValidation('naming', { valid: isValid }, touched);
 
-    scheduleServerValidation('naming', () => {
-      const normalizedName = typeof nameResult.normalized === 'string' ? nameResult.normalized : rawValue.trim();
-      const hasName = normalizedName.length > 0;
-      const localizationRecord = localizationResult.record || {};
-      const hasLocalizations = Object.keys(localizationRecord).length > 0;
-      if (!hasName && !hasLocalizations) {
-        return null;
-      }
-      return {
-        tokenName: normalizedName,
-        localizations: localizationRecord,
-        rows: localizationResult.rows
-      };
-    });
-
     persistState();
     return { valid: isValid };
   }
@@ -3242,12 +3219,6 @@
     updateStepStatusFromValidation('permissions', result, touched);
     persistState();
 
-    if (result.valid) {
-      scheduleServerValidation('permissions', () => buildPermissionsValidationPayload());
-    } else {
-      cancelPendingValidation('permissions');
-    }
-
     return result;
   }
 
@@ -3278,12 +3249,6 @@
 
       wizardState.form.distribution = values;
       persistState();
-
-      if (scheduleValidation.valid) {
-        scheduleServerValidation('distribution', () => buildDistributionValidationPayload());
-      } else {
-        cancelPendingValidation('distribution');
-      }
 
       return scheduleValidation;
 
@@ -3353,19 +3318,6 @@
 
     updateStepStatusFromValidation('advanced', result, touched);
     persistState();
-
-    // Only build configuration for server validation if all earlier steps are complete
-    if (result.valid) {
-      const configuration = buildAdvancedConfiguration();
-      if (configuration) {
-        scheduleServerValidation('advanced', () => ({ configuration }));
-      } else {
-        // Don't fail validation, just skip server validation until other steps are done
-        cancelPendingValidation('advanced');
-      }
-    } else {
-      cancelPendingValidation('advanced');
-    }
 
     return result;
   }
@@ -3472,20 +3424,11 @@
 
     updateStepStatusFromValidation('registration', result, touched);
     persistState();
-    if (!silent || touched) {
-      scheduleRegistrationValidation();
-    }
     return result;
   }
 
   function resetWizard() {
     manualNavigationActive = false;
-    Object.keys(validationTimers).forEach((stepId) => {
-      cancelPendingValidation(stepId);
-    });
-    Object.keys(validationFingerprints).forEach((stepId) => {
-      delete validationFingerprints[stepId];
-    });
 
     resetWalletRuntime();
 
@@ -6752,148 +6695,6 @@
     }
   }
 
-  function scheduleServerValidation(stepId, payloadFactory) {
-    if (typeof fetch !== 'function') {
-      return;
-    }
-
-    if (validationTimers[stepId]) {
-      clearTimeout(validationTimers[stepId]);
-    }
-
-    validationTimers[stepId] = setTimeout(() => {
-      const payload = payloadFactory();
-      if (!payload) {
-        cancelPendingValidation(stepId);
-        return;
-      }
-
-      const fingerprint = JSON.stringify(payload);
-      validationFingerprints[stepId] = fingerprint;
-      sendServerValidation(stepId, payload, fingerprint);
-      delete validationTimers[stepId];
-    }, 250);
-  }
-
-  async function sendServerValidation(stepId, payload, fingerprint) {
-    // FIXED: Skip server validation when using file:// protocol (no localhost needed)
-    if (window.location.protocol === 'file:') {
-      delete validationFingerprints[stepId];
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/validate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ stepId, payload })
-      });
-
-      if (validationFingerprints[stepId] !== fingerprint) {
-        return;
-      }
-
-      if (response.status === 400) {
-        updateStepState(stepId, { validity: 'invalid', touched: true });
-        applyServerValidation(stepId, { stepId, validity: 'invalid', reasons: [] });
-        delete validationFingerprints[stepId];
-        return;
-      }
-
-      if (!response.ok) {
-        delete validationFingerprints[stepId];
-        return;
-      }
-
-      const result = await response.json();
-      if (!result || result.stepId !== stepId) {
-        delete validationFingerprints[stepId];
-        return;
-      }
-
-      delete validationFingerprints[stepId];
-      applyServerValidation(stepId, result);
-    } catch (error) {
-      delete validationFingerprints[stepId];
-      console.debug('Validation request failed', error);
-    }
-  }
-
-  function scheduleRegistrationValidation() {
-    scheduleServerValidation('registration', buildRegistrationValidationPayload);
-  }
-
-  function applyServerValidation(stepId, result) {
-    const validity = result.validity === 'valid' ? 'valid' : result.validity === 'invalid' ? 'invalid' : null;
-    if (!validity) {
-      return;
-    }
-
-    updateStepState(stepId, { validity, touched: true });
-
-    const reason = Array.isArray(result.reasons) && result.reasons.length ? result.reasons[0] : '';
-
-    switch (stepId) {
-      case 'naming': {
-        const reasons = Array.isArray(result.reasons) ? result.reasons : [];
-        const nameReason = reasons.find((entry) => entry && !entry.startsWith('Localization ') && entry !== 'Add at least one localization.');
-        if (validity === 'valid') {
-          tokenNameMessage.textContent = '';
-          namingNextButton.disabled = false;
-        } else {
-          tokenNameMessage.textContent = nameReason || '';
-          namingNextButton.disabled = true;
-          validateLocalizationRows({ touched: true });
-        }
-        break;
-      }
-      case 'permissions':
-        if (validity === 'valid') {
-          permissionsMessage.textContent = '';
-          permissionsNextButton.disabled = false;
-        } else {
-          permissionsMessage.textContent = reason || 'Review the supply configuration.';
-          permissionsNextButton.disabled = true;
-        }
-        break;
-      case 'distribution':
-        if (validity === 'valid') {
-          distributionMessage.textContent = '';
-          distributionNextButton.disabled = false;
-        } else {
-          distributionMessage.textContent = reason || 'Distribution settings are invalid.';
-          distributionNextButton.disabled = true;
-        }
-        break;
-      case 'advanced':
-        if (validity === 'valid') {
-          advancedMessage.textContent = '';
-          advancedNextButton.disabled = false;
-        } else {
-          advancedMessage.textContent = reason || 'Advanced configuration is invalid.';
-          advancedNextButton.disabled = true;
-        }
-        break;
-      case 'registration':
-        if (validity === 'valid') {
-          if (registrationMessage && registrationMessage.dataset.status !== 'success') {
-            setRegistrationStatus('', '');
-          }
-        } else {
-          const message = reason || readinessReminderMessage;
-          setRegistrationStatus('info', message);
-        }
-        syncRegistrationPreflightUI();
-        break;
-      default:
-        break;
-    }
-
-    persistState();
-  }
-
   function fallbackCopyToClipboard(text) {
     const textarea = document.createElement('textarea');
     textarea.value = text;
@@ -9095,57 +8896,6 @@
     return { valid: true, message: '' };
   }
 
-  function buildRegistrationValidationPayload() {
-    const wallet = wizardState.form.registration.wallet;
-    const identity = wizardState.form.registration.identity;
-    const method = wizardState.form.registration.method;
-
-    const walletPayload = {};
-    if ((wallet.mnemonic || '').trim()) {
-      walletPayload.mnemonic = '__present__';
-    }
-    if ((wallet.privateKey || '').trim()) {
-      walletPayload.privateKey = '__present__';
-    }
-
-    return {
-      wallet: walletPayload,
-      identity: { id: (identity.id || '').trim() },
-      method,
-      preflight: {
-        mobile: { qrGenerated: Boolean(wizardState.form.registration.preflight.mobile.qrGenerated) },
-        det: { jsonDisplayed: Boolean(wizardState.form.registration.preflight.det.jsonDisplayed) },
-        self: { warningAcknowledged: Boolean(wizardState.form.registration.preflight.self.warningAcknowledged) }
-      }
-    };
-  }
-
-  function buildPermissionsValidationPayload() {
-    const permissions = wizardState.form.permissions || {};
-    const decimals = typeof permissions.decimals === 'number' ? permissions.decimals : 0;
-    const baseSupply = normalizeTokenAmount(permissions.baseSupply, decimals);
-    if (baseSupply === null) {
-      return null;
-    }
-    const payload = { baseSupply };
-    if (permissions.useMaxSupply) {
-      const maxSupply = normalizeTokenAmount(permissions.maxSupply, decimals);
-      if (maxSupply === null) {
-        return null;
-      }
-      payload.maxSupply = maxSupply;
-    }
-    return payload;
-  }
-
-  function buildDistributionValidationPayload() {
-    const distributionRules = buildDistributionRulesForConfiguration();
-    if (!distributionRules) {
-      return null;
-    }
-    return { distributionRules };
-  }
-
   function buildDistributionRulesForConfiguration() {
     const distribution = wizardState.form.distribution;
     if (!distribution) {
@@ -9555,14 +9305,6 @@
       },
       description: 'Configuration compiled via wizard.'
     };
-  }
-
-  function cancelPendingValidation(stepId) {
-    if (validationTimers[stepId]) {
-      clearTimeout(validationTimers[stepId]);
-      delete validationTimers[stepId];
-    }
-    delete validationFingerprints[stepId];
   }
 
   function refreshFlow({ initial = false, suppressFocus = false } = {}) {
