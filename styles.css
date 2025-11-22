@@ -1125,6 +1125,8 @@ img {
   padding-left: var(--sidebar-width);
   /* Changed overflow: hidden to visible to allow natural scrolling */
   overflow: visible;
+  position: relative;
+  z-index: 1;
 }
 
 .wizard-sidebar {
@@ -10728,5 +10730,138 @@ button:focus-visible,
   .form-card {
     box-shadow: none;
     border: 1px solid #ccc;
+  }
+}
+
+/* ============================================
+   Interactive Background Orbs
+   ============================================ */
+
+.background-orbs {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.7;
+  will-change: transform;
+  --parallax-x: 0px;
+  --parallax-y: 0px;
+  animation: orb-float 25s ease-in-out infinite;
+  transform: translate(var(--parallax-x), var(--parallax-y));
+}
+
+/* Individual Orb Styles - Dark Mode (Default) */
+.orb--1 {
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, #00D4FF 0%, #0891B2 40%, transparent 70%);
+  top: -15%;
+  left: 5%;
+  animation-delay: 0s;
+  animation-duration: 30s;
+}
+
+.orb--2 {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, #8B5CF6 0%, #7C3AED 40%, transparent 70%);
+  top: 50%;
+  right: 5%;
+  animation-delay: -5s;
+  animation-duration: 28s;
+}
+
+.orb--3 {
+  width: 550px;
+  height: 550px;
+  background: radial-gradient(circle, #3B82F6 0%, #2563EB 40%, transparent 70%);
+  bottom: 5%;
+  left: 40%;
+  animation-delay: -10s;
+  animation-duration: 32s;
+}
+
+.orb--4 {
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, #F472B6 0%, #EC4899 40%, transparent 70%);
+  top: 15%;
+  right: 30%;
+  animation-delay: -15s;
+  animation-duration: 26s;
+}
+
+.orb--5 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, #10B981 0%, #059669 40%, transparent 70%);
+  top: 35%;
+  left: 15%;
+  animation-delay: -8s;
+  animation-duration: 34s;
+  opacity: 0.5;
+}
+
+/* Floating Animation - combines with parallax via CSS variables */
+@keyframes orb-float {
+  0%, 100% {
+    transform: translate(calc(var(--parallax-x) + 0px), calc(var(--parallax-y) + 0px)) scale(1);
+  }
+  25% {
+    transform: translate(calc(var(--parallax-x) + 30px), calc(var(--parallax-y) - 40px)) scale(1.05);
+  }
+  50% {
+    transform: translate(calc(var(--parallax-x) - 20px), calc(var(--parallax-y) + 20px)) scale(0.95);
+  }
+  75% {
+    transform: translate(calc(var(--parallax-x) + 40px), calc(var(--parallax-y) + 30px)) scale(1.02);
+  }
+}
+
+/* Light Mode - Softer, more pastel orbs */
+html[data-theme='light'] .orb {
+  opacity: 0.25;
+  filter: blur(100px);
+}
+
+html[data-theme='light'] .orb--1 {
+  background: radial-gradient(circle, #67E8F9 0%, #22D3EE 50%, transparent 70%);
+}
+
+html[data-theme='light'] .orb--2 {
+  background: radial-gradient(circle, #C4B5FD 0%, #A78BFA 50%, transparent 70%);
+}
+
+html[data-theme='light'] .orb--3 {
+  background: radial-gradient(circle, #93C5FD 0%, #60A5FA 50%, transparent 70%);
+}
+
+html[data-theme='light'] .orb--4 {
+  background: radial-gradient(circle, #FBCFE8 0%, #F9A8D4 50%, transparent 70%);
+}
+
+html[data-theme='light'] .orb--5 {
+  background: radial-gradient(circle, #6EE7B7 0%, #34D399 50%, transparent 70%);
+}
+
+/* Reduced Motion - Disable animations for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .orb {
+    animation: none;
+    transform: none !important;
+  }
+
+  .background-orbs {
+    opacity: 0.3;
   }
 }

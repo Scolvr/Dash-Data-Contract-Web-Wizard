@@ -14816,3 +14816,128 @@
 
   console.log('✓ Dual INFO/GUIDE panel system initialized');
 })();
+
+// ============================================
+// Interactive Background Orbs System
+// ============================================
+(function() {
+  'use strict';
+
+  // Check for reduced motion preference
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (prefersReducedMotion) {
+    console.log('✓ Background orbs: animations disabled (prefers-reduced-motion)');
+    return;
+  }
+
+  // Configuration
+  const config = {
+    parallaxMultipliers: [0.03, 0.05, 0.04, 0.06, 0.035], // Different speeds for each orb
+    smoothing: 0.08, // Smoothing factor for lerp (lower = smoother)
+    maxOffset: 100 // Maximum pixel offset from mouse
+  };
+
+  // State
+  let mouseX = window.innerWidth / 2;
+  let mouseY = window.innerHeight / 2;
+  let targetX = mouseX;
+  let targetY = mouseY;
+  let animationFrame = null;
+  let isInitialized = false;
+
+  // Get orb elements
+  const orbs = document.querySelectorAll('.orb');
+
+  if (orbs.length === 0) {
+    console.warn('Background orbs: no orb elements found');
+    return;
+  }
+
+  // Linear interpolation for smooth movement
+  function lerp(start, end, factor) {
+    return start + (end - start) * factor;
+  }
+
+  // Update orb positions based on mouse
+  function updateOrbs() {
+    // Smooth mouse position
+    mouseX = lerp(mouseX, targetX, config.smoothing);
+    mouseY = lerp(mouseY, targetY, config.smoothing);
+
+    // Calculate center offset
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+    const offsetX = (mouseX - centerX) / centerX;
+    const offsetY = (mouseY - centerY) / centerY;
+
+    // Apply parallax to each orb via CSS custom properties
+    // The CSS animation uses these values to combine floating + parallax
+    orbs.forEach((orb, index) => {
+      const multiplier = config.parallaxMultipliers[index] || 0.04;
+      const translateX = offsetX * config.maxOffset * multiplier * 10;
+      const translateY = offsetY * config.maxOffset * multiplier * 10;
+
+      // Set CSS custom properties - animation keyframes will use these
+      orb.style.setProperty('--parallax-x', `${translateX}px`);
+      orb.style.setProperty('--parallax-y', `${translateY}px`);
+    });
+
+    animationFrame = requestAnimationFrame(updateOrbs);
+  }
+
+  // Throttled mouse move handler
+  let lastMouseMove = 0;
+  function handleMouseMove(e) {
+    const now = Date.now();
+    if (now - lastMouseMove < 16) return; // ~60fps throttle
+    lastMouseMove = now;
+
+    targetX = e.clientX;
+    targetY = e.clientY;
+
+    // Start animation loop on first mouse movement
+    if (!isInitialized) {
+      isInitialized = true;
+      updateOrbs();
+      console.log('✓ Background orbs: interactive mode activated');
+    }
+  }
+
+  // Handle window resize
+  function handleResize() {
+    // Reset to center on resize
+    targetX = window.innerWidth / 2;
+    targetY = window.innerHeight / 2;
+  }
+
+  // Handle visibility change (pause when tab not visible)
+  function handleVisibilityChange() {
+    if (document.hidden) {
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
+        animationFrame = null;
+      }
+    } else if (isInitialized) {
+      updateOrbs();
+    }
+  }
+
+  // Initialize event listeners
+  document.addEventListener('mousemove', handleMouseMove, { passive: true });
+  window.addEventListener('resize', handleResize, { passive: true });
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+
+  // Cleanup function
+  window.cleanupBackgroundOrbs = function() {
+    document.removeEventListener('mousemove', handleMouseMove);
+    window.removeEventListener('resize', handleResize);
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
+    if (animationFrame) {
+      cancelAnimationFrame(animationFrame);
+    }
+    console.log('✓ Background orbs: cleaned up');
+  };
+
+  console.log('✓ Background orbs system initialized');
+})();
