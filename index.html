@@ -101,7 +101,7 @@
                 <span class="wizard-nav-subitem__text">Localization</span>
               </a>
               <a href="#" class="wizard-nav-subitem" data-substep="naming-update">
-                <span class="wizard-nav-subitem__text">Update</span>
+                <span class="wizard-nav-subitem__text">Conventions Change</span>
               </a>
             </div>
 
@@ -137,9 +137,6 @@
               </a>
               <a href="#" class="wizard-nav-subitem" data-substep="permissions-emergency">
                 <span class="wizard-nav-subitem__text">Emergency Actions</span>
-              </a>
-              <a href="#" class="wizard-nav-subitem" data-substep="permissions-conventions-change">
-                <span class="wizard-nav-subitem__text">Conventions Change</span>
               </a>
               <a href="#" class="wizard-nav-subitem" data-substep="permissions-marketplace-trade-mode-change">
                 <span class="wizard-nav-subitem__text">Marketplace Trade Mode</span>
@@ -1019,83 +1016,89 @@
 
             <div class="page-guide__panel page-guide__panel--info active" data-panel="info">
               <div class="page-guide__content">
-                <h2 class="page-guide__title">Name Updates</h2>
-                <p class="page-guide__intro">Configure who can modify your token's naming conventions after deployment through the conventionsChangeRules governance system.</p>
+              <h2 class="page-guide__title">Conventions Change Permission</h2>
+              <p class="page-guide__intro">Define who can update token display conventions including name, symbol, decimals, and localizations.</p>
 
-                <div class="page-guide__section">
-                  <h3 class="page-guide__section-title">Quick Reference</h3>
-                  <p><strong>Important:</strong> Token names are NOT freely mutable on Dash Platform. All name changes must be approved through the conventionsChangeRules governance system you configure here.</p>
+              <div class="page-guide__section">
+                <h3 class="page-guide__section-title">Quick Reference</h3>
 
-                  <p><strong>Choose who can approve name changes:</strong></p>
-                  <ul class="page-guide__list">
-                    <li><strong>Contract Owner (you)</strong> - Only you can approve changes</li>
-                    <li><strong>Specific Identity (ID-based)</strong> - Delegate approval to another trusted identity</li>
-                    <li><strong>Group (shared control)</strong> - Multi-signature governance requiring committee approval</li>
-                    <li><strong>No One (fully locked)</strong> - Names are permanently locked and can never be changed</li>
-                  </ul>
+                <h4 class="page-guide__step-heading" id="guide-conventions-enable-change">Token Conventions</h4>
+                <p>Conventions define how your token appears in wallets, exchanges, and user interfaces. This includes the token name, symbol, decimal places, and multi-language localizations (singular/plural forms, capitalization rules).</p>
+                <p><strong>Official Parameter:</strong> conventionsChangeRules control who can modify naming conventions</p>
+                <p><strong>Default Authorization:</strong> Typically ContractOwner (allows creator to update branding)</p>
 
-                  <h4 class="page-guide__step-heading" id="guide-what-this-controls">What This Controls</h4>
-                  <p>The conventionsChangeRules determine whether your token's display conventions can be updated after deployment, including:</p>
-                  <ul class="page-guide__list">
-                    <li>Token name (singular and plural forms in all languages)</li>
-                    <li>Localization strings (ISO 639-1 translations)</li>
-                    <li>Capitalization preferences (shouldCapitalize boolean)</li>
-                    <li>Display decimals (in some configurations)</li>
-                  </ul>
-                  <p><strong>Platform validation:</strong> Dash Platform v2.0 validates all name changes against the 3-25 character limit for singular/plural forms.</p>
-                </div>
+                <h4 class="page-guide__step-heading" id="guide-conventions-what-changes">What Can Be Changed</h4>
+                <ul class="page-guide__list">
+                  <li><strong>Token Name:</strong> Display name shown to users</li>
+                  <li><strong>Symbol:</strong> Ticker symbol (e.g., BTC, ETH)</li>
+                  <li><strong>Decimals:</strong> Number of decimal places for display</li>
+                  <li><strong>Localizations:</strong> Language-specific display rules (singular/plural forms, capitalization)</li>
+                </ul>
 
-                <div class="page-guide__section">
-                  <h3 class="page-guide__section-title">Best Practices</h3>
-                  <ul class="page-guide__list">
-                    <li><strong>Early-stage projects:</strong> Enable changes with Owner or Group control for flexibility during development and rebranding.</li>
-                    <li><strong>Mature projects:</strong> Lock changes (set to "No One") after establishing brand identity and exchange listings to build trust.</li>
-                    <li><strong>DAO tokens:</strong> Use Group control for community governance over all naming decisions.</li>
-                    <li><strong>Enterprise tokens:</strong> Assign to Specific Identity for compliance or regulatory control.</li>
-                    <li><strong>Test on Platform v2.0 testnet:</strong> Validate governance workflows before mainnet deployment.</li>
-                  </ul>
-                </div>
+                <h4 class="page-guide__step-heading" id="guide-conventions-who-can-change">Authorization Levels</h4>
+                <p><strong>All 5 Authorization Levels Available:</strong></p>
+                <ul class="page-guide__list">
+                  <li><strong>NoOne:</strong> Conventions permanently locked (immutable branding)</li>
+                  <li><strong>ContractOwner:</strong> Only contract creator can update (typical default)</li>
+                  <li><strong>Identity:</strong> Specific Dash Platform identity controls branding</li>
+                  <li><strong>MainGroup:</strong> Primary governance group decides convention changes</li>
+                  <li><strong>Group(x):</strong> Custom governance group (max 256 members, voting power max 65,536)</li>
+                </ul>
 
-                <div class="page-guide__section">
-                  <h3 class="page-guide__section-title">Critical Warnings</h3>
-                  <p><strong>Permanent Lock:</strong> Setting this to "No One" is irreversible and cannot be undone. Your token's name will be permanently locked forever.</p>
-                  <p><strong>Rebranding Considerations:</strong> If you anticipate potential rebranding or name corrections, keep this permission enabled with appropriate governance controls.</p>
-                  <p><strong>Governance Requirement:</strong> Remember that changes are not freely mutable - they always require approval through conventionsChangeRules, even if enabled.</p>
-                </div>
+                <h4 class="page-guide__step-heading" id="guide-conventions-update-rules">Who Can Change These Rules</h4>
+                <p>Define who has authority to modify convention change permissions after deployment. This governance layer controls whether branding update capabilities can be enabled, disabled, or transferred.</p>
+                <p><strong>All 5 authorization levels apply to rule changes as well.</strong></p>
               </div>
+
+              <div class="page-guide__section">
+                <h3 class="page-guide__section-title">Best Practice</h3>
+                <ul class="page-guide__list">
+                  <li><strong>Early-stage tokens:</strong> Keep ContractOwner control for rebranding flexibility</li>
+                  <li><strong>Mature tokens:</strong> Lock to NoOne after final branding is established</li>
+                  <li><strong>Community tokens:</strong> Use Group governance (max 256 members) for democratic branding decisions</li>
+                  <li><strong>Exchange-listed tokens:</strong> Lock conventions to prevent confusion after listing</li>
+                  <li><strong>Group limits:</strong> Max 256 members per group, max 65,536 total voting power</li>
+                  <li>Consider long-term branding strategy before permanently locking</li>
+                  <li>Document convention changes publicly for transparency</li>
+                  <li>Test convention updates on testnet before applying to mainnet</li>
+                </ul>
+              </div>
+            </div>
             </div>
 
             <div class="page-guide__panel page-guide__panel--guide" data-panel="guide" hidden>
               <div class="page-guide__content">
-                <h2 class="page-guide__title">Update</h2>
-                <p class="page-guide__intro">Step-by-step guide to configuring token name update permissions.</p>
+                <h2 class="page-guide__title">Conventions Change</h2>
+                <p class="page-guide__intro">Step-by-step guide to configuring conventions change permissions.</p>
 
                 <div class="page-guide__section">
-                  <h3 class="page-guide__section-title">Step 1: Enable or Disable Name Updates</h3>
-                  <p>Choose "No" if token names should be permanently fixed after deployment. Choose "Yes" if you want the ability to change token names later.</p>
+                  <h3 class="page-guide__section-title">Step 1: Enable or Disable Conventions Change</h3>
+                  <p>Choose "No" if token conventions cannot be changed. Choose "Yes" to enable conventions changes (migrations, swaps, protocol upgrades) with authorized parties.</p>
                 </div>
 
                 <div class="page-guide__section">
-                  <h3 class="page-guide__section-title">Step 2: Select Update Authority (if enabled)</h3>
-                  <p>Choose who has permission to update token names:</p>
-                  <p><strong>Owner Only:</strong> Only the contract owner can change token names. Select this for single-owner control.</p>
-                  <p><strong>Specific Identity:</strong> Only one designated identity can change token names. Select this to assign update permissions to a specific Dash Platform identity.</p>
-                  <p><strong>Group:</strong> Members of a designated group can change token names. Select this for multi-signature approval on name changes.</p>
+                  <h3 class="page-guide__section-title">Step 2: Select Who Can Perform Conventions Changes (if enabled)</h3>
+                  <p>Choose the authority type (Contract Owner, Identity, Group, or No One). Enter identity ID if needed.</p>
                 </div>
 
                 <div class="page-guide__section">
-                  <h3 class="page-guide__section-title">Step 3: Enter Identity ID (if Specific Identity selected)</h3>
-                  <p>Enter the Dash Platform identity ID (43-44 characters, Base58-encoded) that will have permission to update token names.</p>
+                  <h3 class="page-guide__section-title">Step 3: Select Who Can Change Authorization Rules</h3>
+                  <p>Choose who can modify the conventions change permissions (Owner, Identity, Group, or No One). Enter identity ID if needed.</p>
                 </div>
 
                 <div class="page-guide__section">
-                  <h3 class="page-guide__section-title">Step 4: Verify Configuration</h3>
-                  <p>Ensure your selection matches your governance needs. If using Specific Identity, verify the Identity ID is correct.</p>
+                  <h3 class="page-guide__section-title">Step 4: Configure Governance Safeguards</h3>
+                  <p>Toggle these options based on your governance needs:</p>
+                  <ul class="page-guide__list">
+                    <li><strong>Allow changing authorized actor to "No One":</strong> Enables permanently disabling conventions changes</li>
+                    <li><strong>Allow changing rule changer to "No One":</strong> Enables permanently locking authorization rule modifications</li>
+                    <li><strong>Allow rule changer to modify themselves:</strong> Enables the current rule changer to reassign their authority</li>
+                  </ul>
                 </div>
 
                 <div class="page-guide__section">
-                  <h3 class="page-guide__section-title">Step 5: Continue</h3>
-                  <p>Proceed to the next configuration tab once your update permissions are configured.</p>
+                  <h3 class="page-guide__section-title">Step 5: Verify and Continue</h3>
+                  <p>Review all conventions change settings and proceed to the next configuration tab.</p>
                 </div>
               </div>
             </div>
@@ -3604,313 +3607,6 @@
                   <button class="wizard-button wizard-button--secondary" type="button" id="contract-preview-btn">📄
                     Contract Preview</button>
                   <button class="wizard-button wizard-button--primary" id="permissions-emergency-next"
-                    type="submit">Continue →</button>
-                </div>
-            </form>
-          </div>
-        </section>
-
-        <!-- Permissions: Conventions Change Sub-step -->
-        <section class="wizard-screen" id="screen-permissions-conventions-change" data-step="permissions"
-          data-substep="permissions-conventions-change" data-tab="token" hidden>
-
-          <!-- Right Side Guide Panel -->
-          <aside class="page-guide" aria-label="Page guide" data-collapsed="false">
-            <div class="page-guide__header">
-              <div class="page-guide__tabs-horizontal">
-                <button class="page-guide__tab page-guide__tab--info active" data-panel="info" aria-label="Show Information" aria-pressed="true">
-                  Information
-                </button>
-                <button class="page-guide__tab page-guide__tab--guide" data-panel="guide" aria-label="Show User Guide" aria-pressed="false">
-                  User Guide
-                </button>
-              </div>
-              <button class="page-guide__collapse" aria-label="Collapse panel" aria-expanded="true">
-                <svg class="page-guide__collapse-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M6 12l4-4-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </button>
-            </div>
-            <div class="page-guide__panel page-guide__panel--info active" data-panel="info">
-              <div class="page-guide__content">
-              <h2 class="page-guide__title">Conventions Change Permission</h2>
-              <p class="page-guide__intro">Define who can update token display conventions including name, symbol, decimals, and localizations.</p>
-
-              <div class="page-guide__section">
-                <h3 class="page-guide__section-title">Quick Reference</h3>
-
-                <h4 class="page-guide__step-heading" id="guide-conventions-enable-change">Token Conventions</h4>
-                <p>Conventions define how your token appears in wallets, exchanges, and user interfaces. This includes the token name, symbol, decimal places, and multi-language localizations (singular/plural forms, capitalization rules).</p>
-                <p><strong>Official Parameter:</strong> conventionsChangeRules control who can modify naming conventions</p>
-                <p><strong>Default Authorization:</strong> Typically ContractOwner (allows creator to update branding)</p>
-
-                <h4 class="page-guide__step-heading" id="guide-conventions-what-changes">What Can Be Changed</h4>
-                <ul class="page-guide__list">
-                  <li><strong>Token Name:</strong> Display name shown to users</li>
-                  <li><strong>Symbol:</strong> Ticker symbol (e.g., BTC, ETH)</li>
-                  <li><strong>Decimals:</strong> Number of decimal places for display</li>
-                  <li><strong>Localizations:</strong> Language-specific display rules (singular/plural forms, capitalization)</li>
-                </ul>
-                <p><strong>Note:</strong> This screen was previously covered in the Naming Update screen. Settings are consistent across both locations.</p>
-
-                <h4 class="page-guide__step-heading" id="guide-conventions-who-can-change">Authorization Levels</h4>
-                <p><strong>All 5 Authorization Levels Available:</strong></p>
-                <ul class="page-guide__list">
-                  <li><strong>NoOne:</strong> Conventions permanently locked (immutable branding)</li>
-                  <li><strong>ContractOwner:</strong> Only contract creator can update (typical default)</li>
-                  <li><strong>Identity:</strong> Specific Dash Platform identity controls branding</li>
-                  <li><strong>MainGroup:</strong> Primary governance group decides convention changes</li>
-                  <li><strong>Group(x):</strong> Custom governance group (max 256 members, voting power max 65,536)</li>
-                </ul>
-
-                <h4 class="page-guide__step-heading" id="guide-conventions-update-rules">Who Can Change These Rules</h4>
-                <p>Define who has authority to modify convention change permissions after deployment. This governance layer controls whether branding update capabilities can be enabled, disabled, or transferred.</p>
-                <p><strong>All 5 authorization levels apply to rule changes as well.</strong></p>
-              </div>
-
-              <div class="page-guide__section">
-                <h3 class="page-guide__section-title">Best Practice</h3>
-                <ul class="page-guide__list">
-                  <li><strong>Early-stage tokens:</strong> Keep ContractOwner control for rebranding flexibility</li>
-                  <li><strong>Mature tokens:</strong> Lock to NoOne after final branding is established</li>
-                  <li><strong>Community tokens:</strong> Use Group governance (max 256 members) for democratic branding decisions</li>
-                  <li><strong>Exchange-listed tokens:</strong> Lock conventions to prevent confusion after listing</li>
-                  <li><strong>Group limits:</strong> Max 256 members per group, max 65,536 total voting power</li>
-                  <li>Consider long-term branding strategy before permanently locking</li>
-                  <li>Document convention changes publicly for transparency</li>
-                  <li>Test convention updates on testnet before applying to mainnet</li>
-                </ul>
-              </div>
-            </div>
-            </div>
-            <div class="page-guide__panel page-guide__panel--guide" data-panel="guide" hidden>
-              <div class="page-guide__content">
-                <h2 class="page-guide__title">Conventions Change</h2>
-                <p class="page-guide__intro">Step-by-step guide to configuring conventions change permissions.</p>
-
-                <div class="page-guide__section">
-                  <h3 class="page-guide__section-title">Step 1: Enable or Disable Conventions Change</h3>
-                  <p>Choose "No" if token conventions cannot be changed. Choose "Yes" to enable conventions changes (migrations, swaps, protocol upgrades) with authorized parties.</p>
-                </div>
-
-                <div class="page-guide__section">
-                  <h3 class="page-guide__section-title">Step 2: Select Who Can Perform Conventions Changes (if enabled)</h3>
-                  <p>Choose the authority type (Contract Owner, Identity, Group, or No One). Enter identity ID if needed.</p>
-                </div>
-
-                <div class="page-guide__section">
-                  <h3 class="page-guide__section-title">Step 3: Select Who Can Change Authorization Rules</h3>
-                  <p>Choose who can modify the conventions change permissions (Owner, Identity, Group, or No One). Enter identity ID if needed.</p>
-                </div>
-
-                <div class="page-guide__section">
-                  <h3 class="page-guide__section-title">Step 4: Configure Governance Safeguards</h3>
-                  <p>Toggle these options based on your governance needs:</p>
-                  <ul class="page-guide__list">
-                    <li><strong>Allow changing authorized actor to "No One":</strong> Enables permanently disabling conventions changes</li>
-                    <li><strong>Allow changing rule changer to "No One":</strong> Enables permanently locking authorization rule modifications</li>
-                    <li><strong>Allow rule changer to modify themselves:</strong> Enables the current rule changer to reassign their authority</li>
-                  </ul>
-                </div>
-
-                <div class="page-guide__section">
-                  <h3 class="page-guide__section-title">Step 5: Verify and Continue</h3>
-                  <p>Review all conventions change settings and proceed to the next configuration tab.</p>
-                </div>
-              </div>
-            </div>
-          </aside>
-
-          <div class="wizard-screen__inner">
-            <form class="wizard-form" id="permissions-conventions-change-form" novalidate>
-              <h1 class="wizard-screen__title" id="title-permissions-conventions-change" tabindex="-1">Do you want to
-                enable Conventions Change? <span class="wizard-badge wizard-badge--optional">(optional setting)</span>
-              </h1>
-              <p class="wizard-screen__subtitle">Control who can modify token conventions and rules, including
-                migrations, swaps, and protocol upgrades.</p>
-
-              <!-- Enable Conventions Change -->
-              <div class="form-card">
-                <div class="form-card__header">
-                  <h3 class="form-card__title">Enable Conventions Change</h3>
-                  <p class="form-card__description">Allow modifications to token conventions and rules</p>
-                </div>
-                <div class="form-card__body">
-                  <fieldset class="wizard-fieldset">
-                    <legend class="wizard-field__label">Enable conventions changes?
-                      <button type="button" class="help-icon" data-help="conventions-enable-change" data-guide-target="guide-conventions-enable-change" aria-label="Help: Enable Conventions Change" tabindex="0">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                          <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
-                          <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                      </button>
-                    </legend>
-
-                    <!-- No Option -->
-                    <label class="wizard-choice">
-                      <input class="wizard-choice__input" type="radio" name="conventions-change-enable" value="disabled"
-                        checked>
-                      <span class="wizard-choice__content">
-                        <span class="wizard-choice__title">No</span>
-                        <span class="wizard-choice__hint">Token conventions cannot be changed</span>
-                      </span>
-                    </label>
-
-                    <!-- Yes Option -->
-                    <label class="wizard-choice">
-                      <input class="wizard-choice__input" type="radio" name="conventions-change-enable" value="enabled"
-                        data-toggle-panel="conventions-change-config-container">
-                      <span class="wizard-choice__content">
-                        <span class="wizard-choice__title">Yes</span>
-                        <span class="wizard-choice__hint">Enable conventions changes with authorized parties</span>
-                      </span>
-                    </label>
-                  </fieldset>
-
-                  <!-- Conventions Change Configuration (shown when Yes is selected) -->
-                  <div class="distribution-inline-panel" id="conventions-change-config-container" hidden>
-
-                    <div class="authorization-group">
-                      <!-- Authorized to perform action -->
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="conventions-perform">
-                          Authorized to perform action
-                          <button type="button" class="help-icon" data-help="conventions-who-can-change" data-guide-target="guide-conventions-who-can-change" aria-label="Help: Who Can Perform Conventions Changes" tabindex="0">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                              <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
-                              <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                            </svg>
-                          </button>
-                        </label>
-                        <select class="wizard-field__input" id="conventions-perform" name="conventions-perform">
-                          <option value="no-one" selected>No One</option>
-                          <option value="owner">Contract Owner</option>
-                          <option value="identity">Specific Identity</option>
-                          <option value="group">Specific Group</option>
-                        </select>
-                        <span class="field-hint">Who can execute conventions changes?</span>
-                      </div>
-
-                      <!-- Identity Panel -->
-                      <div class="authorization-inline-panel" id="conventions-perform-identity-panel" hidden>
-                        <div class="field-group">
-                          <label class="wizard-field__label" for="conventions-perform-identity-id">Identity ID</label>
-                          <input class="wizard-field__input" type="text" id="conventions-perform-identity-id"
-                            placeholder="Enter the Base58 ID">
-                          <span class="field-hint">Enter the Dash Platform identity ID</span>
-                        </div>
-                      </div>
-
-                      <!-- Group Panel -->
-                      <div class="authorization-inline-panel" id="conventions-perform-group-panel" hidden>
-                        <div class="field-group">
-                          <label class="wizard-field__label" for="conventions-perform-group-id">Select group</label>
-                          <select class="wizard-field__input" id="conventions-perform-group-id">
-                            <option value="">Select a group...</option>
-                          </select>
-                          <span class="field-hint">Choose which group can perform this action</span>
-                        </div>
-                      </div>
-
-                      <!-- Authorized to change rules -->
-                      <div class="field-group" style="margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
-                        <label class="wizard-field__label" for="conventions-change-rules">
-                          Authorized to change rules
-                          <button type="button" class="help-icon" data-help="conventions-update-rules" data-guide-target="guide-conventions-update-rules" aria-label="Help: Who Can Update Rules" tabindex="0">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                              <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
-                              <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                            </svg>
-                          </button>
-                        </label>
-                        <select class="wizard-field__input" id="conventions-change-rules" name="conventions-change-rules">
-                          <option value="no-one" selected>No One</option>
-                          <option value="owner">Contract Owner</option>
-                          <option value="identity">Specific Identity</option>
-                          <option value="group">Specific Group</option>
-                        </select>
-                        <span class="field-hint">Who can modify the authorization rules for conventions changes?</span>
-                      </div>
-
-                      <!-- Rule Changer Identity Panel -->
-                      <div class="authorization-inline-panel" id="conventions-rules-identity-panel" hidden>
-                        <div class="field-group">
-                          <label class="wizard-field__label" for="conventions-rules-identity-id">Identity ID</label>
-                          <input class="wizard-field__input" type="text" id="conventions-rules-identity-id"
-                            placeholder="Enter the Base58 ID">
-                          <span class="field-hint">Enter the Dash Platform identity ID</span>
-                        </div>
-                      </div>
-
-                      <!-- Rule Changer Group Panel -->
-                      <div class="authorization-inline-panel" id="conventions-rules-group-panel" hidden>
-                        <div class="field-group">
-                          <label class="wizard-field__label" for="conventions-rules-group-id">Select group</label>
-                          <select class="wizard-field__input" id="conventions-rules-group-id">
-                            <option value="">Select a group...</option>
-                          </select>
-                          <span class="field-hint">Choose which group can modify rules</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Governance Safeguards -->
-                    <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
-                      <legend class="wizard-field__label with-help">Governance Safeguards
-                        <button type="button" class="help-icon" data-help="governance-safeguards" data-guide-target="guide-governance-safeguards-conventions" aria-label="Help: Governance Safeguards" tabindex="0">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
-                            <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                          </svg>
-                        </button>
-                      </legend>
-                      <p class="wizard-subsection__body" style="margin-bottom: var(--space-4);">Control what rule
-                        modifications are permitted after deployment</p>
-
-                      <div class="wizard-field wizard-field--checkbox">
-                        <label class="wizard-checkbox" for="conventions-change-allow-authorized-none">
-                          <input class="wizard-checkbox__input" id="conventions-change-allow-authorized-none"
-                            type="checkbox">
-                          <span class="wizard-checkbox__label">Allow changing authorized actor to "No One"</span>
-                        </label>
-                        <p class="field-hint">When enabled, authorized actors for convention changes can be permanently
-                          locked by changing to "No One"</p>
-                      </div>
-
-                      <div class="wizard-field wizard-field--checkbox">
-                        <label class="wizard-checkbox" for="conventions-change-allow-admin-none">
-                          <input class="wizard-checkbox__input" id="conventions-change-allow-admin-none"
-                            type="checkbox">
-                          <span class="wizard-checkbox__label">Allow changing rule changer to "No One"</span>
-                        </label>
-                        <p class="field-hint">When enabled, the rule changer can permanently lock themselves out by
-                          changing to "No One"</p>
-                      </div>
-
-                      <div class="wizard-field wizard-field--checkbox">
-                        <label class="wizard-checkbox" for="conventions-change-allow-self-change">
-                          <input class="wizard-checkbox__input" id="conventions-change-allow-self-change"
-                            type="checkbox">
-                          <span class="wizard-checkbox__label">Allow rule changer to modify themselves</span>
-                        </label>
-                        <p class="field-hint">When enabled, the current rule changer can reassign rule-changing
-                          authority to a different identity or group</p>
-                      </div>
-                    </fieldset>
-
-                  </div>
-                  </fieldset>
-                </div>
-
-                <p class="wizard-field__message" id="permissions-conventions-change-message" role="status"
-                  aria-live="polite"></p>
-
-                <div class="wizard-actions wizard-actions--between wizard-actions--sticky">
-                  <button class="wizard-button wizard-button--secondary" type="button"
-                    data-step-back="permissions-conventions-change">← Back</button>
-                  <button class="wizard-button wizard-button--secondary" type="button" id="contract-preview-btn">📄
-                    Contract Preview</button>
-                  <button class="wizard-button wizard-button--primary" id="permissions-conventions-change-next"
                     type="submit">Continue →</button>
                 </div>
             </form>

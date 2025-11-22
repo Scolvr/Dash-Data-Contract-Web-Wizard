@@ -39,7 +39,6 @@
     { key: 'manualBurn', stepId: 'permissions-manual-burn', domPrefix: 'manual-burn' },
     { key: 'manualFreeze', stepId: 'permissions-manual-freeze', domPrefix: 'manual-freeze' },
     { key: 'emergencyAction', stepId: 'permissions-emergency', domPrefix: 'emergency' },
-    { key: 'conventionsChange', stepId: 'permissions-conventions-change', domPrefix: 'conventions-change' },
     { key: 'marketplaceTradeMode', stepId: 'permissions-marketplace-trade-mode-change', domPrefix: 'marketplace-trade-mode' },
     { key: 'directPricing', stepId: 'permissions-direct-pricing-change', domPrefix: 'direct-pricing' },
     { key: 'mainControl', stepId: 'permissions-main-control-change', domPrefix: 'main-control' }
@@ -85,7 +84,7 @@
   const SUBSTEP_SEQUENCES = Object.freeze({
     welcome: ['welcome'],
     naming: ['naming', 'naming-localization', 'naming-update'],
-    permissions: ['permissions', 'permissions-transfer', 'permissions-manual-mint', 'permissions-manual-burn', 'permissions-manual-freeze', 'permissions-emergency', 'permissions-conventions-change', 'permissions-marketplace-trade-mode-change', 'permissions-direct-pricing-change', 'permissions-main-control-change'],
+    permissions: ['permissions', 'permissions-transfer', 'permissions-manual-mint', 'permissions-manual-burn', 'permissions-manual-freeze', 'permissions-emergency', 'permissions-marketplace-trade-mode-change', 'permissions-direct-pricing-change', 'permissions-main-control-change'],
     advanced: ['advanced-history', 'advanced', 'advanced-launch'],
     distribution: ['distribution-preprogrammed', 'distribution-perpetual'],
     search: ['search'],
@@ -1407,7 +1406,6 @@
   const manualFreezeScreen = document.getElementById('screen-permissions-manual-freeze');
   const destroyFrozenScreen = document.getElementById('screen-permissions-destroy-frozen');
   const emergencyActionScreen = document.getElementById('screen-permissions-emergency');
-  const conventionsChangeScreen = document.getElementById('screen-permissions-conventions-change');
   const marketplaceTradeModeScreen = document.getElementById('screen-permissions-marketplace-trade-mode-change');
   const directPricingScreen = document.getElementById('screen-permissions-direct-pricing-change');
   const mainControlScreen = document.getElementById('screen-permissions-main-control-change');
@@ -1554,9 +1552,6 @@
         break;
       case 'emergencyAction':
         screen = emergencyActionScreen;
-        break;
-      case 'conventionsChange':
-        screen = conventionsChangeScreen;
         break;
       case 'marketplaceTradeMode':
         screen = marketplaceTradeModeScreen;
@@ -10303,7 +10298,7 @@
         ),
         decimals: parseInt(wizardState.form.permissions.decimals, 10) || 2
       },
-      conventionsChangeRules: createPermissionChangeRuleFromNewFormat(wizardState.form.advanced.conventions),
+      conventionsChangeRules: createPermissionChangeRuleFromNewFormat(wizardState.form.naming.updateNames),
       baseSupply: parseInt(wizardState.form.permissions.baseSupply, 10) || 0,
       maxSupply: wizardState.form.permissions.useMaxSupply
         ? parseInt(wizardState.form.permissions.maxSupply, 10) || null
@@ -11645,9 +11640,6 @@
     // Permissions step - Emergency
     { selectId: 'emergency-permission', identityPanel: 'emergency-panel-identity', groupPanel: 'emergency-panel-group' },
     { selectId: 'emergency-change-rules', identityPanel: 'emergency-rules-identity-panel', groupPanel: 'emergency-rules-group-panel' },
-    // Advanced step - Conventions
-    { selectId: 'conventions-perform', identityPanel: 'conventions-perform-identity-panel', groupPanel: 'conventions-perform-group-panel' },
-    { selectId: 'conventions-change-rules', identityPanel: 'conventions-rules-identity-panel', groupPanel: 'conventions-rules-group-panel' },
     // Advanced step - Marketplace Trade Mode
     { selectId: 'marketplace-trade-mode-perform', identityPanel: 'marketplace-trade-mode-perform-identity-panel', groupPanel: 'marketplace-trade-mode-perform-group-panel' },
     { selectId: 'marketplace-trade-mode-change-rules', identityPanel: 'marketplace-trade-mode-rules-identity-panel', groupPanel: 'marketplace-trade-mode-rules-group-panel' },
@@ -11843,23 +11835,6 @@
       referenceKey: 'ruleChangerReference',
       identityInputId: 'emergency-rules-identity-id',
       groupSelectId: 'emergency-rules-group-id'
-    },
-    // Advanced step - Conventions
-    {
-      selectId: 'conventions-perform',
-      statePath: 'form.advanced.conventions',
-      stateKey: 'performerType',
-      referenceKey: 'performerReference',
-      identityInputId: 'conventions-perform-identity-id',
-      groupSelectId: 'conventions-perform-group-id'
-    },
-    {
-      selectId: 'conventions-change-rules',
-      statePath: 'form.advanced.conventions',
-      stateKey: 'ruleChangerType',
-      referenceKey: 'ruleChangerReference',
-      identityInputId: 'conventions-rules-identity-id',
-      groupSelectId: 'conventions-rules-group-id'
     },
     // Advanced step - Marketplace Trade Mode
     {
