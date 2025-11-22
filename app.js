@@ -3222,9 +3222,14 @@
     return result;
   }
 
-  function evaluateDistribution({ touched = false } = {}) {
+  function evaluateDistribution({ touched = false, silent = false } = {}) {
     if (!distributionUI || typeof distributionUI.getValues !== 'function') {
-      return { valid: true, message: '' };
+      // Only mark as valid if user has touched/visited this step
+      const result = { valid: true, message: '' };
+      if (touched && !silent) {
+        updateStepStatusFromValidation('distribution', result, touched);
+      }
+      return result;
     }
 
     const values = cloneDistributionValues(distributionUI.getValues());
@@ -3244,11 +3249,15 @@
       if (distributionNextButton) {
         distributionNextButton.disabled = !scheduleValidation.valid;
       }
-      // Update sidebar status based on Schedule validation
-      updateStepStatusFromValidation('distribution', scheduleValidation, touched);
+      // Update sidebar status based on Schedule validation - only if touched
+      if (touched && !silent) {
+        updateStepStatusFromValidation('distribution', scheduleValidation, touched);
+      }
 
       wizardState.form.distribution = values;
-      persistState();
+      if (!silent) {
+        persistState();
+      }
 
       return scheduleValidation;
 
@@ -3271,8 +3280,8 @@
         distributionEmissionNextButton.disabled = !emissionValidation.valid;
       }
 
-      // Keep Distribution valid in sidebar if Schedule is still valid
-      if (scheduleValidation.valid) {
+      // Keep Distribution valid in sidebar if Schedule is still valid - only if touched
+      if (touched && !silent && scheduleValidation.valid) {
         wizardState.steps.distribution = wizardState.steps.distribution || {};
         wizardState.steps.distribution.validity = 'valid';
         wizardState.steps.distribution.touched = true;
@@ -3281,18 +3290,22 @@
       }
 
       wizardState.form.distribution = values;
-      persistState();
+      if (!silent) {
+        persistState();
+      }
 
       return emissionValidation;
     }
   }
 
-  function evaluateAdvanced({ touched = false } = {}) {
+  function evaluateAdvanced({ touched = false, silent = false } = {}) {
     if (!advancedUI || typeof advancedUI.getValues !== 'function') {
       // UI removed - functionality moved to dedicated permission screens
-      // Mark step as valid since there's nothing to validate here
+      // Only mark as valid if user has touched/visited this step
       const result = { valid: true, message: '' };
-      updateStepStatusFromValidation('advanced', result, touched);
+      if (touched && !silent) {
+        updateStepStatusFromValidation('advanced', result, touched);
+      }
       return result;
     }
 
@@ -5886,7 +5899,7 @@
     const status = getStepStatus(stepId);
     const label = STEP_LABELS[stepId] || stepId;
 
-    element.classList.remove('valid', 'invalid');
+    element.classList.remove('valid', 'invalid', 'pending');
 
     let text = '';
     let ariaLabel = '';
@@ -5903,18 +5916,12 @@
       ariaLabel = `${label} step status: Invalid`;
       ariaHidden = false;
       className = 'invalid';
-    } else if (stepId !== STEP_SEQUENCE[0]) {
-      text = 'Invalid';
-      ariaLabel = `${label} step status: Invalid`;
+    } else {
+      // 'unknown' or any other state shows as Pending
+      text = 'Pending';
+      ariaLabel = `${label} step status: Pending`;
       ariaHidden = false;
-      className = 'invalid';
-    }
-
-    if (stepId === 'naming' && !text.trim()) {
-      text = 'Invalid';
-      className = className || 'invalid';
-      ariaLabel = ariaLabel || `${label} step status: Invalid`;
-      ariaHidden = false;
+      className = 'pending';
     }
 
     if (element.textContent !== text) {

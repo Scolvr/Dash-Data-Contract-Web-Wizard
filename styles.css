@@ -917,6 +917,12 @@ img {
   color: #FF3B30;
 }
 
+.wizard-sidebar .pill.pending {
+  background: transparent;
+  border: none;
+  color: #8E8E93;
+}
+
 /* Explicit dark mode overrides for Apple colors */
 html[data-theme='dark'] .wizard-sidebar .pill {
   color: #86868B;
@@ -928,6 +934,10 @@ html[data-theme='dark'] .wizard-sidebar .pill.valid {
 
 html[data-theme='dark'] .wizard-sidebar .pill.invalid {
   color: #FF453A;
+}
+
+html[data-theme='dark'] .wizard-sidebar .pill.pending {
+  color: #98989D;
 }
 
 .pill {
@@ -980,6 +990,18 @@ html[data-theme='dark'] .wizard-sidebar .pill.invalid {
   font-weight: 700;
 }
 
+.pill.pending {
+  background: rgba(142, 142, 147, 0.1);
+  border-color: rgba(142, 142, 147, 0.3);
+  color: #8E8E93;
+  font-weight: 500;
+}
+
+.pill.pending::before {
+  content: "–";
+  font-weight: 500;
+}
+
 @media (prefers-color-scheme: dark) {
   html:not([data-theme='light']) .pill {
     background: rgba(100, 116, 139, 0.15);
@@ -999,6 +1021,12 @@ html[data-theme='dark'] .wizard-sidebar .pill.invalid {
     color: var(--color-error);
   }
 
+  html:not([data-theme='light']) .pill.pending {
+    background: rgba(152, 152, 157, 0.15);
+    border-color: rgba(152, 152, 157, 0.3);
+    color: #98989D;
+  }
+
   /* Dark mode Apple minimal pills */
   html:not([data-theme='light']) .wizard-sidebar .pill {
     background: transparent;
@@ -1014,6 +1042,11 @@ html[data-theme='dark'] .wizard-sidebar .pill.invalid {
   html:not([data-theme='light']) .wizard-sidebar .pill.invalid {
     background: transparent;
     color: #FF453A;
+  }
+
+  html:not([data-theme='light']) .wizard-sidebar .pill.pending {
+    background: transparent;
+    color: #98989D;
   }
 }
 
