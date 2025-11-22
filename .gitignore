@@ -13,3 +13,54 @@ test-results/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Build artifacts
+dist/
+
+# Development Analysis Documents
+AGENT_*.md
+AUTHORIZATION_*.md
+*_ANALYSIS*.md
+AUTOSAVE_AUDIT.md
+CONTRACT_MAPPING_AUDIT.md
+CRITICAL_*.md
+FEATURES_ANALYSIS.md
+FILE_LOCKS.md
+FIX_STRATEGY.md
+HANDOFFS.md
+HYBRID_*.md
+IDENTITY_FIELDS_AUDIT.md
+IMPLEMENTATION_*.md
+IMPROVEMENT_*.md
+INFO_GUIDE_OVERVIEW.md
+NAVIGATION_BUG_ANALYSIS.md
+PROGRESS.md
+QUICK-TEST.md
+REFACTORING_STRATEGY.md
+REMAINING_FEATURES_PLAN.md
+SECURITY_STORAGE_RECOMMENDATIONS.md
+STATIC_SITE_STORAGE_BEHAVIOR.md
+STORAGE_VS_CONTRACT_FLOW.md
+TEST_RESULTS.md
+WIRING_VERIFICATION.md
+Burning.md
+00-README-START-HERE.md
+
+# Development directories
+MD files/
+.claude/
+
+# Backup files
+*.bak
+*.bak2
+*.backup-*
+*.before_restore
+
+# Temporary scripts
+fix-to-horizontal-tabs.js
+redesign-panels-vertical-tabs.js
+update-guide-panels.js
+
+# Test/prototype HTML
+progress-indicator-options.html
+test-enhancements.html
