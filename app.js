@@ -14835,7 +14835,8 @@
   const config = {
     parallaxMultipliers: [0.03, 0.05, 0.04, 0.06, 0.035], // Different speeds for each orb
     smoothing: 0.08, // Smoothing factor for lerp (lower = smoother)
-    maxOffset: 100 // Maximum pixel offset from mouse
+    maxOffset: 100, // Maximum pixel offset from mouse
+    inactivityTimeout: 3000 // Pause animation after 3s of no mouse movement
   };
 
   // State
@@ -14845,6 +14846,8 @@
   let targetY = mouseY;
   let animationFrame = null;
   let isInitialized = false;
+  let inactivityTimer = null;
+  let isAnimating = false;
 
   // Get orb elements
   const orbs = document.querySelectorAll('.orb');
@@ -14883,7 +14886,35 @@
       orb.style.setProperty('--parallax-y', `${translateY}px`);
     });
 
+    // Check if we've converged (mouse position close to target)
+    const dx = Math.abs(mouseX - targetX);
+    const dy = Math.abs(mouseY - targetY);
+
+    if (isAnimating && dx < 0.1 && dy < 0.1) {
+      // Position has converged, stop animation loop
+      isAnimating = false;
+      animationFrame = null;
+      return;
+    }
+
     animationFrame = requestAnimationFrame(updateOrbs);
+  }
+
+  // Start or resume animation
+  function startAnimation() {
+    if (!isAnimating) {
+      isAnimating = true;
+      updateOrbs();
+    }
+  }
+
+  // Stop animation
+  function stopAnimation() {
+    isAnimating = false;
+    if (animationFrame) {
+      cancelAnimationFrame(animationFrame);
+      animationFrame = null;
+    }
   }
 
   // Throttled mouse move handler
@@ -14896,12 +14927,23 @@
     targetX = e.clientX;
     targetY = e.clientY;
 
-    // Start animation loop on first mouse movement
+    // Clear inactivity timer on mouse move
+    if (inactivityTimer) {
+      clearTimeout(inactivityTimer);
+    }
+
+    // Start animation loop
     if (!isInitialized) {
       isInitialized = true;
-      updateOrbs();
       console.log('✓ Background orbs: interactive mode activated');
     }
+
+    startAnimation();
+
+    // Set inactivity timer to pause animation after timeout
+    inactivityTimer = setTimeout(() => {
+      stopAnimation();
+    }, config.inactivityTimeout);
   }
 
   // Handle window resize
@@ -14914,12 +14956,13 @@
   // Handle visibility change (pause when tab not visible)
   function handleVisibilityChange() {
     if (document.hidden) {
-      if (animationFrame) {
-        cancelAnimationFrame(animationFrame);
-        animationFrame = null;
+      stopAnimation();
+      if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = null;
       }
     } else if (isInitialized) {
-      updateOrbs();
+      startAnimation();
     }
   }
 
@@ -14928,16 +14971,21 @@
   window.addEventListener('resize', handleResize, { passive: true });
   document.addEventListener('visibilitychange', handleVisibilityChange);
 
-  // Cleanup function
+  // Cleanup function (exposed globally for manual cleanup if needed)
   window.cleanupBackgroundOrbs = function() {
     document.removeEventListener('mousemove', handleMouseMove);
     window.removeEventListener('resize', handleResize);
     document.removeEventListener('visibilitychange', handleVisibilityChange);
-    if (animationFrame) {
-      cancelAnimationFrame(animationFrame);
+    stopAnimation();
+    if (inactivityTimer) {
+      clearTimeout(inactivityTimer);
+      inactivityTimer = null;
     }
     console.log('✓ Background orbs: cleaned up');
   };
 
-  console.log('✓ Background orbs system initialized');
+  // Clean up on page unload to prevent memory leaks
+  window.addEventListener('beforeunload', window.cleanupBackgroundOrbs);
+
+  console.log('✓ Background orbs system initialized (with performance optimizations)');
 })();

@@ -2123,12 +2123,25 @@ body.guide-panel-collapsed .wizard-tabs {
   gap: var(--space-6);
   padding: var(--space-6);
   padding-bottom: calc(80px + var(--space-6));
-  background: var(--color-background);
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-  transition: none;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    0 0 60px rgba(0, 212, 255, 0.15),
+    0 0 120px rgba(139, 92, 246, 0.1),
+    0 0 180px rgba(236, 72, 153, 0.05);
+  transition: box-shadow 0.3s ease;
   box-sizing: border-box;
+}
+
+/* Light mode content area */
+html[data-theme='light'] .wizard-screen__inner {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 0 60px rgba(0, 212, 255, 0.1),
+    0 0 120px rgba(139, 92, 246, 0.08),
+    0 0 180px rgba(236, 72, 153, 0.03);
 }
 
 /* Force consistent width for all screens */
@@ -2527,8 +2540,10 @@ body.guide-panel-collapsed .wizard-tabs {
 
 /* Card-based layout system */
 .form-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: rgba(28, 28, 30, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-lg);
   padding: var(--space-6);
   display: flex;
@@ -2541,6 +2556,12 @@ body.guide-panel-collapsed .wizard-tabs {
   max-width: var(--content-max-width);
   margin: 0 auto;
   box-sizing: border-box;
+}
+
+/* Light mode form cards */
+html[data-theme='light'] .form-card {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .form-card:hover {
@@ -10746,6 +10767,8 @@ button:focus-visible,
   overflow: hidden;
   pointer-events: none;
   z-index: 0;
+  contain: layout style;
+  transform: translateZ(0);
 }
 
 .orb {
@@ -10753,11 +10776,12 @@ button:focus-visible,
   border-radius: 50%;
   filter: blur(60px);
   opacity: 0.7;
-  will-change: transform;
+  will-change: transform, opacity;
   --parallax-x: 0px;
   --parallax-y: 0px;
   animation: orb-float 25s ease-in-out infinite;
-  transform: translate(var(--parallax-x), var(--parallax-y));
+  transform: translate(var(--parallax-x), var(--parallax-y)) translateZ(0);
+  contain: layout paint;
 }
 
 /* Individual Orb Styles - Dark Mode (Default) */
@@ -10831,7 +10855,7 @@ button:focus-visible,
 /* Light Mode - Softer, more pastel orbs */
 html[data-theme='light'] .orb {
   opacity: 0.25;
-  filter: blur(100px);
+  filter: blur(40px);
 }
 
 html[data-theme='light'] .orb--1 {
