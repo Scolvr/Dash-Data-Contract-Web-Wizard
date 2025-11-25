@@ -4,6 +4,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- SECURITY: Content Security Policy to mitigate XSS and data injection attacks -->
+  <!-- Note: frame-ancestors cannot be set via meta tag, only via HTTP header -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self';
+                 script-src 'self' 'unsafe-inline';
+                 style-src 'self' 'unsafe-inline';
+                 img-src 'self' data: https://media.dash.org;
+                 connect-src 'self' https://*.dash.org wss://*.dash.org;
+                 font-src 'self';
+                 object-src 'none';
+                 base-uri 'self';
+                 form-action 'self';">
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -8568,6 +8580,8 @@
   </script>
 
   <!-- Load Dash Evo SDK from local dist only (module import) -->
+  <!-- NOTE: Commented out during transition - SDK file not present yet -->
+  <!--
   <script type="module">
     import * as sdkModule from './dist/evo-sdk.module.js';
     try {
@@ -8582,6 +8596,7 @@
       console.error('Failed to initialize Dash Evo SDK from local dist:', error);
     }
   </script>
+  -->
 
   <!-- Cleanup Service Workers and Caches -->
   <script>
@@ -9296,6 +9311,11 @@
     })();
   </script>
 
+  <!-- Modular ES6 Entry Point (Vite build system) -->
+  <!-- This runs alongside app.js during transition period -->
+  <script type="module" src="/src/main.js"></script>
+
+  <!-- Legacy monolithic app.js (will be phased out) -->
   <script src="app.js?v=96" defer></script>
 
   <!-- Enhancements Module (ES6) - DISABLED due to navigation freeze -->

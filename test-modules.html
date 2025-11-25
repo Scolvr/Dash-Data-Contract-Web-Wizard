@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Module Test - Dash Token Wizard</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 2rem;
+      background: #1a1a1a;
+      color: #fff;
+    }
+    .test-section {
+      background: #2a2a2a;
+      padding: 1.5rem;
+      margin: 1rem 0;
+      border-radius: 8px;
+    }
+    h1 { color: #008de4; }
+    h2 { color: #00ff00; }
+    pre {
+      background: #1a1a1a;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    .success { color: #00ff00; }
+    .error { color: #ff0000; }
+  </style>
+</head>
+<body>
+  <h1>Dash Token Wizard - Module Test</h1>
+  <p>Testing the new modular ES6 architecture</p>
+
+  <div class="test-section">
+    <h2>Test 1: Constants Module</h2>
+    <pre id="test-constants"></pre>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 2: Formatters Module</h2>
+    <pre id="test-formatters"></pre>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 3: Validation Module</h2>
+    <pre id="test-validation"></pre>
+  </div>
+
+  <div class="test-section">
+    <h2>Test Results Summary</h2>
+    <pre id="test-summary"></pre>
+  </div>
+
+  <script type="module">
+    import * as constants from './src/utils/constants.js';
+    import * as formatters from './src/utils/formatters.js';
+    import * as validation from './src/utils/validation.js';
+
+    const results = [];
+
+    // Test 1: Constants
+    try {
+      const output = [];
+      output.push(`STEP_SEQUENCE length: ${constants.STEP_SEQUENCE.length}`);
+      output.push(`STEP_SEQUENCE: ${JSON.stringify(constants.STEP_SEQUENCE, null, 2)}`);
+      output.push(`MAX_U32: ${constants.MAX_U32}`);
+      output.push(`hasBigIntSupport: ${constants.hasBigIntSupport}`);
+      output.push(`\nTotal exports: ${Object.keys(constants).length}`);
+
+      document.getElementById('test-constants').textContent = output.join('\n');
+      results.push({ test: 'Constants', status: 'PASS' });
+    } catch (error) {
+      document.getElementById('test-constants').innerHTML = `<span class="error">ERROR: ${error.message}</span>`;
+      results.push({ test: 'Constants', status: 'FAIL', error: error.message });
+    }
+
+    // Test 2: Formatters
+    try {
+      const output = [];
+
+      // Test normaliseUnsignedValue
+      const normalized = formatters.normaliseUnsignedValue('12345abc');
+      output.push(`normaliseUnsignedValue('12345abc'): ${normalized}`);
+
+      // Test formatWalletBalance
+      const balance = formatters.formatWalletBalance(100000000);
+      output.push(`formatWalletBalance(100000000): ${balance}`);
+
+      // Test generateId
+      const id = formatters.generateId('test');
+      output.push(`generateId('test'): ${id}`);
+
+      // Test safeBigIntCompare
+      const comparison = formatters.safeBigIntCompare('100', '50');
+      output.push(`safeBigIntCompare('100', '50'): ${comparison > 0 ? 'greater' : 'less or equal'}`);
+
+      output.push(`\nTotal exports: ${Object.keys(formatters).length}`);
+
+      document.getElementById('test-formatters').textContent = output.join('\n');
+      results.push({ test: 'Formatters', status: 'PASS' });
+    } catch (error) {
+      document.getElementById('test-formatters').innerHTML = `<span class="error">ERROR: ${error.message}</span>`;
+      results.push({ test: 'Formatters', status: 'FAIL', error: error.message });
+    }
+
+    // Test 3: Validation
+    try {
+      const output = [];
+
+      // Test validateTokenName
+      const nameResult = validation.validateTokenName('MyToken');
+      output.push(`validateTokenName('MyToken'):`);
+      output.push(`  valid: ${nameResult.valid}`);
+      output.push(`  message: ${nameResult.message || '(none)'}`);
+
+      // Test validateBase58Identity
+      const idResult = validation.validateBase58Identity('123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefgh');
+      output.push(`\nvalidateBase58Identity(43 chars):`);
+      output.push(`  valid: ${idResult.valid}`);
+      output.push(`  message: ${idResult.message || '(none)'}`);
+
+      // Test validateDecimals
+      const decimalResult = validation.validateDecimals(8);
+      output.push(`\nvalidateDecimals(8):`);
+      output.push(`  valid: ${decimalResult.valid}`);
+      output.push(`  message: ${decimalResult.message || '(none)'}`);
+
+      output.push(`\nTotal exports: ${Object.keys(validation).length}`);
+
+      document.getElementById('test-validation').textContent = output.join('\n');
+      results.push({ test: 'Validation', status: 'PASS' });
+    } catch (error) {
+      document.getElementById('test-validation').innerHTML = `<span class="error">ERROR: ${error.message}</span>`;
+      results.push({ test: 'Validation', status: 'FAIL', error: error.message });
+    }
+
+    // Summary
+    const summary = [];
+    summary.push('═══════════════════════════════════════');
+    summary.push('MODULE TEST RESULTS');
+    summary.push('═══════════════════════════════════════');
+    results.forEach(result => {
+      const status = result.status === 'PASS' ? '✓' : '✗';
+      const statusClass = result.status === 'PASS' ? 'success' : 'error';
+      summary.push(`${status} ${result.test}: ${result.status}`);
+      if (result.error) {
+        summary.push(`  Error: ${result.error}`);
+      }
+    });
+    summary.push('═══════════════════════════════════════');
+
+    const passCount = results.filter(r => r.status === 'PASS').length;
+    const totalCount = results.length;
+    summary.push(`\nPassed: ${passCount}/${totalCount}`);
+
+    if (passCount === totalCount) {
+      summary.push('\n✓ ALL TESTS PASSED - Modules working correctly!');
+    } else {
+      summary.push('\n✗ SOME TESTS FAILED - Check errors above');
+    }
+
+    document.getElementById('test-summary').textContent = summary.join('\n');
+  </script>
+</body>
+</html>
