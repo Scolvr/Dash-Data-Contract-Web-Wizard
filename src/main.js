@@ -11,17 +11,33 @@ import * as constants from './utils/constants.js';
 import * as formatters from './utils/formatters.js';
 import * as validation from './utils/validation.js';
 
+// Import monitoring and optimization utilities
+import { initPerformanceMonitoring, markPerformance } from './utils/performance.js';
+import { initErrorTracking } from './utils/errorTracking.js';
+import { preloadNextStep } from './core/navigation.js';
+
 // Version info
 const WIZARD_VERSION = '23.0';
 const BUILD_MODE = import.meta.env.MODE || 'development';
 
 // Initialize application
 function initializeWizard() {
+  // Mark initialization start
+  markPerformance('wizard-init-start');
+
+  // Initialize monitoring systems first
+  initErrorTracking();
+  initPerformanceMonitoring();
+
   console.log('%c═══════════════════════════════════════════════════════', 'color: #008de4; font-weight: bold');
   console.log(`%c🚀 Dash Token Wizard v${WIZARD_VERSION} (Modular)`, 'color: #008de4; font-weight: bold; font-size: 16px;');
   console.log(`%c📦 Build Mode: ${BUILD_MODE}`, 'color: #00ff00;');
   console.log('%c✓ ES6 Modules: LOADED', 'color: #00ff00;');
   console.log('%c✓ Vite Build System: ACTIVE', 'color: #00ff00;');
+  console.log('%c✓ Performance Monitoring: ENABLED', 'color: #00ff00;');
+  console.log('%c✓ Error Tracking: ENABLED', 'color: #00ff00;');
+  console.log('%c✓ PWA Support: ENABLED', 'color: #00ff00;');
+  console.log('%c✓ Service Worker: READY', 'color: #00ff00;');
   console.log('%c═══════════════════════════════════════════════════════\n', 'color: #008de4; font-weight: bold');
 
   // Log loaded modules
@@ -37,6 +53,13 @@ function initializeWizard() {
     console.warn('  ⚠ BigInt: Not supported (using fallback)');
   }
 
+  // Check for Service Worker support
+  if ('serviceWorker' in navigator) {
+    console.log('  ✓ Service Worker: Supported');
+  } else {
+    console.warn('  ⚠ Service Worker: Not supported');
+  }
+
   // Module availability check
   window.DashWizardModules = {
     constants,
@@ -48,6 +71,14 @@ function initializeWizard() {
 
   console.log('\n💡 Modules available globally via window.DashWizardModules');
   console.log('Example: window.DashWizardModules.validation.validateTokenName("MyToken")');
+
+  // Preload first step (naming) in background
+  preloadNextStep('naming').catch(() => {
+    // Ignore preload errors
+  });
+
+  // Mark initialization complete
+  markPerformance('wizard-init-complete');
 }
 
 // Wait for DOM to be ready

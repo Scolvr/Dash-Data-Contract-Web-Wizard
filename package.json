@@ -7,6 +7,11 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest watch",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:module": "node src/features/naming/namingTest.js"
@@ -15,9 +20,19 @@
     "@playwright/test": "^1.56.1",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^24.10.1",
+    "@vitest/coverage-v8": "^4.0.13",
     "happy-dom": "^20.0.10",
     "jsdom": "^27.2.0",
+    "rollup-plugin-visualizer": "^6.0.5",
+    "terser": "^5.44.1",
+    "typescript": "^5.9.3",
     "vite": "^5.4.0",
-    "vitest": "^4.0.10"
+    "vite-plugin-compression": "^0.5.1",
+    "vite-plugin-dts": "^4.5.4",
+    "vite-plugin-pwa": "^1.1.0",
+    "vitest": "^4.0.10",
+    "web-vitals": "^5.1.0",
+    "workbox-build": "^7.4.0"
   }
 }
