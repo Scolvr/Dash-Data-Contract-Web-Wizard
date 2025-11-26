@@ -127,6 +127,7 @@ export function preloadStep(stepId) {
 /**
  * Preload the next step based on current step
  * @param {string} currentStepId - Current step identifier
+ * @returns {Promise<void>}
  */
 export function preloadNextStep(currentStepId) {
   const stepOrder = ['naming', 'permissions', 'distribution', 'advanced', 'registration'];
@@ -134,8 +135,10 @@ export function preloadNextStep(currentStepId) {
 
   if (currentIndex >= 0 && currentIndex < stepOrder.length - 1) {
     const nextStepId = stepOrder[currentIndex + 1];
-    preloadStep(nextStepId);
+    return preloadStep(nextStepId);
   }
+
+  return Promise.resolve();
 }
 
 /**
