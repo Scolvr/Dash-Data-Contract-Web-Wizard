@@ -7,10 +7,11 @@
   <!-- SECURITY: Content Security Policy to mitigate XSS and data injection attacks -->
   <!-- Note: frame-ancestors cannot be set via meta tag, only via HTTP header -->
   <!-- Note: wasm-unsafe-eval is required for Evo SDK WebAssembly modules -->
+  <!-- Note: unsafe-eval is required for Evo SDK contract validation (uses eval internally) -->
   <!-- Note: worker-src blob: is required for web workers used by service workers -->
   <meta http-equiv="Content-Security-Policy"
         content="default-src 'self';
-                 script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval';
+                 script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval';
                  style-src 'self' 'unsafe-inline';
                  img-src 'self' data: https://media.dash.org;
                  connect-src 'self' https://*.dash.org wss://*.dash.org;
@@ -8586,15 +8587,30 @@
   <script type="module">
     import * as sdkModule from './dist/evo-sdk.module.js';
     try {
+      console.log('[Evo SDK] Module loaded, initializing...');
+
+      // Call ensureInitialized if it exists
       if (typeof sdkModule.ensureInitialized === 'function') {
         await sdkModule.ensureInitialized();
+        console.log('[Evo SDK] ensureInitialized() completed');
       }
+
+      // Set to window global
       window.EvoSDK = sdkModule;
+
+      // Debug: Log what's available
+      console.log('[Evo SDK] Available exports:', Object.keys(sdkModule).filter(k => !k.startsWith('_')).slice(0, 20));
+      console.log('[Evo SDK] DataContract available?', !!sdkModule.DataContract);
+      console.log('[Evo SDK] DataContract type:', typeof sdkModule.DataContract);
+      console.log('[Evo SDK] DataContract methods:', Object.getOwnPropertyNames(sdkModule.DataContract).filter(k => !k.startsWith('_')));
+      console.log('[Evo SDK] DataContract.prototype methods:', Object.getOwnPropertyNames(sdkModule.DataContract.prototype || {}).filter(k => !k.startsWith('_')));
+      console.log('[Evo SDK] DataContract.fromJSON available?', typeof sdkModule.DataContract?.fromJSON);
+
       window.__evo_sdk_ready = true;
-      console.info('Dash Evo SDK initialized from local dist.');
+      console.info('[Evo SDK] ✓ Dash Evo SDK initialized from local dist.');
       window.dispatchEvent(new CustomEvent('evo:sdk-ready'));
     } catch (error) {
-      console.error('Failed to initialize Dash Evo SDK from local dist:', error);
+      console.error('[Evo SDK] Failed to initialize:', error);
     }
   </script>
 

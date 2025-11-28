@@ -3874,7 +3874,7 @@
       return;
     }
 
-    if (!window.EvoSDK || !window.EvoSDK.DataContract || typeof window.EvoSDK.DataContract.fromJSON !== 'function') {
+    if (!window.EvoSDK || !window.EvoSDK.DataContract || typeof window.EvoSDK.DataContract.fromValue !== 'function') {
       if (sequence === registrationValidationSequence) {
         setRegistrationValidationState({
           variant: 'error',
@@ -3886,7 +3886,7 @@
     }
 
     try {
-      await window.EvoSDK.DataContract.fromJSON(contractJSON, 10);
+      await window.EvoSDK.DataContract.fromValue(contractJSON, 10);
       if (sequence !== registrationValidationSequence) {
         return;
       }
@@ -10542,10 +10542,10 @@
     }
 
     const platformContract = {
-      $format_version: '1',
+      $format_version: '0',
       id: contractId,  // Platform generates actual ID during registration
       ownerId: ownerIdentity,           // User-provided owner identity ID
-      version: 1,
+      version: 0,
       config: {
         $format_version: '0',
         canBeDeleted: false,
@@ -11303,12 +11303,12 @@
           // Validate contract JSON using Evo SDK (if available)
           if (window.EvoSDK && window.EvoSDK.DataContract) {
             try {
-              // Validate by attempting to create DataContract from JSON
-              await window.EvoSDK.DataContract.fromJSON(contractJSON, 10);
+              // Validate by attempting to create DataContract from Value
+              await window.EvoSDK.DataContract.fromValue(contractJSON, 10);
               console.log('✓ Contract JSON validated successfully with Evo SDK');
             } catch (validationError) {
               console.warn('Contract validation warning:', validationError.message);
-              // Continue anyway - user may want to see/edit the JSONx  
+              // Continue anyway - user may want to see/edit the JSON
             }
           }
 
@@ -11363,8 +11363,8 @@
           // Validate contract JSON using Evo SDK (if available)
           if (window.EvoSDK && window.EvoSDK.DataContract) {
             try {
-              // Validate by attempting to create DataContract from JSON
-              await window.EvoSDK.DataContract.fromJSON(contractJSON, 10);
+              // Validate by attempting to create DataContract from Value
+              await window.EvoSDK.DataContract.fromValue(contractJSON, 10);
               console.log('✓ Contract JSON validated successfully with Evo SDK');
             } catch (validationError) {
               console.error('Contract validation warning:', validationError.message);
