@@ -57,7 +57,6 @@ export default defineConfig({
       },
       // Mark external dependencies that shouldn't be bundled
       external: [
-        /^\.\/dist\/evo-sdk\.module\.js$/,
         /^app\.js/
       ]
     },
@@ -108,7 +107,7 @@ export default defineConfig({
   },
   // Optimize dependencies
   optimizeDeps: {
-    include: ['web-vitals']
+    include: ['web-vitals'],
   },
   // Enable CSS code splitting
   css: {

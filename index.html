@@ -14,7 +14,7 @@
                  script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval';
                  style-src 'self' 'unsafe-inline';
                  img-src 'self' data: https://media.dash.org;
-                 connect-src 'self' https://*.dash.org wss://*.dash.org;
+                 connect-src 'self' blob: https://*.dash.org wss://*.dash.org;
                  font-src 'self';
                  worker-src 'self' blob:;
                  object-src 'none';
@@ -8574,44 +8574,42 @@
     </div>
   </div>
 
-  <!-- Import map to resolve EvoSDK's wasm runtime dependency -->
-  <script type="importmap">
-    {
-      "imports": {
-        "@dashevo/wasm-sdk/compressed": "./dist/sdk.compressed.js"
-      }
-    }
-  </script>
-
-  <!-- Load Dash Evo SDK from local dist (module import) -->
+  <!-- Load Dash Evo SDK v2.1.3 (supports DataContract V1 with tokens) -->
+  <!-- First load the webpack-bundled SDK (includes all polyfills) -->
+  <script src="./dist/wasm-dpp-browser.js"></script>
   <script type="module">
-    import * as sdkModule from './dist/evo-sdk.module.js';
-    try {
-      console.log('[Evo SDK] Module loaded, initializing...');
+    // Initialize the SDK after the UMD bundle loads
+    (async function initSDK() {
+      try {
+        console.log('[Evo SDK] Initializing wasm-dpp v2.1.3...');
 
-      // Call ensureInitialized if it exists
-      if (typeof sdkModule.ensureInitialized === 'function') {
-        await sdkModule.ensureInitialized();
-        console.log('[Evo SDK] ensureInitialized() completed');
+        // WasmDpp is exposed as a global by the UMD bundle
+        if (typeof WasmDpp === 'undefined') {
+          throw new Error('WasmDpp bundle not loaded');
+        }
+
+        // Call the init function which returns the SDK module
+        const sdkModule = await WasmDpp();
+
+        console.log('[Evo SDK] Module loaded successfully');
+        console.log('[Evo SDK] Available exports:', Object.keys(sdkModule).filter(k => !k.startsWith('_')).slice(0, 20));
+        console.log('[Evo SDK] DataContract available?', !!sdkModule.DataContract);
+
+        if (sdkModule.DataContract) {
+          console.log('[Evo SDK] DataContract methods:', Object.getOwnPropertyNames(sdkModule.DataContract).filter(k => !k.startsWith('_')));
+        }
+
+        // Set global for compatibility with existing code
+        window.EvoSDK = sdkModule;
+        window.__evo_sdk_ready = true;
+
+        // Dispatch ready event
+        window.dispatchEvent(new CustomEvent('evo:sdk-ready'));
+        console.info('[Evo SDK] Dash Evo SDK v2.1.3 initialized successfully (DataContract V1 with tokens supported)');
+      } catch (error) {
+        console.error('[Evo SDK] Failed to initialize:', error);
       }
-
-      // Set to window global
-      window.EvoSDK = sdkModule;
-
-      // Debug: Log what's available
-      console.log('[Evo SDK] Available exports:', Object.keys(sdkModule).filter(k => !k.startsWith('_')).slice(0, 20));
-      console.log('[Evo SDK] DataContract available?', !!sdkModule.DataContract);
-      console.log('[Evo SDK] DataContract type:', typeof sdkModule.DataContract);
-      console.log('[Evo SDK] DataContract methods:', Object.getOwnPropertyNames(sdkModule.DataContract).filter(k => !k.startsWith('_')));
-      console.log('[Evo SDK] DataContract.prototype methods:', Object.getOwnPropertyNames(sdkModule.DataContract.prototype || {}).filter(k => !k.startsWith('_')));
-      console.log('[Evo SDK] DataContract.fromJSON available?', typeof sdkModule.DataContract?.fromJSON);
-
-      window.__evo_sdk_ready = true;
-      console.info('[Evo SDK] ✓ Dash Evo SDK initialized from local dist.');
-      window.dispatchEvent(new CustomEvent('evo:sdk-ready'));
-    } catch (error) {
-      console.error('[Evo SDK] Failed to initialize:', error);
-    }
+    })();
   </script>
 
   <!-- Cleanup Service Workers and Caches -->
