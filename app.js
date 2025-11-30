@@ -301,6 +301,35 @@
   // ═══════════════════════════════════════════════════════
 
   /**
+   * T2: Scrolls to the first error field and highlights it with a pulse animation
+   * @param {HTMLElement} container - Optional container to search within (default: active screen)
+   */
+  function scrollToFirstError(container) {
+    const searchContainer = container || document.querySelector('.wizard-screen--active');
+    if (!searchContainer) return;
+
+    // Find first invalid input
+    const firstError = searchContainer.querySelector('.wizard-field__input--error, .is-invalid, [aria-invalid="true"]');
+    if (!firstError) return;
+
+    // Scroll into view with offset for header
+    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    // Add pulse animation
+    firstError.classList.add('wizard-field__input--error-pulse');
+
+    // Focus the field
+    setTimeout(() => {
+      firstError.focus();
+    }, 300);
+
+    // Remove pulse class after animation
+    setTimeout(() => {
+      firstError.classList.remove('wizard-field__input--error-pulse');
+    }, 1500);
+  }
+
+  /**
    * Shows a toast notification
    * @param {Object} options - Toast configuration
    * @param {string} options.type - Toast type: 'success', 'error', 'warning', 'info'
@@ -502,6 +531,9 @@
     const progressBar = document.querySelector('.wizard-progress-compact');
     const progressSteps = document.querySelectorAll('.wizard-progress-compact__step');
 
+    // P2: Update sidebar progress bar
+    updateSidebarProgress();
+
     if (!progressBar) return;
 
     // Get step position (0-5)
@@ -538,6 +570,46 @@
         if (dotEl) dotEl.textContent = stepNum;
       }
     });
+  }
+
+  /**
+   * P2: Updates the sidebar progress bar based on completed steps
+   */
+  function updateSidebarProgress() {
+    const progressText = document.getElementById('progress-text');
+    const progressFill = document.getElementById('progress-fill');
+    const progressContainer = document.querySelector('.wizard-progress');
+
+    if (!progressText || !progressFill) return;
+
+    // Count completed steps from STEP_SEQUENCE (naming, permissions, distribution, advanced, registration)
+    const mainSteps = ['naming', 'permissions', 'distribution', 'advanced', 'registration'];
+    let completedCount = 0;
+
+    mainSteps.forEach(stepId => {
+      const step = wizardState.steps[stepId];
+      if (step && step.validity === 'valid') {
+        completedCount++;
+      }
+    });
+
+    const totalSteps = mainSteps.length;
+    const percentage = Math.round((completedCount / totalSteps) * 100);
+
+    // Update text
+    progressText.textContent = `${completedCount}/${totalSteps} Steps`;
+
+    // Update fill bar
+    progressFill.style.width = `${percentage}%`;
+
+    // Toggle complete state
+    if (progressContainer) {
+      if (completedCount === totalSteps) {
+        progressContainer.classList.add('wizard-progress--complete');
+      } else {
+        progressContainer.classList.remove('wizard-progress--complete');
+      }
+    }
   }
 
   /**
@@ -2032,7 +2104,19 @@
 
   const backButtons = Array.from(document.querySelectorAll('[data-step-back]'));
   backButtons.forEach((button) => {
-    const stepId = button.getAttribute('data-step-back');
+    const explicitStepId = button.getAttribute('data-step-back');
+
+    // FIX: If no explicit step ID, get the step from the parent screen element
+    const getButtonStepId = () => {
+      if (explicitStepId) {
+        return explicitStepId;
+      }
+      // Fall back to parent screen's data-step attribute or current active screen
+      const parentScreen = button.closest('.wizard-screen');
+      return parentScreen?.getAttribute('data-step') || wizardState.active;
+    };
+
+    const stepId = getButtonStepId();
     if (stepId === STEP_SEQUENCE[0]) {
       button.setAttribute('tabindex', '-1');
       button.addEventListener('click', (event) => {
@@ -2040,8 +2124,8 @@
       });
       return;
     }
-    // Use stepId from button attribute instead of global currentScreenId to avoid state desync
-    button.addEventListener('click', () => goToPreviousScreen(stepId));
+    // Use dynamic stepId resolution to handle empty data-step-back attributes
+    button.addEventListener('click', () => goToPreviousScreen(getButtonStepId()));
   });
 
   const returnButtons = Array.from(document.querySelectorAll('[data-step-return]'));
@@ -2447,16 +2531,22 @@
   function initialiseUI() {
     hydrateFormsFromState();
     TRACKED_STEPS.forEach(updateStepStatusUI);
+    // FIX: Always re-evaluate all steps with silent: false to recalculate validity
+    // from actual form data, not from persisted validity state
     STEP_SEQUENCE.forEach((stepId) => {
       const step = wizardState.steps[stepId];
       evaluateStep(stepId, {
         touched: step.touched,
-        silent: !step.touched
+        silent: false  // Always update UI to reflect actual form validity
       });
     });
+    // FIX: Recalculate furthestValidIndex based on newly evaluated step validity
+    wizardState.furthestValidIndex = computeFurthestValidIndexFromSteps(wizardState.steps);
     syncManualActionUIs({ announce: false });
     updateRegistrationPreviewVisibility();
     refreshFlow({ initial: true, suppressFocus: true });
+    // P2: Initialize sidebar progress bar
+    updateSidebarProgress();
   }
 
   function hydrateFormsFromState() {
@@ -3415,18 +3505,27 @@
   }
 
   function evaluateSearch({ touched = false, silent = false } = {}) {
-    // Search step is always valid - all fields are optional
     const stepState = wizardState.steps.search;
     stepState.touched = touched;
-    stepState.validity = 'valid';
 
+    // FIX: When user actively clicks Continue (touched=true), mark as valid for navigation
+    // For initial page load (touched=false), only show valid if previous steps complete
+    // This prevents sidebar showing checkmark before user reaches the step
+    const distributionStep = wizardState.steps.distribution;
+    const previousStepsComplete = distributionStep && distributionStep.validity === 'valid';
+
+    // If user is actively interacting (touched), or previous steps are complete, mark valid
+    // Otherwise keep as unknown to prevent premature checkmark in sidebar
+    stepState.validity = (touched || previousStepsComplete) ? 'valid' : 'unknown';
+
+    // Form is always valid (all fields optional)
     const result = { valid: true, message: '' };
 
     if (searchMessage) {
       searchMessage.textContent = '';
     }
     if (searchNextButton) {
-      searchNextButton.disabled = !result.valid;
+      searchNextButton.disabled = false;  // Always enabled - fields are optional
     }
 
     if (!silent) {
@@ -5016,6 +5115,7 @@
   /**
    * Performance Enhancement: Proper cleanup when removing localization rows
    * Removes event listeners and DOM elements to prevent memory leaks
+   * I7: Enhanced with exit animation before removal
    */
   function removeLocalizationRow(rowId) {
     const index = localizationRows.findIndex(row => row.id === rowId);
@@ -5023,28 +5123,47 @@
       return;
     }
     const row = localizationRows[index];
+    const container = row.elements?.container;
 
-    // Performance Enhancement: Clear references to help garbage collection
-    // While removing the DOM element automatically removes its listeners,
-    // explicitly clearing references helps with memory management
-    if (row.elements) {
-      // Clear all element references
-      Object.keys(row.elements).forEach(key => {
-        row.elements[key] = null;
-      });
+    // I7: Add exit animation before removing
+    if (container && container.parentNode) {
+      container.classList.add('localization-row--removing');
+
+      // Wait for animation to complete before removing
+      setTimeout(() => {
+        // Performance Enhancement: Clear references to help garbage collection
+        if (row.elements) {
+          Object.keys(row.elements).forEach(key => {
+            row.elements[key] = null;
+          });
+        }
+
+        // Remove from DOM
+        if (container.parentNode) {
+          container.parentNode.removeChild(container);
+        }
+
+        // Remove from array
+        const currentIndex = localizationRows.findIndex(r => r.id === rowId);
+        if (currentIndex !== -1) {
+          localizationRows.splice(currentIndex, 1);
+        }
+
+        // Update UI and validation
+        syncLocalizationVisibility();
+        evaluateNaming({ touched: true });
+      }, 250); // Match CSS animation duration
+    } else {
+      // Fallback: immediate removal if no container
+      if (row.elements) {
+        Object.keys(row.elements).forEach(key => {
+          row.elements[key] = null;
+        });
+      }
+      localizationRows.splice(index, 1);
+      syncLocalizationVisibility();
+      evaluateNaming({ touched: true });
     }
-
-    // Remove from DOM
-    if (row.elements && row.elements.container && row.elements.container.parentNode) {
-      row.elements.container.parentNode.removeChild(row.elements.container);
-    }
-
-    // Remove from array
-    localizationRows.splice(index, 1);
-
-    // Update UI and validation
-    syncLocalizationVisibility();
-    evaluateNaming({ touched: true });
   }
 
   function createLocalizationRow(rowId, data) {
@@ -5549,6 +5668,27 @@
 
       if (definition.element) {
         if (shouldShow) {
+          // T5: Direction-aware navigation - determine forward/backward based on screen order
+          const allScreenIds = screenDefinitions.map(d => d.id);
+          const previousActiveScreen = document.querySelector('.wizard-screen--active');
+          let direction = 'forward'; // default
+
+          if (previousActiveScreen && previousActiveScreen !== definition.element) {
+            const prevIndex = allScreenIds.indexOf(previousActiveScreen.id.replace('screen-', ''));
+            const newIndex = allScreenIds.indexOf(definition.id);
+            direction = newIndex >= prevIndex ? 'forward' : 'backward';
+          }
+
+          // Remove direction classes from all screens
+          screenDefinitions.forEach(d => {
+            if (d.element) {
+              d.element.classList.remove('wizard-screen--enter-forward', 'wizard-screen--enter-backward');
+            }
+          });
+
+          // Add direction class for animation
+          definition.element.classList.add(direction === 'forward' ? 'wizard-screen--enter-forward' : 'wizard-screen--enter-backward');
+
           // Make this screen active
           definition.element.classList.add('wizard-screen--active');
 
@@ -5684,7 +5824,7 @@
     // FIXED: Never fold sections on manual navigation - only on Continue/Back between parent steps
     const shouldFoldSections = false;  // Manual clicks don't fold anything
     const shouldAutoExpandOnSwitch = !isManualNavigation && parentStepChanged;  // Continue/Back auto-expands
-    updateProgressIndicator(screenId, previousParentStep, shouldFoldSections, shouldAutoExpandOnSwitch);
+    updateSidebarNavState(screenId, previousParentStep, shouldFoldSections, shouldAutoExpandOnSwitch);
     // FIXED: Get parent step for substeps when checking state
     const stepForState = getParentStep(screenId) || screenId;
     const activeStepState = wizardState.steps[stepForState];
@@ -5710,7 +5850,8 @@
     }, 250); // Slightly longer than animation duration for safety
   }
 
-  function updateProgressIndicator(activeStepId, previousParentStep = null, shouldFoldSections = false, shouldAutoExpandOnSwitch = false) {
+  // P2 FIX: Renamed from updateProgressIndicator to avoid shadowing the progress bar function
+  function updateSidebarNavState(activeStepId, previousParentStep = null, shouldFoldSections = false, shouldAutoExpandOnSwitch = false) {
     const resolvedActiveId = getPrimaryStepId(activeStepId);
 
     progressItems.forEach((item) => {
@@ -6179,24 +6320,26 @@
             state.active = 'naming'; // Reset to first step if invalid
           }
         }
-        if (typeof parsed.furthestValidIndex === 'number') {
-          storedFurthestIndex = clampFurthestIndex(parsed.furthestValidIndex);
-        }
+        // FIX: Don't restore furthestValidIndex - it will be recalculated
+        // based on actual step validity after initialiseUI() re-evaluates all steps
+        // (storedFurthestIndex stays null, so computed value will be used)
 
+        // FIX: Only restore 'touched' status, NOT validity
+        // Validity will be recalculated in initialiseUI() based on actual form data
+        // This prevents steps from appearing valid after refresh when form data is incomplete
         TRACKED_STEPS.forEach((stepId) => {
           const persisted = parsed.steps && parsed.steps[stepId];
           const legacyStatus = parsed.stepStatus && parsed.stepStatus[stepId];
           const stepState = state.steps[stepId];
 
           if (persisted && typeof persisted === 'object') {
-            if (persisted.validity === 'valid' || persisted.validity === 'invalid' || persisted.validity === 'unknown') {
-              stepState.validity = persisted.validity;
-            }
+            // Don't restore validity - let it be recalculated from form data
+            // stepState.validity stays as 'unknown' (default)
             if (typeof persisted.touched === 'boolean') {
               stepState.touched = persisted.touched;
             }
           } else if (legacyStatus === 'valid' || legacyStatus === 'invalid') {
-            stepState.validity = legacyStatus;
+            // Legacy migration: mark as touched but don't restore validity
             stepState.touched = true;
           }
         });
@@ -7140,11 +7283,29 @@
       }
     }
 
+    // Debounced validation for smoother real-time feedback while typing
+    let permissionsValidationTimer = null;
+    function debouncedEvaluatePermissions() {
+      if (permissionsValidationTimer) {
+        clearTimeout(permissionsValidationTimer);
+      }
+      permissionsValidationTimer = setTimeout(() => {
+        evaluatePermissions({ touched: true });
+      }, 300);
+    }
+
     // Add event listeners for validation
     [decimalsInput, baseSupplyInput, maxSupplyInput].forEach((input) => {
       if (!input) return;
       input.addEventListener('input', () => {
         updateSupplyUI();
+        debouncedEvaluatePermissions(); // Use debounced validation for smoother UX
+      });
+      // Immediate validation on blur for final feedback
+      input.addEventListener('blur', () => {
+        if (permissionsValidationTimer) {
+          clearTimeout(permissionsValidationTimer);
+        }
         evaluatePermissions({ touched: true });
       });
     });

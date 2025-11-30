@@ -82,6 +82,17 @@
             aria-label="Search navigation">
         </div>
 
+        <!-- P2: Progress Indicator -->
+        <div class="wizard-progress" aria-label="Wizard progress">
+          <div class="wizard-progress__header">
+            <span class="wizard-progress__label">Progress</span>
+            <span class="wizard-progress__text" id="progress-text">0/5 Steps</span>
+          </div>
+          <div class="wizard-progress__bar">
+            <div class="wizard-progress__fill" id="progress-fill" style="width: 0%"></div>
+          </div>
+        </div>
+
         <!-- Compact Progress Steps -->
         <!-- Navigation -->
         <nav class="wizard-nav" aria-label="Wizard progress">
@@ -1577,7 +1588,7 @@
               </div>
 
               <!-- Supply Limits Card (Optional) -->
-              <div class="form-card">
+              <div class="form-card form-card--optional">
                 <div class="form-card__header">
                   <h3 class="form-card__title">Supply Limits <span class="wizard-badge wizard-badge--optional"
                       style="margin-left: var(--space-2);">Optional</span></h3>
