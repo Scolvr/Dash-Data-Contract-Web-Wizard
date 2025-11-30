@@ -4,22 +4,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- SECURITY: Content Security Policy to mitigate XSS and data injection attacks -->
-  <!-- Note: frame-ancestors cannot be set via meta tag, only via HTTP header -->
-  <!-- Note: wasm-unsafe-eval is required for Evo SDK WebAssembly modules -->
-  <!-- Note: unsafe-eval is required for Evo SDK contract validation (uses eval internally) -->
-  <!-- Note: worker-src blob: is required for web workers used by service workers -->
-  <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self';
-                 script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval';
-                 style-src 'self' 'unsafe-inline';
-                 img-src 'self' data: https://media.dash.org;
-                 connect-src 'self' blob: https://*.dash.org wss://*.dash.org;
-                 font-src 'self';
-                 worker-src 'self' blob:;
-                 object-src 'none';
-                 base-uri 'self';
-                 form-action 'self';">
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -39,11 +23,9 @@
   </div>
 
   <!-- Loading Overlay -->
-  <!-- Note: role="status" is more appropriate for loading states than role="alert" -->
-  <!-- aria-hidden is managed dynamically via JavaScript when showing/hiding -->
-  <div class="loading-overlay" aria-hidden="true" role="status" aria-busy="true">
+  <div class="loading-overlay" aria-hidden="true" role="alert" aria-live="assertive">
     <div class="loading-overlay__content">
-      <div class="spinner spinner--large loading-overlay__spinner" aria-hidden="true"></div>
+      <div class="spinner spinner--large loading-overlay__spinner"></div>
       <p class="loading-overlay__message">Loading...</p>
     </div>
   </div>
@@ -82,17 +64,6 @@
           </svg>
           <input type="text" class="wizard-sidebar__search-input" placeholder="Search..."
             aria-label="Search navigation">
-        </div>
-
-        <!-- P2: Progress Indicator -->
-        <div class="wizard-progress" aria-label="Wizard progress">
-          <div class="wizard-progress__header">
-            <span class="wizard-progress__label">Progress</span>
-            <span class="wizard-progress__text" id="progress-text">0/5 Steps</span>
-          </div>
-          <div class="wizard-progress__bar">
-            <div class="wizard-progress__fill" id="progress-fill" style="width: 0%"></div>
-          </div>
         </div>
 
         <!-- Compact Progress Steps -->
@@ -1158,7 +1129,7 @@
                   <fieldset class="wizard-fieldset">
                     <legend class="wizard-field__label with-help">Enable updating names?
                       <button type="button" class="help-icon" data-help="update-naming" data-guide-target="guide-update-naming" aria-label="Help: Update Naming Rules" tabindex="0">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                           <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                           <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         </svg>
@@ -1194,7 +1165,7 @@
                         <label class="wizard-field__label" for="update-names-permission">
                           Authorized to perform action
                           <button type="button" class="help-icon" data-help="update-names-permission" data-guide-target="guide-update-naming" aria-label="Help: Update Names Permission" tabindex="0">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                               <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                               <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                             </svg>
@@ -1240,7 +1211,7 @@
                         <label class="wizard-field__label" for="update-names-rule-changer">
                           Authorized to change rules
                           <button type="button" class="help-icon" data-help="update-names-rule-changer" data-guide-target="guide-governance-safeguards-naming" aria-label="Help: Update Names Rule Changer" tabindex="0">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                               <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                               <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                             </svg>
@@ -1286,7 +1257,7 @@
                     <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
                       <legend class="wizard-field__label with-help">Governance Safeguards
                         <button type="button" class="help-icon" data-help="governance-safeguards" data-guide-target="guide-governance-safeguards-naming" aria-label="Help: Governance Safeguards" tabindex="0">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                             <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                             <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                           </svg>
@@ -1533,7 +1504,7 @@
                     <label class="wizard-field__label with-help" for="decimals">
                       Decimals *
                       <button type="button" class="help-icon" data-help="decimals" data-guide-target="guide-decimals" aria-label="Help: Decimals" tabindex="0">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                           <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                           <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         </svg>
@@ -1570,7 +1541,7 @@
                     <label class="wizard-field__label with-help" for="base-supply">
                       <span id="base-supply-label">Initial Supply</span> *
                       <button type="button" class="help-icon" data-help="base-supply" data-guide-target="guide-base-supply" aria-label="Help: Base Supply" tabindex="0">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                           <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                           <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         </svg>
@@ -1590,7 +1561,7 @@
               </div>
 
               <!-- Supply Limits Card (Optional) -->
-              <div class="form-card form-card--optional">
+              <div class="form-card">
                 <div class="form-card__header">
                   <h3 class="form-card__title">Supply Limits <span class="wizard-badge wizard-badge--optional"
                       style="margin-left: var(--space-2);">Optional</span></h3>
@@ -1613,7 +1584,7 @@
                     <label class="wizard-field__label with-help" for="max-supply">
                       <span id="max-supply-label">Maximum Supply</span> (leave empty for unlimited)
                       <button type="button" class="help-icon" data-help="max-supply" data-guide-target="guide-max-supply" aria-label="Help: Maximum Supply" tabindex="0">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                           <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                           <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         </svg>
@@ -1645,7 +1616,7 @@
                   <fieldset class="wizard-fieldset">
                     <legend class="wizard-field__label with-help">Can the max supply be changed?
                       <button type="button" class="help-icon" data-help="change-max-supply" data-guide-target="guide-change-max-supply" aria-label="Help: Change Max Supply" tabindex="0">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                           <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                           <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         </svg>
@@ -1681,7 +1652,7 @@
                         <label class="wizard-field__label" for="change-max-supply-permission">
                           Authorized to perform action
                           <button type="button" class="help-icon" data-help="actor-types" data-guide-target="guide-actor-types" aria-label="Help: Who Can Perform Actions" tabindex="0">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                               <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                               <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                             </svg>
@@ -1727,7 +1698,7 @@
                         <label class="wizard-field__label" for="change-max-supply-change-rules">
                           Authorized to change rules
                           <button type="button" class="help-icon" data-help="rule-changer" data-guide-target="guide-governance-safeguards-max-supply" aria-label="Help: Rule Changer" tabindex="0">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                               <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                               <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                             </svg>
@@ -1768,7 +1739,7 @@
                     <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
                       <legend class="wizard-field__label with-help">Governance Safeguards
                         <button type="button" class="help-icon" data-help="governance-safeguards" data-guide-target="guide-governance-safeguards-max-supply" aria-label="Help: Governance Safeguards" tabindex="0">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                             <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                             <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                           </svg>
@@ -1975,7 +1946,7 @@
                   <fieldset class="wizard-fieldset">
                     <legend class="wizard-field__label with-help">Enable minting?
                       <button type="button" class="help-icon" data-help="manual-mint" data-guide-target="guide-manual-mint" aria-label="Help: Manual Minting" tabindex="0">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                           <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                           <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         </svg>
@@ -2011,7 +1982,7 @@
                         <label class="wizard-field__label" for="manual-mint-permission">
                           Authorized to perform action
                           <button type="button" class="help-icon" data-help="mint-permission" data-guide-target="guide-minting" aria-label="Help: Mint Permission" tabindex="0">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                               <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                               <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                             </svg>
@@ -2057,7 +2028,7 @@
                         <label class="wizard-field__label" for="manual-mint-change-rules">
                           Authorized to change rules
                           <button type="button" class="help-icon" data-help="mint-rule-changer" data-guide-target="guide-governance-safeguards-minting" aria-label="Help: Mint Rule Changer" tabindex="0">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                               <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                               <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                             </svg>
@@ -2098,7 +2069,7 @@
                     <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
                       <legend class="wizard-field__label with-help">Governance Safeguards
                         <button type="button" class="help-icon" data-help="governance-safeguards" data-guide-target="guide-governance-safeguards-minting" aria-label="Help: Governance Safeguards" tabindex="0">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                             <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                             <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                           </svg>
@@ -2139,7 +2110,7 @@
                     <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
                       <legend class="wizard-field__label with-help">Default destination for minted tokens
                         <button type="button" class="help-icon" data-help="mint-destination" data-guide-target="guide-mint-destination" aria-label="Help: Mint Destination" tabindex="0">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                             <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                             <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                           </svg>
@@ -2232,7 +2203,7 @@
                     <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
                       <legend class="wizard-field__label with-help">Minting flexibility
                         <button type="button" class="help-icon" data-help="mint-allow-custom" data-guide-target="guide-mint-allow-custom" aria-label="Help: Allow Custom Destination" tabindex="0">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                             <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                             <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                           </svg>
@@ -2449,7 +2420,7 @@
                   <fieldset class="wizard-fieldset">
                     <legend class="wizard-field__label with-help">Enable burning?
                       <button type="button" class="help-icon" data-help="manual-burn" data-guide-target="guide-manual-burn" aria-label="Help: Manual Burning" tabindex="0">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                           <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                           <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         </svg>
@@ -2485,7 +2456,7 @@
                         <label class="wizard-field__label" for="manual-burn-permission">
                           Authorized to perform action
                           <button type="button" class="help-icon" data-help="burn-permission" data-guide-target="guide-burning" aria-label="Help: Burn Permission" tabindex="0">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                               <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                               <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                             </svg>
@@ -2531,7 +2502,7 @@
                         <label class="wizard-field__label" for="manual-burn-change-rules">
                           Authorized to change rules
                           <button type="button" class="help-icon" data-help="burn-rule-changer" data-guide-target="guide-governance-safeguards-burning" aria-label="Help: Burn Rule Changer" tabindex="0">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                               <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                               <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                             </svg>
@@ -2572,7 +2543,7 @@
                     <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
                       <legend class="wizard-field__label with-help">Governance Safeguards
                         <button type="button" class="help-icon" data-help="governance-safeguards" data-guide-target="guide-governance-safeguards-burning" aria-label="Help: Governance Safeguards" tabindex="0">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                             <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                             <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                           </svg>
@@ -2814,7 +2785,7 @@
                   <fieldset class="wizard-fieldset">
                     <legend class="wizard-field__label with-help">Enable freezing?
                       <button type="button" class="help-icon" data-help="manual-freeze" data-guide-target="guide-manual-freeze" aria-label="Help: Manual Freezing" tabindex="0">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                           <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                           <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         </svg>
@@ -2850,7 +2821,7 @@
                         <label class="wizard-field__label" for="manual-freeze-permission">
                           Authorized to perform action
                           <button type="button" class="help-icon" data-help="freeze-permission" data-guide-target="guide-freezing" aria-label="Help: Freeze Permission" tabindex="0">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                               <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                               <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                             </svg>
@@ -2896,7 +2867,7 @@
                         <label class="wizard-field__label" for="manual-freeze-change-rules">
                           Authorized to change rules
                           <button type="button" class="help-icon" data-help="freeze-rule-changer" data-guide-target="guide-governance-safeguards-freezing" aria-label="Help: Freeze Rule Changer" tabindex="0">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                               <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                               <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                             </svg>
@@ -3002,7 +2973,7 @@
                           <label class="wizard-field__label" for="manual-unfreeze-permission">
                             Authorized to perform action
                             <button type="button" class="help-icon" data-help="unfreeze-rules" data-guide-target="guide-unfreeze-rules" aria-label="Help: Unfreeze Rules" tabindex="0">
-                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                                 <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                                 <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                               </svg>
@@ -3048,7 +3019,7 @@
                           <label class="wizard-field__label" for="manual-unfreeze-change-rules">
                             Authorized to change rules
                             <button type="button" class="help-icon" data-help="unfreeze-rule-changer" data-guide-target="guide-governance-safeguards-unfreezing" aria-label="Help: Unfreeze Rule Changer" tabindex="0">
-                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                                 <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                                 <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                               </svg>
@@ -3125,7 +3096,7 @@
                       style="margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
                       <legend class="wizard-field__label with-help">Destroy Frozen Funds
                         <button type="button" class="help-icon" data-help="destroy-frozen-rules" data-guide-target="guide-destroy-frozen-rules" aria-label="Help: Destroy Frozen Funds Rules" tabindex="0">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                             <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                             <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                           </svg>
@@ -3164,7 +3135,7 @@
                           <label class="wizard-field__label" for="destroy-frozen-permission">
                             Authorized to perform action
                             <button type="button" class="help-icon" data-help="destroy-frozen-permission" data-guide-target="guide-destroy-frozen-rules" aria-label="Help: Destroy Frozen Permission" tabindex="0">
-                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                                 <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                                 <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                               </svg>
@@ -3210,7 +3181,7 @@
                           <label class="wizard-field__label" for="destroy-frozen-change-rules">
                             Authorized to change rules
                             <button type="button" class="help-icon" data-help="destroy-frozen-change-rules" data-guide-target="guide-governance-safeguards-destroy-frozen" aria-label="Help: Destroy Frozen Change Rules" tabindex="0">
-                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                                 <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                                 <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                               </svg>
@@ -3476,7 +3447,7 @@
                   <fieldset class="wizard-fieldset">
                     <legend class="wizard-field__label with-help">Enable emergency actions?
                       <button type="button" class="help-icon" data-help="emergency-action-rules" data-guide-target="guide-emergency-action-rules" aria-label="Help: Emergency Action Rules" tabindex="0">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                           <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                           <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         </svg>
@@ -3512,7 +3483,7 @@
                         <label class="wizard-field__label" for="emergency-permission">
                           Authorized to perform action
                           <button type="button" class="help-icon" data-help="emergency-permission" data-guide-target="guide-emergency-action-rules" aria-label="Help: Emergency Permission" tabindex="0">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                               <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                               <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                             </svg>
@@ -3558,7 +3529,7 @@
                         <label class="wizard-field__label" for="emergency-change-rules">
                           Authorized to change rules
                           <button type="button" class="help-icon" data-help="emergency-change-rules" data-guide-target="guide-governance-safeguards-emergency" aria-label="Help: Emergency Change Rules" tabindex="0">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                               <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                               <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                             </svg>
@@ -3599,7 +3570,7 @@
                     <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
                       <legend class="wizard-field__label with-help">Governance Safeguards
                         <button type="button" class="help-icon" data-help="governance-safeguards" data-guide-target="guide-governance-safeguards-emergency" aria-label="Help: Governance Safeguards" tabindex="0">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                             <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                             <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                           </svg>
@@ -3811,7 +3782,7 @@
                         <label class="wizard-field__label" for="marketplace-trade-mode-perform">
                           Authorized to perform action
                           <button type="button" class="help-icon" data-help="marketplace-trade-mode-perform" data-guide-target="guide-marketplace-trade-mode" aria-label="Help: Marketplace Trade Mode" tabindex="0">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                               <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                               <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                             </svg>
@@ -3852,7 +3823,7 @@
                         <label class="wizard-field__label" for="marketplace-trade-mode-change-rules">
                           Authorized to change rules
                           <button type="button" class="help-icon" data-help="marketplace-trade-mode-rules" data-guide-target="guide-governance-safeguards-marketplace" aria-label="Help: Marketplace Trade Mode Rules" tabindex="0">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                               <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                               <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                             </svg>
@@ -3893,7 +3864,7 @@
                     <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
                       <legend class="wizard-field__label with-help">Governance Safeguards
                         <button type="button" class="help-icon" data-help="governance-safeguards" data-guide-target="guide-governance-safeguards-marketplace" aria-label="Help: Governance Safeguards" tabindex="0">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                             <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                             <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                           </svg>
@@ -4083,7 +4054,7 @@
                   <fieldset class="wizard-fieldset">
                     <legend class="wizard-field__label">Enable direct purchase pricing changes?
                       <button type="button" class="help-icon" data-help="direct-pricing-enable" data-guide-target="guide-enable-pricing-change" aria-label="Help: Enable Direct Pricing Changes" tabindex="0">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                           <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                           <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         </svg>
@@ -4121,7 +4092,7 @@
                         <label class="wizard-field__label" for="direct-pricing-perform">
                           Authorized to perform action
                           <button type="button" class="help-icon" data-help="direct-pricing-who" data-guide-target="guide-who-can-change-pricing" aria-label="Help: Who Can Change Pricing" tabindex="0">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                               <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                               <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                             </svg>
@@ -4162,7 +4133,7 @@
                         <label class="wizard-field__label" for="direct-pricing-change-rules">
                           Authorized to change rules
                           <button type="button" class="help-icon" data-help="direct-pricing-rules" data-guide-target="guide-pricing-rules-update" aria-label="Help: Who Can Update Pricing Rules" tabindex="0">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                               <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                               <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                             </svg>
@@ -4203,7 +4174,7 @@
                     <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
                       <legend class="wizard-field__label with-help">Governance Safeguards
                         <button type="button" class="help-icon" data-help="governance-safeguards" data-guide-target="guide-governance-safeguards-pricing" aria-label="Help: Governance Safeguards" tabindex="0">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                             <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                             <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                           </svg>
@@ -4377,7 +4348,7 @@
                   <fieldset class="wizard-fieldset">
                     <legend class="wizard-field__label">Enable main control group changes?
                       <button type="button" class="help-icon" data-help="main-control-enable" data-guide-target="guide-enable-group-change" aria-label="Help: Enable Main Control Group Changes" tabindex="0">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                           <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                           <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         </svg>
@@ -4415,7 +4386,7 @@
                         <label class="wizard-field__label" for="main-control-perform">
                           Authorized to perform action
                           <button type="button" class="help-icon" data-help="main-control-who" data-guide-target="guide-who-can-change-group" aria-label="Help: Who Can Change Main Control Group" tabindex="0">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                               <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                               <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                             </svg>
@@ -4456,7 +4427,7 @@
                         <label class="wizard-field__label" for="main-control-change-rules">
                           Authorized to change rules
                           <button type="button" class="help-icon" data-help="main-control-rule-changer" data-guide-target="guide-group-change-rules" aria-label="Help: Main Control Rule Changer" tabindex="0">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                               <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                               <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                             </svg>
@@ -4497,7 +4468,7 @@
                     <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
                       <legend class="wizard-field__label with-help">Governance Safeguards
                         <button type="button" class="help-icon" data-help="governance-safeguards" data-guide-target="guide-governance-safeguards-main-control" aria-label="Help: Governance Safeguards" tabindex="0">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                             <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                             <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                           </svg>
@@ -5343,7 +5314,7 @@
                         <fieldset class="wizard-fieldset">
                           <legend class="wizard-field__label with-help">Emission type
                             <button type="button" class="help-icon" data-help="emission-function" data-guide-target="guide-emission-function" aria-label="Help: Emission Function" tabindex="0">
-                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                                 <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                                 <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                               </svg>
@@ -6065,7 +6036,7 @@
                   <fieldset class="wizard-fieldset" aria-describedby="distribution-message">
                     <legend class="wizard-field__label with-help">Schedule type
                       <button type="button" class="help-icon" data-help="cadence-type" data-guide-target="guide-cadence-type" aria-label="Help: Distribution Cadence Type" tabindex="0">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                           <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                           <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         </svg>
@@ -6264,7 +6235,7 @@
                   <fieldset class="wizard-fieldset">
                     <legend class="wizard-field__label">Emission type
                       <button type="button" class="help-icon" data-help="emission-type" data-guide-target="guide-emission-function" aria-label="Help: Emission Type" tabindex="0">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                           <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                           <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         </svg>
@@ -6872,7 +6843,7 @@
                       </span>
                     </label>
                     <button type="button" class="help-icon" data-help="history-transfers" data-guide-target="guide-what-can-be-tracked" aria-label="Help: Track Transfer History" tabindex="0">
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                         <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                         <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                       </svg>
@@ -6890,7 +6861,7 @@
                       </span>
                     </label>
                     <button type="button" class="help-icon" data-help="history-freezes" data-guide-target="guide-what-can-be-tracked" aria-label="Help: Track Freeze History" tabindex="0">
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                         <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                         <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                       </svg>
@@ -6907,7 +6878,7 @@
                       </span>
                     </label>
                     <button type="button" class="help-icon" data-help="history-mints" data-guide-target="guide-what-can-be-tracked" aria-label="Help: Track Mint History" tabindex="0">
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                         <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                         <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                       </svg>
@@ -6924,7 +6895,7 @@
                       </span>
                     </label>
                     <button type="button" class="help-icon" data-help="history-burns" data-guide-target="guide-what-can-be-tracked" aria-label="Help: Track Burn History" tabindex="0">
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                         <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                         <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                       </svg>
@@ -6943,7 +6914,7 @@
                       </span>
                     </label>
                     <button type="button" class="help-icon" data-help="history-purchases" data-guide-target="guide-what-can-be-tracked" aria-label="Help: Track Purchase History" tabindex="0">
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                         <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                         <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                       </svg>
@@ -6962,7 +6933,7 @@
                       </span>
                     </label>
                     <button type="button" class="help-icon" data-help="history-pricing" data-guide-target="guide-what-can-be-tracked" aria-label="Help: Track Pricing History" tabindex="0">
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                         <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                         <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                       </svg>
@@ -7089,7 +7060,7 @@
                     <legend class="wizard-field__label">
                       Marketplace trade mode
                       <button type="button" class="help-icon" data-help="trade-mode" data-guide-target="guide-marketplace-trade-mode" aria-label="Help: Marketplace Trade Mode" tabindex="0">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                           <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                           <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         </svg>
@@ -7127,7 +7098,7 @@
                     <div class="field-group">
                       <label class="wizard-field__label with-help" for="encryption-bounded-key">Encryption bounded key requirement (StorageKeyRequirements u8)
                         <button type="button" class="help-icon" data-help="encryption-bounded-key" data-guide-target="guide-encryption-bounded-key" aria-label="Help: Encryption Bounded Key" tabindex="0">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                             <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                             <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                           </svg>
@@ -7140,7 +7111,7 @@
                     <div class="field-group">
                       <label class="wizard-field__label with-help" for="decryption-bounded-key">Decryption bounded key requirement (StorageKeyRequirements u8)
                         <button type="button" class="help-icon" data-help="decryption-bounded-key" data-guide-target="guide-decryption-bounded-key" aria-label="Help: Decryption Bounded Key" tabindex="0">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                             <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                             <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                           </svg>
@@ -7154,7 +7125,7 @@
                   <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
                     <legend class="wizard-field__label with-help">Integer Types
                       <button type="button" class="help-icon" data-help="sized-integer-types" data-guide-target="guide-sized-integer-types" aria-label="Help: Sized Integer Types" tabindex="0">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                           <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                           <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         </svg>
@@ -7305,7 +7276,7 @@
                       </span>
                     </label>
                     <button type="button" class="help-icon" data-help="start-paused" data-guide-target="guide-start-as-paused" aria-label="Help: Start As Paused" tabindex="0">
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                         <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
                         <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                       </svg>
@@ -7588,7 +7559,7 @@
               <div class="json-preview__content">
                 <div class="json-preview__toolbar">
                   <button class="json-preview__copy" id="copy-json-btn" type="button">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                       <path d="M5 2h6a1 1 0 011 1v8a1 1 0 01-1 1H5a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor"
                         stroke-width="1.5" />
                       <path d="M3 5v8a2 2 0 002 2h6" stroke="currentColor" stroke-width="1.5" />
@@ -8587,42 +8558,29 @@
     </div>
   </div>
 
-  <!-- Load Dash Evo SDK v2.1.3 (supports DataContract V1 with tokens) -->
-  <!-- First load the webpack-bundled SDK (includes all polyfills) -->
-  <script src="./dist/wasm-dpp-browser.js"></script>
-  <script type="module">
-    // Initialize the SDK after the UMD bundle loads
-    (async function initSDK() {
-      try {
-        console.log('[Evo SDK] Initializing wasm-dpp v2.1.3...');
-
-        // WasmDpp is exposed as a global by the UMD bundle
-        if (typeof WasmDpp === 'undefined') {
-          throw new Error('WasmDpp bundle not loaded');
-        }
-
-        // Call the init function which returns the SDK module
-        const sdkModule = await WasmDpp();
-
-        console.log('[Evo SDK] Module loaded successfully');
-        console.log('[Evo SDK] Available exports:', Object.keys(sdkModule).filter(k => !k.startsWith('_')).slice(0, 20));
-        console.log('[Evo SDK] DataContract available?', !!sdkModule.DataContract);
-
-        if (sdkModule.DataContract) {
-          console.log('[Evo SDK] DataContract methods:', Object.getOwnPropertyNames(sdkModule.DataContract).filter(k => !k.startsWith('_')));
-        }
-
-        // Set global for compatibility with existing code
-        window.EvoSDK = sdkModule;
-        window.__evo_sdk_ready = true;
-
-        // Dispatch ready event
-        window.dispatchEvent(new CustomEvent('evo:sdk-ready'));
-        console.info('[Evo SDK] Dash Evo SDK v2.1.3 initialized successfully (DataContract V1 with tokens supported)');
-      } catch (error) {
-        console.error('[Evo SDK] Failed to initialize:', error);
+  <!-- Import map to resolve EvoSDK's wasm runtime dependency -->
+  <script type="importmap">
+    {
+      "imports": {
+        "@dashevo/wasm-sdk/compressed": "./dist/sdk.compressed.js"
       }
-    })();
+    }
+  </script>
+
+  <!-- Load Dash Evo SDK from local dist only (module import) -->
+  <script type="module">
+    import * as sdkModule from './dist/evo-sdk.module.js';
+    try {
+      if (typeof sdkModule.ensureInitialized === 'function') {
+        await sdkModule.ensureInitialized();
+      }
+      window.EvoSDK = sdkModule;
+      window.__evo_sdk_ready = true;
+      console.info('Dash Evo SDK initialized from local dist.');
+      window.dispatchEvent(new CustomEvent('evo:sdk-ready'));
+    } catch (error) {
+      console.error('Failed to initialize Dash Evo SDK from local dist:', error);
+    }
   </script>
 
   <!-- Cleanup Service Workers and Caches -->
@@ -9338,11 +9296,6 @@
     })();
   </script>
 
-  <!-- Modular ES6 Entry Point (Vite build system) -->
-  <!-- This runs alongside app.js during transition period -->
-  <script type="module" src="/src/main.js"></script>
-
-  <!-- Legacy monolithic app.js (will be phased out) -->
   <script src="app.js?v=96" defer></script>
 
   <!-- Enhancements Module (ES6) - DISABLED due to navigation freeze -->

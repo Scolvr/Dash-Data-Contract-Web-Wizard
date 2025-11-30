@@ -145,10 +145,33 @@
   --bp-md: 900px;
   --bp-lg: 1200px;
 
-  /* Transitions */
-  --transition-fast: 100ms ease;
-  --transition-base: 150ms ease;
-  --transition-slow: 200ms cubic-bezier(0.2, 0.6, 0.2, 1);
+  /* ═══════════════════════════════════════════════════════
+   * Animation & Transition System
+   * ═══════════════════════════════════════════════════════ */
+
+  /* Duration scale */
+  --duration-instant: 50ms;
+  --duration-fast: 100ms;
+  --duration-base: 150ms;
+  --duration-slow: 200ms;
+  --duration-slower: 300ms;
+
+  /* Easing functions */
+  --ease-default: ease;
+  --ease-smooth: cubic-bezier(0.2, 0.6, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Composed transitions (use these in components) */
+  --transition-fast: var(--duration-fast) var(--ease-default);
+  --transition-base: var(--duration-base) var(--ease-default);
+  --transition-slow: var(--duration-slow) var(--ease-smooth);
+  --transition-colors: color var(--duration-base) var(--ease-default),
+                       background-color var(--duration-base) var(--ease-default),
+                       border-color var(--duration-base) var(--ease-default);
+  --transition-transform: transform var(--duration-base) var(--ease-smooth);
+  --transition-opacity: opacity var(--duration-base) var(--ease-default);
+
+  /* Legacy compatibility */
   --transition-duration: 150ms;
   --transition-easing: cubic-bezier(0.2, 0.6, 0.2, 1);
 
@@ -205,28 +228,28 @@ html[data-theme='dark'] {
   --sidebar-bg: rgba(28, 28, 30, 0.92);
   --sidebar-bg-solid: #1C1C1E;
   --sidebar-text: #F5F5F7;
-  --sidebar-text-muted: #86868B;
+  --sidebar-text-muted: #98989F; /* WCAG AA: improved contrast from #86868B */
   --sidebar-border: rgba(255, 255, 255, 0.08);
   --sidebar-hover: rgba(255, 255, 255, 0.05);
   --sidebar-active: rgba(10, 132, 255, 0.15);
   --sidebar-active-text: #0A84FF;
   --sidebar-icon: #0A84FF;
   --sidebar-badge-bg: transparent;
-  --sidebar-badge-text: #86868B;
+  --sidebar-badge-text: #98989F; /* WCAG AA: improved contrast */
   --sidebar-search-bg: rgba(255, 255, 255, 0.05);
   --sidebar-search-border: rgba(255, 255, 255, 0.08);
-  --sidebar-search-icon: #86868B;
+  --sidebar-search-icon: #98989F; /* WCAG AA: improved contrast */
 
   /* Dark Mode - Text & Borders (Apple) */
   --color-text: #F5F5F7;
   --color-text-primary: #F5F5F7;
-  --color-text-secondary: #86868B;
-  --color-muted: #86868B;
+  --color-text-secondary: #A1A1A6; /* WCAG AA: improved contrast from #86868B */
+  --color-muted: #A1A1A6; /* WCAG AA: improved contrast from #86868B */
   --color-border: rgba(255, 255, 255, 0.08);
   --color-border-strong: rgba(255, 255, 255, 0.15);
   --color-focus: rgba(10, 132, 255, 0.5);
   --color-elevated-border: rgba(255, 255, 255, 0.1);
-  --color-placeholder: rgba(134, 134, 139, 0.6);
+  --color-placeholder: rgba(160, 160, 165, 0.7); /* WCAG AA: improved from rgba(134, 134, 139, 0.6) */
 
   /* Dark Mode - Step Colors (brighter for visibility) */
   --step-1-color: #818CF8;
@@ -3842,7 +3865,20 @@ textarea.wizard-field__input {
   outline: none;
   padding: 11px 15px;
   box-shadow: 0 0 0 3px rgba(14, 118, 253, 0.15);
-  transition: border-color 150ms ease, box-shadow 150ms ease;
+  transition: border-color var(--duration-base) var(--ease-default),
+              box-shadow var(--duration-base) var(--ease-default),
+              background-color var(--duration-base) var(--ease-default);
+}
+
+/* Dark mode: Add subtle background highlight on focus for better visibility */
+html[data-theme='dark'] .wizard-field__input:focus-visible {
+  background-color: rgba(14, 118, 253, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme='light']) .wizard-field__input:focus-visible {
+    background-color: rgba(14, 118, 253, 0.05);
+  }
 }
 
 .wizard-field__input:hover:not(:disabled):not(:focus-visible) {
@@ -4175,6 +4211,23 @@ body.guide-panel-collapsed .wizard-actions--sticky {
   box-shadow: none !important;
   transform: none !important;
   pointer-events: none;
+}
+
+/* Dark mode disabled button states - enhanced visibility */
+html[data-theme='dark'] .wizard-button:disabled,
+html[data-theme='dark'] .wizard-button[disabled] {
+  background: #2C2C2E !important;
+  color: #636366 !important;
+  border: 2px solid #3A3A3C !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme='light']) .wizard-button:disabled,
+  html:not([data-theme='light']) .wizard-button[disabled] {
+    background: #2C2C2E !important;
+    color: #636366 !important;
+    border: 2px solid #3A3A3C !important;
+  }
 }
 
 .wizard-button--ghost {
@@ -7533,16 +7586,30 @@ html[data-theme='dark'] .page-guide__header {
 }
 
 .help-icon:focus {
+  outline: none;
+}
+
+.help-icon:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
   border-radius: 50%;
   opacity: 1;
+  background: var(--color-primary-light);
+}
+
+.help-icon:focus:not(:focus-visible) {
+  outline: none;
 }
 
 .help-icon svg {
   width: 20px;
   height: 20px;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+/* Accessibility: Hide decorative SVG from screen readers */
+.help-icon svg[aria-hidden="true"] {
+  pointer-events: none;
 }
 
 /* Help Tooltip - Appears on RIGHT side */
