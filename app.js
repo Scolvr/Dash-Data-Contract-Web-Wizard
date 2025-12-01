@@ -8818,13 +8818,17 @@
           allowSelfChangeAdmin: document.getElementById('perpetual-allow-self-change-admin')?.checked || false
         };
 
-        // Pre-programmed distribution rules default to no-one
+        // Pre-programmed distribution rules - read from UI
         const preProgrammedRules = {
-          performAction: 'no-one',
-          changeRules: 'no-one',
-          allowChangeAuthorizedToNone: false,
-          allowChangeAdminToNone: false,
-          allowSelfChangeAdmin: false
+          performAction: document.getElementById('preprogrammed-perform-action')?.value || 'no-one',
+          changeRules: document.getElementById('preprogrammed-change-rules')?.value || 'no-one',
+          performIdentityId: document.getElementById('preprogrammed-identity-id')?.value || '',
+          performGroupId: document.getElementById('preprogrammed-group-id')?.value || '',
+          changeRulesIdentityId: document.getElementById('preprogrammed-rule-identity-id')?.value || '',
+          changeRulesGroupId: document.getElementById('preprogrammed-rule-group-id')?.value || '',
+          allowChangeAuthorizedToNone: document.getElementById('preprogrammed-allow-authorized-none')?.checked || false,
+          allowChangeAdminToNone: document.getElementById('preprogrammed-allow-admin-none')?.checked || false,
+          allowSelfChangeAdmin: document.getElementById('preprogrammed-allow-self-change')?.checked || false
         };
 
         // Collect new tokens destination identity rules
@@ -10046,22 +10050,33 @@
       const mintDestinationRules = wizardState.form.distribution?.mintDestinationRules || {};
       const allowChoosingRules = wizardState.form.distribution?.allowChoosingRules || {};
 
-      // Map dropdown values to expected format
-      const mapActorValue = (value) => {
+      // Map dropdown values to expected format, with optional identity/group ID
+      const mapActorValueWithId = (value, identityId, groupId) => {
         switch (value) {
           case 'no-one': return 'NoOne';
           case 'owner': return 'ContractOwner';
           case 'main-group': return 'MainGroup';
-          case 'identity': return 'NoOne'; // Would need identity ID, defaults to NoOne
-          case 'group': return 'NoOne'; // Would need group index, defaults to NoOne
+          case 'identity': return identityId ? identityId : 'NoOne';
+          case 'group': return groupId ? parseInt(groupId, 10) : 'NoOne';
           default: return 'ContractOwner';
         }
       };
 
+      // Simple map without identity/group (for backwards compatibility)
+      const mapActorValue = (value) => mapActorValueWithId(value, null, null);
+
       // Helper to build rule V0 structure from rule config
       const buildRuleV0 = (ruleConfig) => {
-        const performActor = mapActorValue(ruleConfig.performAction || 'no-one');
-        const changeRulesActor = mapActorValue(ruleConfig.changeRules || 'no-one');
+        const performActor = mapActorValueWithId(
+          ruleConfig.performAction || 'no-one',
+          ruleConfig.performIdentityId,
+          ruleConfig.performGroupId
+        );
+        const changeRulesActor = mapActorValueWithId(
+          ruleConfig.changeRules || 'no-one',
+          ruleConfig.changeRulesIdentityId,
+          ruleConfig.changeRulesGroupId
+        );
 
         return {
           V0: {
@@ -11813,7 +11828,10 @@
     { selectId: 'direct-pricing-change-rules', identityPanel: 'direct-pricing-rules-identity-panel', groupPanel: 'direct-pricing-rules-group-panel' },
     // Advanced step - Main Control
     { selectId: 'main-control-perform', identityPanel: 'main-control-perform-identity-panel', groupPanel: 'main-control-perform-group-panel' },
-    { selectId: 'main-control-change-rules', identityPanel: 'main-control-rules-identity-panel', groupPanel: 'main-control-rules-group-panel' }
+    { selectId: 'main-control-change-rules', identityPanel: 'main-control-rules-identity-panel', groupPanel: 'main-control-rules-group-panel' },
+    // Distribution step - Pre-Programmed Distribution Rules
+    { selectId: 'preprogrammed-perform-action', identityPanel: 'preprogrammed-panel-identity', groupPanel: 'preprogrammed-panel-group' },
+    { selectId: 'preprogrammed-change-rules', identityPanel: 'preprogrammed-rule-panel-identity', groupPanel: 'preprogrammed-rule-panel-group' }
   ];
 
   // Function to toggle panels based on select value

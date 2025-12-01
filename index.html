@@ -5059,7 +5059,120 @@
                     </div>
                   </fieldset>
                 </div>
+              </div>
 
+              <!-- Pre-Programmed Distribution Change Rules -->
+              <div class="form-card" id="preprogrammed-rules-card" style="margin-top: var(--space-6);">
+                <div class="form-card__header">
+                  <h3 class="form-card__title">Pre-Programmed Distribution Change Rules</h3>
+                  <p class="form-card__description">Control who can modify pre-programmed distribution settings after deployment</p>
+                </div>
+                <div class="form-card__body">
+                  <div class="authorization-group">
+                    <!-- Perform Action Dropdown -->
+                    <div class="field-group">
+                      <label class="wizard-field__label" for="preprogrammed-perform-action">
+                        Authorized to perform action
+                      </label>
+                      <select class="wizard-field__input" id="preprogrammed-perform-action">
+                        <option value="no-one" selected>No One</option>
+                        <option value="owner">Contract Owner</option>
+                        <option value="identity">Specific Identity</option>
+                        <option value="group">Specific Group</option>
+                        <option value="main-group">Main Contract Group</option>
+                      </select>
+                      <span class="field-hint">Choose who can modify pre-programmed distributions</span>
+                    </div>
+
+                    <!-- Identity Panel (conditional) -->
+                    <div class="authorization-inline-panel" id="preprogrammed-panel-identity" hidden>
+                      <div class="field-group">
+                        <label class="wizard-field__label" for="preprogrammed-identity-id">Identity ID</label>
+                        <input class="wizard-field__input" type="text" id="preprogrammed-identity-id"
+                               placeholder="Enter the Base58 ID">
+                        <span class="field-hint">Enter the Dash Platform identity ID</span>
+                      </div>
+                    </div>
+
+                    <!-- Group Panel (conditional) -->
+                    <div class="authorization-inline-panel" id="preprogrammed-panel-group" hidden>
+                      <div class="field-group">
+                        <label class="wizard-field__label" for="preprogrammed-group-id">Select group</label>
+                        <select class="wizard-field__input" id="preprogrammed-group-id">
+                          <option value="">Select a group...</option>
+                        </select>
+                        <span class="field-hint">Choose which group can perform this action</span>
+                      </div>
+                    </div>
+
+                    <!-- Change Rules Dropdown (with separator) -->
+                    <div class="field-group" style="margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
+                      <label class="wizard-field__label" for="preprogrammed-change-rules">
+                        Authorized to change rules
+                      </label>
+                      <select class="wizard-field__input" id="preprogrammed-change-rules">
+                        <option value="no-one" selected>No One</option>
+                        <option value="owner">Contract Owner</option>
+                        <option value="identity">Specific Identity</option>
+                        <option value="group">Specific Group</option>
+                        <option value="main-group">Main Contract Group</option>
+                      </select>
+                      <span class="field-hint">Define who can modify these permission settings</span>
+                    </div>
+
+                    <!-- Change Rules Identity Panel -->
+                    <div class="authorization-inline-panel" id="preprogrammed-rule-panel-identity" hidden>
+                      <div class="field-group">
+                        <label class="wizard-field__label" for="preprogrammed-rule-identity-id">Identity ID</label>
+                        <input class="wizard-field__input" type="text" id="preprogrammed-rule-identity-id"
+                               placeholder="Enter the Base58 ID">
+                      </div>
+                    </div>
+
+                    <!-- Change Rules Group Panel -->
+                    <div class="authorization-inline-panel" id="preprogrammed-rule-panel-group" hidden>
+                      <div class="field-group">
+                        <label class="wizard-field__label" for="preprogrammed-rule-group-id">Select group</label>
+                        <select class="wizard-field__input" id="preprogrammed-rule-group-id">
+                          <option value="">Select a group...</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Governance Safeguards -->
+                  <fieldset class="wizard-fieldset" style="margin-top: var(--space-6);">
+                    <legend class="wizard-field__label">Governance Safeguards</legend>
+                    <p class="wizard-subsection__body" style="margin-bottom: var(--space-4);">
+                      Control what rule modifications are permitted after deployment
+                    </p>
+
+                    <div class="wizard-field wizard-field--checkbox">
+                      <label class="wizard-checkbox" for="preprogrammed-allow-authorized-none">
+                        <input class="wizard-checkbox__input" id="preprogrammed-allow-authorized-none" type="checkbox">
+                        <span class="wizard-checkbox__label">Allow changing authorized action taker to "No One"</span>
+                      </label>
+                      <p class="field-hint">When enabled, permissions can be permanently locked</p>
+                    </div>
+
+                    <div class="wizard-field wizard-field--checkbox">
+                      <label class="wizard-checkbox" for="preprogrammed-allow-admin-none">
+                        <input class="wizard-checkbox__input" id="preprogrammed-allow-admin-none" type="checkbox">
+                        <span class="wizard-checkbox__label">Allow changing rule changer to "No One"</span>
+                      </label>
+                      <p class="field-hint">When enabled, rule changer can permanently lock themselves out</p>
+                    </div>
+
+                    <div class="wizard-field wizard-field--checkbox">
+                      <label class="wizard-checkbox" for="preprogrammed-allow-self-change">
+                        <input class="wizard-checkbox__input" id="preprogrammed-allow-self-change" type="checkbox">
+                        <span class="wizard-checkbox__label">Allow rule changer to modify themselves</span>
+                      </label>
+                      <p class="field-hint">When enabled, rule changer can reassign authority to another</p>
+                    </div>
+                  </fieldset>
+                </div>
+              </div>
 
                 <p class="wizard-field__message" id="distribution-preprogrammed-message" role="status" aria-live="polite">
                 </p>
@@ -5067,7 +5180,7 @@
                 <div class="wizard-actions wizard-actions--between wizard-actions--sticky">
                   <button class="wizard-button wizard-button--secondary" type="button"
                     data-step-back="distribution-preprogrammed">← Back</button>
-                  <button class="wizard-button wizard-button--secondary" type="button" id="contract-preview-btn">📄
+                  <button class="wizard-button wizard-button--secondary" type="button" id="contract-preview-btn">
                     Contract Preview</button>
                   <button class="wizard-button wizard-button--primary" id="distribution-preprogrammed-next"
                     type="submit">Continue →</button>
