@@ -5,6 +5,24 @@
 (function () {
   'use strict';
 
+  // ============================================
+  // Mobile Placeholder Scroll Lock
+  // Must run immediately to prevent any scrolling
+  // ============================================
+  if (window.innerWidth <= 900) {
+    // Lock scroll on both html and body
+    document.documentElement.style.cssText = 'overflow: hidden !important; height: 100% !important; position: fixed !important; width: 100% !important;';
+    document.body.style.cssText = 'overflow: hidden !important; height: 100% !important; position: fixed !important; width: 100% !important; top: 0 !important; left: 0 !important;';
+
+    // Prevent touch scroll events
+    document.addEventListener('touchmove', function(e) {
+      if (window.innerWidth <= 900) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+  }
+  // ============================================
+
   // Development mode - set to false for production
   const DEV_MODE = false;
 
@@ -475,9 +493,9 @@
     const mobileHeader = document.querySelector('.mobile-header');
     const menuToggles = document.querySelectorAll('.mobile-menu-toggle');
     const sidebar = document.querySelector('.wizard-sidebar');
-    const overlay = document.querySelector('.mobile-menu-overlay');
+    const overlay = document.querySelector('.mobile-menu-overlay'); // May be null - that's OK
 
-    if (!sidebar || !overlay) return;
+    if (!sidebar) return;
 
     // Toggle mobile menu
     function toggleMobileMenu() {
@@ -492,31 +510,39 @@
 
     function openMobileMenu() {
       sidebar.classList.add('mobile-menu-open');
-      overlay.classList.add('active');
+      if (overlay) overlay.classList.add('active');
       if (mobileHeader) mobileHeader.classList.add('menu-open');
       menuToggles.forEach(toggle => toggle.setAttribute('aria-expanded', 'true'));
-      overlay.setAttribute('aria-hidden', 'false');
-      document.body.style.overflow = 'hidden'; // Prevent scrolling
+      if (overlay) overlay.setAttribute('aria-hidden', 'false');
+
+      // Simple scroll lock
+      document.body.style.overflow = 'hidden';
     }
 
     function closeMobileMenu() {
       sidebar.classList.remove('mobile-menu-open');
-      overlay.classList.remove('active');
+      if (overlay) overlay.classList.remove('active');
       if (mobileHeader) mobileHeader.classList.remove('menu-open');
       menuToggles.forEach(toggle => toggle.setAttribute('aria-expanded', 'false'));
-      overlay.setAttribute('aria-hidden', 'true');
-      document.body.style.overflow = '';
+      if (overlay) overlay.setAttribute('aria-hidden', 'true');
+
+      // Only restore body scroll if NOT on mobile placeholder view
+      // Mobile placeholder handles its own scroll lock via CSS
+      if (window.innerWidth > 900) {
+        document.body.style.overflow = '';
+      }
     }
 
     // Event listeners - attach to all menu toggles
     menuToggles.forEach(toggle => {
       toggle.addEventListener('click', toggleMobileMenu);
     });
-    overlay.addEventListener('click', closeMobileMenu);
+    if (overlay) overlay.addEventListener('click', closeMobileMenu);
 
-    // Close menu when navigation item is clicked
-    const navItems = document.querySelectorAll('.wizard-nav-item, .wizard-nav-subitem');
-    navItems.forEach(item => {
+    // Close menu ONLY when subitem (actual page link) is clicked
+    // Do NOT close when clicking expandable parent items
+    const navSubitems = document.querySelectorAll('.wizard-nav-subitem');
+    navSubitems.forEach(item => {
       item.addEventListener('click', () => {
         if (window.innerWidth <= 900) {
           closeMobileMenu();

@@ -24,12 +24,12 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dash Token Wizard</title>
-  <link rel="preload" href="styles.css?v=110" as="style">
-  <link rel="stylesheet" href="styles.css?v=110">
+  <link rel="preload" href="styles.css?v=112" as="style">
+  <link rel="stylesheet" href="styles.css?v=112">
 </head>
 
 <body>
-  <!-- Interactive Background Orbs -->
+  <!-- Interactive Background Orbs (repositioned to corners) -->
   <div class="background-orbs" aria-hidden="true">
     <div class="orb orb--1"></div>
     <div class="orb orb--2"></div>
@@ -51,10 +51,22 @@
   <!-- Toast Notification Container -->
   <div class="toast-container" aria-live="polite" aria-atomic="true"></div>
 
-  <!-- Mobile Menu Overlay -->
-  <div class="mobile-menu-overlay" aria-hidden="true"></div>
+  <!-- Mobile Coming Soon Placeholder (hidden on desktop) -->
+  <div class="mobile-placeholder" aria-label="Mobile version coming soon">
+    <div class="mobile-placeholder__background">
+      <img src="https://media.dash.org/wp-content/uploads/dash-d-rounded-square-1000.png" alt="" aria-hidden="true">
+    </div>
+    <div class="mobile-placeholder__content">
+      <h1 class="mobile-placeholder__title">Coming Soon</h1>
+      <p class="mobile-placeholder__text">Mobile features aren't supported yet.</p>
+      <p class="mobile-placeholder__subtext">Please use a desktop browser for the full experience.</p>
+    </div>
+  </div>
 
-  <!-- Mobile Header (visible only on mobile) -->
+  <!-- Mobile Menu Overlay - REMOVED: was blocking touch events -->
+  <!-- <div class="mobile-menu-overlay" aria-hidden="true"></div> -->
+
+  <!-- Mobile Header (visible only on mobile) - HIDDEN by placeholder -->
   <header class="mobile-header">
     <button class="mobile-menu-toggle" aria-label="Open navigation menu" aria-expanded="false">
       <span class="mobile-menu-toggle__bar"></span>
@@ -9517,7 +9529,7 @@
   <script type="module" src="/src/main.js"></script>
 
   <!-- Legacy monolithic app.js (will be phased out) -->
-  <script src="app.js?v=96" defer></script>
+  <script src="app.js?v=97" defer></script>
 
   <!-- Enhancements Module (ES6) - DISABLED due to navigation freeze -->
   <!-- <script type="module" src="js/wizard-enhancements.js"></script> -->

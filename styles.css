@@ -1183,7 +1183,7 @@ img {
   scrollbar-gutter: stable;
   z-index: 10;
   overscroll-behavior: contain;
-  direction: rtl !important; /* Move scrollbar to left side */
+  /* direction: rtl removed - was breaking mobile touch interactions */
 }
 
 /* Enhanced fade gradient on right edge */
@@ -9132,16 +9132,21 @@ textarea:disabled {
     right: 0;
     width: 100%;
     height: 60px;
+    height: calc(60px + env(safe-area-inset-top, 0px)); /* Account for notched devices */
+    padding-top: env(safe-area-inset-top, 0px);
     background: var(--sidebar-bg-solid) !important; /* Solid background, no blur */
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-    z-index: 9999;
+    z-index: 100000; /* Very high - above sidebar */
     align-items: center;
     gap: 12px;
-    padding: 0 16px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
   }
 
-  /* Ensure hamburger button is visible */
+  /* Ensure hamburger button is visible and touchable */
   .mobile-header .mobile-menu-toggle {
     display: flex !important;
     flex-direction: column;
@@ -9154,6 +9159,9 @@ textarea:disabled {
     cursor: pointer;
     justify-content: center;
     align-items: center;
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
   }
 
   .mobile-menu-toggle__bar {
@@ -9181,25 +9189,46 @@ textarea:disabled {
     width: 85%;
     max-width: 320px;
     height: 100vh;
-    z-index: 10001 !important; /* Higher than overlay */
+    height: 100dvh; /* Dynamic viewport height for mobile browsers */
+    z-index: 99999 !important; /* VERY high - above everything including overlay */
+    isolation: isolate; /* Create stacking context */
     transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto !important;
+    /* SCROLL CONFIGURATION */
+    display: block !important;
+    overflow-y: scroll !important; /* Force scrollbar */
     overflow-x: hidden !important;
-    -webkit-overflow-scrolling: touch !important;
-    overscroll-behavior: contain;
-    /* CRITICAL: Remove blur and use solid background */
+    -webkit-overflow-scrolling: touch !important; /* Momentum scroll */
+    overscroll-behavior-y: contain; /* Prevent body scroll-through */
+    direction: ltr !important; /* Reset RTL from desktop */
+    /* Remove blur and use solid background */
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     background: var(--sidebar-bg-solid) !important;
     pointer-events: auto !important;
   }
 
-  /* Ensure all sidebar content is clickable */
+  /* Hide the gradient fade overlay on mobile - prevents it from covering menu content */
+  .wizard-sidebar::after {
+    display: none !important;
+  }
+
+  /* Ensure all sidebar content is clickable and touchable */
   .wizard-sidebar * {
     pointer-events: auto;
+    touch-action: auto;
+  }
+
+  /* Make nav items explicitly clickable */
+  .wizard-sidebar .wizard-nav-item,
+  .wizard-sidebar .wizard-nav-subitem,
+  .wizard-sidebar .wizard-path__item,
+  .wizard-sidebar .wizard-subpath__item,
+  .wizard-sidebar button {
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
   }
 
   /* Show sidebar when menu is open */
@@ -9207,12 +9236,26 @@ textarea:disabled {
     left: 0;
   }
 
-  /* Update sidebar header layout for mobile */
+  /* Header flows with content on mobile */
   .wizard-sidebar__header {
     display: flex;
     align-items: center;
     gap: var(--space-3);
     padding: var(--space-4);
+    background: var(--sidebar-bg-solid);
+  }
+
+  /* All elements flow naturally - sidebar is the scroll container */
+  .wizard-sidebar__search,
+  .wizard-progress {
+    /* No fixed positioning - content flows */
+  }
+
+  /* Navigation flows naturally - sidebar scrolls */
+  .sidebar-nav,
+  .wizard-nav {
+    display: block !important;
+    padding-bottom: 100px; /* Extra space at bottom for scroll */
   }
 
   /* Show mobile close button in sidebar on mobile - converts to X */
@@ -9250,30 +9293,30 @@ textarea:disabled {
     transform: translateY(-7px) rotate(-45deg);
   }
 
-  /* Mobile overlay */
+  /* Mobile overlay - COMPLETELY DISABLED to fix touch issues */
   .mobile-menu-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 9998;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
+    display: none !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
   }
 
   .mobile-menu-overlay.active {
-    opacity: 1;
-    pointer-events: all;
+    display: none !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
   }
 
   /* Adjust main content on mobile */
   .wizard-main {
     margin-left: 0;
     margin-top: 60px;
+    margin-top: calc(60px + env(safe-area-inset-top, 0px)); /* Account for notched devices */
     width: 100%;
     max-width: 100vw;
     padding: 16px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); /* Account for home indicator */
     min-height: calc(100vh - 60px);
+    min-height: calc(100dvh - 60px - env(safe-area-inset-top, 0px)); /* Dynamic viewport height */
     overflow-x: hidden;
   }
 
@@ -9352,37 +9395,38 @@ textarea:disabled {
     touch-action: manipulation;
   }
 
-  /* Sidebar nav scrollable area */
-  .wizard-nav {
-    overflow-y: auto;
-    flex: 1;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* Ensure sidebar section allows scrolling */
+  /* sidebar-section flows naturally on mobile - sidebar scrolls */
   .sidebar-section {
-    height: auto;
-    min-height: 100%;
-    display: flex;
-    flex-direction: column;
+    display: block !important;
+    min-height: 100%; /* Ensure content can exceed viewport */
   }
 
-  /* Touch responsiveness for all interactive elements */
-  .wizard-nav-item,
-  .wizard-nav-subitem,
+  /* Touch responsiveness for non-scrollable interactive elements */
+  /* IMPORTANT: Exclude nav items - they need to allow scroll */
   .wizard-tab,
   .theme-toggle__option,
   .mobile-menu-toggle,
-  button {
+  button:not(.wizard-nav-item) {
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
     touch-action: manipulation;
     user-select: none;
   }
 
-  /* Theme toggle in sidebar footer - ensure visibility */
+  /* Nav items must allow vertical scroll pass-through */
+  .wizard-nav-item,
+  .wizard-nav-subitem {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    touch-action: pan-y !important; /* Allow vertical scroll */
+    user-select: none;
+  }
+
+  /* Ensure sidebar itself can scroll */
+  .wizard-sidebar {
+    touch-action: pan-y !important;
+  }
+
+  /* Footer flows with content - user can scroll to it */
   .wizard-sidebar__footer {
-    position: sticky;
-    bottom: 0;
     background: var(--sidebar-bg-solid);
     padding: var(--space-4);
     border-top: 1px solid var(--sidebar-border);
@@ -11706,12 +11750,13 @@ button:focus-visible,
 }
 
 /* Individual Orb Styles - Dark Mode (Default) */
+/* Orbs repositioned to corners/edges to avoid center overlap */
 .orb--1 {
   width: 700px;
   height: 700px;
   background: radial-gradient(circle, #00D4FF 0%, #0891B2 40%, transparent 70%);
-  top: -15%;
-  left: 5%;
+  top: -20%;
+  left: -10%;
   animation-delay: 0s;
   animation-duration: 30s;
 }
@@ -11720,8 +11765,8 @@ button:focus-visible,
   width: 600px;
   height: 600px;
   background: radial-gradient(circle, #8B5CF6 0%, #7C3AED 40%, transparent 70%);
-  top: 50%;
-  right: 5%;
+  top: 60%;
+  right: -10%;
   animation-delay: -5s;
   animation-duration: 28s;
 }
@@ -11730,8 +11775,8 @@ button:focus-visible,
   width: 550px;
   height: 550px;
   background: radial-gradient(circle, #3B82F6 0%, #2563EB 40%, transparent 70%);
-  bottom: 5%;
-  left: 40%;
+  bottom: -15%;
+  left: -5%;
   animation-delay: -10s;
   animation-duration: 32s;
 }
@@ -11740,8 +11785,8 @@ button:focus-visible,
   width: 450px;
   height: 450px;
   background: radial-gradient(circle, #F472B6 0%, #EC4899 40%, transparent 70%);
-  top: 15%;
-  right: 30%;
+  top: -10%;
+  right: -15%;
   animation-delay: -15s;
   animation-duration: 26s;
 }
@@ -11750,8 +11795,8 @@ button:focus-visible,
   width: 500px;
   height: 500px;
   background: radial-gradient(circle, #10B981 0%, #059669 40%, transparent 70%);
-  top: 35%;
-  left: 15%;
+  bottom: -10%;
+  right: 20%;
   animation-delay: -8s;
   animation-duration: 34s;
   opacity: 0.5;
@@ -11808,5 +11853,258 @@ html[data-theme='light'] .orb--5 {
 
   .background-orbs {
     opacity: 0.3;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   iPhone SE and Very Small Devices (375px and below)
+   ═══════════════════════════════════════════════════════ */
+@media (max-width: 375px) {
+  /* Make sidebar full width on very small screens */
+  .wizard-sidebar {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  /* Reduce sidebar header padding */
+  .wizard-sidebar__header {
+    padding: var(--space-3) !important;
+    gap: var(--space-2) !important;
+  }
+
+  /* Compact sidebar navigation items */
+  .sidebar-nav__item,
+  .wizard-nav-item {
+    padding: 12px 14px !important;
+    font-size: 14px !important;
+  }
+
+  .sidebar-nav__subitem,
+  .wizard-nav-subitem {
+    padding: 10px 14px 10px 32px !important;
+    font-size: 13px !important;
+  }
+
+  /* Ensure touch targets remain at least 44px (accessibility) */
+  .mobile-menu-toggle {
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+
+  /* Compact mobile header */
+  .mobile-header {
+    gap: 8px !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  /* Reduce main content padding */
+  .wizard-main {
+    padding: 12px !important;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  /* Smaller screen inner padding */
+  .wizard-screen__inner {
+    padding: 12px !important;
+  }
+
+  /* Compact form cards */
+  .form-card {
+    padding: 16px !important;
+  }
+
+  /* Smaller form card titles */
+  .form-card__title {
+    font-size: 16px !important;
+  }
+
+  /* Stack wizard actions */
+  .wizard-actions {
+    gap: 10px !important;
+  }
+
+  .wizard-actions .wizard-button {
+    padding: 12px 16px !important;
+    font-size: 14px !important;
+  }
+
+  /* Smaller template cards */
+  .template-card {
+    padding: 16px !important;
+  }
+
+  .template-card__title {
+    font-size: 16px !important;
+  }
+
+  .template-card__description {
+    font-size: 13px !important;
+  }
+
+  /* Compact input fields */
+  .wizard-field__input,
+  .wizard-field__select,
+  .wizard-field__textarea {
+    padding: 10px 12px !important;
+    font-size: 14px !important;
+  }
+
+  /* Smaller wizard screen titles */
+  .wizard-screen__title {
+    font-size: 22px !important;
+  }
+
+  .wizard-screen__subtitle {
+    font-size: 14px !important;
+  }
+}
+
+/* ===========================================
+   GLOBAL: Kill mobile-menu-overlay completely
+   This overrides ALL other styles
+   =========================================== */
+.mobile-menu-overlay,
+.mobile-menu-overlay.active,
+div.mobile-menu-overlay {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+}
+
+/* ===========================================
+   MOBILE COMING SOON PLACEHOLDER
+   Hidden on desktop, shown on mobile
+   =========================================== */
+
+/* Hidden by default on desktop */
+.mobile-placeholder {
+  display: none;
+}
+
+/* Show on mobile and hide everything else */
+@media (max-width: 900px) {
+  /* CRITICAL: Lock scroll on html and body - Chrome-specific fixes included */
+  html, body {
+    overflow: hidden !important;
+    height: 100% !important;
+    width: 100% !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    /* Chrome-specific: Disable pull-to-refresh and overscroll */
+    overscroll-behavior: none !important;
+    overscroll-behavior-y: none !important;
+    -webkit-overflow-scrolling: auto !important;
+    /* Prevent touch scrolling */
+    touch-action: none !important;
+  }
+
+  /* Hide ALL wizard content on mobile */
+  .wizard-shell,
+  .wizard-sidebar,
+  .wizard-main,
+  .wizard-guide,
+  .mobile-header,
+  .guide-toggle-container,
+  .background-orbs {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* Show the placeholder */
+  .mobile-placeholder {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    background: linear-gradient(135deg, #1C1C1E 0%, #2C2C2E 50%, #1C1C1E 100%);
+    z-index: 999999;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  /* Background logo - large, subtle */
+  .mobile-placeholder__background {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 400px;
+    opacity: 0.08;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .mobile-placeholder__background img {
+    width: 100%;
+    height: auto;
+    filter: grayscale(100%);
+  }
+
+  /* Content overlay */
+  .mobile-placeholder__content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    max-width: 320px;
+  }
+
+  .mobile-placeholder__title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin: 0 0 16px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .mobile-placeholder__text {
+    font-size: 1.125rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0 0 12px 0;
+    line-height: 1.5;
+  }
+
+  .mobile-placeholder__subtext {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  /* Light mode support */
+  html[data-theme='light'] .mobile-placeholder {
+    background: linear-gradient(135deg, #F5F5F7 0%, #E5E5E7 50%, #F5F5F7 100%);
+  }
+
+  html[data-theme='light'] .mobile-placeholder__title {
+    color: #1A1F36;
+  }
+
+  html[data-theme='light'] .mobile-placeholder__text {
+    color: rgba(26, 31, 54, 0.8);
+  }
+
+  html[data-theme='light'] .mobile-placeholder__subtext {
+    color: rgba(26, 31, 54, 0.5);
+  }
+
+  html[data-theme='light'] .mobile-placeholder__background img {
+    filter: grayscale(100%) invert(1);
   }
 }
