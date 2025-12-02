@@ -24,8 +24,8 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dash Token Wizard</title>
-  <link rel="preload" href="styles.css?v=109" as="style">
-  <link rel="stylesheet" href="styles.css?v=109">
+  <link rel="preload" href="styles.css?v=110" as="style">
+  <link rel="stylesheet" href="styles.css?v=110">
 </head>
 
 <body>
@@ -53,6 +53,19 @@
 
   <!-- Mobile Menu Overlay -->
   <div class="mobile-menu-overlay" aria-hidden="true"></div>
+
+  <!-- Mobile Header (visible only on mobile) -->
+  <header class="mobile-header">
+    <button class="mobile-menu-toggle" aria-label="Open navigation menu" aria-expanded="false">
+      <span class="mobile-menu-toggle__bar"></span>
+      <span class="mobile-menu-toggle__bar"></span>
+      <span class="mobile-menu-toggle__bar"></span>
+    </button>
+    <div class="brand__icon">
+      <img src="https://media.dash.org/wp-content/uploads/dash-d-rounded-square-1000.png" alt="Dash" width="32" height="32">
+    </div>
+    <span class="brand__title">Dash Token Wizard</span>
+  </header>
 
   <div class="wizard-shell">
     <aside class="wizard-sidebar" aria-label="Wizard navigation">
