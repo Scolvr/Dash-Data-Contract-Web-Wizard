@@ -10569,7 +10569,7 @@
       $format_version: '1',  // String "1" for DataContractV1 which supports tokens
       id: contractId,  // Platform generates actual ID during registration
       ownerId: ownerIdentity,           // User-provided owner identity ID
-      version: 0,
+      version: 1,
       config: {
         $format_version: '0',  // String "0" for serde tagged enum
         canBeDeleted: false,
