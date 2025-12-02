@@ -9132,7 +9132,9 @@ textarea:disabled {
     right: 0;
     width: 100%;
     height: 60px;
-    background: var(--sidebar-bg);
+    background: var(--sidebar-bg-solid) !important; /* Solid background, no blur */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
     z-index: 9999;
     align-items: center;
     gap: 12px;
@@ -9179,13 +9181,25 @@ textarea:disabled {
     width: 85%;
     max-width: 320px;
     height: 100vh;
-    z-index: 10000;
+    z-index: 10001 !important; /* Higher than overlay */
     transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain;
+    /* CRITICAL: Remove blur and use solid background */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: var(--sidebar-bg-solid) !important;
+    pointer-events: auto !important;
+  }
+
+  /* Ensure all sidebar content is clickable */
+  .wizard-sidebar * {
+    pointer-events: auto;
   }
 
   /* Show sidebar when menu is open */
@@ -9325,6 +9339,44 @@ textarea:disabled {
     margin-right: 0 !important;
     width: 100%;
     justify-content: center;
+    position: relative;
+    z-index: 10;
+    pointer-events: auto;
+  }
+
+  /* Ensure tab buttons are fully clickable on mobile */
+  .wizard-tab {
+    pointer-events: auto !important;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  /* Sidebar nav scrollable area */
+  .wizard-nav {
+    overflow-y: auto;
+    flex: 1;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Ensure sidebar section allows scrolling */
+  .sidebar-section {
+    height: auto;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Touch responsiveness for all interactive elements */
+  .wizard-nav-item,
+  .wizard-nav-subitem,
+  .wizard-tab,
+  .theme-toggle__option,
+  .mobile-menu-toggle,
+  button {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    touch-action: manipulation;
+    user-select: none;
   }
 
   /* Theme toggle in sidebar footer - ensure visibility */
