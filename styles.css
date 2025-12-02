@@ -307,6 +307,10 @@ html,
 body {
   /* Removed height: 100% to allow content to expand beyond viewport */
   min-height: 100%;
+  /* MOBILE FIX: Prevent horizontal overflow */
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
 }
 
 * {
@@ -1097,6 +1101,10 @@ html,
 body {
   /* Removed height: 100% to allow content to expand beyond viewport */
   min-height: 100%;
+  /* MOBILE FIX: Prevent horizontal overflow */
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
 }
 
 * {
@@ -9115,14 +9123,51 @@ textarea:disabled {
 
 /* Mobile Responsive Behavior */
 @media (max-width: 900px) {
-  /* Remove sidebar spacing from shell - CRITICAL FIX */
-  .wizard-shell {
-    padding-left: 0;
+  /* CRITICAL: Force mobile header to show */
+  .mobile-header {
+    display: flex !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 60px;
+    background: var(--sidebar-bg);
+    z-index: 9999;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px;
   }
 
-  /* Show mobile header */
-  .mobile-header {
-    display: flex;
+  /* Ensure hamburger button is visible */
+  .mobile-header .mobile-menu-toggle {
+    display: flex !important;
+    flex-direction: column;
+    gap: 5px;
+    width: 44px;
+    height: 44px;
+    padding: 10px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .mobile-menu-toggle__bar {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: var(--text-primary, #1A1F36);
+    border-radius: 2px;
+  }
+
+  /* Remove sidebar spacing from shell - CRITICAL FIX */
+  .wizard-shell {
+    padding-left: 0 !important;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
   }
 
   /* Hide sidebar by default on mobile */
@@ -9133,7 +9178,8 @@ textarea:disabled {
     bottom: 0;
     width: 85%;
     max-width: 320px;
-    z-index: 1001;
+    height: 100vh;
+    z-index: 10000;
     transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
   }
@@ -9159,12 +9205,9 @@ textarea:disabled {
   /* Mobile overlay */
   .mobile-menu-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
+    z-index: 9998;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
@@ -9179,13 +9222,67 @@ textarea:disabled {
   .wizard-main {
     margin-left: 0;
     margin-top: 60px;
+    width: 100%;
+    max-width: 100vw;
+    padding: 16px;
     min-height: calc(100vh - 60px);
+    overflow-x: hidden;
   }
 
   /* Hide guide panel on mobile */
   .wizard-guide,
   .guide-toggle-container {
     display: none !important;
+  }
+
+  /* Welcome screen full width */
+  .wizard-screen--welcome,
+  .wizard-screen {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .wizard-screen__inner {
+    width: 100%;
+    max-width: 100%;
+    padding: 16px;
+  }
+
+  /* Template grid single column */
+  .template-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px;
+    width: 100%;
+  }
+
+  .template-card {
+    width: 100%;
+    max-width: 100%;
+    padding: 20px;
+  }
+
+  /* Form cards full width */
+  .form-card {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Stack buttons */
+  .wizard-actions {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .wizard-actions .wizard-button {
+    width: 100%;
+  }
+
+  /* Ensure all inputs fit */
+  .wizard-field__input,
+  input, select, textarea {
+    width: 100%;
+    max-width: 100%;
+    font-size: 16px;
   }
 }
 
