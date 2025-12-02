@@ -9182,6 +9182,10 @@ textarea:disabled {
     z-index: 10000;
     transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   /* Show sidebar when menu is open */
@@ -9197,9 +9201,39 @@ textarea:disabled {
     padding: var(--space-4);
   }
 
-  /* Hide hamburger in sidebar on mobile (it's in mobile header) */
+  /* Show mobile close button in sidebar on mobile - converts to X */
   .wizard-sidebar .mobile-menu-toggle {
-    display: none;
+    display: flex !important;
+    flex-direction: column;
+    gap: 5px;
+    width: 44px;
+    height: 44px;
+    padding: 10px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+  }
+
+  .wizard-sidebar .mobile-menu-toggle:hover {
+    background-color: var(--sidebar-hover);
+  }
+
+  /* When sidebar is open, animate hamburger to X */
+  .wizard-sidebar.mobile-menu-open .mobile-menu-toggle__bar:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .wizard-sidebar.mobile-menu-open .mobile-menu-toggle__bar:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+
+  .wizard-sidebar.mobile-menu-open .mobile-menu-toggle__bar:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
   }
 
   /* Mobile overlay */
@@ -9283,6 +9317,42 @@ textarea:disabled {
     width: 100%;
     max-width: 100%;
     font-size: 16px;
+  }
+
+  /* Fix wizard tabs - remove left margin on mobile */
+  .wizard-tabs {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Theme toggle in sidebar footer - ensure visibility */
+  .wizard-sidebar__footer {
+    position: sticky;
+    bottom: 0;
+    background: var(--sidebar-bg-solid);
+    padding: var(--space-4);
+    border-top: 1px solid var(--sidebar-border);
+  }
+
+  .theme-toggle-box {
+    margin-top: var(--space-2);
+  }
+
+  /* Ensure theme toggle options are clickable */
+  .theme-toggle__option {
+    min-width: 60px;
+    min-height: 44px;
+  }
+
+  .theme-toggle__option input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 1;
   }
 }
 
