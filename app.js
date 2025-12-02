@@ -6907,34 +6907,17 @@
    * Shows a brief "Saved" indicator in the header to confirm state persistence
    */
   function showAutoSaveIndicator() {
-    // Find or create the auto-save indicator
-    let indicator = document.querySelector('.auto-save-indicator');
+    // Show "Saved" message in progress bar area
+    const progressBar = document.querySelector('.wizard-progress');
+    if (!progressBar) return;
 
-    if (!indicator) {
-      // Create indicator element
-      indicator = document.createElement('div');
-      indicator.className = 'auto-save-indicator';
-      indicator.setAttribute('role', 'status');
-      indicator.setAttribute('aria-live', 'polite');
-      indicator.textContent = 'Saved';
+    // Add saving class to trigger animation
+    progressBar.classList.add('wizard-progress--saving');
 
-      // Insert into header (after brand title)
-      const wizardSidebarHeader = document.querySelector('.wizard-sidebar__header');
-      if (wizardSidebarHeader) {
-        wizardSidebarHeader.appendChild(indicator);
-      } else {
-        // Fallback: append to body
-        document.body.appendChild(indicator);
-      }
-    }
-
-    // Show indicator with animation
-    indicator.classList.add('auto-save-indicator--visible');
-
-    // Hide after 2 seconds
+    // Remove class after 1.5 seconds to restore progress display
     setTimeout(() => {
-      indicator.classList.remove('auto-save-indicator--visible');
-    }, 2000);
+      progressBar.classList.remove('wizard-progress--saving');
+    }, 1500);
   }
 
   function renderQRPreview() {
@@ -14070,6 +14053,77 @@
   }
 
   console.log('✓ Template selection initialized with', templateCards.length, 'templates');
+})();
+
+// =============================================
+// Start Over Modal Functionality
+// =============================================
+(function initStartOverModal() {
+  const startOverModal = document.getElementById('start-over-modal');
+  const startOverBtn = document.getElementById('start-over-btn');
+  const startOverBtnGroup = document.getElementById('start-over-btn-group');
+  const startOverCancelBtn = document.getElementById('start-over-cancel-btn');
+  const startOverConfirmBtn = document.getElementById('start-over-confirm-btn');
+
+  if (!startOverModal) {
+    console.warn('Start Over modal not found');
+    return;
+  }
+
+  function showStartOverModal() {
+    startOverModal.removeAttribute('hidden');
+    startOverConfirmBtn?.focus();
+  }
+
+  function hideStartOverModal() {
+    startOverModal.setAttribute('hidden', '');
+  }
+
+  function confirmStartOver() {
+    // Clear all storage and reload
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+    } catch (e) {
+      console.debug('Unable to clear storage', e);
+    }
+    window.location.reload();
+  }
+
+  // Show modal when Start Over clicked (main sidebar)
+  if (startOverBtn) {
+    startOverBtn.addEventListener('click', showStartOverModal);
+  }
+
+  // Show modal when Start Over clicked (group sidebar)
+  if (startOverBtnGroup) {
+    startOverBtnGroup.addEventListener('click', showStartOverModal);
+  }
+
+  // Cancel button
+  if (startOverCancelBtn) {
+    startOverCancelBtn.addEventListener('click', hideStartOverModal);
+  }
+
+  // Confirm button
+  if (startOverConfirmBtn) {
+    startOverConfirmBtn.addEventListener('click', confirmStartOver);
+  }
+
+  // Overlay click to close
+  const overlay = startOverModal.querySelector('.modal__overlay');
+  if (overlay) {
+    overlay.addEventListener('click', hideStartOverModal);
+  }
+
+  // ESC key to close
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !startOverModal.hasAttribute('hidden')) {
+      hideStartOverModal();
+    }
+  });
+
+  console.log('✓ Start Over modal initialized');
 })();
 
 // ═══════════════════════════════════════════════════════

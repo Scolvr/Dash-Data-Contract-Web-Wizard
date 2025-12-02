@@ -24,8 +24,8 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dash Token Wizard</title>
-  <link rel="preload" href="styles.css?v=106" as="style">
-  <link rel="stylesheet" href="styles.css?v=106">
+  <link rel="preload" href="styles.css?v=109" as="style">
+  <link rel="stylesheet" href="styles.css?v=109">
 </head>
 
 <body>
@@ -72,6 +72,17 @@
             </div>
             <span class="brand__title">Dash Token Wizard</span>
           </div>
+
+          <!-- Reset Button -->
+          <button class="header-reset-btn" id="start-over-btn" type="button" title="Clear all and start fresh">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M4 12a8 8 0 0 1 8-8c2.6 0 4.9 1.2 6.3 3.1" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M20 12a8 8 0 0 1-8 8c-2.6 0-4.9-1.2-6.3-3.1" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M18.5 3v4h-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M5.5 21v-4h4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Reset</span>
+          </button>
         </div>
 
         <!-- Search Bar -->
@@ -86,12 +97,20 @@
 
         <!-- P2: Progress Indicator -->
         <div class="wizard-progress" aria-label="Wizard progress">
-          <div class="wizard-progress__header">
-            <span class="wizard-progress__label">Progress</span>
-            <span class="wizard-progress__text" id="progress-text">0/5 Steps</span>
+          <div class="wizard-progress__content">
+            <div class="wizard-progress__header">
+              <span class="wizard-progress__label">Progress</span>
+              <span class="wizard-progress__text" id="progress-text">0/5 Steps</span>
+            </div>
+            <div class="wizard-progress__bar">
+              <div class="wizard-progress__fill" id="progress-fill" style="width: 0%"></div>
+            </div>
           </div>
-          <div class="wizard-progress__bar">
-            <div class="wizard-progress__fill" id="progress-fill" style="width: 0%"></div>
+          <div class="wizard-progress__saved" role="status" aria-live="polite">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
+              <path d="M4 10l4 4 8-8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Saved</span>
           </div>
         </div>
 
@@ -329,6 +348,17 @@
                 height="32">
             </div>
             <span class="brand__title">Group Management</span>
+          </button>
+
+          <!-- Reset Button -->
+          <button class="header-reset-btn" id="start-over-btn-group" type="button" title="Clear all and start fresh">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M4 12a8 8 0 0 1 8-8c2.6 0 4.9 1.2 6.3 3.1" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M20 12a8 8 0 0 1-8 8c-2.6 0-4.9-1.2-6.3-3.1" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M18.5 3v4h-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M5.5 21v-4h4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Reset</span>
           </button>
         </div>
 
@@ -706,6 +736,24 @@
                 id="template-cancel-btn">Cancel</button>
               <button class="wizard-button wizard-button--primary" type="button" id="template-confirm-btn">Apply
                 Template</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Start Over Confirmation Modal -->
+        <div class="modal" id="start-over-modal" hidden>
+          <div class="modal__overlay"></div>
+          <div class="modal__content">
+            <div class="modal__header">
+              <h2 class="modal__title">Start Over?</h2>
+            </div>
+            <div class="modal__body">
+              <p>Are you sure you would like to start over? All your progress will be lost.</p>
+              <p class="modal__warning">This action cannot be undone.</p>
+            </div>
+            <div class="modal__footer">
+              <button class="wizard-button wizard-button--secondary" type="button" id="start-over-cancel-btn">Cancel</button>
+              <button class="wizard-button wizard-button--danger" type="button" id="start-over-confirm-btn">Start Over</button>
             </div>
           </div>
         </div>
