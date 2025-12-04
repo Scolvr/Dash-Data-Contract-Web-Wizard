@@ -741,83 +741,6 @@
           </div>
         </section>
 
-        <!-- Template Confirmation Modal -->
-        <div class="modal" id="template-confirmation-modal" hidden>
-          <div class="modal__overlay"></div>
-          <div class="modal__content">
-            <div class="modal__header">
-              <h2 class="modal__title" id="template-modal-title">Apply Template?</h2>
-            </div>
-            <div class="modal__body">
-              <p id="template-modal-description">This will replace your current configuration with the template
-                settings.</p>
-              <div class="template-preview" id="template-modal-preview">
-                <!-- Template details will be inserted here -->
-              </div>
-
-              <!-- Quick Supply Configuration -->
-              <div class="template-supply-config" id="template-supply-config" hidden>
-                <h3 class="template-supply-config__title">Quick Configuration</h3>
-                <p class="template-supply-config__hint">Customize supply settings, or adjust later in the Permissions step.</p>
-
-                <div class="template-supply-config__grid">
-                  <div class="wizard-field">
-                    <label class="wizard-field__label" for="template-base-supply">
-                      Base Supply
-                      <span class="wizard-field__hint">Initial token amount</span>
-                    </label>
-                    <input type="text"
-                           id="template-base-supply"
-                           class="wizard-field__input"
-                           inputmode="numeric"
-                           pattern="[0-9]*"
-                           placeholder="1000000">
-                  </div>
-
-                  <div class="wizard-field">
-                    <label class="wizard-field__label" for="template-max-supply">
-                      Max Supply
-                      <span class="wizard-field__hint">Leave empty for unlimited</span>
-                    </label>
-                    <input type="text"
-                           id="template-max-supply"
-                           class="wizard-field__input"
-                           inputmode="numeric"
-                           pattern="[0-9]*"
-                           placeholder="Unlimited">
-                  </div>
-
-                  <div class="wizard-field">
-                    <label class="wizard-field__label" for="template-decimals">
-                      Decimals
-                    </label>
-                    <select id="template-decimals" class="wizard-field__input">
-                      <option value="0">0 (Whole tokens only)</option>
-                      <option value="2">2 (Cents)</option>
-                      <option value="8" selected>8 (Standard)</option>
-                      <option value="18">18 (High precision)</option>
-                    </select>
-                  </div>
-                </div>
-
-                <!-- Live preview -->
-                <div class="template-supply-config__preview">
-                  <span class="preview-label">Preview:</span>
-                  <span class="preview-value" id="template-preview-value">1,000,000 tokens</span>
-                </div>
-              </div>
-
-              <p class="modal__warning">⚠️ Any unsaved changes will be lost.</p>
-            </div>
-            <div class="modal__footer">
-              <button class="wizard-button wizard-button--secondary" type="button"
-                id="template-cancel-btn">Cancel</button>
-              <button class="wizard-button wizard-button--primary" type="button" id="template-confirm-btn">Apply
-                Template</button>
-            </div>
-          </div>
-        </div>
-
         <!-- Start Over Confirmation Modal -->
         <div class="modal" id="start-over-modal" hidden>
           <div class="modal__overlay"></div>
@@ -8781,6 +8704,146 @@
   </div>
 
   <div class="sr-only" aria-live="polite" id="global-live-region"></div>
+
+  <!-- Template Confirmation Modal (outside main for WebKit fixed positioning compatibility) -->
+  <div class="modal" id="template-confirmation-modal" hidden>
+    <div class="modal__overlay"></div>
+    <div class="modal__content">
+      <div class="modal__header">
+        <h2 class="modal__title" id="template-modal-title">Apply Template?</h2>
+      </div>
+      <div class="modal__body">
+        <p id="template-modal-description">This will replace your current configuration with the template
+          settings.</p>
+        <div class="template-preview" id="template-modal-preview">
+          <!-- Template details will be inserted here -->
+        </div>
+
+        <!-- Feature Showcase Grid -->
+        <div class="template-features" id="template-features">
+          <h4 class="template-features__title">What's Included</h4>
+          <div class="template-features__grid">
+            <div class="template-feature" data-feature="mint" data-active="false">
+              <div class="template-feature__icon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2v20M2 12h20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <span class="template-feature__label">Minting</span>
+              <span class="template-feature__status">Off</span>
+            </div>
+            <div class="template-feature" data-feature="burn" data-active="false">
+              <div class="template-feature__icon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 22c4.97 0 9-4.03 9-9 0-5.25-4.5-9.75-9-15-4.5 5.25-9 9.75-9 15 0 4.97 4.03 9 9 9z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <span class="template-feature__label">Burning</span>
+              <span class="template-feature__status">Off</span>
+            </div>
+            <div class="template-feature" data-feature="freeze" data-active="false">
+              <div class="template-feature__icon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <span class="template-feature__label">Freeze</span>
+              <span class="template-feature__status">Off</span>
+            </div>
+            <div class="template-feature" data-feature="transfer" data-active="true">
+              <div class="template-feature__icon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M17 1l4 4-4 4M3 11V9a4 4 0 014-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 01-4 4H3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <span class="template-feature__label">Transfer</span>
+              <span class="template-feature__status">On</span>
+            </div>
+            <div class="template-feature" data-feature="distribution" data-active="false">
+              <div class="template-feature__icon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" stroke="currentColor" stroke-width="2"/>
+                  <path d="M12 22V12M3 8l9 4 9-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <span class="template-feature__label">Distribution</span>
+              <span class="template-feature__status">Off</span>
+            </div>
+            <div class="template-feature" data-feature="history" data-active="true">
+              <div class="template-feature__icon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                  <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <span class="template-feature__label">History</span>
+              <span class="template-feature__status">On</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Supply Configuration -->
+        <div class="template-supply-config" id="template-supply-config" hidden>
+          <h3 class="template-supply-config__title">Quick Configuration</h3>
+          <p class="template-supply-config__hint">Customize supply settings, or adjust later in the Permissions step.</p>
+
+          <div class="template-supply-config__grid">
+            <div class="wizard-field">
+              <label class="wizard-field__label" for="template-base-supply">
+                Base Supply
+                <span class="wizard-field__hint">Initial token amount</span>
+              </label>
+              <input type="text"
+                     id="template-base-supply"
+                     class="wizard-field__input"
+                     inputmode="numeric"
+                     pattern="[0-9]*"
+                     placeholder="1000000">
+            </div>
+
+            <div class="wizard-field">
+              <label class="wizard-field__label" for="template-max-supply">
+                Max Supply
+                <span class="wizard-field__hint">Leave empty for unlimited</span>
+              </label>
+              <input type="text"
+                     id="template-max-supply"
+                     class="wizard-field__input"
+                     inputmode="numeric"
+                     pattern="[0-9]*"
+                     placeholder="Unlimited">
+            </div>
+
+            <div class="wizard-field">
+              <label class="wizard-field__label" for="template-decimals">
+                Decimals
+              </label>
+              <select id="template-decimals" class="wizard-field__input">
+                <option value="0">0 (Whole tokens only)</option>
+                <option value="2">2 (Cents)</option>
+                <option value="8" selected>8 (Standard)</option>
+                <option value="18">18 (High precision)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Live preview -->
+          <div class="template-supply-config__preview">
+            <span class="preview-label">Preview:</span>
+            <span class="preview-value" id="template-preview-value">1,000,000 tokens</span>
+          </div>
+        </div>
+
+        <p class="modal__warning">⚠️ Any unsaved changes will be lost.</p>
+      </div>
+      <div class="modal__footer">
+        <button class="wizard-button wizard-button--secondary" type="button"
+          id="template-cancel-btn">Cancel</button>
+        <button class="wizard-button wizard-button--primary" type="button" id="template-confirm-btn">Apply
+          Template</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Contract Preview Modal -->
   <div class="contract-preview-modal" id="contract-preview-modal" hidden>

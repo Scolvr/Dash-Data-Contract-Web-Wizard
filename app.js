@@ -14271,14 +14271,56 @@
       supplyConfigSection.hidden = true;
     }
 
+    // Set modal accent color based on template
+    const accentColors = {
+      'scratch': '#6366F1',
+      'simple-fixed': '#10B981',
+      'utility': '#F59E0B',
+      'reward': '#EC4899'
+    };
+    confirmModal.style.setProperty('--modal-accent', accentColors[templateKey] || '#0E76FD');
+
+    // Update feature showcase grid
+    updateFeatureShowcase(template);
+
     // Show modal and lock body scroll
     confirmModal.removeAttribute('hidden');
+
     // Save current scroll position before locking
     const scrollY = window.scrollY;
     document.body.classList.add('modal-open');
     document.body.style.top = `-${scrollY}px`;
     document.body.dataset.scrollY = scrollY;
     confirmBtn.focus();
+  }
+
+  // Update the feature showcase grid based on template capabilities
+  function updateFeatureShowcase(template) {
+    const featuresContainer = document.getElementById('template-features');
+    if (!featuresContainer) return;
+
+    // Define feature mappings
+    const featureStates = {
+      mint: template?.manualMint?.enabled || false,
+      burn: template?.manualBurn?.enabled || false,
+      freeze: template?.manualFreeze?.enabled || false,
+      transfer: template?.transferNotesEnabled || true, // Transfers always enabled by default
+      distribution: !!(template?.distribution?.cadence || template?.distribution?.emission),
+      history: !!(template?.keepsHistory?.transfers || template?.keepsHistory?.mints ||
+                  template?.keepsHistory?.burns || template?.keepsHistory?.freezes)
+    };
+
+    // Update each feature element
+    Object.entries(featureStates).forEach(([feature, isActive]) => {
+      const featureEl = featuresContainer.querySelector(`[data-feature="${feature}"]`);
+      if (featureEl) {
+        featureEl.setAttribute('data-active', isActive ? 'true' : 'false');
+        const statusEl = featureEl.querySelector('.template-feature__status');
+        if (statusEl) {
+          statusEl.textContent = isActive ? 'On' : 'Off';
+        }
+      }
+    });
   }
 
   function hideTemplateConfirmation() {
