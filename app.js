@@ -120,7 +120,7 @@
     naming: ['naming', 'naming-localization', 'naming-update'],
     permissions: ['permissions', 'permissions-transfer', 'permissions-manual-mint', 'permissions-manual-burn', 'permissions-manual-freeze', 'permissions-emergency', 'permissions-marketplace-trade-mode-change', 'permissions-direct-pricing-change', 'permissions-main-control-change'],
     advanced: ['advanced-history', 'advanced', 'advanced-launch'],
-    distribution: ['distribution-preprogrammed', 'distribution-perpetual'],
+    distribution: ['distribution-preprogrammed', 'distribution-perpetual', 'distribution', 'distribution-emission'],
     search: ['search'],
     registration: ['registration']
   });
@@ -1867,12 +1867,19 @@
       const enabled = event.target.value === 'yes';
       wizardState.form.distribution.enablePreProgrammed = enabled;
 
-      // Show/hide the entries container
+      // Get the rules card dynamically (in case it wasn't available at page load)
+      const rulesCard = document.getElementById('preprogrammed-rules-card');
+
+      // Show/hide the entries container and rules card
       if (preprogrammedEntriesContainer) {
         if (enabled) {
           // Remove collapsing class and hidden attribute
           preprogrammedEntriesContainer.classList.remove('collapsing');
           preprogrammedEntriesContainer.removeAttribute('hidden');
+          // Show rules card when enabled
+          if (rulesCard) {
+            rulesCard.removeAttribute('hidden');
+          }
           // Add first entry if enabling and no entries exist
           if (!wizardState.form.distribution.preProgrammed) {
             wizardState.form.distribution.preProgrammed = { entries: [] };
@@ -1888,6 +1895,10 @@
             preprogrammedEntriesContainer.setAttribute('hidden', '');
             preprogrammedEntriesContainer.classList.remove('collapsing');
           }, 250);
+          // Hide rules card when disabled
+          if (rulesCard) {
+            rulesCard.setAttribute('hidden', '');
+          }
         }
       }
 
@@ -2392,6 +2403,7 @@
     const enabledRadio = document.querySelector('input[name="preprogrammed-enable"][value="yes"]');
     const disabledRadio = document.querySelector('input[name="preprogrammed-enable"][value="no"]');
     const entriesContainer = document.getElementById('preprogrammed-entries-container');
+    const rulesCard = document.getElementById('preprogrammed-rules-card');
 
     // Only run if the elements exist on the page
     if (!enabledRadio || !disabledRadio || !entriesContainer) {
@@ -2405,6 +2417,10 @@
       if (entriesContainer) {
         entriesContainer.removeAttribute('hidden');
       }
+      // Show rules card when enabled
+      if (rulesCard) {
+        rulesCard.removeAttribute('hidden');
+      }
       // Restore entries from state
       if (wizardState.form.distribution.preProgrammed && wizardState.form.distribution.preProgrammed.entries) {
         wizardState.form.distribution.preProgrammed.entries.forEach(entry => {
@@ -2417,6 +2433,10 @@
       }
       if (entriesContainer) {
         entriesContainer.setAttribute('hidden', '');
+      }
+      // Hide rules card when disabled
+      if (rulesCard) {
+        rulesCard.setAttribute('hidden', '');
       }
     }
   }
