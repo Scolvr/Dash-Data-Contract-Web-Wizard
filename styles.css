@@ -5979,15 +5979,26 @@ body.modal-open .modal__content {
 .template-feature__icon {
   width: 32px;
   height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  max-width: 32px;
+  max-height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
 }
 
 .template-feature__icon svg {
-  width: 20px;
-  height: 20px;
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px;
+  min-height: 20px;
+  max-width: 20px;
+  max-height: 20px;
   fill: rgba(255, 255, 255, 0.4);
+  flex-shrink: 0;
 }
 
 .template-feature__label {
