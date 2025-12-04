@@ -13898,7 +13898,58 @@
     }
   };
 
+  /**
+   * Expand sidebar sections for enabled features when template is applied.
+   * This makes it easy for users to see which features were configured by the template.
+   */
+  function expandSidebarForEnabledFeatures(state) {
+    const permissions = state.form?.permissions || {};
+
+    // Check if any permission features are enabled that warrant expanding permissions submenu
+    const hasEnabledPermissionFeatures =
+      permissions.manualMint?.enabled ||
+      permissions.manualBurn?.enabled ||
+      permissions.manualFreeze?.enabled ||
+      permissions.unfreeze?.enabled ||
+      permissions.destroyFrozen?.enabled ||
+      permissions.emergencyAction?.enabled ||
+      permissions.transferNotesEnabled;
+
+    // Expand permissions submenu if any features are enabled
+    if (hasEnabledPermissionFeatures) {
+      const permissionsSubmenu = document.getElementById('permissions-submenu');
+      const permissionsButton = document.querySelector('[data-toggle="permissions-submenu"]');
+      if (permissionsSubmenu && permissionsButton) {
+        permissionsSubmenu.hidden = false;
+        permissionsButton.setAttribute('aria-expanded', 'true');
+      }
+    }
+
+    // Check if distribution is enabled
+    const hasDistribution = state.form?.distribution?.enablePerpetual;
+    if (hasDistribution) {
+      const distributionSubmenu = document.getElementById('distribution-submenu');
+      const distributionButton = document.querySelector('[data-toggle="distribution-submenu"]');
+      if (distributionSubmenu && distributionButton) {
+        distributionSubmenu.hidden = false;
+        distributionButton.setAttribute('aria-expanded', 'true');
+      }
+    }
+
+    // Expand advanced submenu if trading rules are configured
+    const hasAdvancedFeatures = state.form?.advanced?.tradeMode && state.form?.advanced?.tradeMode !== 'closed';
+    if (hasAdvancedFeatures) {
+      const advancedSubmenu = document.getElementById('advanced-submenu');
+      const advancedButton = document.querySelector('[data-toggle="advanced-submenu"]');
+      if (advancedSubmenu && advancedButton) {
+        advancedSubmenu.hidden = false;
+        advancedButton.setAttribute('aria-expanded', 'true');
+      }
+    }
+  }
+
   function loadTemplate(templateKey) {
+    console.log('loadTemplate called with:', templateKey);
     const template = TOKEN_TEMPLATES[templateKey];
     const state = window.wizardState;
 
@@ -13906,6 +13957,7 @@
       console.error('wizardState not available');
       return;
     }
+    console.log('Template found:', template?.name);
 
     if (templateKey === 'scratch' || !template) {
       // Start from scratch - just navigate to naming
@@ -13947,11 +13999,15 @@
       supplyOverrides.decimals = parseInt(decimalsEl.value, 10);
     }
 
+    // Capture feature overrides from toggle state
+    // featureOverrides is populated by feature toggle click handlers
+    const capturedFeatureOverrides = { ...featureOverrides };
+
     // Store template metadata
     state.templateMeta = {
       appliedTemplate: templateKey,
       appliedAt: Date.now(),
-      customizations: { supplyOverrides },
+      customizations: { supplyOverrides, featureOverrides: capturedFeatureOverrides },
       deviations: {}
     };
     state.activeTemplate = templateKey;
@@ -13974,23 +14030,120 @@
     state.form.permissions.baseSupply = supplyOverrides.baseSupply ?? template.baseSupply ?? '0';
     state.form.permissions.maxSupply = supplyOverrides.maxSupply ?? template.maxSupply ?? '';
     state.form.permissions.useMaxSupply = supplyOverrides.useMaxSupply ?? template.useMaxSupply ?? false;
-    state.form.permissions.keepsHistory = template.keepsHistory || {};
+
+    // Apply feature overrides for history tracking
+    const historyOverride = capturedFeatureOverrides.history;
+    if (historyOverride !== undefined) {
+      // User toggled history feature - enable/disable all tracking together
+      state.form.permissions.keepsHistory = {
+        transfers: historyOverride,
+        mints: historyOverride,
+        burns: historyOverride,
+        freezes: historyOverride
+      };
+    } else {
+      state.form.permissions.keepsHistory = template.keepsHistory || {};
+    }
+
     state.form.permissions.startAsPaused = template.startAsPaused || false;
-    state.form.permissions.manualMint = template.manualMint || { enabled: false };
-    state.form.permissions.manualBurn = template.manualBurn || { enabled: false };
-    state.form.permissions.manualFreeze = template.manualFreeze || { enabled: false };
-    state.form.permissions.destroyFrozen = template.destroyFrozen || { enabled: false };
-    state.form.permissions.emergency = template.emergency || { enabled: false };
+
+    // Apply feature overrides for mint/burn/freeze with proper authorization defaults
+    // When enabled: performerType/ruleChangerType = 'owner' (Contract Owner)
+    // When disabled: performerType/ruleChangerType = 'none' (No One)
+    // Note: Default state is inlined here because this IIFE is isolated from the outer scope
+    const defaultManualAction = {
+      enabled: false,
+      performerType: 'none',
+      performerReference: '',
+      ruleChangerType: 'none',
+      ruleChangerReference: '',
+      allowChangeAuthorizedToNone: false,
+      allowChangeAdminToNone: false,
+      allowSelfChangeAdmin: false,
+      destinationType: 'contract-owner',
+      destinationIdentity: '',
+      allowCustomDestination: false
+    };
+
+    const mintOverride = capturedFeatureOverrides.mint;
+    const mintEnabled = mintOverride !== undefined ? mintOverride : (template.manualMint?.enabled || false);
+    state.form.permissions.manualMint = {
+      ...defaultManualAction,
+      enabled: mintEnabled,
+      performerType: mintEnabled ? 'owner' : 'none',
+      ruleChangerType: mintEnabled ? 'owner' : 'none'
+    };
+
+    const burnOverride = capturedFeatureOverrides.burn;
+    const burnEnabled = burnOverride !== undefined ? burnOverride : (template.manualBurn?.enabled || false);
+    state.form.permissions.manualBurn = {
+      ...defaultManualAction,
+      enabled: burnEnabled,
+      performerType: burnEnabled ? 'owner' : 'none',
+      ruleChangerType: burnEnabled ? 'owner' : 'none'
+    };
+
+    const freezeOverride = capturedFeatureOverrides.freeze;
+    const freezeEnabled = freezeOverride !== undefined ? freezeOverride : (template.manualFreeze?.enabled || false);
+    state.form.permissions.manualFreeze = {
+      ...defaultManualAction,
+      enabled: freezeEnabled,
+      performerType: freezeEnabled ? 'owner' : 'none',
+      ruleChangerType: freezeEnabled ? 'owner' : 'none'
+    };
+
+    // Apply same pattern to destroyFrozen and emergency
+    const destroyFrozenEnabled = template.destroyFrozen?.enabled || false;
+    state.form.permissions.destroyFrozen = {
+      ...defaultManualAction,
+      enabled: destroyFrozenEnabled,
+      performerType: destroyFrozenEnabled ? 'owner' : 'none',
+      ruleChangerType: destroyFrozenEnabled ? 'owner' : 'none'
+    };
+
+    const emergencyEnabled = template.emergency?.enabled || false;
+    state.form.permissions.emergencyAction = {
+      ...defaultManualAction,
+      enabled: emergencyEnabled,
+      performerType: emergencyEnabled ? 'owner' : 'none',
+      ruleChangerType: emergencyEnabled ? 'owner' : 'none'
+    };
+
+    // Unfreeze uses a simpler state structure (no destination fields)
+    const unfreezeEnabled = template.unfreeze?.enabled || false;
+    state.form.permissions.unfreeze = {
+      enabled: unfreezeEnabled,
+      performerType: unfreezeEnabled ? 'owner' : 'none',
+      performerReference: '',
+      ruleChangerType: unfreezeEnabled ? 'owner' : 'none',
+      ruleChangerReference: '',
+      allowChangeAuthorizedToNone: false,
+      allowChangeAdminToNone: false,
+      allowSelfChangeAdmin: false
+    };
+
     state.form.permissions.allowTransferToFrozenBalance = template.allowTransferToFrozenBalance || false;
-    state.form.permissions.transferNotesEnabled = template.transferNotesEnabled || false;
+
+    // Apply feature override for transfer notes
+    const transferOverride = capturedFeatureOverrides.transfer;
+    state.form.permissions.transferNotesEnabled = transferOverride !== undefined
+      ? transferOverride
+      : (template.transferNotesEnabled || false);
     state.form.permissions.transferNoteTypes = template.transferNoteTypes || {
       public: false,
       sharedEncrypted: false,
       privateEncrypted: false
     };
 
-    // Distribution
-    if (template.distribution) {
+    // Distribution - apply feature override if user toggled it
+    const distributionOverride = capturedFeatureOverrides.distribution;
+    if (distributionOverride === false) {
+      // User disabled distribution in preview
+      state.form.distribution = state.form.distribution || {};
+      state.form.distribution.enablePerpetual = false;
+      state.form.distribution.cadence = {};
+      state.form.distribution.emission = {};
+    } else if (template.distribution) {
       state.form.distribution = state.form.distribution || {};
       state.form.distribution.cadence = template.distribution.cadence || {};
       state.form.distribution.emission = template.distribution.emission || {};
@@ -14022,6 +14175,9 @@
     if (window.hydrateFormsFromState) {
       window.hydrateFormsFromState();
     }
+
+    // Expand sidebar sections for enabled features so user can see what was configured
+    expandSidebarForEnabledFeatures(state);
 
     // Switch to Token tab (naming screen is in token tab)
     if (window.switchTab) {
@@ -14156,6 +14312,12 @@
   const maxSupplyInput = document.getElementById('template-max-supply');
   const decimalsSelect = document.getElementById('template-decimals');
   const supplyPreviewValue = document.getElementById('template-preview-value');
+  const supplyPreviewDetails = document.getElementById('supply-preview-details');
+  const supplyRatioFill = document.getElementById('supply-ratio-fill');
+  const supplyRatioLabel = document.getElementById('supply-ratio-label');
+
+  // Feature override state for toggleable features
+  let featureOverrides = {};
 
   // Update live preview of supply configuration
   function updateTemplateSupplyPreview() {
@@ -14163,7 +14325,7 @@
 
     const baseSupply = baseSupplyInput?.value || '0';
     const maxSupply = maxSupplyInput?.value;
-    const decimals = decimalsSelect?.value || '8';
+    const decimals = parseInt(decimalsSelect?.value || '8', 10);
 
     // Format numbers with commas
     const formatNum = (n) => {
@@ -14171,11 +14333,227 @@
       return Number(n).toLocaleString();
     };
 
+    // Update the main value display
+    const baseNum = parseFloat(baseSupply) || 0;
+    const maxNum = parseFloat(maxSupply) || 0;
     const formatted = formatNum(baseSupply);
-    const maxFormatted = maxSupply ? formatNum(maxSupply) : 'unlimited';
+    supplyPreviewValue.textContent = formatted;
 
-    supplyPreviewValue.textContent = `${formatted} tokens (max: ${maxFormatted}, ${decimals} decimals)`;
+    // Update details line
+    if (supplyPreviewDetails) {
+      const maxFormatted = maxSupply ? formatNum(maxSupply) : 'unlimited';
+      supplyPreviewDetails.textContent = `${decimals} decimal places • Max: ${maxFormatted}`;
+    }
+
+    // Validation: base cannot exceed max (when max is set)
+    const isInvalid = maxNum > 0 && baseNum > maxNum;
+
+    // Update supply ratio bar
+    if (supplyRatioFill && supplyRatioLabel) {
+      if (isInvalid) {
+        // Error state: base exceeds max
+        supplyRatioFill.style.width = '100%';
+        supplyRatioFill.style.background = 'linear-gradient(90deg, #EF4444, #DC2626)';
+        supplyRatioLabel.textContent = 'Base cannot exceed max!';
+        supplyRatioLabel.style.color = '#EF4444';
+      } else {
+        // Reset to normal styling
+        supplyRatioFill.style.background = '';
+        supplyRatioLabel.style.color = '';
+
+        if (maxNum > 0 && baseNum > 0) {
+          const ratio = Math.min((baseNum / maxNum) * 100, 100);
+          supplyRatioFill.style.width = `${ratio}%`;
+          supplyRatioLabel.textContent = `${ratio.toFixed(1)}% of max supply`;
+        } else if (baseNum > 0) {
+          supplyRatioFill.style.width = '100%';
+          supplyRatioLabel.textContent = 'No max supply set';
+        } else {
+          supplyRatioFill.style.width = '0%';
+          supplyRatioLabel.textContent = 'Enter base supply';
+        }
+      }
+    }
+
+    // Disable/enable Apply button based on validation
+    const applyBtn = document.getElementById('template-confirm-btn');
+    if (applyBtn) {
+      applyBtn.disabled = isInvalid;
+    }
   }
+
+  // Update emission timeline visualization
+  function updateEmissionTimeline(template) {
+    const timeline = document.getElementById('emission-timeline');
+    if (!timeline) return;
+
+    // Check if this template has distribution settings
+    const hasDistribution = template?.distribution?.emission || template?.distribution?.cadence;
+    if (!hasDistribution) {
+      timeline.hidden = true;
+      return;
+    }
+
+    timeline.hidden = false;
+
+    const emission = template.distribution.emission || {};
+    const cadence = template.distribution.cadence || {};
+
+    // Calculate daily emission rate
+    let dailyRate = 0;
+    let emissionNote = '';
+
+    if (emission.type === 'FixedAmount') {
+      const amount = parseFloat(emission.amount) || 0;
+
+      if (cadence.type === 'TimeBasedDistribution') {
+        const intervalSeconds = parseFloat(cadence.intervalSeconds) || 86400;
+        dailyRate = (86400 / intervalSeconds) * amount;
+        emissionNote = `Based on ${formatNumber(amount)} tokens every ${formatDuration(intervalSeconds)}`;
+      } else if (cadence.type === 'BlockBasedDistribution') {
+        // Dash blocks average ~2.5 minutes = 150 seconds
+        const intervalBlocks = parseFloat(cadence.intervalBlocks) || 1;
+        const blocksPerDay = 86400 / 150; // ~576 blocks per day
+        dailyRate = (blocksPerDay / intervalBlocks) * amount;
+        emissionNote = `Based on ${formatNumber(amount)} tokens every ${intervalBlocks} block(s)`;
+      } else if (cadence.type === 'EpochBasedDistribution') {
+        // Epochs are typically longer periods
+        const intervalEpochs = parseFloat(cadence.intervalEpochs) || 1;
+        // Assume 1 epoch = 1 week for estimation
+        dailyRate = (amount / intervalEpochs) / 7;
+        emissionNote = `Based on ${formatNumber(amount)} tokens every ${intervalEpochs} epoch(s)`;
+      } else {
+        dailyRate = amount;
+        emissionNote = `Based on ${formatNumber(amount)} tokens per distribution`;
+      }
+    } else if (emission.type === 'Exponential') {
+      const initialAmount = parseFloat(emission.initialAmount) || 0;
+      dailyRate = initialAmount;
+      emissionNote = `Exponential decay from ${formatNumber(initialAmount)} tokens`;
+    } else if (emission.type === 'StepFunction') {
+      // Use first step amount as estimate
+      dailyRate = parseFloat(emission.steps?.[0]?.amount) || 0;
+      emissionNote = `Step function emission schedule`;
+    } else if (emission.type === 'Linear') {
+      const startAmount = parseFloat(emission.startAmount) || 0;
+      dailyRate = startAmount;
+      emissionNote = `Linear from ${formatNumber(startAmount)} tokens`;
+    }
+
+    // Calculate cumulative values for each period
+    const periods = {
+      day: dailyRate,
+      week: dailyRate * 7,
+      month: dailyRate * 30,
+      year: dailyRate * 365
+    };
+
+    // Find max for scaling
+    const maxValue = periods.year || 1;
+
+    // Update each row
+    Object.entries(periods).forEach(([period, value]) => {
+      const fillEl = document.getElementById(`emission-fill-${period}`);
+      const valueEl = document.getElementById(`emission-value-${period}`);
+
+      if (fillEl) {
+        const percentage = Math.min((value / maxValue) * 100, 100);
+        // Animate with a slight delay
+        setTimeout(() => {
+          fillEl.style.width = `${percentage}%`;
+        }, 100);
+      }
+
+      if (valueEl) {
+        valueEl.textContent = formatNumber(Math.round(value));
+      }
+    });
+
+    // Update note
+    const noteEl = document.getElementById('emission-note');
+    if (noteEl) {
+      noteEl.textContent = emissionNote || 'Based on template emission settings';
+    }
+  }
+
+  // Helper function to format numbers with commas
+  function formatNumber(n) {
+    if (!n || n === 0) return '0';
+    if (n >= 1000000) {
+      return (n / 1000000).toFixed(1) + 'M';
+    }
+    if (n >= 1000) {
+      return (n / 1000).toFixed(1) + 'K';
+    }
+    return n.toLocaleString();
+  }
+
+  // Helper function to format duration
+  function formatDuration(seconds) {
+    if (seconds >= 86400) return `${Math.round(seconds / 86400)} day(s)`;
+    if (seconds >= 3600) return `${Math.round(seconds / 3600)} hour(s)`;
+    if (seconds >= 60) return `${Math.round(seconds / 60)} minute(s)`;
+    return `${seconds} second(s)`;
+  }
+
+  // Setup feature toggle click handlers
+  function setupFeatureToggles() {
+    const featuresContainer = document.getElementById('template-features');
+    if (!featuresContainer) return;
+
+    // Add interactive class to all feature cards
+    const featureCards = featuresContainer.querySelectorAll('.template-feature');
+    featureCards.forEach(card => {
+      card.classList.add('template-feature--interactive');
+      card.setAttribute('role', 'button');
+      card.setAttribute('tabindex', '0');
+    });
+
+    // Event delegation for clicks
+    featuresContainer.addEventListener('click', handleFeatureToggle);
+    featuresContainer.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleFeatureToggle(e);
+      }
+    });
+  }
+
+  // Handle feature toggle
+  function handleFeatureToggle(e) {
+    const card = e.target.closest('.template-feature');
+    if (!card) return;
+
+    const feature = card.dataset.feature;
+    if (!feature) return;
+
+    const currentState = card.getAttribute('data-active') === 'true';
+    const newState = !currentState;
+
+    // Store override
+    featureOverrides[feature] = newState;
+
+    // Update UI
+    card.setAttribute('data-active', String(newState));
+    const statusEl = card.querySelector('.template-feature__status');
+    if (statusEl) {
+      statusEl.textContent = newState ? 'On' : 'Off';
+    }
+
+    // Visual feedback animation
+    card.style.transform = 'scale(0.95)';
+    setTimeout(() => {
+      card.style.transform = '';
+    }, 100);
+  }
+
+  // Reset feature overrides when modal closes
+  function resetFeatureOverrides() {
+    featureOverrides = {};
+  }
+
+  // Initialize feature toggles
+  setupFeatureToggles();
 
   function showTemplateConfirmation(templateKey) {
     const template = TOKEN_TEMPLATES[templateKey];
@@ -14283,6 +14661,14 @@
     // Update feature showcase grid
     updateFeatureShowcase(template);
 
+    // Update emission timeline (for distribution templates)
+    updateEmissionTimeline(template);
+
+    // Ensure Apply button is enabled (may have been disabled from previous modal)
+    if (confirmBtn) {
+      confirmBtn.disabled = false;
+    }
+
     // Show modal and lock body scroll
     confirmModal.removeAttribute('hidden');
 
@@ -14326,6 +14712,8 @@
   function hideTemplateConfirmation() {
     confirmModal.setAttribute('hidden', '');
     pendingTemplateKey = null;
+    // Reset feature overrides when closing modal
+    resetFeatureOverrides();
     // Restore body scroll and position
     const scrollY = document.body.dataset.scrollY || 0;
     document.body.classList.remove('modal-open');
@@ -14350,11 +14738,14 @@
   // Confirm button
   if (confirmBtn) {
     confirmBtn.addEventListener('click', () => {
+      console.log('Apply Template clicked, pendingTemplateKey:', pendingTemplateKey);
       if (pendingTemplateKey) {
         loadTemplate(pendingTemplateKey);
         hideTemplateConfirmation();
       }
     });
+  } else {
+    console.error('confirmBtn not found!');
   }
 
   // Cancel button and overlay
