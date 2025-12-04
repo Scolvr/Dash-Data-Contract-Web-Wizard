@@ -754,6 +754,59 @@
               <div class="template-preview" id="template-modal-preview">
                 <!-- Template details will be inserted here -->
               </div>
+
+              <!-- Quick Supply Configuration -->
+              <div class="template-supply-config" id="template-supply-config" hidden>
+                <h3 class="template-supply-config__title">Quick Configuration</h3>
+                <p class="template-supply-config__hint">Customize supply settings, or adjust later in the Permissions step.</p>
+
+                <div class="template-supply-config__grid">
+                  <div class="wizard-field">
+                    <label class="wizard-field__label" for="template-base-supply">
+                      Base Supply
+                      <span class="wizard-field__hint">Initial token amount</span>
+                    </label>
+                    <input type="text"
+                           id="template-base-supply"
+                           class="wizard-field__input"
+                           inputmode="numeric"
+                           pattern="[0-9]*"
+                           placeholder="1000000">
+                  </div>
+
+                  <div class="wizard-field">
+                    <label class="wizard-field__label" for="template-max-supply">
+                      Max Supply
+                      <span class="wizard-field__hint">Leave empty for unlimited</span>
+                    </label>
+                    <input type="text"
+                           id="template-max-supply"
+                           class="wizard-field__input"
+                           inputmode="numeric"
+                           pattern="[0-9]*"
+                           placeholder="Unlimited">
+                  </div>
+
+                  <div class="wizard-field">
+                    <label class="wizard-field__label" for="template-decimals">
+                      Decimals
+                    </label>
+                    <select id="template-decimals" class="wizard-field__input">
+                      <option value="0">0 (Whole tokens only)</option>
+                      <option value="2">2 (Cents)</option>
+                      <option value="8" selected>8 (Standard)</option>
+                      <option value="18">18 (High precision)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Live preview -->
+                <div class="template-supply-config__preview">
+                  <span class="preview-label">Preview:</span>
+                  <span class="preview-value" id="template-preview-value">1,000,000 tokens</span>
+                </div>
+              </div>
+
               <p class="modal__warning">⚠️ Any unsaved changes will be lost.</p>
             </div>
             <div class="modal__footer">

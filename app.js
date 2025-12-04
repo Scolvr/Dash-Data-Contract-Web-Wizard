@@ -932,6 +932,20 @@
     return {
       active: 'naming',
       furthestValidIndex: -1,
+      activeTemplate: null,
+      templateMeta: {
+        appliedTemplate: null,
+        appliedAt: null,
+        customizations: {
+          supplyOverrides: {
+            baseSupply: null,
+            maxSupply: null,
+            decimals: null,
+            useMaxSupply: null
+          }
+        },
+        deviations: {}
+      },
       steps,
       runtime: {
         walletClient: null,
@@ -13737,7 +13751,26 @@
         destroyFrozen: false,
         emergency: false
       },
-      distribution: null
+      distribution: null,
+      // Template wiring metadata
+      enabledFeatures: {
+        manualMint: false,
+        manualBurn: true,
+        manualFreeze: false,
+        distribution: false,
+        transferNotes: true
+      },
+      recommendedSubsteps: [
+        'permissions-manual-burn',
+        'permissions-transfer'
+      ],
+      supplyConfig: {
+        editable: true,
+        baseSupplyDefault: '1000000',
+        maxSupplyDefault: '1000000',
+        decimalsDefault: 8,
+        useMaxSupplyDefault: true
+      }
     },
 
     utility: {
@@ -13777,7 +13810,29 @@
         destroyFrozen: true,
         emergency: true
       },
-      distribution: null
+      distribution: null,
+      // Template wiring metadata
+      enabledFeatures: {
+        manualMint: true,
+        manualBurn: true,
+        manualFreeze: true,
+        distribution: false,
+        transferNotes: true
+      },
+      recommendedSubsteps: [
+        'permissions-manual-mint',
+        'permissions-manual-burn',
+        'permissions-manual-freeze',
+        'permissions-emergency',
+        'permissions-transfer'
+      ],
+      supplyConfig: {
+        editable: true,
+        baseSupplyDefault: '10000000',
+        maxSupplyDefault: '100000000',
+        decimalsDefault: 2,
+        useMaxSupplyDefault: true
+      }
     },
 
     reward: {
@@ -13819,6 +13874,26 @@
           type: 'FixedAmount',
           amount: '1000'
         }
+      },
+      // Template wiring metadata
+      enabledFeatures: {
+        manualMint: true,
+        manualBurn: true,
+        manualFreeze: false,
+        distribution: true,
+        transferNotes: false
+      },
+      recommendedSubsteps: [
+        'permissions-manual-mint',
+        'permissions-manual-burn',
+        'distribution'
+      ],
+      supplyConfig: {
+        editable: true,
+        baseSupplyDefault: '0',
+        maxSupplyDefault: null,
+        decimalsDefault: 0,
+        useMaxSupplyDefault: false
       }
     }
   };
@@ -13835,6 +13910,13 @@
     if (templateKey === 'scratch' || !template) {
       // Start from scratch - just navigate to naming
       state.activeTemplate = 'scratch';
+      state.templateMeta = {
+        appliedTemplate: 'scratch',
+        appliedAt: Date.now(),
+        customizations: { supplyOverrides: {} },
+        deviations: {}
+      };
+      clearTemplateHighlights();
       updateTemplateIndicator('scratch');
 
       // Switch to Token tab
@@ -13848,8 +13930,34 @@
       return;
     }
 
-    // Store active template
+    // Capture supply overrides from modal before applying
+    const supplyOverrides = {};
+    const baseSupplyEl = document.getElementById('template-base-supply');
+    const maxSupplyEl = document.getElementById('template-max-supply');
+    const decimalsEl = document.getElementById('template-decimals');
+
+    if (baseSupplyEl && baseSupplyEl.value) {
+      supplyOverrides.baseSupply = baseSupplyEl.value;
+    }
+    if (maxSupplyEl) {
+      supplyOverrides.maxSupply = maxSupplyEl.value || null;
+      supplyOverrides.useMaxSupply = Boolean(maxSupplyEl.value);
+    }
+    if (decimalsEl && decimalsEl.value) {
+      supplyOverrides.decimals = parseInt(decimalsEl.value, 10);
+    }
+
+    // Store template metadata
+    state.templateMeta = {
+      appliedTemplate: templateKey,
+      appliedAt: Date.now(),
+      customizations: { supplyOverrides },
+      deviations: {}
+    };
     state.activeTemplate = templateKey;
+
+    // Clear previous template highlights
+    clearTemplateHighlights();
 
     // Load template into wizard state
     // Note: Token name is intentionally NOT loaded from template - users must choose their own unique name
@@ -13860,12 +13968,12 @@
     state.form.search.description = template.description || '';
     state.form.search.keywords = template.keywords && Array.isArray(template.keywords) ? template.keywords.join(', ') : '';
 
-    // Permissions
+    // Permissions - apply supply overrides if provided, otherwise use template defaults
     state.form.permissions = state.form.permissions || {};
-    state.form.permissions.decimals = template.decimals || 8;
-    state.form.permissions.baseSupply = template.baseSupply || '0';
-    state.form.permissions.maxSupply = template.maxSupply || '';
-    state.form.permissions.useMaxSupply = template.useMaxSupply || false;
+    state.form.permissions.decimals = supplyOverrides.decimals ?? template.decimals ?? 8;
+    state.form.permissions.baseSupply = supplyOverrides.baseSupply ?? template.baseSupply ?? '0';
+    state.form.permissions.maxSupply = supplyOverrides.maxSupply ?? template.maxSupply ?? '';
+    state.form.permissions.useMaxSupply = supplyOverrides.useMaxSupply ?? template.useMaxSupply ?? false;
     state.form.permissions.keepsHistory = template.keepsHistory || {};
     state.form.permissions.startAsPaused = template.startAsPaused || false;
     state.form.permissions.manualMint = template.manualMint || { enabled: false };
@@ -13886,6 +13994,10 @@
       state.form.distribution = state.form.distribution || {};
       state.form.distribution.cadence = template.distribution.cadence || {};
       state.form.distribution.emission = template.distribution.emission || {};
+      // Auto-enable perpetual distribution when template provides it
+      if (template.distribution.cadence || template.distribution.emission) {
+        state.form.distribution.enablePerpetual = true;
+      }
     }
 
     // Advanced
@@ -13935,10 +14047,71 @@
       console.error('ERROR: window.showScreen not available!');
     }
 
+    // Apply step highlighting based on template features
+    applyTemplateStepHighlights(templateKey, template);
+
     // Show success message
     if (window.announce) {
       window.announce(`✓ Template "${template.name}" loaded successfully! Please enter a token name to continue.`);
     }
+  }
+
+  // Step highlighting functions for template wiring
+  function applyTemplateStepHighlights(templateKey, template) {
+    // Clear any existing highlights first
+    clearTemplateHighlights();
+
+    if (!template || !template.recommendedSubsteps) {
+      return;
+    }
+
+    // Add highlight class to recommended substeps in sidebar
+    template.recommendedSubsteps.forEach(substepId => {
+      const navItem = document.querySelector(`[data-substep="${substepId}"]`);
+      if (navItem) {
+        navItem.classList.add('wizard-nav-subitem--template-recommended');
+
+        // Add badge if not already present
+        if (!navItem.querySelector('.template-badge')) {
+          const badge = document.createElement('span');
+          badge.className = 'template-badge';
+          badge.textContent = 'Enabled';
+          badge.setAttribute('aria-label', 'Enabled by template');
+          navItem.appendChild(badge);
+        }
+      }
+    });
+
+    // Expand parent menus for recommended substeps
+    const parentSteps = new Set();
+    template.recommendedSubsteps.forEach(substepId => {
+      // Extract parent step from substep ID (e.g., 'permissions-manual-burn' -> 'permissions')
+      const match = substepId.match(/^([a-z]+)-/);
+      if (match) {
+        parentSteps.add(match[1]);
+      }
+    });
+
+    parentSteps.forEach(parentStep => {
+      const submenu = document.getElementById(`${parentStep}-submenu`);
+      const toggleBtn = document.querySelector(`[data-toggle="${parentStep}-submenu"]`);
+      if (submenu && toggleBtn) {
+        submenu.hidden = false;
+        toggleBtn.setAttribute('aria-expanded', 'true');
+      }
+    });
+  }
+
+  function clearTemplateHighlights() {
+    // Remove all template-recommended classes
+    document.querySelectorAll('.wizard-nav-subitem--template-recommended').forEach(el => {
+      el.classList.remove('wizard-nav-subitem--template-recommended');
+    });
+
+    // Remove all template badges
+    document.querySelectorAll('.template-badge').forEach(badge => {
+      badge.remove();
+    });
   }
 
   function updateTemplateIndicator(templateKey) {
@@ -13977,6 +14150,33 @@
   const cancelBtn = document.getElementById('template-cancel-btn');
   let pendingTemplateKey = null;
 
+  // Supply config elements (for quick edit in modal)
+  const supplyConfigSection = document.getElementById('template-supply-config');
+  const baseSupplyInput = document.getElementById('template-base-supply');
+  const maxSupplyInput = document.getElementById('template-max-supply');
+  const decimalsSelect = document.getElementById('template-decimals');
+  const supplyPreviewValue = document.getElementById('template-preview-value');
+
+  // Update live preview of supply configuration
+  function updateTemplateSupplyPreview() {
+    if (!supplyPreviewValue) return;
+
+    const baseSupply = baseSupplyInput?.value || '0';
+    const maxSupply = maxSupplyInput?.value;
+    const decimals = decimalsSelect?.value || '8';
+
+    // Format numbers with commas
+    const formatNum = (n) => {
+      if (!n || n === '0') return '0';
+      return Number(n).toLocaleString();
+    };
+
+    const formatted = formatNum(baseSupply);
+    const maxFormatted = maxSupply ? formatNum(maxSupply) : 'unlimited';
+
+    supplyPreviewValue.textContent = `${formatted} tokens (max: ${maxFormatted}, ${decimals} decimals)`;
+  }
+
   function showTemplateConfirmation(templateKey) {
     const template = TOKEN_TEMPLATES[templateKey];
 
@@ -13994,11 +14194,6 @@
 
     // Build preview HTML with comprehensive feature detection
     const features = [];
-
-    // Basic config
-    if (template.decimals !== undefined) features.push(`${template.decimals} decimals`);
-    if (template.baseSupply) features.push(`Base supply: ${template.baseSupply}`);
-    if (template.maxSupply) features.push(`Max supply: ${template.maxSupply}`);
 
     // Manual actions
     if (template.manualBurn?.enabled) features.push('Burn capability');
@@ -14046,14 +14241,55 @@
       ` : ''}
     `;
 
-    // Show modal
+    // Handle supply configuration section
+    if (supplyConfigSection && template.supplyConfig?.editable) {
+      supplyConfigSection.hidden = false;
+
+      // Pre-fill with template defaults
+      if (baseSupplyInput) {
+        baseSupplyInput.value = template.supplyConfig.baseSupplyDefault || '';
+      }
+      if (maxSupplyInput) {
+        maxSupplyInput.value = template.supplyConfig.maxSupplyDefault || '';
+      }
+      if (decimalsSelect) {
+        decimalsSelect.value = String(template.supplyConfig.decimalsDefault ?? 8);
+      }
+
+      // Update preview
+      updateTemplateSupplyPreview();
+
+      // Add input listeners for live preview (remove first to avoid duplicates)
+      baseSupplyInput?.removeEventListener('input', updateTemplateSupplyPreview);
+      maxSupplyInput?.removeEventListener('input', updateTemplateSupplyPreview);
+      decimalsSelect?.removeEventListener('change', updateTemplateSupplyPreview);
+
+      baseSupplyInput?.addEventListener('input', updateTemplateSupplyPreview);
+      maxSupplyInput?.addEventListener('input', updateTemplateSupplyPreview);
+      decimalsSelect?.addEventListener('change', updateTemplateSupplyPreview);
+    } else if (supplyConfigSection) {
+      supplyConfigSection.hidden = true;
+    }
+
+    // Show modal and lock body scroll
     confirmModal.removeAttribute('hidden');
+    // Save current scroll position before locking
+    const scrollY = window.scrollY;
+    document.body.classList.add('modal-open');
+    document.body.style.top = `-${scrollY}px`;
+    document.body.dataset.scrollY = scrollY;
     confirmBtn.focus();
   }
 
   function hideTemplateConfirmation() {
     confirmModal.setAttribute('hidden', '');
     pendingTemplateKey = null;
+    // Restore body scroll and position
+    const scrollY = document.body.dataset.scrollY || 0;
+    document.body.classList.remove('modal-open');
+    document.body.style.top = '';
+    delete document.body.dataset.scrollY;
+    window.scrollTo(0, parseInt(scrollY, 10));
   }
 
   // Add click listeners to all template cards
@@ -14098,10 +14334,65 @@
     }
   });
 
-  // Restore template indicator on page load
+  // Restore template indicator and highlights on page load
   if (window.wizardState && window.wizardState.activeTemplate) {
     updateTemplateIndicator(window.wizardState.activeTemplate);
+
+    // Re-apply highlights if template exists
+    const activeTemplate = TOKEN_TEMPLATES[window.wizardState.activeTemplate];
+    if (activeTemplate && window.wizardState.activeTemplate !== 'scratch') {
+      applyTemplateStepHighlights(window.wizardState.activeTemplate, activeTemplate);
+    }
   }
+
+  // Deviation tracking functions
+  function trackTemplateDeviation(fieldPath, newValue) {
+    const state = window.wizardState;
+    if (!state?.templateMeta?.appliedTemplate) return;
+    if (state.templateMeta.appliedTemplate === 'scratch') return;
+
+    const template = TOKEN_TEMPLATES[state.templateMeta.appliedTemplate];
+    if (!template) return;
+
+    const originalValue = getNestedValue(template, fieldPath);
+
+    if (newValue !== originalValue) {
+      state.templateMeta.deviations[fieldPath] = {
+        originalValue,
+        currentValue: newValue,
+        changedAt: Date.now()
+      };
+    } else {
+      // Value matches template, remove deviation record
+      delete state.templateMeta.deviations[fieldPath];
+    }
+
+    updateTemplateDeviationIndicator();
+  }
+
+  function getNestedValue(obj, path) {
+    return path.split('.').reduce((acc, key) => acc?.[key], obj);
+  }
+
+  function updateTemplateDeviationIndicator() {
+    const state = window.wizardState;
+    const deviationCount = Object.keys(state?.templateMeta?.deviations || {}).length;
+    const welcomePill = document.getElementById('status-welcome');
+
+    if (!welcomePill) return;
+
+    if (deviationCount > 0) {
+      welcomePill.classList.add('pill--modified');
+      welcomePill.title = `${deviationCount} customization(s) from template`;
+    } else {
+      welcomePill.classList.remove('pill--modified');
+      welcomePill.title = '';
+    }
+  }
+
+  // Expose tracking function globally for use by other parts of the app
+  window.trackTemplateDeviation = trackTemplateDeviation;
+  window.updateTemplateDeviationIndicator = updateTemplateDeviationIndicator;
 
   console.log('✓ Template selection initialized with', templateCards.length, 'templates');
 })();
