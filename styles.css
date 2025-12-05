@@ -873,16 +873,15 @@ img {
   border-radius: var(--radius-md);
   animation: slideDown 0.25s ease-out;
   overflow: hidden;
-  transition: opacity 0.25s ease-out, max-height 0.25s ease-out, margin 0.25s ease-out, padding 0.25s ease-out;
+  transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+  will-change: transform, opacity;
 }
 
 .distribution-inline-panel.collapsing {
   opacity: 0;
-  max-height: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-  margin-top: 0;
-  margin-bottom: 0;
+  transform: scaleY(0);
+  transform-origin: top;
+  pointer-events: none;
 }
 
 @media (max-width: 600px) {
@@ -891,20 +890,17 @@ img {
   }
 }
 
+/* GPU-accelerated slide animation using transform instead of max-height */
 @keyframes slideDown {
   from {
     opacity: 0;
-    max-height: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-    margin-bottom: 0;
+    transform: scaleY(0.8) translateY(-10px);
+    transform-origin: top;
   }
   to {
     opacity: 1;
-    max-height: 500px;
-    padding-top: var(--space-4);
-    padding-bottom: var(--space-4);
-    margin-bottom: var(--space-4);
+    transform: scaleY(1) translateY(0);
+    transform-origin: top;
   }
 }
 
@@ -1096,7 +1092,7 @@ html[data-theme='dark'] .wizard-sidebar .pill.pending {
   color: var(--color-silver);
   border: 1px solid rgba(160, 174, 192, 0.3);
   line-height: 1.4;
-  transition: all var(--transition-base);
+  transition: background-color var(--transition-base), border-color var(--transition-base), color var(--transition-base);
 }
 
 .pill::before {
@@ -2176,8 +2172,9 @@ body.guide-panel-collapsed .wizard-tabs {
   font-size: 11px;
   font-weight: 700;
   color: var(--color-silver);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  will-change: transform;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -2230,22 +2227,31 @@ body.guide-panel-collapsed .wizard-tabs {
     0 0 0 4px rgba(var(--step-accent-rgb), 0.15),
     0 0 12px rgba(var(--step-accent-rgb), 0.4),
     0 4px 12px rgba(0, 0, 0, 0.15);
-  animation: pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  position: relative;
 }
 
-/* Pulsing glow animation for current step */
+/* GPU-accelerated pulse glow using pseudo-element with opacity animation */
+.wizard-progress-compact__step[data-current="true"] .wizard-progress-compact__dot::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  box-shadow:
+    0 0 0 4px rgba(var(--step-accent-rgb), 0.25),
+    0 0 20px rgba(var(--step-accent-rgb), 0.6);
+  opacity: 0;
+  animation: pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  pointer-events: none;
+  will-change: opacity;
+}
+
+/* Pulsing glow animation - GPU-accelerated opacity instead of box-shadow */
 @keyframes pulseGlow {
   0%, 100% {
-    box-shadow:
-      0 0 0 4px rgba(var(--step-accent-rgb), 0.15),
-      0 0 12px rgba(var(--step-accent-rgb), 0.4),
-      0 4px 12px rgba(0, 0, 0, 0.15);
+    opacity: 0.3;
   }
   50% {
-    box-shadow:
-      0 0 0 4px rgba(var(--step-accent-rgb), 0.25),
-      0 0 20px rgba(var(--step-accent-rgb), 0.6),
-      0 4px 12px rgba(0, 0, 0, 0.15);
+    opacity: 1;
   }
 }
 
@@ -2573,7 +2579,8 @@ html[data-theme='light'] .wizard-screen__inner {
   text-align: left;
   cursor: pointer;
   overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, opacity;
   box-shadow:
     0 4px 24px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
@@ -4038,19 +4045,19 @@ html[data-theme='light'] .form-card--optional {
   box-shadow: none;
   /* I7: Localization row add/remove animation */
   animation: locRowEnter 0.3s cubic-bezier(0.2, 0.6, 0.2, 1);
+  will-change: transform, opacity;
 }
 
 /* I7: Localization row entrance animation */
+/* GPU-accelerated localization row animation */
 @keyframes locRowEnter {
   from {
     opacity: 0;
-    transform: translateY(-10px);
-    max-height: 0;
+    transform: translateY(-10px) scaleY(0.95);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
-    max-height: 500px;
+    transform: translateY(0) scaleY(1);
   }
 }
 
