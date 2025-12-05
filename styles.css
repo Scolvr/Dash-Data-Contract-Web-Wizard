@@ -13387,6 +13387,325 @@ html[data-theme='light'] .wizard-header__title {
   color: #1A1F36;
 }
 
+/* ═══════════════════════════════════════════════════════
+   Modal System - Light Mode
+   ═══════════════════════════════════════════════════════ */
+html[data-theme='light'] .modal__overlay {
+  background: rgba(120, 100, 80, 0.4);
+}
+
+@supports (backdrop-filter: blur(12px)) {
+  html[data-theme='light'] .modal__overlay {
+    background: rgba(120, 100, 80, 0.3);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+}
+
+html[data-theme='light'] .modal__content {
+  background: linear-gradient(165deg, #FFFFFF 0%, #FFFBF7 100%);
+  border: 1px solid rgba(120, 100, 80, 0.15);
+  box-shadow:
+    0 24px 80px rgba(120, 100, 80, 0.2),
+    0 0 1px rgba(120, 100, 80, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+html[data-theme='light'] .modal__content::before {
+  background: linear-gradient(90deg,
+    transparent,
+    #5B4FCF 50%,
+    transparent
+  );
+  box-shadow: 0 0 20px rgba(91, 79, 207, 0.4);
+}
+
+html[data-theme='light'] .modal__header {
+  border-bottom-color: rgba(120, 100, 80, 0.1);
+}
+
+html[data-theme='light'] .modal__title {
+  color: #1A1F36;
+}
+
+html[data-theme='light'] .modal__body p {
+  color: #64748B;
+}
+
+html[data-theme='light'] .modal__warning {
+  background: rgba(217, 119, 6, 0.1);
+  border-color: rgba(217, 119, 6, 0.3);
+  color: #92400E;
+}
+
+html[data-theme='light'] .modal__footer {
+  border-top-color: rgba(120, 100, 80, 0.1);
+}
+
+html[data-theme='light'] .modal__footer .wizard-button--secondary {
+  background: transparent;
+  border: 1px solid rgba(120, 100, 80, 0.2);
+  color: #4A5568;
+}
+
+html[data-theme='light'] .modal__footer .wizard-button--secondary:hover {
+  background: rgba(120, 100, 80, 0.05);
+  border-color: rgba(120, 100, 80, 0.3);
+  color: #1A1F36;
+}
+
+html[data-theme='light'] .modal__footer .wizard-button--primary {
+  background: linear-gradient(135deg, #5B4FCF 0%, #4338CA 100%);
+  box-shadow: 0 4px 16px rgba(91, 79, 207, 0.3);
+}
+
+html[data-theme='light'] .modal__footer .wizard-button--primary:hover {
+  box-shadow: 0 6px 24px rgba(91, 79, 207, 0.4);
+}
+
+html[data-theme='light'] .modal__footer .wizard-button--danger {
+  background: #DC2626;
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.3);
+}
+
+html[data-theme='light'] .modal__footer .wizard-button--danger:hover:not(:disabled) {
+  background: #B91C1C;
+  box-shadow: 0 6px 24px rgba(220, 38, 38, 0.4);
+}
+
+/* ═══════════════════════════════════════════════════════
+   Template Preview in Modal - Light Mode
+   ═══════════════════════════════════════════════════════ */
+html[data-theme='light'] .template-preview {
+  background: rgba(120, 100, 80, 0.05);
+  border: 1px solid rgba(120, 100, 80, 0.12);
+}
+
+html[data-theme='light'] .template-preview h3 {
+  color: #1A1F36;
+}
+
+html[data-theme='light'] .template-preview p {
+  color: #64748B;
+}
+
+html[data-theme='light'] .template-preview__features {
+  gap: var(--space-2);
+}
+
+html[data-theme='light'] .template-preview__feature {
+  background: rgba(91, 79, 207, 0.05);
+  border: 1px solid rgba(91, 79, 207, 0.15);
+  color: #4A5568;
+}
+
+/* ═══════════════════════════════════════════════════════
+   Feature Showcase Grid - Light Mode
+   ═══════════════════════════════════════════════════════ */
+html[data-theme='light'] .template-features__title {
+  color: #64748B;
+}
+
+html[data-theme='light'] .template-feature {
+  background: rgba(120, 100, 80, 0.03);
+  border: 1px solid rgba(120, 100, 80, 0.08);
+}
+
+html[data-theme='light'] .template-feature:hover {
+  background: rgba(120, 100, 80, 0.06);
+  border-color: rgba(120, 100, 80, 0.12);
+}
+
+html[data-theme='light'] .template-feature[data-active="true"] {
+  background: rgba(5, 150, 105, 0.08);
+  border-color: rgba(5, 150, 105, 0.2);
+}
+
+html[data-theme='light'] .template-feature[data-active="true"] .template-feature__icon svg {
+  fill: #059669;
+}
+
+html[data-theme='light'] .template-feature[data-active="true"] .template-feature__status {
+  color: #059669;
+}
+
+html[data-theme='light'] .template-feature__icon svg {
+  fill: #64748B;
+}
+
+html[data-theme='light'] .template-feature__label {
+  color: #1A1F36;
+}
+
+html[data-theme='light'] .template-feature__status {
+  color: #64748B;
+}
+
+html[data-theme='light'] .template-feature--interactive:hover {
+  border-color: rgba(120, 100, 80, 0.2);
+  background: rgba(120, 100, 80, 0.06);
+}
+
+html[data-theme='light'] .template-feature--interactive[data-active="true"]:hover {
+  background: rgba(5, 150, 105, 0.12);
+  border-color: rgba(5, 150, 105, 0.3);
+}
+
+html[data-theme='light'] .template-feature__toggle-indicator {
+  background: rgba(120, 100, 80, 0.1);
+}
+
+html[data-theme='light'] .template-feature--interactive[data-active="true"] .template-feature__toggle-indicator {
+  background: rgba(5, 150, 105, 0.2);
+}
+
+/* ═══════════════════════════════════════════════════════
+   Supply Configuration - Light Mode
+   ═══════════════════════════════════════════════════════ */
+html[data-theme='light'] .supply-config-enhanced {
+  background: rgba(120, 100, 80, 0.03);
+  border: 1px solid rgba(120, 100, 80, 0.1);
+}
+
+html[data-theme='light'] .supply-config__title {
+  color: #64748B;
+}
+
+html[data-theme='light'] .supply-card {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(120, 100, 80, 0.12);
+}
+
+html[data-theme='light'] .supply-card:focus-within {
+  border-color: #5B4FCF;
+  box-shadow: 0 0 0 3px rgba(91, 79, 207, 0.15);
+}
+
+html[data-theme='light'] .supply-card__label {
+  color: #64748B;
+}
+
+html[data-theme='light'] .supply-card__input {
+  color: #1A1F36;
+}
+
+html[data-theme='light'] .supply-card__input::placeholder {
+  color: rgba(100, 90, 80, 0.5);
+}
+
+html[data-theme='light'] .supply-card__select {
+  color: #1A1F36;
+}
+
+html[data-theme='light'] .supply-card__select option {
+  background: #FFFFFF;
+  color: #1A1F36;
+}
+
+html[data-theme='light'] .supply-card__hint {
+  color: #64748B;
+}
+
+html[data-theme='light'] .supply-ratio__bar {
+  background: rgba(120, 100, 80, 0.1);
+}
+
+html[data-theme='light'] .supply-ratio__label {
+  color: #64748B;
+}
+
+html[data-theme='light'] .supply-preview {
+  background: linear-gradient(135deg, rgba(91, 79, 207, 0.08), transparent);
+  border: 1px solid rgba(91, 79, 207, 0.15);
+}
+
+html[data-theme='light'] .supply-preview__value {
+  color: #1A1F36;
+}
+
+html[data-theme='light'] .supply-preview__symbol {
+  color: #64748B;
+}
+
+html[data-theme='light'] .supply-preview__details {
+  color: #64748B;
+}
+
+/* ═══════════════════════════════════════════════════════
+   Contract Preview Modal Overlay - Light Mode
+   ═══════════════════════════════════════════════════════ */
+html[data-theme='light'] .contract-preview-modal__overlay {
+  background: rgba(120, 100, 80, 0.4);
+  backdrop-filter: blur(4px);
+}
+
+/* ═══════════════════════════════════════════════════════
+   Distribution Cadence & Utility Cards - Light Mode
+   ═══════════════════════════════════════════════════════ */
+html[data-theme='light'] .cadence-card,
+html[data-theme='light'] .utility-card {
+  background: rgba(120, 100, 80, 0.03);
+  border: 1px solid rgba(120, 100, 80, 0.08);
+}
+
+html[data-theme='light'] .cadence-card:hover,
+html[data-theme='light'] .utility-card:hover {
+  background: rgba(120, 100, 80, 0.06);
+  border-color: rgba(120, 100, 80, 0.12);
+}
+
+html[data-theme='light'] .cadence-card__title,
+html[data-theme='light'] .utility-card__title {
+  color: #64748B;
+}
+
+html[data-theme='light'] .cadence-card__label,
+html[data-theme='light'] .utility-card__label {
+  color: #64748B;
+}
+
+html[data-theme='light'] .cadence-card__value,
+html[data-theme='light'] .utility-card__value {
+  color: #1A1F36;
+}
+
+html[data-theme='light'] .cadence-card__hint,
+html[data-theme='light'] .utility-card__hint {
+  color: #64748B;
+}
+
+/* ═══════════════════════════════════════════════════════
+   Emission Timeline - Light Mode
+   ═══════════════════════════════════════════════════════ */
+html[data-theme='light'] .emission-timeline {
+  background: rgba(120, 100, 80, 0.03);
+  border: 1px solid rgba(120, 100, 80, 0.1);
+}
+
+html[data-theme='light'] .emission-timeline__title {
+  color: #64748B;
+}
+
+html[data-theme='light'] .emission-timeline__label {
+  color: #4A5568;
+}
+
+html[data-theme='light'] .emission-timeline__bar-container {
+  background: rgba(120, 100, 80, 0.1);
+}
+
+html[data-theme='light'] .emission-timeline__fill {
+  background: linear-gradient(90deg, #5B4FCF, transparent 150%);
+}
+
+html[data-theme='light'] .emission-timeline__value {
+  color: #1A1F36;
+}
+
+html[data-theme='light'] .emission-timeline__note {
+  color: #64748B;
+}
+
 /* Reduced Motion - Disable animations for accessibility */
 @media (prefers-reduced-motion: reduce) {
   .orb {
