@@ -5642,9 +5642,15 @@
 
     isTransitioning = true;
 
+    // FIX: Check if screenId is a valid substep to allow forced navigation to substeps
+    const isValidSubstep = Object.values(SUBSTEP_SEQUENCES).some(substeps =>
+      substeps.includes(screenId)
+    );
+
     if (!force) {
       screenId = resolveStepTargetId(screenId);
-    } else if (!STEP_SEQUENCE.includes(screenId)) {
+    } else if (!STEP_SEQUENCE.includes(screenId) && !isValidSubstep) {
+      // Only resolve if not a main step AND not a valid substep
       screenId = resolveStepTargetId(screenId);
     }
 
