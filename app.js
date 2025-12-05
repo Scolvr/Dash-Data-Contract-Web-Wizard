@@ -120,7 +120,7 @@
     naming: ['naming', 'naming-localization', 'naming-update'],
     permissions: ['permissions', 'permissions-transfer', 'permissions-manual-mint', 'permissions-manual-burn', 'permissions-manual-freeze', 'permissions-emergency', 'permissions-marketplace-trade-mode-change', 'permissions-direct-pricing-change', 'permissions-main-control-change'],
     advanced: ['advanced-history', 'advanced', 'advanced-launch'],
-    distribution: ['distribution-preprogrammed', 'distribution-perpetual', 'distribution', 'distribution-emission'],
+    distribution: ['distribution-preprogrammed', 'distribution-perpetual'],
     search: ['search'],
     registration: ['registration']
   });
@@ -1447,14 +1447,14 @@
   const transferMessage = document.getElementById('permissions-transfer-message');
   const transferNextButton = document.getElementById('permissions-transfer-next');
 
-  const distributionMessage = document.getElementById('distribution-message');
-  const distributionNextButton = document.getElementById('distribution-next');
-  // FIXED: Add reference to distribution skip button
-  const distributionSkipButton = document.getElementById('distribution-skip');
-  const distributionEmissionSkipButton = document.getElementById('distribution-emission-skip');
-  // FIXED: Add reference to emission substep button and message
-  const distributionEmissionNextButton = document.getElementById('distribution-emission-next');
-  const distributionEmissionMessage = document.getElementById('distribution-emission-message');
+  // Note: Old screen-distribution removed (redundant - now using distribution-preprogrammed and distribution-perpetual substeps)
+  const distributionMessage = null;
+  const distributionNextButton = null;
+  const distributionSkipButton = null;
+  // Note: distribution-emission screen removed (redundant - functionality merged into distribution-perpetual)
+  const distributionEmissionSkipButton = null;
+  const distributionEmissionNextButton = null;
+  const distributionEmissionMessage = null;
 
   const advancedMessage = document.getElementById('advanced-message');
   const advancedNextButton = document.getElementById('advanced-next');
@@ -1552,7 +1552,8 @@
   const welcomeScreen = document.getElementById('screen-welcome');
   const namingScreen = document.getElementById('screen-naming');
   const permissionsScreen = document.getElementById('screen-permissions');
-  const distributionScreen = document.getElementById('screen-distribution');
+  // Note: distribution step uses substeps only (distribution-preprogrammed, distribution-perpetual)
+  const distributionScreen = null; // Removed redundant screen-distribution
   const advancedScreen = document.getElementById('screen-advanced');
   const searchScreen = document.getElementById('screen-search');
   const overviewScreen = document.getElementById('screen-overview');
@@ -5776,15 +5777,6 @@
       });
     }
 
-    // Update recipient visibility when showing distribution-emission screen
-    if (screenId === 'distribution-emission') {
-      requestAnimationFrame(() => {
-        if (distributionUI && typeof distributionUI.updateRecipientVisibility === 'function') {
-          distributionUI.updateRecipientVisibility();
-        }
-      });
-    }
-
     // Update recipient visibility when showing distribution-perpetual screen
     if (screenId === 'distribution-perpetual') {
       requestAnimationFrame(() => {
@@ -7474,19 +7466,55 @@
 
     // Unfreeze Enable/Disable Radio Buttons
     const unfreezeEnabledRadios = document.getElementsByName('manual-unfreeze-enabled');
+    const unfreezePermissionSelectForSync = document.getElementById('manual-unfreeze-permission');
+    const unfreezeRuleChangerSelectForSync = document.getElementById('manual-unfreeze-change-rules');
     unfreezeEnabledRadios.forEach(radio => {
       radio.addEventListener('change', () => {
-        wizardState.form.permissions.unfreeze.enabled = radio.value === 'enabled';
+        const enable = radio.value === 'enabled';
+        wizardState.form.permissions.unfreeze.enabled = enable;
+        if (enable) {
+          // Auto-set performerType and ruleChangerType to 'owner' when enabling
+          if (wizardState.form.permissions.unfreeze.performerType === 'none') {
+            wizardState.form.permissions.unfreeze.performerType = 'owner';
+            if (unfreezePermissionSelectForSync) unfreezePermissionSelectForSync.value = 'owner';
+          }
+          if (wizardState.form.permissions.unfreeze.ruleChangerType === 'none') {
+            wizardState.form.permissions.unfreeze.ruleChangerType = 'owner';
+            if (unfreezeRuleChangerSelectForSync) unfreezeRuleChangerSelectForSync.value = 'owner';
+          }
+        }
         persistState();
+        // Sync UI dropdowns to reflect new state
+        if (typeof hydrateAuthorizationDropdowns === 'function') {
+          hydrateAuthorizationDropdowns();
+        }
       });
     });
 
     // Destroy Frozen Enable/Disable Radio Buttons
     const destroyFrozenEnabledRadios = document.getElementsByName('destroy-frozen-enabled');
+    const destroyFrozenPermissionSelectForSync = document.getElementById('destroy-frozen-permission');
+    const destroyFrozenRuleChangerSelectForSync = document.getElementById('destroy-frozen-change-rules');
     destroyFrozenEnabledRadios.forEach(radio => {
       radio.addEventListener('change', () => {
-        wizardState.form.permissions.destroyFrozen.enabled = radio.value === 'enabled';
+        const enable = radio.value === 'enabled';
+        wizardState.form.permissions.destroyFrozen.enabled = enable;
+        if (enable) {
+          // Auto-set performerType and ruleChangerType to 'owner' when enabling
+          if (wizardState.form.permissions.destroyFrozen.performerType === 'none') {
+            wizardState.form.permissions.destroyFrozen.performerType = 'owner';
+            if (destroyFrozenPermissionSelectForSync) destroyFrozenPermissionSelectForSync.value = 'owner';
+          }
+          if (wizardState.form.permissions.destroyFrozen.ruleChangerType === 'none') {
+            wizardState.form.permissions.destroyFrozen.ruleChangerType = 'owner';
+            if (destroyFrozenRuleChangerSelectForSync) destroyFrozenRuleChangerSelectForSync.value = 'owner';
+          }
+        }
         persistState();
+        // Sync UI dropdowns to reflect new state
+        if (typeof hydrateAuthorizationDropdowns === 'function') {
+          hydrateAuthorizationDropdowns();
+        }
       });
     });
 
@@ -8332,6 +8360,20 @@
             },
             { markTouched: false, silent: true }
           );
+        } else {
+          // Auto-set performerType and ruleChangerType to 'owner' when enabling
+          // Only if they're currently 'none' (preserves user customizations)
+          const state = actionState();
+          const updates = {};
+          if (state.performerType === 'none') {
+            updates.performerType = 'owner';
+          }
+          if (state.ruleChangerType === 'none') {
+            updates.ruleChangerType = 'owner';
+          }
+          if (Object.keys(updates).length) {
+            commit(updates, { markTouched: false, silent: true });
+          }
         }
         sync({ announce: false });
       });
@@ -13886,7 +13928,7 @@
       recommendedSubsteps: [
         'permissions-manual-mint',
         'permissions-manual-burn',
-        'distribution'
+        'distribution-perpetual'
       ],
       supplyConfig: {
         editable: true,

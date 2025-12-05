@@ -6107,824 +6107,6 @@
           </div>
         </section>
 
-        <!-- Distribution: Schedule Sub-step -->
-        <section class="wizard-screen" id="screen-distribution" data-step="distribution" data-substep="distribution"
-          data-tab="token" hidden>
-
-          <!-- Right Side Guide Panel -->
-          <aside class="page-guide" aria-label="Page guide" data-collapsed="false">
-            <div class="page-guide__header">
-              <div class="page-guide__tabs-horizontal">
-                <button class="page-guide__tab page-guide__tab--info active" data-panel="info" aria-label="Show Information" aria-pressed="true">
-                  Information
-                </button>
-                <button class="page-guide__tab page-guide__tab--guide" data-panel="guide" aria-label="Show User Guide" aria-pressed="false">
-                  User Guide
-                </button>
-              </div>
-              <button class="page-guide__collapse" aria-label="Collapse panel" aria-expanded="true">
-                <svg class="page-guide__collapse-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M6 12l4-4-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </button>
-            </div>
-            <div class="page-guide__panel page-guide__panel--info active" data-panel="info">
-              <div class="page-guide__content">
-              <h2 class="page-guide__title">Distribution Schedule</h2>
-              <p class="page-guide__intro">Define how and when your token distributes new supply.</p>
-
-              <div class="page-guide__section">
-                <h3 class="page-guide__section-title">Guide</h3>
-                <p>Choose a type: Pre-programmed, Perpetual, or None. If active, set cadence — by blocks, time, or
-                  epoch. This controls the rhythm of emission or rewards. Click Continue to the emission curve.</p>
-
-                <h4 class="page-guide__step-heading" id="guide-distribution-types">Distribution Types</h4>
-                <ul class="page-guide__list">
-                  <li><strong>Pre-programmed:</strong> Fixed schedule, set it and forget it</li>
-                  <li><strong>Perpetual:</strong> Ongoing emission based on rules</li>
-                  <li><strong>None:</strong> No automatic distribution</li>
-                </ul>
-
-                <h4 class="page-guide__step-heading" id="guide-cadence-types">Cadence Types</h4>
-                <ul class="page-guide__list">
-                  <li><strong>Block-Based:</strong> Every N blocks (e.g., every 100 blocks)</li>
-                  <li><strong>Time-Based:</strong> Every N seconds/minutes/hours (e.g., 3600 = 1 hour)</li>
-                  <li><strong>Epoch-Based:</strong> Per epoch period (daily, weekly, monthly, quarterly, yearly)</li>
-                </ul>
-
-                <h4 class="page-guide__step-heading" id="guide-emission-function">Emission Function</h4>
-                <p>Set the mathematical rule that determines emission over time. Pick a model that matches your
-                  economics:</p>
-                <ul class="page-guide__list">
-                  <li><strong>Fixed:</strong> Constant output</li>
-                  <li><strong>Step:</strong> Halving or tiered steps</li>
-                  <li><strong>Linear:</strong> Smooth growth or reduction</li>
-                  <li><strong>Exponential / Polynomial / Logarithmic:</strong> Advanced curves for adaptive or
-                    decreasing emissions</li>
-                </ul>
-                <p>Define your parameters carefully — this shapes your token's inflation model.</p>
-              </div>
-            </div>
-            </div>
-            <div class="page-guide__panel page-guide__panel--guide" data-panel="guide" hidden>
-              <div class="page-guide__content">
-                <h2 class="page-guide__title">Distribution Schedule</h2>
-                <p class="page-guide__intro">Step-by-step guide to configuring your token's release schedule.</p>
-
-                <div class="page-guide__section">
-                  <h3 class="page-guide__section-title">Step 1: Understand Distribution Options</h3>
-                  <p>This screen lets you set up automatic token distribution over time. Choose a schedule type that matches your use case: mining rewards, staking incentives, or gradual release schedules.</p>
-                </div>
-
-                <div class="page-guide__section">
-                  <h3 class="page-guide__section-title">Step 2: Select Schedule Type</h3>
-                  <p>Choose when tokens should be released:</p>
-                  <ul class="page-guide__list">
-                    <li><strong>Block-based (Perpetual):</strong> Release tokens every N blocks - best for blockchain-tied rewards</li>
-                    <li><strong>Time-based (Perpetual):</strong> Release tokens every N hours/days - best for human-readable schedules</li>
-                    <li><strong>Epoch-based (Perpetual):</strong> Release at platform epoch changes - best for governance coordination</li>
-                  </ul>
-                </div>
-
-                <div class="page-guide__section">
-                  <h3 class="page-guide__section-title">Step 3: Configure Release Interval</h3>
-                  <p>After selecting a schedule type, enter the interval value in the expanded panel. For example: 1000 blocks, 24 hours (daily), or 1 epoch.</p>
-                </div>
-
-                <div class="page-guide__section">
-                  <h3 class="page-guide__section-title">Step 4: Verify and Continue</h3>
-                  <p>Review your schedule configuration and proceed to set the emission amount in the next step.</p>
-                </div>
-              </div>
-            </div>
-          </aside>
-
-          <div class="wizard-screen__inner">
-            <form class="wizard-form" id="distribution-form" novalidate>
-              <h1 class="wizard-screen__title" id="title-distribution" tabindex="-1">How should tokens be distributed
-                over time? <span class="wizard-badge wizard-badge--optional">(optional setting)</span></h1>
-              <p class="wizard-screen__subtitle">Set up automatic token distribution with a release schedule (like
-                mining rewards).</p>
-
-              <!-- Distribution Info Card -->
-              <div class="form-card form-card--highlight">
-                <div class="form-card__body">
-                  <p><strong>What's this for?</strong></p>
-                  <p>Distribution lets you automatically release tokens over time - perfect for rewards, staking, or
-                    gradual release schedules. If you don't need this, you can skip it!</p>
-                  <p style="margin-bottom: 0;"><strong>Common uses:</strong> Mining rewards • Staking rewards • Team
-                    vesting • Community incentives</p>
-                </div>
-              </div>
-
-              <!-- Distribution Schedule Section -->
-              <div class="form-card">
-                <div class="form-card__header">
-                  <h3 class="form-card__title">Release Schedule</h3>
-                  <p class="form-card__description">When should tokens be released?</p>
-                </div>
-                <div class="form-card__body">
-                  <fieldset class="wizard-fieldset" aria-describedby="distribution-message">
-                    <legend class="wizard-field__label with-help">Schedule type
-                      <button type="button" class="help-icon" data-help="cadence-type" data-guide-target="guide-cadence-type" aria-label="Help: Distribution Cadence Type" tabindex="0">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                          <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
-                          <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                      </button>
-                    </legend>
-
-                    <!-- Block-based Option -->
-                    <label class="wizard-choice">
-                      <input class="wizard-choice__input" type="radio" name="distribution-type" value="block"
-                        data-toggle-panel="distribution-panel-block">
-                      <span class="wizard-choice__content">
-                        <span class="wizard-choice__title">Block-based (Perpetual)</span>
-                        <span class="wizard-choice__hint">Continuous emission - Release tokens every N blocks</span>
-                      </span>
-                    </label>
-                    <div class="distribution-inline-panel" id="distribution-panel-block" hidden>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="dist-block-interval">Release every (blocks)</label>
-                        <input class="wizard-field__input" type="number" id="dist-block-interval"
-                          placeholder="e.g., 1000" min="1">
-                        <span class="field-hint">Example: 1000 blocks ≈ 2.5 hours • Tokens are claimable at each
-                          interval</span>
-                      </div>
-                    </div>
-
-                    <!-- Time-based Option -->
-                    <label class="wizard-choice">
-                      <input class="wizard-choice__input" type="radio" name="distribution-type" value="time"
-                        data-toggle-panel="distribution-panel-time">
-                      <span class="wizard-choice__content">
-                        <span class="wizard-choice__title">Time-based (Perpetual)</span>
-                        <span class="wizard-choice__hint">Continuous emission - Release tokens every N hours/days</span>
-                      </span>
-                    </label>
-                    <div class="distribution-inline-panel" id="distribution-panel-time" hidden>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="dist-time-interval">Release every</label>
-                        <input class="wizard-field__input" type="number" id="dist-time-interval" placeholder="e.g., 24"
-                          min="1">
-                        <span class="field-hint">Hours (24 = daily, 168 = weekly) • Tokens are claimable at each
-                          interval</span>
-                      </div>
-                    </div>
-
-                    <!-- Epoch-based Option -->
-                    <label class="wizard-choice">
-                      <input class="wizard-choice__input" type="radio" name="distribution-type" value="epoch"
-                        data-toggle-panel="distribution-panel-epoch">
-                      <span class="wizard-choice__content">
-                        <span class="wizard-choice__title">Epoch-based (Perpetual)</span>
-                        <span class="wizard-choice__hint">Continuous emission - Release at platform epoch changes
-                          (advanced)</span>
-                      </span>
-                    </label>
-                    <div class="distribution-inline-panel" id="distribution-panel-epoch" hidden>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="dist-epoch-interval">Release every (epochs)</label>
-                        <input class="wizard-field__input" type="number" id="dist-epoch-interval" placeholder="e.g., 1"
-                          min="1" value="1">
-                        <span class="field-hint">1 = every epoch change</span>
-                      </div>
-                    </div>
-                  </fieldset>
-                </div>
-
-                <p class="wizard-field__message" id="distribution-message" role="status" aria-live="polite"></p>
-                <div class="wizard-actions wizard-actions--between wizard-actions--sticky">
-                  <button class="wizard-button wizard-button--secondary" type="button" data-step-back="distribution">←
-                    Back</button>
-                  <button class="wizard-button wizard-button--secondary" type="button" id="contract-preview-btn">📄
-                    Contract Preview</button>
-                  <button class="wizard-button wizard-button--primary" id="distribution-next" type="submit"
-                    disabled>Continue →</button>
-                </div>
-            </form>
-          </div>
-        </section>
-
-        <!-- Distribution: Emission Sub-step -->
-        <section class="wizard-screen" id="screen-distribution-emission" data-step="distribution"
-          data-substep="distribution-emission" data-tab="token" hidden>
-
-          <!-- Right Side Guide Panel -->
-          <aside class="page-guide" aria-label="Page guide" data-collapsed="false">
-            <div class="page-guide__header">
-              <div class="page-guide__tabs-horizontal">
-                <button class="page-guide__tab page-guide__tab--info active" data-panel="info" aria-label="Show Information" aria-pressed="true">
-                  Information
-                </button>
-                <button class="page-guide__tab page-guide__tab--guide" data-panel="guide" aria-label="Show User Guide" aria-pressed="false">
-                  User Guide
-                </button>
-              </div>
-              <button class="page-guide__collapse" aria-label="Collapse panel" aria-expanded="true">
-                <svg class="page-guide__collapse-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M6 12l4-4-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </button>
-            </div>
-            <div class="page-guide__panel page-guide__panel--info active" data-panel="info">
-              <div class="page-guide__content">
-              <h2 class="page-guide__title">Emission Function</h2>
-              <p class="page-guide__intro">Define how many tokens are released at each cadence interval using mathematical functions that shape your token's supply curve.</p>
-
-              <div class="page-guide__section">
-                <h3 class="page-guide__section-title">Quick Reference</h3>
-
-                <h4 class="page-guide__step-heading" id="emission-overview">What is an Emission Function?</h4>
-                <p><strong>What it is:</strong> A mathematical formula that determines the quantity of tokens released at each cadence interval. The emission function works together with your cadence (from the previous step) to create a complete distribution schedule.</p>
-                <p><strong>Why it matters:</strong> The emission function shapes your token's supply curve over time, directly impacting inflation rate, scarcity perception, and incentive sustainability. Different functions create dramatically different economic outcomes.</p>
-                <p><strong>Key principle:</strong> Cadence defines WHEN tokens are released; emission function defines HOW MUCH at each release.</p>
-
-                <h4 class="page-guide__step-heading" id="emission-fixed">Fixed Amount</h4>
-                <p><strong>Formula:</strong> Same constant amount every period (e.g., 100 tokens per release).</p>
-                <p><strong>Best for:</strong> Simple, predictable reward systems where consistency is valued. Easy for users to understand and calculate expected returns.</p>
-                <p><strong>Characteristics:</strong> Linear supply growth, constant absolute inflation (decreasing percentage inflation over time as total supply grows).</p>
-
-                <h4 class="page-guide__step-heading" id="emission-exponential">Exponential Decay</h4>
-                <p><strong>Formula:</strong> Amount decreases by a percentage over time (similar to Bitcoin halving: a × (m/n)^(period/d)).</p>
-                <p><strong>Best for:</strong> Creating scarcity over time, mimicking mining economics, rewarding early adopters while extending emission lifetime.</p>
-                <p><strong>Characteristics:</strong> Rapidly decreasing emissions, asymptotic approach to maximum supply, strong early-adopter incentives.</p>
-
-                <h4 class="page-guide__step-heading" id="emission-linear">Linear Change</h4>
-                <p><strong>Formula:</strong> Amount increases or decreases by a fixed increment each period (e.g., start at 100, add/subtract 10 each period).</p>
-                <p><strong>Best for:</strong> Gradual phase-in or phase-out of rewards, smooth transitions between emission levels, controlled ramp-up periods.</p>
-                <p><strong>Characteristics:</strong> Predictable rate of change, smooth supply curve transitions, good for temporary incentive programs.</p>
-
-                <h4 class="page-guide__step-heading" id="emission-step">Step Function</h4>
-                <p><strong>Formula:</strong> Different fixed amounts for different time periods (e.g., Year 1: 1000/day, Year 2: 500/day, Year 3: 250/day).</p>
-                <p><strong>Best for:</strong> Complex tokenomics requiring different emission rates at different project phases, coordinating with roadmap milestones.</p>
-                <p><strong>Characteristics:</strong> Maximum flexibility, can model any desired supply curve, useful for multi-phase projects.</p>
-
-                <h4 class="page-guide__step-heading" id="emission-parameters">Understanding Parameters</h4>
-                <p><strong>Scaling Factor (a):</strong> Base multiplier that scales the entire emission curve up or down.</p>
-                <p><strong>Exponent Rate (m/n):</strong> Controls how rapidly exponential functions decrease (or increase). Smaller ratios = faster decay.</p>
-                <p><strong>Divisor (d):</strong> Period length over which the exponent is applied, affecting decay speed.</p>
-                <p><strong>Offset (o):</strong> Shifts the entire function up or down, useful for ensuring minimum emission values.</p>
-                <p><strong>Base Amount (b):</strong> Starting amount before applying mathematical transformations.</p>
-              </div>
-            </div>
-            </div>
-            <div class="page-guide__panel page-guide__panel--guide" data-panel="guide" hidden>
-              <div class="page-guide__content">
-                <h2 class="page-guide__title">Emission Function</h2>
-                <p class="page-guide__intro">Step-by-step guide to configuring how many tokens are released at each interval.</p>
-
-                <div class="page-guide__section">
-                  <h3 class="page-guide__section-title">Step 1: Select Emission Type</h3>
-                  <p>Choose how the release amount is calculated:</p>
-                  <ul class="page-guide__list">
-                    <li><strong>Fixed amount:</strong> Same amount every time (simplest, e.g., 100 tokens per release)</li>
-                    <li><strong>Exponential:</strong> Decreasing over time like Bitcoin halving (complex parameters)</li>
-                    <li><strong>Linear:</strong> Steadily increasing or decreasing amounts (moderate complexity)</li>
-                    <li><strong>Step function:</strong> Different amounts for different phases (maximum control)</li>
-                  </ul>
-                </div>
-
-                <div class="page-guide__section">
-                  <h3 class="page-guide__section-title">Step 2: Configure Parameters</h3>
-                  <p>Set the values for your chosen emission type:</p>
-                  <ul class="page-guide__list">
-                    <li><strong>Fixed:</strong> Enter the amount per release (e.g., 100 tokens)</li>
-                    <li><strong>Exponential:</strong> Set scaling factor, exponent rate (m/n), divisor, and optional offsets</li>
-                    <li><strong>Linear:</strong> Enter starting amount and slope (increment per period)</li>
-                    <li><strong>Step function:</strong> Define each phase with period range and fixed amount</li>
-                  </ul>
-                </div>
-
-                <div class="page-guide__section">
-                  <h3 class="page-guide__section-title">Step 3: Review Total Emissions</h3>
-                  <p>Calculate estimated total tokens that will be emitted over your desired timeframe. Verify this doesn't exceed your maximum supply (if set in Permissions). Consider how long until emissions stop or become negligible.</p>
-                </div>
-
-                <div class="page-guide__section">
-                  <h3 class="page-guide__section-title">Step 4: Verify and Continue</h3>
-                  <p>Confirm your emission function matches your tokenomics goals. Ensure inflation rate is sustainable and proceed to the Advanced step to configure trading rules and governance controls.</p>
-                </div>
-              </div>
-            </div>
-          </aside>
-
-          <div class="wizard-screen__inner">
-            <form class="wizard-form" id="distribution-emission-form" novalidate>
-              <h1 class="wizard-screen__title" id="title-distribution-emission" tabindex="-1">How much should be
-                released each time?</h1>
-              <p class="wizard-screen__subtitle">Choose an emission function that determines the amount distributed at
-                each interval.</p>
-
-              <!-- Emission Type Section -->
-              <div class="form-card">
-                <div class="form-card__header">
-                  <h3 class="form-card__title">Emission Function</h3>
-                  <p class="form-card__description">Select how much to release per interval</p>
-                </div>
-                <div class="form-card__body">
-                  <fieldset class="wizard-fieldset">
-                    <legend class="wizard-field__label">Emission type
-                      <button type="button" class="help-icon" data-help="emission-type" data-guide-target="guide-emission-function" aria-label="Help: Emission Type" tabindex="0">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                          <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
-                          <path d="M8 7v4M8 4.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                      </button>
-                    </legend>
-
-                    <!-- Fixed Amount Option -->
-                    <label class="wizard-choice">
-                      <input class="wizard-choice__input" type="radio" name="emission-type" value="fixed"
-                        data-toggle-panel="emission-panel-fixed">
-                      <span class="wizard-choice__content">
-                        <span class="wizard-choice__title">Fixed amount</span>
-                        <span class="wizard-choice__hint">Release the same amount every time</span>
-                      </span>
-                    </label>
-                    <div class="distribution-inline-panel" id="emission-panel-fixed" hidden>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-fixed-amount">Amount per release</label>
-                        <input class="wizard-field__input" type="text" id="emission-fixed-amount"
-                          placeholder="e.g., 100">
-                        <span class="field-hint">This exact amount will be released each time</span>
-                      </div>
-                    </div>
-
-                    <!-- Exponential Option -->
-                    <label class="wizard-choice">
-                      <input class="wizard-choice__input" type="radio" name="emission-type" value="exponential"
-                        data-toggle-panel="emission-panel-exponential">
-                      <span class="wizard-choice__content">
-                        <span class="wizard-choice__title">Exponential</span>
-                        <span class="wizard-choice__hint">Amount changes by percentage (like Bitcoin halving)</span>
-                      </span>
-                    </label>
-                    <div class="distribution-inline-panel" id="emission-panel-exponential" hidden>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-exp-a">Scaling Factor (a, { 0 &lt; a ≤ 256
-                          })</label>
-                        <input class="wizard-field__input" type="number" id="emission-exp-a" placeholder="e.g., 1"
-                          min="1" max="256">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-exp-m">Exponent Rate Numerator (m, { -8 ≤ m ≤ 8
-                          ; m ≠ 0 })</label>
-                        <input class="wizard-field__input" type="number" id="emission-exp-m" placeholder="e.g., 2"
-                          min="-8" max="8">
-                        <span class="field-hint">Cannot be 0</span>
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-exp-n">Exponent Rate Denominator (n, { 0 &lt; n
-                          ≤ 32 })</label>
-                        <input class="wizard-field__input" type="number" id="emission-exp-n" placeholder="e.g., 1"
-                          min="1" max="32">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-exp-d">Divisor (d, { u64 ; d ≠ 0 })</label>
-                        <input class="wizard-field__input" type="text" id="emission-exp-d" placeholder="e.g., 1">
-                        <span class="field-hint">Cannot be 0</span>
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-exp-s">Start Period Offset (s, optional,
-                          u64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-exp-s" placeholder="None">
-                        <span class="field-hint">Optional starting period offset</span>
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-exp-o">Offset (o, i64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-exp-o" placeholder="e.g., 0">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-exp-b">Base amount (b, u64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-exp-b" placeholder="e.g., 100">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-exp-min-value">Minimum Emission Value
-                          (optional, u64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-exp-min-value" placeholder="None">
-                        <span class="field-hint">Optional minimum emission value</span>
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-exp-max-value">Maximum Emission Value
-                          (optional, u64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-exp-max-value" placeholder="None">
-                        <span class="field-hint">Optional maximum emission value</span>
-                      </div>
-                    </div>
-
-                    <!-- Linear Option -->
-                    <label class="wizard-choice">
-                      <input class="wizard-choice__input" type="radio" name="emission-type" value="linear"
-                        data-toggle-panel="emission-panel-linear">
-                      <span class="wizard-choice__content">
-                        <span class="wizard-choice__title">Linear</span>
-                        <span class="wizard-choice__hint">Amount increases or decreases gradually</span>
-                      </span>
-                    </label>
-                    <div class="distribution-inline-panel" id="emission-panel-linear" hidden>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-linear-slope-numerator">Slope Numerator (a, {
-                          -255 ≤ a ≤ 256 })</label>
-                        <input class="wizard-field__input" type="number" id="emission-linear-slope-numerator"
-                          placeholder="e.g., 1" min="-255" max="256">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-linear-slope-divisor">Slope Divisor (d,
-                          u64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-linear-slope-divisor"
-                          placeholder="e.g., 1">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-linear-start-step">Start Step (s, i64,
-                          optional)</label>
-                        <input class="wizard-field__input" type="text" id="emission-linear-start-step"
-                          placeholder="None">
-                        <span class="field-hint">Optional starting step value</span>
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-linear-starting-amount">Starting Amount (b,
-                          i64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-linear-starting-amount"
-                          placeholder="e.g., 100">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-linear-min-value">Minimum Emission Value
-                          (optional)</label>
-                        <input class="wizard-field__input" type="text" id="emission-linear-min-value"
-                          placeholder="None">
-                        <span class="field-hint">Optional minimum emission value</span>
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-linear-max-value">Maximum Emission Value
-                          (optional)</label>
-                        <input class="wizard-field__input" type="text" id="emission-linear-max-value"
-                          placeholder="None">
-                        <span class="field-hint">Optional maximum emission value</span>
-                      </div>
-                    </div>
-
-                    <!-- Random Option -->
-                    <label class="wizard-choice">
-                      <input class="wizard-choice__input" type="radio" name="emission-type" value="random"
-                        data-toggle-panel="emission-panel-random">
-                      <span class="wizard-choice__content">
-                        <span class="wizard-choice__title">Random</span>
-                        <span class="wizard-choice__hint">Random amount within a range (gamified rewards)</span>
-                      </span>
-                    </label>
-                    <div class="distribution-inline-panel" id="emission-panel-random" hidden>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-random-min">Minimum amount</label>
-                        <input class="wizard-field__input" type="text" id="emission-random-min" placeholder="e.g., 50">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-random-max">Maximum amount</label>
-                        <input class="wizard-field__input" type="text" id="emission-random-max" placeholder="e.g., 150">
-                        <span class="field-hint">Each release will be a random value between min and max</span>
-                      </div>
-                    </div>
-
-                    <!-- Step Decreasing Option -->
-                    <label class="wizard-choice">
-                      <input class="wizard-choice__input" type="radio" name="emission-type" value="step-decreasing"
-                        data-toggle-panel="emission-panel-step-decreasing">
-                      <span class="wizard-choice__content">
-                        <span class="wizard-choice__title">Step Decreasing</span>
-                        <span class="wizard-choice__hint">Amount decreases in steps (like Bitcoin halving)</span>
-                      </span>
-                    </label>
-                    <div class="distribution-inline-panel" id="emission-panel-step-decreasing" hidden>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-step-count">Step Count</label>
-                        <input class="wizard-field__input" type="number" id="emission-step-count" placeholder="e.g., 4"
-                          min="1">
-                        <span class="field-hint">Number of emissions before decreasing</span>
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-step-numerator">Decrease per Interval Numerator
-                          (n &lt; 65,536)</label>
-                        <input class="wizard-field__input" type="number" id="emission-step-numerator"
-                          placeholder="e.g., 1" min="0" max="65535">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-step-denominator">Decrease per Interval
-                          Denominator (d &lt; 65,536)</label>
-                        <input class="wizard-field__input" type="number" id="emission-step-denominator"
-                          placeholder="e.g., 2" min="1" max="65535">
-                        <span class="field-hint">1/2 = halving, 3/4 = 75% of previous, etc.</span>
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-step-offset">Start Period Offset (i64,
-                          optional)</label>
-                        <input class="wizard-field__input" type="text" id="emission-step-offset" placeholder="None">
-                        <span class="field-hint">Optional starting period offset</span>
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-step-start">Initial Token Emission
-                          Amount</label>
-                        <input class="wizard-field__input" type="text" id="emission-step-start"
-                          placeholder="e.g., 1000">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-step-min-value">Minimum Emission Value
-                          (optional)</label>
-                        <input class="wizard-field__input" type="text" id="emission-step-min-value" placeholder="None">
-                        <span class="field-hint">Optional minimum emission value</span>
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-step-max-interval">
-                          Maximum Interval Count
-                          <span style="color: var(--color-error); font-weight: 600;">⚠️ IMPORTANT</span>
-                        </label>
-                        <input class="wizard-field__input" type="number" id="emission-step-max-interval"
-                          placeholder="128" min="1" max="1024" value="128">
-                        <span class="field-hint" style="color: var(--color-warning);">
-                          <strong>Maximum number of emission intervals (1-1024).</strong> After this many intervals, the
-                          trailing amount is distributed perpetually. Defaults to 128 if not set. For Bitcoin-style
-                          halving over 100+ years, set this to a higher value (e.g., 500).
-                        </span>
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-step-trailing">Trailing Distribution Interval
-                          Token Amount</label>
-                        <input class="wizard-field__input" type="text" id="emission-step-trailing"
-                          placeholder="e.g., 10">
-                        <span class="field-hint">Final emission amount after all decreases</span>
-                      </div>
-                    </div>
-
-                    <!-- Stepwise Option -->
-                    <label class="wizard-choice">
-                      <input class="wizard-choice__input" type="radio" name="emission-type" value="stepwise"
-                        data-toggle-panel="emission-panel-stepwise">
-                      <span class="wizard-choice__content">
-                        <span class="wizard-choice__title">Stepwise</span>
-                        <span class="wizard-choice__hint">Custom amounts at specific intervals</span>
-                      </span>
-                    </label>
-                    <div class="distribution-inline-panel" id="emission-panel-stepwise" hidden>
-                      <div id="stepwise-entries">
-                        <div class="field-group stepwise-entry" data-entry-index="0">
-                          <label class="wizard-field__label">
-                            At interval <input class="wizard-field__input" type="number" name="stepwise-interval"
-                              placeholder="0" min="0"
-                              style="width: 120px; display: inline-block; margin: 0 var(--space-2);">
-                            emit <input class="wizard-field__input" type="text" name="stepwise-amount"
-                              placeholder="1000" style="width: 120px; display: inline-block; margin: 0 var(--space-2);">
-                            tokens
-                          </label>
-                          <button class="wizard-button wizard-button--text wizard-button--sm" type="button"
-                            data-remove-stepwise style="margin-left: var(--space-2);">Remove</button>
-                        </div>
-                      </div>
-                      <button class="wizard-button wizard-button--secondary wizard-button--sm" type="button"
-                        id="add-stepwise-entry" style="margin-top: var(--space-3);">+ Add Interval</button>
-                      <span class="field-hint" style="display: block; margin-top: var(--space-2);">Define custom
-                        emission amounts for specific intervals</span>
-                    </div>
-
-                    <!-- Polynomial Option -->
-                    <label class="wizard-choice">
-                      <input class="wizard-choice__input" type="radio" name="emission-type" value="polynomial"
-                        data-toggle-panel="emission-panel-polynomial">
-                      <span class="wizard-choice__content">
-                        <span class="wizard-choice__title">Polynomial</span>
-                        <span class="wizard-choice__hint">Complex polynomial curve (advanced)</span>
-                      </span>
-                    </label>
-                    <div class="distribution-inline-panel" id="emission-panel-polynomial" hidden>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-poly-a">Scaling Factor (a, { -255 ≤ a ≤ 256
-                          })</label>
-                        <input class="wizard-field__input" type="number" id="emission-poly-a" placeholder="e.g., 1"
-                          min="-255" max="256">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-poly-m">Exponent Numerator (m, { -8 ≤ m ≤ 8
-                          })</label>
-                        <input class="wizard-field__input" type="number" id="emission-poly-m" placeholder="e.g., 2"
-                          min="-8" max="8">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-poly-n">Exponent Denominator (n, { 0 &lt; n ≤
-                          32 })</label>
-                        <input class="wizard-field__input" type="number" id="emission-poly-n" placeholder="e.g., 1"
-                          min="1" max="32">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-poly-d">Divisor (d, u64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-poly-d" placeholder="e.g., 1">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-poly-s">Start Period Offset (s, optional,
-                          u64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-poly-s" placeholder="None">
-                        <span class="field-hint">Optional starting period offset</span>
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-poly-o">Offset (o, i64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-poly-o" placeholder="e.g., 0">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-poly-b">Initial Token Emission (b, u64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-poly-b" placeholder="e.g., 100">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-poly-min-value">Minimum Emission Value
-                          (optional, u64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-poly-min-value" placeholder="None">
-                        <span class="field-hint">Optional minimum emission value</span>
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-poly-max-value">Maximum Emission Value
-                          (optional, u64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-poly-max-value" placeholder="None">
-                        <span class="field-hint">Optional maximum emission value</span>
-                      </div>
-                    </div>
-
-                    <!-- Logarithmic Option -->
-                    <label class="wizard-choice">
-                      <input class="wizard-choice__input" type="radio" name="emission-type" value="logarithmic"
-                        data-toggle-panel="emission-panel-logarithmic">
-                      <span class="wizard-choice__content">
-                        <span class="wizard-choice__title">Logarithmic</span>
-                        <span class="wizard-choice__hint">Diminishing emission rate over time</span>
-                      </span>
-                    </label>
-                    <div class="distribution-inline-panel" id="emission-panel-logarithmic" hidden>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-log-a">Scaling Factor (a, i64, { -32_766 ≤ a ≤
-                          32_767 })</label>
-                        <input class="wizard-field__input" type="number" id="emission-log-a" placeholder="e.g., 100"
-                          min="-32766" max="32767">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-log-d">Divisor (d, u64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-log-d" placeholder="e.g., 1">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-log-m">Exponent Numerator (m, u64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-log-m" placeholder="e.g., 1">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-log-n">Exponent Denominator (n, u64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-log-n" placeholder="e.g., 1">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-log-s">Start Period Offset (s, optional,
-                          u64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-log-s" placeholder="None">
-                        <span class="field-hint">Optional starting period offset</span>
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-log-o">Offset (o, i64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-log-o" placeholder="e.g., 0">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-log-b">Base Amount (b, u64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-log-b" placeholder="e.g., 100">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-log-min-value">Minimum Emission Value
-                          (optional, u64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-log-min-value" placeholder="None">
-                        <span class="field-hint">Optional minimum emission value</span>
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-log-max-value">Maximum Emission Value
-                          (optional, u64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-log-max-value" placeholder="None">
-                        <span class="field-hint">Optional maximum emission value</span>
-                      </div>
-                    </div>
-
-                    <!-- Inverted Logarithmic Option -->
-                    <label class="wizard-choice">
-                      <input class="wizard-choice__input" type="radio" name="emission-type" value="inverted-logarithmic"
-                        data-toggle-panel="emission-panel-inverted-logarithmic">
-                      <span class="wizard-choice__content">
-                        <span class="wizard-choice__title">Inverted Logarithmic</span>
-                        <span class="wizard-choice__hint">Increasing emission rate that levels off</span>
-                      </span>
-                    </label>
-                    <div class="distribution-inline-panel" id="emission-panel-inverted-logarithmic" hidden>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-invlog-a">Scaling Factor (a, i64, { -32_766 ≤ a
-                          ≤ 32_767 })</label>
-                        <input class="wizard-field__input" type="number" id="emission-invlog-a" placeholder="e.g., 100"
-                          min="-32766" max="32767">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-invlog-d">Divisor (d, u64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-invlog-d" placeholder="e.g., 1">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-invlog-m">Exponent Numerator (m, u64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-invlog-m" placeholder="e.g., 1">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-invlog-n">Exponent Denominator (n, u64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-invlog-n" placeholder="e.g., 1">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-invlog-s">Start Period Offset (s, optional,
-                          u64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-invlog-s" placeholder="None">
-                        <span class="field-hint">Optional starting period offset</span>
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-invlog-o">Offset (o, i64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-invlog-o" placeholder="e.g., 0">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-invlog-b">Base Amount (b, u64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-invlog-b" placeholder="e.g., 100">
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-invlog-min-value">Minimum Emission Value
-                          (optional, u64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-invlog-min-value"
-                          placeholder="None">
-                        <span class="field-hint">Optional minimum emission value</span>
-                      </div>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="emission-invlog-max-value">Maximum Emission Value
-                          (optional, u64)</label>
-                        <input class="wizard-field__input" type="text" id="emission-invlog-max-value"
-                          placeholder="None">
-                        <span class="field-hint">Optional maximum emission value</span>
-                      </div>
-                    </div>
-                  </fieldset>
-                </div>
-              </div>
-
-              <!-- Distribution Recipient Section -->
-              <div class="form-card">
-                <div class="form-card__header">
-                  <h3 class="form-card__title">Distribution Recipient</h3>
-                  <p class="form-card__description">Choose who receives the distributed tokens</p>
-                </div>
-                <div class="form-card__body">
-                  <fieldset class="wizard-fieldset">
-                    <legend class="wizard-field__label">Recipient type</legend>
-
-                    <!-- Contract Owner Option -->
-                    <label class="wizard-choice">
-                      <input class="wizard-choice__input" type="radio" name="recipient-type" value="contract-owner"
-                        checked>
-                      <span class="wizard-choice__content">
-                        <span class="wizard-choice__title">Contract Owner</span>
-                        <span class="wizard-choice__hint">Tokens go to the contract owner (you)</span>
-                      </span>
-                    </label>
-
-                    <!-- Specific Identity Option -->
-                    <label class="wizard-choice">
-                      <input class="wizard-choice__input" type="radio" name="recipient-type" value="identity"
-                        data-toggle-panel="recipient-panel-identity">
-                      <span class="wizard-choice__content">
-                        <span class="wizard-choice__title">Specific Identity</span>
-                        <span class="wizard-choice__hint">Tokens go to a specific Dash Platform identity</span>
-                      </span>
-                    </label>
-                    <div class="distribution-inline-panel" id="recipient-panel-identity" hidden>
-                      <div class="field-group">
-                        <label class="wizard-field__label" for="recipient-identity-id">Identity ID</label>
-                        <input class="wizard-field__input" type="text" id="recipient-identity-id"
-                          placeholder="Enter the Base58 ID">
-                        <span class="field-hint">The Dash Platform identity that will receive tokens</span>
-                      </div>
-                    </div>
-
-                    <!-- Evonodes by Participation Option (Epoch-only) -->
-                    <label class="wizard-choice" id="recipient-evonodes-choice" hidden>
-                      <input class="wizard-choice__input" type="radio" name="recipient-type"
-                        value="evonodes-by-participation">
-                      <span class="wizard-choice__content">
-                        <span class="wizard-choice__title">Evonodes by Participation</span>
-                        <span class="wizard-choice__hint">Distribute tokens to evonodes based on their participation
-                          in the network (Epoch-based distribution only)</span>
-                      </span>
-                    </label>
-                  </fieldset>
-                </div>
-
-                <p class="wizard-field__message" id="distribution-emission-message" role="status" aria-live="polite"></p>
-                <div class="wizard-actions wizard-actions--between wizard-actions--sticky">
-                  <button class="wizard-button wizard-button--secondary" type="button"
-                    data-step-back="distribution-emission">← Back</button>
-                  <button class="wizard-button wizard-button--secondary" type="button" id="contract-preview-btn">📄
-                    Contract Preview</button>
-                  <button class="wizard-button wizard-button--primary" id="distribution-emission-next" type="submit"
-                    disabled>Continue →</button>
-                </div>
-            </form>
-          </div>
-        </section>
-
         <!-- Advanced: History Sub-step -->
         <section class="wizard-screen" id="screen-advanced-history" data-step="advanced" data-substep="advanced-history"
           data-tab="token" hidden>
@@ -8782,56 +7964,97 @@
           </div>
         </div>
 
-        <!-- Quick Supply Configuration -->
-        <div class="template-supply-config" id="template-supply-config" hidden>
-          <h3 class="template-supply-config__title">Quick Configuration</h3>
-          <p class="template-supply-config__hint">Customize supply settings, or adjust later in the Permissions step.</p>
+        <!-- Enhanced Supply Configuration -->
+        <div class="supply-config-enhanced" id="template-supply-config" hidden>
+          <h3 class="supply-config__title">Token Supply</h3>
 
-          <div class="template-supply-config__grid">
-            <div class="wizard-field">
-              <label class="wizard-field__label" for="template-base-supply">
-                Base Supply
-                <span class="wizard-field__hint">Initial token amount</span>
-              </label>
+          <div class="supply-config__cards">
+            <div class="supply-card">
+              <label class="supply-card__label" for="template-base-supply">Base Supply</label>
               <input type="text"
+                     class="supply-card__input"
                      id="template-base-supply"
-                     class="wizard-field__input"
                      inputmode="numeric"
                      pattern="[0-9]*"
-                     placeholder="1000000">
+                     placeholder="1,000,000">
+              <span class="supply-card__hint">Initial tokens</span>
             </div>
 
-            <div class="wizard-field">
-              <label class="wizard-field__label" for="template-max-supply">
-                Max Supply
-                <span class="wizard-field__hint">Leave empty for unlimited</span>
-              </label>
+            <div class="supply-card">
+              <label class="supply-card__label" for="template-max-supply">Max Supply</label>
               <input type="text"
+                     class="supply-card__input"
                      id="template-max-supply"
-                     class="wizard-field__input"
                      inputmode="numeric"
                      pattern="[0-9]*"
                      placeholder="Unlimited">
+              <span class="supply-card__hint">Cap (optional)</span>
             </div>
 
-            <div class="wizard-field">
-              <label class="wizard-field__label" for="template-decimals">
-                Decimals
-              </label>
-              <select id="template-decimals" class="wizard-field__input">
-                <option value="0">0 (Whole tokens only)</option>
-                <option value="2">2 (Cents)</option>
-                <option value="8" selected>8 (Standard)</option>
-                <option value="18">18 (High precision)</option>
+            <div class="supply-card supply-card--select">
+              <label class="supply-card__label" for="template-decimals">Decimals</label>
+              <select class="supply-card__select" id="template-decimals">
+                <option value="0">0</option>
+                <option value="2">2</option>
+                <option value="8" selected>8</option>
+                <option value="18">18</option>
               </select>
+              <span class="supply-card__hint">Precision</span>
             </div>
           </div>
 
-          <!-- Live preview -->
-          <div class="template-supply-config__preview">
-            <span class="preview-label">Preview:</span>
-            <span class="preview-value" id="template-preview-value">1,000,000 tokens</span>
+          <!-- Supply ratio bar -->
+          <div class="supply-ratio">
+            <div class="supply-ratio__bar">
+              <div class="supply-ratio__fill" id="supply-ratio-fill"></div>
+            </div>
+            <span class="supply-ratio__label" id="supply-ratio-label">Base supply configured</span>
           </div>
+
+          <!-- Enhanced preview -->
+          <div class="supply-preview">
+            <span class="supply-preview__value" id="template-preview-value">1,000,000</span>
+            <span class="supply-preview__symbol">TOKENS</span>
+            <span class="supply-preview__details" id="supply-preview-details">
+              8 decimal places
+            </span>
+          </div>
+        </div>
+
+        <!-- Emission Timeline (for distribution templates) -->
+        <div class="emission-timeline" id="emission-timeline" hidden>
+          <h4 class="emission-timeline__title">Emission Schedule</h4>
+          <div class="emission-timeline__chart">
+            <div class="emission-timeline__row" data-period="day">
+              <span class="emission-timeline__label">Day 1</span>
+              <div class="emission-timeline__bar-container">
+                <div class="emission-timeline__fill" id="emission-fill-day"></div>
+              </div>
+              <span class="emission-timeline__value" id="emission-value-day">0</span>
+            </div>
+            <div class="emission-timeline__row" data-period="week">
+              <span class="emission-timeline__label">Week 1</span>
+              <div class="emission-timeline__bar-container">
+                <div class="emission-timeline__fill" id="emission-fill-week"></div>
+              </div>
+              <span class="emission-timeline__value" id="emission-value-week">0</span>
+            </div>
+            <div class="emission-timeline__row" data-period="month">
+              <span class="emission-timeline__label">Month 1</span>
+              <div class="emission-timeline__bar-container">
+                <div class="emission-timeline__fill" id="emission-fill-month"></div>
+              </div>
+              <span class="emission-timeline__value" id="emission-value-month">0</span>
+            </div>
+            <div class="emission-timeline__row" data-period="year">
+              <span class="emission-timeline__label">Year 1</span>
+              <div class="emission-timeline__bar-container">
+                <div class="emission-timeline__fill" id="emission-fill-year"></div>
+              </div>
+              <span class="emission-timeline__value" id="emission-value-year">0</span>
+            </div>
+          </div>
+          <p class="emission-timeline__note" id="emission-note">Based on fixed emission rate</p>
         </div>
 
         <p class="modal__warning">⚠️ Any unsaved changes will be lost.</p>
