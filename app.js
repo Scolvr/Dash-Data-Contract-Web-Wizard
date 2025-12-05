@@ -1546,6 +1546,15 @@
     });
   });
 
+  // Listen for system theme changes (only applies if user hasn't set a manual preference)
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+      if (!storage.getItem(THEME_STORAGE_KEY)) {
+        setTheme(e.matches ? 'dark' : 'light', false);
+      }
+    });
+  }
+
   syncRegistrationPreflightUI();
   syncWizardReadiness({ refreshStatus: true });
 
@@ -3881,6 +3890,13 @@
     }
   }
 
+  function getSystemTheme() {
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
+    return 'light';
+  }
+
   function getStoredTheme() {
     try {
       const stored = storage.getItem(THEME_STORAGE_KEY);
@@ -3890,14 +3906,18 @@
     } catch (error) {
       // ignore storage errors
     }
-    return 'dark';
+    return null; // No stored preference - will use system detection
   }
 
   function setTheme(preference, persist = true) {
-    const theme = preference === 'light' || preference === 'dark' ? preference : 'dark';
+    // If no preference provided, use system theme
+    const theme = preference === 'light' || preference === 'dark'
+      ? preference
+      : getSystemTheme();
     document.documentElement.setAttribute('data-theme', theme);
 
-    if (persist) {
+    // Only persist if an explicit preference was given
+    if (persist && preference) {
       try {
         storage.setItem(THEME_STORAGE_KEY, theme);
       } catch (error) {
