@@ -2663,6 +2663,11 @@
 
     syncRegistrationSelection();
     syncRegistrationPreflightUI();
+
+    // Update feature indicators in sidebar based on restored state
+    if (window.updateFeatureIndicators) {
+      window.updateFeatureIndicators();
+    }
   }
 
   function getWalletCredentials() {
@@ -8509,6 +8514,11 @@
         ui.sync({ announce });
       }
     });
+
+    // Update feature indicators when manual actions are synced
+    if (window.updateFeatureIndicators) {
+      window.updateFeatureIndicators();
+    }
   }
 
   function createDistributionUI(form) {
@@ -11383,6 +11393,24 @@
         if (isWizardInput) {
           // Immediate update for toggle changes
           debouncedLivePreviewUpdate();
+
+          // Update feature indicators if this is a feature-related toggle
+          const targetName = target.name || target.id || '';
+          const isFeatureToggle =
+            targetName.includes('manual-mint') ||
+            targetName.includes('manual-burn') ||
+            targetName.includes('manual-freeze') ||
+            targetName.includes('transfer-notes') ||
+            targetName.includes('perpetual') ||
+            targetName.includes('keeps-history') ||
+            targetName.includes('enable-perpetual');
+
+          if (isFeatureToggle && window.updateFeatureIndicators) {
+            // Debounce to avoid excessive updates
+            setTimeout(() => {
+              window.updateFeatureIndicators();
+            }, 100);
+          }
         }
       }
     });
@@ -14037,6 +14065,7 @@
         deviations: {}
       };
       clearTemplateHighlights();
+      clearFeatureIndicators();
       updateTemplateIndicator('scratch');
 
       // Switch to Token tab
@@ -14274,6 +14303,9 @@
     // Apply step highlighting based on template features
     applyTemplateStepHighlights(templateKey, template);
 
+    // Update feature indicators in sidebar
+    updateFeatureIndicators();
+
     // Show success message
     if (window.announce) {
       window.announce(`✓ Template "${template.name}" loaded successfully! Please enter a token name to continue.`);
@@ -14337,6 +14369,67 @@
       badge.remove();
     });
   }
+
+  /**
+   * Updates the feature indicators (inline badges) on navigation substeps
+   * Called after template application or when user changes feature settings
+   */
+  function updateFeatureIndicators() {
+    const state = window.wizardState;
+    if (!state?.form?.permissions) {
+      return;
+    }
+
+    const permissions = state.form.permissions || {};
+    const distribution = state.form.distribution || {};
+
+    // Map substep IDs to their enabled state
+    const featureMap = {
+      'permissions-manual-mint': Boolean(permissions.manualMint?.enabled),
+      'permissions-manual-burn': Boolean(permissions.manualBurn?.enabled),
+      'permissions-manual-freeze': Boolean(permissions.manualFreeze?.enabled),
+      'permissions-transfer': Boolean(permissions.transferNotesEnabled !== false),
+      'advanced-history': Boolean(
+        permissions.keepsHistory?.transfers ||
+        permissions.keepsHistory?.mints ||
+        permissions.keepsHistory?.burns ||
+        permissions.keepsHistory?.freezes
+      ),
+      'distribution': Boolean(distribution.enablePerpetual)
+    };
+
+    // Update each substep with ENABLED badge
+    Object.entries(featureMap).forEach(([substepId, isEnabled]) => {
+      const navItem = document.querySelector(`[data-substep="${substepId}"]`);
+      if (!navItem) {
+        return;
+      }
+
+      // Remove ALL existing badges first (both template-badge and feature-enabled-badge)
+      navItem.querySelectorAll('.template-badge, .feature-enabled-badge').forEach(b => b.remove());
+
+      if (isEnabled) {
+        // Add single badge
+        const badge = document.createElement('span');
+        badge.className = 'feature-enabled-badge';
+        badge.textContent = 'ENABLED';
+        navItem.appendChild(badge);
+      }
+    });
+  }
+
+  /**
+   * Clears all feature enabled badges (used when resetting wizard)
+   */
+  function clearFeatureIndicators() {
+    document.querySelectorAll('.feature-enabled-badge').forEach(badge => {
+      badge.remove();
+    });
+  }
+
+  // Expose functions globally for access from other parts of the app
+  window.updateFeatureIndicators = updateFeatureIndicators;
+  window.clearFeatureIndicators = clearFeatureIndicators;
 
   function updateTemplateIndicator(templateKey) {
     const welcomePill = document.getElementById('status-welcome');
