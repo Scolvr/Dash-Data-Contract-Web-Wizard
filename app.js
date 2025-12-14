@@ -51,6 +51,10 @@
   // Performance Enhancement: Auto-save timer for debounced state persistence
   let autoSaveTimer = null;
   const AUTO_SAVE_DELAY_MS = TIMINGS.AUTO_SAVE_INTERVAL;
+
+  // Debounced validation timers for smoother real-time feedback
+  let namingValidationTimer = null;
+  let distributionValidationTimer = null;
   // FIXED: Correct order matching sidebar navigation
   // Note: 'overview' removed from sequence - accessible only from Document tab
   const STEP_SEQUENCE = ['welcome', 'naming', 'permissions', 'advanced', 'distribution', 'search', 'registration'];
@@ -118,7 +122,7 @@
   const SUBSTEP_SEQUENCES = Object.freeze({
     welcome: ['welcome'],
     naming: ['naming', 'naming-localization', 'naming-update'],
-    permissions: ['permissions', 'permissions-transfer', 'permissions-manual-mint', 'permissions-manual-burn', 'permissions-manual-freeze', 'permissions-emergency', 'permissions-marketplace-trade-mode-change', 'permissions-direct-pricing-change', 'permissions-main-control-change'],
+    permissions: ['permissions', 'permissions-group', 'permissions-transfer', 'permissions-manual-mint', 'permissions-manual-burn', 'permissions-manual-freeze', 'permissions-emergency', 'permissions-marketplace-trade-mode-change', 'permissions-direct-pricing-change', 'permissions-main-control-change'],
     advanced: ['advanced-history', 'advanced', 'advanced-launch'],
     distribution: ['distribution-preprogrammed', 'distribution-perpetual'],
     search: ['search'],
@@ -372,6 +376,118 @@
     setTimeout(() => {
       firstError.classList.remove('wizard-field__input--error-pulse');
     }, 1500);
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // Focus Trap Utility for Modals
+  // ═══════════════════════════════════════════════════════
+
+  /**
+   * Creates a focus trap within a container element
+   * @param {HTMLElement} container - The container to trap focus within
+   * @returns {Object} - Object with activate() and deactivate() methods
+   */
+  function createFocusTrap(container) {
+    const focusableSelectors = [
+      'a[href]',
+      'button:not([disabled])',
+      'input:not([disabled])',
+      'select:not([disabled])',
+      'textarea:not([disabled])',
+      '[tabindex]:not([tabindex="-1"])'
+    ].join(', ');
+
+    let previouslyFocused = null;
+
+    function getFocusableElements() {
+      return Array.from(container.querySelectorAll(focusableSelectors))
+        .filter(el => el.offsetParent !== null); // Only visible elements
+    }
+
+    function handleKeyDown(e) {
+      if (e.key !== 'Tab') return;
+
+      const focusable = getFocusableElements();
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (e.shiftKey) {
+        // Shift + Tab: wrap to last
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        // Tab: wrap to first
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+
+    return {
+      activate() {
+        previouslyFocused = document.activeElement;
+        container.addEventListener('keydown', handleKeyDown);
+
+        // Focus first focusable element
+        const focusable = getFocusableElements();
+        if (focusable.length > 0) {
+          requestAnimationFrame(() => focusable[0].focus());
+        }
+      },
+      deactivate() {
+        container.removeEventListener('keydown', handleKeyDown);
+
+        // Return focus to previously focused element
+        if (previouslyFocused && previouslyFocused.focus) {
+          previouslyFocused.focus();
+        }
+      }
+    };
+  }
+
+  // Store active focus traps
+  const activeFocusTraps = new Map();
+
+  /**
+   * Opens a modal with focus trap
+   * @param {string} modalId - The modal element ID
+   */
+  function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+
+    modal.hidden = false;
+
+    // Create and activate focus trap
+    const trap = createFocusTrap(modal.querySelector('.modal__content') || modal);
+    activeFocusTraps.set(modalId, trap);
+    trap.activate();
+
+    // Announce to screen readers
+    announce(`Dialog opened: ${modal.querySelector('.modal__title')?.textContent || 'Modal dialog'}`);
+  }
+
+  /**
+   * Closes a modal and releases focus trap
+   * @param {string} modalId - The modal element ID
+   */
+  function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+
+    // Deactivate focus trap
+    const trap = activeFocusTraps.get(modalId);
+    if (trap) {
+      trap.deactivate();
+      activeFocusTraps.delete(modalId);
+    }
+
+    modal.hidden = true;
   }
 
   /**
@@ -1757,20 +1873,29 @@
     identityRegisterButton.addEventListener('click', handleIdentityRegistration);
   }
 
+  // Helper to immediately validate naming on blur (clears debounce timer)
+  function handleNamingBlur() {
+    if (namingValidationTimer) {
+      clearTimeout(namingValidationTimer);
+      namingValidationTimer = null;
+    }
+    evaluateNaming({ touched: true });
+  }
+
   if (tokenNameInput) {
     tokenNameInput.addEventListener('input', handleNamingInput);
-    tokenNameInput.addEventListener('blur', () => evaluateNaming({ touched: true }));
+    tokenNameInput.addEventListener('blur', handleNamingBlur);
   }
 
   if (ownerIdentityInput) {
     ownerIdentityInput.addEventListener('input', handleNamingInput);
-    ownerIdentityInput.addEventListener('blur', () => evaluateNaming({ touched: true }));
+    ownerIdentityInput.addEventListener('blur', handleNamingBlur);
   }
 
   // Plural field and capitalize checkbox
   if (tokenPluralInput) {
     tokenPluralInput.addEventListener('input', handleNamingInput);
-    tokenPluralInput.addEventListener('blur', () => evaluateNaming({ touched: true }));
+    tokenPluralInput.addEventListener('blur', handleNamingBlur);
   }
   if (tokenCapitalizeInput) {
     tokenCapitalizeInput.addEventListener('change', handleNamingInput);
@@ -3132,21 +3257,28 @@
   }
 
   function handleNamingInput() {
-    // Save all naming fields to state (using token name as singular form)
+    // Save all naming fields to state immediately (using token name as singular form)
     wizardState.form.naming.singular = tokenNameInput.value;
     wizardState.form.naming.plural = tokenPluralInput.value;
     wizardState.form.naming.capitalize = tokenCapitalizeInput.checked;
 
-    const touched = tokenNameInput.value.length > 0 || wizardState.steps.naming.touched;
-    const validation = evaluateNaming({ touched });
-    if (validation.valid) {
-      const method = wizardState.form.registration.method;
-      if (method === 'mobile' && wizardState.form.registration.preflight.mobile.qrGenerated) {
-        renderQRPreview();
-      } else if (method === 'det' && wizardState.form.registration.preflight.det.jsonDisplayed) {
-        renderJsonPreview();
-      }
+    // Debounce validation to prevent flickering during rapid typing
+    if (namingValidationTimer) {
+      clearTimeout(namingValidationTimer);
     }
+
+    namingValidationTimer = setTimeout(() => {
+      const touched = tokenNameInput.value.length > 0 || wizardState.steps.naming.touched;
+      const validation = evaluateNaming({ touched });
+      if (validation.valid) {
+        const method = wizardState.form.registration.method;
+        if (method === 'mobile' && wizardState.form.registration.preflight.mobile.qrGenerated) {
+          renderQRPreview();
+        } else if (method === 'det' && wizardState.form.registration.preflight.det.jsonDisplayed) {
+          renderJsonPreview();
+        }
+      }
+    }, 300);
   }
 
   function evaluateNaming({ touched = false, silent = false } = {}) {
@@ -3215,10 +3347,13 @@
     let pluralError = '';
 
     if (plural.length === 0) {
-      pluralError = 'Enter a plural name.';
+      pluralError = 'Enter a plural name (e.g., "Tokens").';
       pluralValid = false;
-    } else if (plural.length < 3 || plural.length > 25) {
-      pluralError = 'Must be 3-25 characters.';
+    } else if (plural.length < 3) {
+      pluralError = `Plural name too short (${plural.length}/3 minimum).`;
+      pluralValid = false;
+    } else if (plural.length > 25) {
+      pluralError = `Plural name too long (${plural.length}/25 maximum).`;
       pluralValid = false;
     } else if (plural !== tokenPluralInput.value) {
       pluralError = 'Remove leading or trailing spaces.';
@@ -4326,8 +4461,14 @@
     if (trimmed !== rawValue) {
       return { valid: false, message: 'Remove leading or trailing spaces.', normalized: trimmed };
     }
-    if (trimmed.length === 0 || trimmed.length < 2 || trimmed.length > 64) {
+    if (trimmed.length === 0) {
       return { valid: false, message: 'Please enter a token name (2–64 characters).', normalized: trimmed };
+    }
+    if (trimmed.length < 2) {
+      return { valid: false, message: `Token name too short (${trimmed.length}/2 minimum).`, normalized: trimmed };
+    }
+    if (trimmed.length > 64) {
+      return { valid: false, message: `Token name too long (${trimmed.length}/64 maximum).`, normalized: trimmed };
     }
     if (!tokenNamePattern.test(trimmed)) {
       return { valid: false, message: 'Use letters, numbers, spaces, hyphen, underscore, or emoji only.', normalized: trimmed };
@@ -4344,12 +4485,21 @@
       return { valid: false, message: 'Owner identity ID is required.' };
     }
     if (trimmed.length < 43 || trimmed.length > 44) {
-      return { valid: false, message: 'Identity ID must be 43-44 characters.' };
+      const currentLen = trimmed.length;
+      const diff = currentLen < 43 ? 43 - currentLen : currentLen - 44;
+      const direction = currentLen < 43 ? 'short' : 'long';
+      return {
+        valid: false,
+        message: `Identity ID must be 43-44 characters (currently ${currentLen}, ${diff} too ${direction}).`
+      };
     }
     // Base58 alphabet: 123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz
     const base58Pattern = /^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$/;
     if (!base58Pattern.test(trimmed)) {
-      return { valid: false, message: 'Invalid Base58 format. Use only Base58 characters.' };
+      // Find the invalid characters
+      const invalidChars = trimmed.match(/[^123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]/g);
+      const uniqueInvalid = [...new Set(invalidChars)].slice(0, 3).join(', ');
+      return { valid: false, message: `Invalid characters: ${uniqueInvalid}. Base58 excludes 0, O, I, l.` };
     }
     return { valid: true, message: '' };
   }
@@ -4590,12 +4740,9 @@
         openStates.set(existingCard.dataset.groupId, existingCard.hasAttribute('open'));
       });
     }
-    // Performance Enhancement: Complete DOM cleanup
-    // Removing all child elements also removes their event listeners,
-    // preventing memory leaks when the list is re-rendered
-    while (groupListElement.firstChild) {
-      groupListElement.removeChild(groupListElement.firstChild);
-    }
+    // Performance Enhancement: Use replaceChildren for efficient DOM cleanup
+    // This is faster than while/removeChild and also clears event listeners
+    groupListElement.replaceChildren();
 
     if (!groups.length) {
       if (groupMainPositionInput) {
@@ -4626,13 +4773,16 @@
       emptyHint.hidden = true;
     }
 
+    // Performance Enhancement: Use DocumentFragment for batch DOM insertion
+    const fragment = document.createDocumentFragment();
     groups.forEach((group, index) => {
       const card = buildPermissionGroupCard(group, index, index === wizardState.form.permissions.mainControlGroupIndex);
       if (openStates.has(group.id)) {
         card.open = openStates.get(group.id);
       }
-      groupListElement.appendChild(card);
+      fragment.appendChild(card);
     });
+    groupListElement.appendChild(fragment);
 
     syncManualActionUIs({ announce: false });
   }
@@ -4772,7 +4922,11 @@
     cardActions.appendChild(removeGroupButton);
     body.appendChild(cardActions);
 
-    card.appendChild(body);
+    // Wrap body for smooth expand/collapse animation
+    const bodyWrapper = document.createElement('div');
+    bodyWrapper.className = 'wizard-group-card__body-wrapper';
+    bodyWrapper.appendChild(body);
+    card.appendChild(bodyWrapper);
     return card;
   }
 
@@ -5557,8 +5711,13 @@
           if (showRowErrors) {
             reasons.push(`Localization ${index + 1}: Enter a singular form.`);
           }
-        } else if (trimmedSingular.length < 3 || trimmedSingular.length > 25) {
-          errors.singular = 'Must be 3-25 characters.';
+        } else if (trimmedSingular.length < 3) {
+          errors.singular = `Too short (${trimmedSingular.length}/3 min).`;
+          if (showRowErrors) {
+            reasons.push(`Localization ${index + 1}: Singular form must be 3-25 characters.`);
+          }
+        } else if (trimmedSingular.length > 25) {
+          errors.singular = `Too long (${trimmedSingular.length}/25 max).`;
           if (showRowErrors) {
             reasons.push(`Localization ${index + 1}: Singular form must be 3-25 characters.`);
           }
@@ -5569,8 +5728,13 @@
           if (showRowErrors) {
             reasons.push(`Localization ${index + 1}: Enter a plural form.`);
           }
-        } else if (trimmedPlural.length < 3 || trimmedPlural.length > 25) {
-          errors.plural = 'Must be 3-25 characters.';
+        } else if (trimmedPlural.length < 3) {
+          errors.plural = `Too short (${trimmedPlural.length}/3 min).`;
+          if (showRowErrors) {
+            reasons.push(`Localization ${index + 1}: Plural form must be 3-25 characters.`);
+          }
+        } else if (trimmedPlural.length > 25) {
+          errors.plural = `Too long (${trimmedPlural.length}/25 max).`;
           if (showRowErrors) {
             reasons.push(`Localization ${index + 1}: Plural form must be 3-25 characters.`);
           }
@@ -8804,10 +8968,33 @@
       stepMinValueInput
     ];
 
+    // Debounced validation for smoother real-time feedback
+    function debouncedEvaluateDistribution() {
+      if (distributionValidationTimer) {
+        clearTimeout(distributionValidationTimer);
+      }
+      distributionValidationTimer = setTimeout(() => {
+        evaluateDistribution({ touched: true });
+      }, 300);
+    }
+
     watchedInputs.forEach((input) => {
       if (!input) return;
       const eventName = input.tagName === 'SELECT' ? 'change' : 'input';
-      input.addEventListener(eventName, () => evaluateDistribution({ touched: true }));
+      // Use debounced validation for text inputs, immediate for selects
+      if (eventName === 'input') {
+        input.addEventListener('input', debouncedEvaluateDistribution);
+        // Immediate validation on blur
+        input.addEventListener('blur', () => {
+          if (distributionValidationTimer) {
+            clearTimeout(distributionValidationTimer);
+            distributionValidationTimer = null;
+          }
+          evaluateDistribution({ touched: true });
+        });
+      } else {
+        input.addEventListener('change', () => evaluateDistribution({ touched: true }));
+      }
     });
 
     syncCadence();
@@ -11448,6 +11635,22 @@
   // Initialize mobile menu
   initMobileMenu();
   console.log('✓ Mobile menu initialized');
+
+  // ═══════════════════════════════════════════════════════
+  // Tab Navigation Event Handler
+  // ═══════════════════════════════════════════════════════
+  // Listen for tab switch events from the inline tab navigation script
+  document.addEventListener('navigate-to-step', (event) => {
+    const { step, substep } = event.detail;
+    if (substep) {
+      // Use force to navigate directly to the substep
+      showScreen(substep, { force: true, isManualNavigation: true });
+    } else if (step) {
+      showScreen(step, { force: true, isManualNavigation: true });
+    }
+  });
+  console.log('✓ Tab navigation handler initialized');
+
   console.log('✓ Performance enhancements: Auto-save, DOM caching, event cleanup');
 })();
 
@@ -15047,13 +15250,40 @@
     return;
   }
 
+  let previouslyFocused = null;
+
+  // Focus trap handler
+  function trapFocus(e) {
+    if (e.key !== 'Tab') return;
+
+    const modalContent = startOverModal.querySelector('.modal__content');
+    const focusable = modalContent.querySelectorAll('button:not([disabled]), [tabindex]:not([tabindex="-1"])');
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
   function showStartOverModal() {
+    previouslyFocused = document.activeElement;
     startOverModal.removeAttribute('hidden');
-    startOverConfirmBtn?.focus();
+    startOverModal.addEventListener('keydown', trapFocus);
+    startOverCancelBtn?.focus(); // Focus cancel button (safer default)
   }
 
   function hideStartOverModal() {
     startOverModal.setAttribute('hidden', '');
+    startOverModal.removeEventListener('keydown', trapFocus);
+    // Return focus to previously focused element
+    if (previouslyFocused && previouslyFocused.focus) {
+      previouslyFocused.focus();
+    }
   }
 
   function confirmStartOver() {

@@ -711,6 +711,41 @@ img {
 
 .wizard-path__item.is-open .wizard-subpath {
   display: flex;
+  animation: subpathSlideIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes subpathSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Stagger animation for individual substep items */
+.wizard-path__item.is-open .wizard-subpath__item {
+  animation: substepFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  opacity: 0;
+}
+
+.wizard-path__item.is-open .wizard-subpath__item:nth-child(1) { animation-delay: 0.05s; }
+.wizard-path__item.is-open .wizard-subpath__item:nth-child(2) { animation-delay: 0.1s; }
+.wizard-path__item.is-open .wizard-subpath__item:nth-child(3) { animation-delay: 0.15s; }
+.wizard-path__item.is-open .wizard-subpath__item:nth-child(4) { animation-delay: 0.2s; }
+.wizard-path__item.is-open .wizard-subpath__item:nth-child(5) { animation-delay: 0.25s; }
+
+@keyframes substepFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .wizard-subpath__item {
@@ -736,6 +771,19 @@ img {
   border-radius: 999px;
   background: color-mix(in srgb, var(--color-border) 40%, #7aa7ff 60%);
   flex-shrink: 0;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+/* Completed substep indicator - checkmark style */
+.wizard-subpath__item.is-complete::before {
+  background: var(--color-success);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+/* Future/locked substep indicator */
+.wizard-subpath__item.is-future::before {
+  background: var(--color-smoke);
+  opacity: 0.5;
 }
 
 .wizard-subpath__item:hover,
@@ -2050,8 +2098,23 @@ body.guide-panel-collapsed .wizard-tabs {
   font-size: 15px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.2s ease,
+              box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.15s ease;
   white-space: nowrap;
+  position: relative;
+}
+
+/* Focus state for keyboard navigation */
+.wizard-tab:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 var(--focus-ring-width, 3px) var(--focus-ring-color, var(--color-primary));
+}
+
+/* Active press state */
+.wizard-tab:active {
+  transform: scale(0.98);
 }
 
 .wizard-tab:hover {
@@ -2486,7 +2549,58 @@ body.guide-panel-collapsed .wizard-tabs {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
-  /* T1 animation removed - caused guide panel positioning issues */
+  animation: screenFadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Directional screen transitions */
+.wizard-screen--enter-forward.wizard-screen--active {
+  animation: screenSlideInFromRight 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.wizard-screen--enter-backward.wizard-screen--active {
+  animation: screenSlideInFromLeft 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes screenFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes screenSlideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes screenSlideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .wizard-screen--active,
+  .wizard-screen--enter-forward.wizard-screen--active,
+  .wizard-screen--enter-backward.wizard-screen--active {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* Remove conflicting rules - no longer needed */
@@ -3816,6 +3930,34 @@ html[data-theme='light'] .form-card--optional {
   background: var(--color-surface);
   box-shadow: var(--shadow-xs);
   overflow: hidden;
+  transition: box-shadow 0.2s ease;
+}
+
+/* Focus state for keyboard navigation */
+.wizard-group-card:focus-within {
+  box-shadow: var(--shadow-xs), 0 0 0 2px var(--color-primary);
+}
+
+/* Smooth expand/collapse animation for details */
+.wizard-group-card__body-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.wizard-group-card[open] .wizard-group-card__body-wrapper {
+  grid-template-rows: 1fr;
+}
+
+.wizard-group-card__body-wrapper > * {
+  overflow: hidden;
+}
+
+/* Reduced motion support for group cards */
+@media (prefers-reduced-motion: reduce) {
+  .wizard-group-card__body-wrapper {
+    transition: none;
+  }
 }
 
 .wizard-group-card + .wizard-group-card {
@@ -4683,6 +4825,33 @@ html[data-theme='dark'] select.wizard-field__input option {
   font-size: var(--font-size-xs);
   min-height: 1.25em;
   color: var(--color-primary-dark);
+}
+
+/* Error state with icon - ensures errors are not color-only */
+.wizard-field__message:not(:empty) {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.375em;
+}
+
+/* Add error icon before error messages using CSS */
+.wizard-field__input--error + .wizard-field__message:not(:empty)::before,
+.wizard-field__input[aria-invalid="true"] + .wizard-field__message:not(:empty)::before {
+  content: '';
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+  margin-top: 0.1em;
+  background-color: var(--color-error, #EF4444);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'/%3E%3C/svg%3E") center/contain no-repeat;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+
+/* Error message styling */
+.wizard-field__input--error + .wizard-field__message,
+.wizard-field__input[aria-invalid="true"] + .wizard-field__message {
+  color: var(--color-error, #EF4444);
 }
 
 .wizard-status-banner {
@@ -9911,6 +10080,36 @@ label.with-help {
 .toast.toast--hide {
   transform: translateX(calc(100% + var(--space-6)));
   opacity: 0;
+}
+
+/* Toast stacking effect - newer toasts push older ones down smoothly */
+.toast-container .toast:not(:first-child) {
+  margin-top: calc(var(--space-3) * -0.5); /* Slight overlap for visual grouping */
+}
+
+/* Show dismiss all button when multiple toasts */
+.toast-container__dismiss-all {
+  display: none;
+  align-self: flex-end;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  color: var(--color-muted);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  pointer-events: all;
+  transition: all 0.2s ease;
+  margin-bottom: var(--space-2);
+}
+
+.toast-container__dismiss-all:hover {
+  background: var(--color-smoke);
+  color: var(--color-ink);
+}
+
+.toast-container:has(.toast:nth-child(2)) .toast-container__dismiss-all {
+  display: block;
 }
 
 @media (max-width: 600px) {
