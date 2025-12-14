@@ -14770,12 +14770,53 @@
       if (template.distribution.emission?.type) features.push(`${template.distribution.emission.type} emission`);
     }
 
+    // Get icon SVG based on template - illustrative icons with unique designs
+    const templateIcons = {
+      'scratch': `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/>
+        <path d="M20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+        <circle cx="18" cy="4" r="1.2" opacity="0.6"/>
+        <circle cx="21" cy="2" r="0.8" opacity="0.4"/>
+        <circle cx="15" cy="2" r="1" opacity="0.5"/>
+      </svg>`,
+      'simple-fixed': `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="12" cy="18" rx="7" ry="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <ellipse cx="12" cy="14" rx="7" ry="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <ellipse cx="12" cy="10" rx="7" ry="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M5 10v8M19 10v8" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M12 4l-2 2h4l-2-2z"/>
+        <rect x="10" y="5" width="4" height="3" rx="0.5"/>
+      </svg>`,
+      'utility': `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="9" cy="13" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <circle cx="9" cy="13" r="1.5"/>
+        <path d="M9 7v2M9 17v2M3 13h2M13 13h2"/>
+        <path d="M5.5 9.5l1.4 1.4M11 15l1.4 1.4M5.5 16.5l1.4-1.4M11 11l1.4-1.4"/>
+        <circle cx="17" cy="9" r="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <circle cx="17" cy="9" r="1"/>
+        <path d="M17 5v1.5M17 11.5v1.5M13.5 9h1.5M19.5 9h1.5"/>
+      </svg>`,
+      'reward': `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 9V6a2 2 0 012-2h8a2 2 0 012 2v3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M18 9a3 3 0 003-3h-3M6 9a3 3 0 01-3-3h3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M6 9h12v4a6 6 0 01-12 0V9z" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M9 20h6M12 17v3" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M12 8l1 2h2l-1.5 1.5.5 2-2-1-2 1 .5-2L9 10h2l1-2z"/>
+      </svg>`
+    };
+    const iconSvg = templateIcons[pendingTemplateKey] || templateIcons['scratch'];
+
     confirmModalPreview.innerHTML = `
-      <h3>${template.name}</h3>
-      <p>${template.description || ''}</p>
+      <div class="template-preview__header">
+        <div class="template-preview__icon">${iconSvg}</div>
+        <div class="template-preview__info">
+          <h3 class="template-preview__title">${template.name}</h3>
+          <p class="template-preview__description">${template.description || ''}</p>
+        </div>
+      </div>
       ${features.length > 0 ? `
         <div class="template-preview__features">
-          ${features.map(f => `<span class="template-preview__feature">✓ ${f}</span>`).join('')}
+          ${features.map(f => `<span class="template-preview__feature">${f}</span>`).join('')}
         </div>
       ` : ''}
     `;
@@ -14815,9 +14856,9 @@
       'scratch': '#6366F1',
       'simple-fixed': '#10B981',
       'utility': '#F59E0B',
-      'reward': '#EC4899'
+      'reward': '#F43F5E'
     };
-    confirmModal.style.setProperty('--modal-accent', accentColors[templateKey] || '#0E76FD');
+    confirmModal.style.setProperty('--modal-accent', accentColors[pendingTemplateKey] || '#0E76FD');
 
     // Update feature showcase grid
     updateFeatureShowcase(template);
@@ -15991,174 +16032,61 @@
 })();
 
 // ============================================
-// Interactive Background Orbs System
+// Interactive Background Glow System (Optimized)
+// CSS-only gradients with subtle parallax
 // ============================================
 (function() {
   'use strict';
 
+  const bg = document.querySelector('.background-orbs');
+  if (!bg) return;
+
   // Check for reduced motion preference
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  if (prefersReducedMotion) {
-    console.log('✓ Background orbs: animations disabled (prefers-reduced-motion)');
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    console.log('✓ Background glow: parallax disabled (prefers-reduced-motion)');
     return;
   }
 
-  // Configuration
-  const config = {
-    parallaxMultipliers: [0.03, 0.05, 0.04, 0.06, 0.035], // Different speeds for each orb
-    smoothing: 0.08, // Smoothing factor for lerp (lower = smoother)
-    maxOffset: 100, // Maximum pixel offset from mouse
-    inactivityTimeout: 3000 // Pause animation after 3s of no mouse movement
-  };
-
-  // State
-  let mouseX = window.innerWidth / 2;
-  let mouseY = window.innerHeight / 2;
-  let targetX = mouseX;
-  let targetY = mouseY;
-  let animationFrame = null;
-  let isInitialized = false;
-  let inactivityTimer = null;
-  let isAnimating = false;
-
-  // Get orb elements
-  const orbs = document.querySelectorAll('.orb');
-
-  if (orbs.length === 0) {
-    console.warn('Background orbs: no orb elements found');
-    return;
-  }
+  // State - track mouse position as percentage (0-100)
+  let mouseX = 50, mouseY = 50;
+  let targetX = 50, targetY = 50;
+  let rafId = null;
 
   // Linear interpolation for smooth movement
-  function lerp(start, end, factor) {
-    return start + (end - start) * factor;
+  function lerp(a, b, t) {
+    return a + (b - a) * t;
   }
 
-  // Update orb positions based on mouse
-  function updateOrbs() {
-    // Smooth mouse position
-    mouseX = lerp(mouseX, targetX, config.smoothing);
-    mouseY = lerp(mouseY, targetY, config.smoothing);
+  // Update gradient positions
+  function update() {
+    mouseX = lerp(mouseX, targetX, 0.05);
+    mouseY = lerp(mouseY, targetY, 0.05);
 
-    // Calculate center offset
-    const centerX = window.innerWidth / 2;
-    const centerY = window.innerHeight / 2;
-    const offsetX = (mouseX - centerX) / centerX;
-    const offsetY = (mouseY - centerY) / centerY;
+    bg.style.setProperty('--mouse-x', mouseX);
+    bg.style.setProperty('--mouse-y', mouseY);
 
-    // Apply parallax to each orb via CSS custom properties
-    // The CSS animation uses these values to combine floating + parallax
-    orbs.forEach((orb, index) => {
-      const multiplier = config.parallaxMultipliers[index] || 0.04;
-      const translateX = offsetX * config.maxOffset * multiplier * 10;
-      const translateY = offsetY * config.maxOffset * multiplier * 10;
-
-      // Set CSS custom properties - animation keyframes will use these
-      orb.style.setProperty('--parallax-x', `${translateX}px`);
-      orb.style.setProperty('--parallax-y', `${translateY}px`);
-    });
-
-    // Check if we've converged (mouse position close to target)
-    const dx = Math.abs(mouseX - targetX);
-    const dy = Math.abs(mouseY - targetY);
-
-    if (isAnimating && dx < 0.1 && dy < 0.1) {
-      // Position has converged, stop animation loop
-      isAnimating = false;
-      animationFrame = null;
-      return;
-    }
-
-    animationFrame = requestAnimationFrame(updateOrbs);
-  }
-
-  // Start or resume animation
-  function startAnimation() {
-    if (!isAnimating) {
-      isAnimating = true;
-      updateOrbs();
+    // Continue animation if not yet converged
+    if (Math.abs(mouseX - targetX) > 0.1 || Math.abs(mouseY - targetY) > 0.1) {
+      rafId = requestAnimationFrame(update);
+    } else {
+      rafId = null;
     }
   }
 
-  // Stop animation
-  function stopAnimation() {
-    isAnimating = false;
-    if (animationFrame) {
-      cancelAnimationFrame(animationFrame);
-      animationFrame = null;
+  // Mouse move handler with passive listener
+  document.addEventListener('mousemove', (e) => {
+    targetX = (e.clientX / window.innerWidth) * 100;
+    targetY = (e.clientY / window.innerHeight) * 100;
+    if (!rafId) rafId = requestAnimationFrame(update);
+  }, { passive: true });
+
+  // Pause when tab not visible
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && rafId) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
     }
-  }
+  });
 
-  // Throttled mouse move handler
-  let lastMouseMove = 0;
-  function handleMouseMove(e) {
-    const now = Date.now();
-    if (now - lastMouseMove < 16) return; // ~60fps throttle
-    lastMouseMove = now;
-
-    targetX = e.clientX;
-    targetY = e.clientY;
-
-    // Clear inactivity timer on mouse move
-    if (inactivityTimer) {
-      clearTimeout(inactivityTimer);
-    }
-
-    // Start animation loop
-    if (!isInitialized) {
-      isInitialized = true;
-      console.log('✓ Background orbs: interactive mode activated');
-    }
-
-    startAnimation();
-
-    // Set inactivity timer to pause animation after timeout
-    inactivityTimer = setTimeout(() => {
-      stopAnimation();
-    }, config.inactivityTimeout);
-  }
-
-  // Handle window resize
-  function handleResize() {
-    // Reset to center on resize
-    targetX = window.innerWidth / 2;
-    targetY = window.innerHeight / 2;
-  }
-
-  // Handle visibility change (pause when tab not visible)
-  function handleVisibilityChange() {
-    if (document.hidden) {
-      stopAnimation();
-      if (inactivityTimer) {
-        clearTimeout(inactivityTimer);
-        inactivityTimer = null;
-      }
-    } else if (isInitialized) {
-      startAnimation();
-    }
-  }
-
-  // Initialize event listeners
-  document.addEventListener('mousemove', handleMouseMove, { passive: true });
-  window.addEventListener('resize', handleResize, { passive: true });
-  document.addEventListener('visibilitychange', handleVisibilityChange);
-
-  // Cleanup function (exposed globally for manual cleanup if needed)
-  window.cleanupBackgroundOrbs = function() {
-    document.removeEventListener('mousemove', handleMouseMove);
-    window.removeEventListener('resize', handleResize);
-    document.removeEventListener('visibilitychange', handleVisibilityChange);
-    stopAnimation();
-    if (inactivityTimer) {
-      clearTimeout(inactivityTimer);
-      inactivityTimer = null;
-    }
-    console.log('✓ Background orbs: cleaned up');
-  };
-
-  // Clean up on page unload to prevent memory leaks
-  window.addEventListener('beforeunload', window.cleanupBackgroundOrbs);
-
-  console.log('✓ Background orbs system initialized (with performance optimizations)');
+  console.log('✓ Background glow system initialized (optimized CSS gradients)');
 })();
