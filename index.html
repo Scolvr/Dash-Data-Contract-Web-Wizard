@@ -577,10 +577,10 @@
                 <div class="template-grid">
                   <!-- Featured: Start from Scratch -->
                   <div class="template-grid__featured">
-                    <button class="template-card template-card--featured" type="button" data-template="scratch" aria-label="Start from Scratch - Build your token step-by-step with full control over every setting">
+                    <button class="template-card template-card--featured" type="button" data-template="scratch">
                       <span class="difficulty-badge difficulty-badge--intermediate">Intermediate</span>
                       <div class="template-card__icon">
-                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                           <!-- Pencil with creative sparkles -->
                           <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/>
                           <path d="M20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
@@ -617,10 +617,10 @@
                   <!-- Compact Templates Grid -->
                   <div class="template-grid__compact">
                     <!-- Simple Fixed Supply -->
-                    <button class="template-card template-card--compact" type="button" data-template="simple-fixed" aria-label="Simple Fixed Supply - Basic token with fixed supply, burn capability, and transfer notes">
+                    <button class="template-card template-card--compact" type="button" data-template="simple-fixed">
                     <span class="difficulty-badge difficulty-badge--beginner">Beginner</span>
                     <div class="template-card__icon">
-                      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <!-- Coin stack - stable/fixed supply -->
                         <ellipse cx="12" cy="18" rx="7" ry="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
                         <ellipse cx="12" cy="14" rx="7" ry="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
@@ -660,10 +660,10 @@
                   </button>
 
                     <!-- Utility Token -->
-                    <button class="template-card template-card--compact" type="button" data-template="utility" aria-label="Utility Token - Enterprise-ready token with freeze controls, compliance features, and encrypted transfer notes">
+                    <button class="template-card template-card--compact" type="button" data-template="utility">
                     <span class="difficulty-badge difficulty-badge--intermediate">Intermediate</span>
                     <div class="template-card__icon">
-                      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <!-- Interlocking gears - utility/functional -->
                         <circle cx="9" cy="13" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
                         <circle cx="9" cy="13" r="1.5"/>
@@ -704,10 +704,10 @@
                   </button>
 
                     <!-- Reward Token -->
-                    <button class="template-card template-card--compact" type="button" data-template="reward" aria-label="Reward Token - Incentive token with scheduled distribution, vesting, and automated emissions for rewards and staking">
+                    <button class="template-card template-card--compact" type="button" data-template="reward">
                     <span class="difficulty-badge difficulty-badge--advanced">Advanced</span>
                     <div class="template-card__icon">
-                      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <!-- Trophy with star - reward/achievement -->
                         <path d="M6 9V6a2 2 0 012-2h8a2 2 0 012 2v3" fill="none" stroke="currentColor" stroke-width="1.5"/>
                         <path d="M18 9a3 3 0 003-3h-3M6 9a3 3 0 01-3-3h3" fill="none" stroke="currentColor" stroke-width="1.5"/>
@@ -752,11 +752,11 @@
         </section>
 
         <!-- Start Over Confirmation Modal -->
-        <div class="modal" id="start-over-modal" role="dialog" aria-modal="true" aria-labelledby="start-over-modal-title" hidden>
+        <div class="modal" id="start-over-modal" hidden>
           <div class="modal__overlay"></div>
           <div class="modal__content">
             <div class="modal__header">
-              <h2 class="modal__title" id="start-over-modal-title">Start Over?</h2>
+              <h2 class="modal__title">Start Over?</h2>
             </div>
             <div class="modal__body">
               <p>Are you sure you would like to start over? All your progress will be lost.</p>
@@ -7886,7 +7886,7 @@
   <div class="sr-only" aria-live="polite" id="global-live-region"></div>
 
   <!-- Template Confirmation Modal (outside main for WebKit fixed positioning compatibility) -->
-  <div class="modal" id="template-confirmation-modal" role="dialog" aria-modal="true" aria-labelledby="template-modal-title" aria-describedby="template-modal-description" hidden>
+  <div class="modal" id="template-confirmation-modal" hidden>
     <div class="modal__overlay"></div>
     <div class="modal__content">
       <div class="modal__header">

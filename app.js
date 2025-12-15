@@ -6,20 +6,16 @@
   'use strict';
 
   // ============================================
-  // Mobile Placeholder Scroll Lock
-  // Must run immediately to prevent any scrolling
+  // Mobile Scroll Management
+  // Uses CSS touch-action for better performance
   // ============================================
   if (window.innerWidth <= 900) {
-    // Lock scroll on both html and body
-    document.documentElement.style.cssText = 'overflow: hidden !important; height: 100% !important; position: fixed !important; width: 100% !important;';
-    document.body.style.cssText = 'overflow: hidden !important; height: 100% !important; position: fixed !important; width: 100% !important; top: 0 !important; left: 0 !important;';
+    // Apply scroll lock via CSS (more performant than JS blocking)
+    document.documentElement.style.cssText = 'overflow: hidden !important; height: 100% !important; position: fixed !important; width: 100% !important; touch-action: none;';
+    document.body.style.cssText = 'overflow: hidden !important; height: 100% !important; position: fixed !important; width: 100% !important; top: 0 !important; left: 0 !important; touch-action: none;';
 
-    // Prevent touch scroll events
-    document.addEventListener('touchmove', function(e) {
-      if (window.innerWidth <= 900) {
-        e.preventDefault();
-      }
-    }, { passive: false });
+    // Note: Using CSS touch-action: none instead of non-passive touchmove listener
+    // This allows the browser to optimize scroll handling without blocking the main thread
   }
   // ============================================
 
@@ -51,10 +47,6 @@
   // Performance Enhancement: Auto-save timer for debounced state persistence
   let autoSaveTimer = null;
   const AUTO_SAVE_DELAY_MS = TIMINGS.AUTO_SAVE_INTERVAL;
-
-  // Debounced validation timers for smoother real-time feedback
-  let namingValidationTimer = null;
-  let distributionValidationTimer = null;
   // FIXED: Correct order matching sidebar navigation
   // Note: 'overview' removed from sequence - accessible only from Document tab
   const STEP_SEQUENCE = ['welcome', 'naming', 'permissions', 'advanced', 'distribution', 'search', 'registration'];
@@ -122,7 +114,7 @@
   const SUBSTEP_SEQUENCES = Object.freeze({
     welcome: ['welcome'],
     naming: ['naming', 'naming-localization', 'naming-update'],
-    permissions: ['permissions', 'permissions-group', 'permissions-transfer', 'permissions-manual-mint', 'permissions-manual-burn', 'permissions-manual-freeze', 'permissions-emergency', 'permissions-marketplace-trade-mode-change', 'permissions-direct-pricing-change', 'permissions-main-control-change'],
+    permissions: ['permissions', 'permissions-transfer', 'permissions-manual-mint', 'permissions-manual-burn', 'permissions-manual-freeze', 'permissions-emergency', 'permissions-marketplace-trade-mode-change', 'permissions-direct-pricing-change', 'permissions-main-control-change'],
     advanced: ['advanced-history', 'advanced', 'advanced-launch'],
     distribution: ['distribution-preprogrammed', 'distribution-perpetual'],
     search: ['search'],
@@ -376,118 +368,6 @@
     setTimeout(() => {
       firstError.classList.remove('wizard-field__input--error-pulse');
     }, 1500);
-  }
-
-  // ═══════════════════════════════════════════════════════
-  // Focus Trap Utility for Modals
-  // ═══════════════════════════════════════════════════════
-
-  /**
-   * Creates a focus trap within a container element
-   * @param {HTMLElement} container - The container to trap focus within
-   * @returns {Object} - Object with activate() and deactivate() methods
-   */
-  function createFocusTrap(container) {
-    const focusableSelectors = [
-      'a[href]',
-      'button:not([disabled])',
-      'input:not([disabled])',
-      'select:not([disabled])',
-      'textarea:not([disabled])',
-      '[tabindex]:not([tabindex="-1"])'
-    ].join(', ');
-
-    let previouslyFocused = null;
-
-    function getFocusableElements() {
-      return Array.from(container.querySelectorAll(focusableSelectors))
-        .filter(el => el.offsetParent !== null); // Only visible elements
-    }
-
-    function handleKeyDown(e) {
-      if (e.key !== 'Tab') return;
-
-      const focusable = getFocusableElements();
-      if (focusable.length === 0) return;
-
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-
-      if (e.shiftKey) {
-        // Shift + Tab: wrap to last
-        if (document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        }
-      } else {
-        // Tab: wrap to first
-        if (document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    }
-
-    return {
-      activate() {
-        previouslyFocused = document.activeElement;
-        container.addEventListener('keydown', handleKeyDown);
-
-        // Focus first focusable element
-        const focusable = getFocusableElements();
-        if (focusable.length > 0) {
-          requestAnimationFrame(() => focusable[0].focus());
-        }
-      },
-      deactivate() {
-        container.removeEventListener('keydown', handleKeyDown);
-
-        // Return focus to previously focused element
-        if (previouslyFocused && previouslyFocused.focus) {
-          previouslyFocused.focus();
-        }
-      }
-    };
-  }
-
-  // Store active focus traps
-  const activeFocusTraps = new Map();
-
-  /**
-   * Opens a modal with focus trap
-   * @param {string} modalId - The modal element ID
-   */
-  function openModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (!modal) return;
-
-    modal.hidden = false;
-
-    // Create and activate focus trap
-    const trap = createFocusTrap(modal.querySelector('.modal__content') || modal);
-    activeFocusTraps.set(modalId, trap);
-    trap.activate();
-
-    // Announce to screen readers
-    announce(`Dialog opened: ${modal.querySelector('.modal__title')?.textContent || 'Modal dialog'}`);
-  }
-
-  /**
-   * Closes a modal and releases focus trap
-   * @param {string} modalId - The modal element ID
-   */
-  function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (!modal) return;
-
-    // Deactivate focus trap
-    const trap = activeFocusTraps.get(modalId);
-    if (trap) {
-      trap.deactivate();
-      activeFocusTraps.delete(modalId);
-    }
-
-    modal.hidden = true;
   }
 
   /**
@@ -1873,29 +1753,20 @@
     identityRegisterButton.addEventListener('click', handleIdentityRegistration);
   }
 
-  // Helper to immediately validate naming on blur (clears debounce timer)
-  function handleNamingBlur() {
-    if (namingValidationTimer) {
-      clearTimeout(namingValidationTimer);
-      namingValidationTimer = null;
-    }
-    evaluateNaming({ touched: true });
-  }
-
   if (tokenNameInput) {
     tokenNameInput.addEventListener('input', handleNamingInput);
-    tokenNameInput.addEventListener('blur', handleNamingBlur);
+    tokenNameInput.addEventListener('blur', () => evaluateNaming({ touched: true }));
   }
 
   if (ownerIdentityInput) {
     ownerIdentityInput.addEventListener('input', handleNamingInput);
-    ownerIdentityInput.addEventListener('blur', handleNamingBlur);
+    ownerIdentityInput.addEventListener('blur', () => evaluateNaming({ touched: true }));
   }
 
   // Plural field and capitalize checkbox
   if (tokenPluralInput) {
     tokenPluralInput.addEventListener('input', handleNamingInput);
-    tokenPluralInput.addEventListener('blur', handleNamingBlur);
+    tokenPluralInput.addEventListener('blur', () => evaluateNaming({ touched: true }));
   }
   if (tokenCapitalizeInput) {
     tokenCapitalizeInput.addEventListener('change', handleNamingInput);
@@ -3257,28 +3128,21 @@
   }
 
   function handleNamingInput() {
-    // Save all naming fields to state immediately (using token name as singular form)
+    // Save all naming fields to state (using token name as singular form)
     wizardState.form.naming.singular = tokenNameInput.value;
     wizardState.form.naming.plural = tokenPluralInput.value;
     wizardState.form.naming.capitalize = tokenCapitalizeInput.checked;
 
-    // Debounce validation to prevent flickering during rapid typing
-    if (namingValidationTimer) {
-      clearTimeout(namingValidationTimer);
-    }
-
-    namingValidationTimer = setTimeout(() => {
-      const touched = tokenNameInput.value.length > 0 || wizardState.steps.naming.touched;
-      const validation = evaluateNaming({ touched });
-      if (validation.valid) {
-        const method = wizardState.form.registration.method;
-        if (method === 'mobile' && wizardState.form.registration.preflight.mobile.qrGenerated) {
-          renderQRPreview();
-        } else if (method === 'det' && wizardState.form.registration.preflight.det.jsonDisplayed) {
-          renderJsonPreview();
-        }
+    const touched = tokenNameInput.value.length > 0 || wizardState.steps.naming.touched;
+    const validation = evaluateNaming({ touched });
+    if (validation.valid) {
+      const method = wizardState.form.registration.method;
+      if (method === 'mobile' && wizardState.form.registration.preflight.mobile.qrGenerated) {
+        renderQRPreview();
+      } else if (method === 'det' && wizardState.form.registration.preflight.det.jsonDisplayed) {
+        renderJsonPreview();
       }
-    }, 300);
+    }
   }
 
   function evaluateNaming({ touched = false, silent = false } = {}) {
@@ -3347,13 +3211,10 @@
     let pluralError = '';
 
     if (plural.length === 0) {
-      pluralError = 'Enter a plural name (e.g., "Tokens").';
+      pluralError = 'Enter a plural name.';
       pluralValid = false;
-    } else if (plural.length < 3) {
-      pluralError = `Plural name too short (${plural.length}/3 minimum).`;
-      pluralValid = false;
-    } else if (plural.length > 25) {
-      pluralError = `Plural name too long (${plural.length}/25 maximum).`;
+    } else if (plural.length < 3 || plural.length > 25) {
+      pluralError = 'Must be 3-25 characters.';
       pluralValid = false;
     } else if (plural !== tokenPluralInput.value) {
       pluralError = 'Remove leading or trailing spaces.';
@@ -4461,14 +4322,8 @@
     if (trimmed !== rawValue) {
       return { valid: false, message: 'Remove leading or trailing spaces.', normalized: trimmed };
     }
-    if (trimmed.length === 0) {
+    if (trimmed.length === 0 || trimmed.length < 2 || trimmed.length > 64) {
       return { valid: false, message: 'Please enter a token name (2–64 characters).', normalized: trimmed };
-    }
-    if (trimmed.length < 2) {
-      return { valid: false, message: `Token name too short (${trimmed.length}/2 minimum).`, normalized: trimmed };
-    }
-    if (trimmed.length > 64) {
-      return { valid: false, message: `Token name too long (${trimmed.length}/64 maximum).`, normalized: trimmed };
     }
     if (!tokenNamePattern.test(trimmed)) {
       return { valid: false, message: 'Use letters, numbers, spaces, hyphen, underscore, or emoji only.', normalized: trimmed };
@@ -4485,21 +4340,12 @@
       return { valid: false, message: 'Owner identity ID is required.' };
     }
     if (trimmed.length < 43 || trimmed.length > 44) {
-      const currentLen = trimmed.length;
-      const diff = currentLen < 43 ? 43 - currentLen : currentLen - 44;
-      const direction = currentLen < 43 ? 'short' : 'long';
-      return {
-        valid: false,
-        message: `Identity ID must be 43-44 characters (currently ${currentLen}, ${diff} too ${direction}).`
-      };
+      return { valid: false, message: 'Identity ID must be 43-44 characters.' };
     }
     // Base58 alphabet: 123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz
     const base58Pattern = /^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$/;
     if (!base58Pattern.test(trimmed)) {
-      // Find the invalid characters
-      const invalidChars = trimmed.match(/[^123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]/g);
-      const uniqueInvalid = [...new Set(invalidChars)].slice(0, 3).join(', ');
-      return { valid: false, message: `Invalid characters: ${uniqueInvalid}. Base58 excludes 0, O, I, l.` };
+      return { valid: false, message: 'Invalid Base58 format. Use only Base58 characters.' };
     }
     return { valid: true, message: '' };
   }
@@ -4740,9 +4586,12 @@
         openStates.set(existingCard.dataset.groupId, existingCard.hasAttribute('open'));
       });
     }
-    // Performance Enhancement: Use replaceChildren for efficient DOM cleanup
-    // This is faster than while/removeChild and also clears event listeners
-    groupListElement.replaceChildren();
+    // Performance Enhancement: Complete DOM cleanup
+    // Removing all child elements also removes their event listeners,
+    // preventing memory leaks when the list is re-rendered
+    while (groupListElement.firstChild) {
+      groupListElement.removeChild(groupListElement.firstChild);
+    }
 
     if (!groups.length) {
       if (groupMainPositionInput) {
@@ -4773,16 +4622,13 @@
       emptyHint.hidden = true;
     }
 
-    // Performance Enhancement: Use DocumentFragment for batch DOM insertion
-    const fragment = document.createDocumentFragment();
     groups.forEach((group, index) => {
       const card = buildPermissionGroupCard(group, index, index === wizardState.form.permissions.mainControlGroupIndex);
       if (openStates.has(group.id)) {
         card.open = openStates.get(group.id);
       }
-      fragment.appendChild(card);
+      groupListElement.appendChild(card);
     });
-    groupListElement.appendChild(fragment);
 
     syncManualActionUIs({ announce: false });
   }
@@ -4922,11 +4768,7 @@
     cardActions.appendChild(removeGroupButton);
     body.appendChild(cardActions);
 
-    // Wrap body for smooth expand/collapse animation
-    const bodyWrapper = document.createElement('div');
-    bodyWrapper.className = 'wizard-group-card__body-wrapper';
-    bodyWrapper.appendChild(body);
-    card.appendChild(bodyWrapper);
+    card.appendChild(body);
     return card;
   }
 
@@ -5711,13 +5553,8 @@
           if (showRowErrors) {
             reasons.push(`Localization ${index + 1}: Enter a singular form.`);
           }
-        } else if (trimmedSingular.length < 3) {
-          errors.singular = `Too short (${trimmedSingular.length}/3 min).`;
-          if (showRowErrors) {
-            reasons.push(`Localization ${index + 1}: Singular form must be 3-25 characters.`);
-          }
-        } else if (trimmedSingular.length > 25) {
-          errors.singular = `Too long (${trimmedSingular.length}/25 max).`;
+        } else if (trimmedSingular.length < 3 || trimmedSingular.length > 25) {
+          errors.singular = 'Must be 3-25 characters.';
           if (showRowErrors) {
             reasons.push(`Localization ${index + 1}: Singular form must be 3-25 characters.`);
           }
@@ -5728,13 +5565,8 @@
           if (showRowErrors) {
             reasons.push(`Localization ${index + 1}: Enter a plural form.`);
           }
-        } else if (trimmedPlural.length < 3) {
-          errors.plural = `Too short (${trimmedPlural.length}/3 min).`;
-          if (showRowErrors) {
-            reasons.push(`Localization ${index + 1}: Plural form must be 3-25 characters.`);
-          }
-        } else if (trimmedPlural.length > 25) {
-          errors.plural = `Too long (${trimmedPlural.length}/25 max).`;
+        } else if (trimmedPlural.length < 3 || trimmedPlural.length > 25) {
+          errors.plural = 'Must be 3-25 characters.';
           if (showRowErrors) {
             reasons.push(`Localization ${index + 1}: Plural form must be 3-25 characters.`);
           }
@@ -8968,33 +8800,10 @@
       stepMinValueInput
     ];
 
-    // Debounced validation for smoother real-time feedback
-    function debouncedEvaluateDistribution() {
-      if (distributionValidationTimer) {
-        clearTimeout(distributionValidationTimer);
-      }
-      distributionValidationTimer = setTimeout(() => {
-        evaluateDistribution({ touched: true });
-      }, 300);
-    }
-
     watchedInputs.forEach((input) => {
       if (!input) return;
       const eventName = input.tagName === 'SELECT' ? 'change' : 'input';
-      // Use debounced validation for text inputs, immediate for selects
-      if (eventName === 'input') {
-        input.addEventListener('input', debouncedEvaluateDistribution);
-        // Immediate validation on blur
-        input.addEventListener('blur', () => {
-          if (distributionValidationTimer) {
-            clearTimeout(distributionValidationTimer);
-            distributionValidationTimer = null;
-          }
-          evaluateDistribution({ touched: true });
-        });
-      } else {
-        input.addEventListener('change', () => evaluateDistribution({ touched: true }));
-      }
+      input.addEventListener(eventName, () => evaluateDistribution({ touched: true }));
     });
 
     syncCadence();
@@ -11389,7 +11198,18 @@
   window.announce = announce;
   window.wizardState = wizardState;
 
-  // (temporary normalizer removed; rs-dpp now accepts numeric-string keys)
+  // ========================================
+  // Tab Navigation Event Listener
+  // ========================================
+  // The HTML switchTab() in index.html dispatches 'navigate-to-step' events
+  // This listener connects those events to showScreen() for actual navigation
+  document.addEventListener('navigate-to-step', (event) => {
+    const { step, substep } = event.detail;
+    const targetScreen = substep || step;
+    if (targetScreen) {
+      showScreen(targetScreen, { force: true, isManualNavigation: true });
+    }
+  });
 
   // ========================================
   // Live Contract Preview System
@@ -11635,22 +11455,6 @@
   // Initialize mobile menu
   initMobileMenu();
   console.log('✓ Mobile menu initialized');
-
-  // ═══════════════════════════════════════════════════════
-  // Tab Navigation Event Handler
-  // ═══════════════════════════════════════════════════════
-  // Listen for tab switch events from the inline tab navigation script
-  document.addEventListener('navigate-to-step', (event) => {
-    const { step, substep } = event.detail;
-    if (substep) {
-      // Use force to navigate directly to the substep
-      showScreen(substep, { force: true, isManualNavigation: true });
-    } else if (step) {
-      showScreen(step, { force: true, isManualNavigation: true });
-    }
-  });
-  console.log('✓ Tab navigation handler initialized');
-
   console.log('✓ Performance enhancements: Auto-save, DOM caching, event cleanup');
 })();
 
@@ -15250,40 +15054,13 @@
     return;
   }
 
-  let previouslyFocused = null;
-
-  // Focus trap handler
-  function trapFocus(e) {
-    if (e.key !== 'Tab') return;
-
-    const modalContent = startOverModal.querySelector('.modal__content');
-    const focusable = modalContent.querySelectorAll('button:not([disabled]), [tabindex]:not([tabindex="-1"])');
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-
-    if (e.shiftKey && document.activeElement === first) {
-      e.preventDefault();
-      last.focus();
-    } else if (!e.shiftKey && document.activeElement === last) {
-      e.preventDefault();
-      first.focus();
-    }
-  }
-
   function showStartOverModal() {
-    previouslyFocused = document.activeElement;
     startOverModal.removeAttribute('hidden');
-    startOverModal.addEventListener('keydown', trapFocus);
-    startOverCancelBtn?.focus(); // Focus cancel button (safer default)
+    startOverConfirmBtn?.focus();
   }
 
   function hideStartOverModal() {
     startOverModal.setAttribute('hidden', '');
-    startOverModal.removeEventListener('keydown', trapFocus);
-    // Return focus to previously focused element
-    if (previouslyFocused && previouslyFocused.focus) {
-      previouslyFocused.focus();
-    }
   }
 
   function confirmStartOver() {
@@ -15973,21 +15750,34 @@
   }
 
   // Re-initialize when new help icons are added dynamically
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      mutation.addedNodes.forEach((node) => {
+  // Performance optimization: Debounced callback and narrowed scope
+  let helpIconObserverTimer = null;
+  const helpIconObserver = new MutationObserver((mutations) => {
+    // Check if any mutation added help icons
+    let hasNewHelpIcons = false;
+    for (const mutation of mutations) {
+      for (const node of mutation.addedNodes) {
         if (node.nodeType === 1) { // Element node
-          if (node.classList && node.classList.contains('help-icon')) {
-            initializeHelpIcons();
-          } else if (node.querySelector && node.querySelector('.help-icon')) {
-            initializeHelpIcons();
+          if ((node.classList && node.classList.contains('help-icon')) ||
+              (node.querySelector && node.querySelector('.help-icon'))) {
+            hasNewHelpIcons = true;
+            break;
           }
         }
-      });
-    });
+      }
+      if (hasNewHelpIcons) break;
+    }
+
+    // Debounce re-initialization to avoid excessive calls
+    if (hasNewHelpIcons) {
+      if (helpIconObserverTimer) clearTimeout(helpIconObserverTimer);
+      helpIconObserverTimer = setTimeout(initializeHelpIcons, 100);
+    }
   });
 
-  observer.observe(document.body, {
+  // Narrow scope to wizard container only (where dynamic content lives)
+  const wizardContainer = document.querySelector('.wizard-main');
+  helpIconObserver.observe(wizardContainer || document.body, {
     childList: true,
     subtree: true
   });
@@ -16116,33 +15906,37 @@
     }
   }
 
-  // Initialize tab buttons
-  function initializeToggleButtons() {
-    // INFO/GUIDE vertical tab buttons
-    document.querySelectorAll('.page-guide__tab').forEach(tab => {
-      const newTab = tab.cloneNode(true);
-      tab.parentNode.replaceChild(newTab, tab);
+  // Initialize tab buttons using event delegation for better performance
+  // This replaces the clone-replace pattern which caused DOM reflows
+  let guideButtonsInitialized = false;
 
-      newTab.addEventListener('click', (e) => {
+  function initializeToggleButtons() {
+    // Only set up delegation once - no need to reinitialize
+    if (guideButtonsInitialized) return;
+    guideButtonsInitialized = true;
+
+    // Event delegation for all page guide interactions
+    document.addEventListener('click', (e) => {
+      // Handle INFO/GUIDE tab buttons
+      const tab = e.target.closest('.page-guide__tab');
+      if (tab) {
         e.preventDefault();
-        const panel = newTab.closest('.page-guide');
-        const panelType = newTab.getAttribute('data-panel');
+        const panel = tab.closest('.page-guide');
+        const panelType = tab.getAttribute('data-panel');
         if (panelType) {
           switchPanel(panel, panelType);
         }
-      });
-    });
+        return;
+      }
 
-    // Collapse buttons
-    document.querySelectorAll('.page-guide__collapse').forEach(collapseBtn => {
-      const newBtn = collapseBtn.cloneNode(true);
-      collapseBtn.parentNode.replaceChild(newBtn, collapseBtn);
-
-      newBtn.addEventListener('click', (e) => {
+      // Handle collapse buttons
+      const collapseBtn = e.target.closest('.page-guide__collapse');
+      if (collapseBtn) {
         e.preventDefault();
-        const panel = newBtn.closest('.page-guide');
+        const panel = collapseBtn.closest('.page-guide');
         toggleCollapse(panel);
-      });
+        return;
+      }
     });
   }
 
@@ -16242,21 +16036,9 @@
     enhanceHelpIcons();
   }
 
-  // Re-initialize tab buttons when wizard screens change
-  const screenObserver = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      mutation.addedNodes.forEach((node) => {
-        if (node.nodeType === 1 && node.querySelector && (node.querySelector('.page-guide__tab') || node.querySelector('.page-guide__collapse'))) {
-          initializeToggleButtons();
-        }
-      });
-    });
-  });
-
-  screenObserver.observe(document.body, {
-    childList: true,
-    subtree: true
-  });
+  // Note: With event delegation in initializeToggleButtons(), we no longer need
+  // a MutationObserver to reinitialize buttons when screens change.
+  // Event delegation automatically handles dynamically added elements.
 
   console.log('✓ Dual INFO/GUIDE panel system initialized');
 })();
