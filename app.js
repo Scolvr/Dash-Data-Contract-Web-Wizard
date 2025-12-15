@@ -1137,11 +1137,10 @@
           description: ''
         },
         registration: {
-          method: null,
+          method: 'det',
           wallet: cloneDefaultWalletState(),
           identity: cloneDefaultIdentityState(),
           preflight: {
-            mobile: { qrGenerated: false },
             det: { jsonDisplayed: false },
             self: { warningAcknowledged: false }
           }
@@ -1481,22 +1480,20 @@
   const manualActionUIs = {};
 
 
-  /** @type {{ hasQr: boolean; hasJson: boolean; hasIdentity: boolean; hasPrivateKey: boolean }} */
+  /** @type {{ hasJson: boolean; hasIdentity: boolean; hasPrivateKey: boolean }} */
   const wizardReadiness = {
-    hasQr: false,
     hasJson: false,
     hasIdentity: false,
     hasPrivateKey: false
   };
-  let chunkRecoveryScheduled = false;
 
-  const readinessReminderMessage = 'Please finish QR, JSON, Identity & Private Key before continuing.';
+  const readinessReminderMessage = 'Please finish JSON, Identity & Private Key before continuing.';
 
   /**
-   * @param {{ hasQr: boolean; hasJson: boolean; hasIdentity: boolean; hasPrivateKey: boolean }} state
+   * @param {{ hasJson: boolean; hasIdentity: boolean; hasPrivateKey: boolean }} state
    */
   function isReadyToCreateNew(state) {
-    return Boolean(state.hasQr && state.hasJson && state.hasIdentity && state.hasPrivateKey);
+    return Boolean(state.hasJson && state.hasIdentity && state.hasPrivateKey);
   }
 
   let localizationRows = [];
@@ -1509,19 +1506,13 @@
   const registrationMethodInputs = registrationMethodsContainer
     ? Array.from(registrationMethodsContainer.querySelectorAll('input[name="registration-method"]'))
     : [];
-  const registrationMessage = document.getElementById('registration-message');
   const createTokenButton = document.getElementById('create-new-token');
-  const registrationPanelMobile = document.getElementById('registration-panel-mobile');
   const registrationPanelDet = document.getElementById('registration-panel-det');
   const registrationPanelSelf = document.getElementById('registration-panel-self');
   const registrationPanels = {
-    mobile: registrationPanelMobile,
     det: registrationPanelDet,
     self: registrationPanelSelf
   };
-  const qrPreview = document.getElementById('qr-preview');
-  const qrPreviewContent = document.getElementById('qr-preview-content');
-  const qrPreviewButton = document.getElementById('qr-preview-button');
   const jsonPreview = document.getElementById('json-preview');
   const jsonPreviewContent = document.getElementById('json-preview-content');
   const jsonShowButton = document.getElementById('json-show-button');
@@ -2228,18 +2219,6 @@
     }
   });
 
-  if (qrPreviewButton) {
-    qrPreviewButton.addEventListener('click', () => {
-      if (wizardState.form.registration.method !== 'mobile') {
-        return;
-      }
-      renderQRPreview();
-      const hasCanvas = Boolean(qrPreviewContent.querySelector('canvas'));
-      wizardState.form.registration.preflight.mobile.qrGenerated = hasCanvas;
-      evaluateRegistration({ touched: true });
-      syncRegistrationPreflightUI();
-    });
-  }
   if (jsonShowButton) {
     jsonShowButton.addEventListener('click', () => {
       if (wizardState.form.registration.method !== 'det') {
@@ -2310,13 +2289,6 @@
   }
 
   const readinessEvents = [
-    [
-      'qr:generated',
-      (ready) => {
-        wizardState.form.registration.preflight.mobile.qrGenerated = ready;
-        updateRegistrationPreviewVisibility();
-      }
-    ],
     [
       'json:ready',
       (ready) => {
@@ -3148,9 +3120,7 @@
     const validation = evaluateNaming({ touched });
     if (validation.valid) {
       const method = wizardState.form.registration.method;
-      if (method === 'mobile' && wizardState.form.registration.preflight.mobile.qrGenerated) {
-        renderQRPreview();
-      } else if (method === 'det' && wizardState.form.registration.preflight.det.jsonDisplayed) {
+      if (method === 'det' && wizardState.form.registration.preflight.det.jsonDisplayed) {
         renderJsonPreview();
       }
     }
@@ -3629,9 +3599,6 @@
     let message = '';
     if (!ready) {
       const missing = [];
-      if (!wizardReadiness.hasQr) {
-        missing.push('Generate the QR codes.');
-      }
       if (!wizardReadiness.hasJson) {
         missing.push('Prepare the JSON payload.');
       }
@@ -3645,12 +3612,6 @@
     }
 
     const result = ready ? { valid: true, message: '' } : { valid: false, message };
-    const shouldShowMessage = !ready && (touched || !silent);
-    if (shouldShowMessage) {
-      setRegistrationStatus('info', readinessReminderMessage);
-    } else if (ready && registrationMessage && registrationMessage.dataset.status !== 'success') {
-      setRegistrationStatus('', '');
-    }
 
     updateStepStatusFromValidation('registration', result, touched);
     persistState();
@@ -3670,7 +3631,7 @@
       }
     });
 
-    const storagePrefixes = ['wizard:', 'token:', 'qr:'];
+    const storagePrefixes = ['wizard:', 'token:'];
     const shouldClearStorageKey = (key) =>
       key === STATE_STORAGE_KEY || key === SENSITIVE_DATA_KEY || storagePrefixes.some((prefix) => key.startsWith(prefix));
 
@@ -3708,12 +3669,6 @@
       element.removeAttribute('data-blob-url');
     });
 
-    if (qrPreviewContent) {
-      qrPreviewContent.innerHTML = '';
-    }
-    if (qrPreview) {
-      qrPreview.hidden = true;
-    }
     if (jsonPreviewContent) {
       jsonPreviewContent.textContent = '';
     }
@@ -3775,7 +3730,6 @@
     initialiseUI();
 
     persistState();
-    wizardReadiness.hasQr = false;
     wizardReadiness.hasJson = false;
     wizardReadiness.hasIdentity = false;
     wizardReadiness.hasPrivateKey = false;
@@ -3965,10 +3919,6 @@
       panel.hidden = !active;
       panel.setAttribute('aria-hidden', String(!active));
     });
-
-    if (qrPreviewButton) {
-      qrPreviewButton.disabled = method !== 'mobile';
-    }
 
     if (jsonShowButton) {
       jsonShowButton.disabled = method !== 'det';
@@ -4170,27 +4120,12 @@
   }
 
   function syncWizardReadiness({ refreshStatus = false } = {}) {
-    wizardReadiness.hasQr = Boolean(wizardState.form.registration.preflight.mobile.qrGenerated);
     wizardReadiness.hasJson = Boolean(wizardState.form.registration.preflight.det.jsonDisplayed);
     wizardReadiness.hasIdentity = Boolean((wizardState.form.registration.identity.id || '').trim());
     wizardReadiness.hasPrivateKey = Boolean((wizardState.form.registration.wallet.privateKey || '').trim());
 
     const ready = isReadyToCreateNew(wizardReadiness);
     applyCreateTokenButtonState(ready);
-
-    if (!registrationMessage) {
-      return ready;
-    }
-
-    const currentStatus = registrationMessage.dataset.status || '';
-    if (!ready) {
-      const allowUpdate = refreshStatus || !currentStatus || currentStatus === 'info';
-      if (allowUpdate) {
-        setRegistrationStatus('info', readinessReminderMessage);
-      }
-    } else if (currentStatus && currentStatus !== 'success') {
-      setRegistrationStatus('', '');
-    }
 
     return ready;
   }
@@ -6029,19 +5964,6 @@
 
   function updateRegistrationPreviewVisibility() {
     const method = wizardState.form.registration.method;
-    const qrReady = Boolean(wizardState.form.registration.preflight.mobile.qrGenerated);
-    if (qrPreview) {
-      if (method === 'mobile' && qrReady) {
-        qrPreview.hidden = false;
-        if (!qrPreviewContent.querySelector('canvas')) {
-          requestAnimationFrame(renderQRPreview);
-        }
-      } else {
-        qrPreview.hidden = true;
-        qrPreviewContent.innerHTML = '';
-      }
-    }
-
     const jsonReady = Boolean(wizardState.form.registration.preflight.det.jsonDisplayed);
     if (jsonPreview) {
       if (method === 'det' && jsonReady) {
@@ -6531,15 +6453,6 @@
         const preflight = registrationFormData.preflight;
         if (preflight && typeof preflight === 'object') {
           state.form.registration.preflight = {
-            mobile: {
-              qrGenerated: Boolean(
-                preflight.mobile && (
-                  (typeof preflight.mobile.qrGenerated !== 'undefined'
-                    ? preflight.mobile.qrGenerated
-                    : preflight.mobile.qrPrepared)
-                )
-              )
-            },
             det: {
               jsonDisplayed: Boolean(
                 preflight.det && (
@@ -6926,7 +6839,6 @@
             },
             method: wizardState.form.registration.method,
             preflight: {
-              mobile: { qrGenerated: Boolean(wizardState.form.registration.preflight.mobile.qrGenerated) },
               det: { jsonDisplayed: Boolean(wizardState.form.registration.preflight.det.jsonDisplayed) },
               self: { warningAcknowledged: Boolean(wizardState.form.registration.preflight.self.warningAcknowledged) }
             }
@@ -7018,49 +6930,6 @@
     setTimeout(() => {
       progressBar.classList.remove('wizard-progress--saving');
     }, 1500);
-  }
-
-  function renderQRPreview() {
-    if (wizardState.form.registration.method !== 'mobile') {
-      return;
-    }
-
-    const payload = generatePlatformContractJSON();
-    const serialized = JSON.stringify(payload, null, 2);
-    let chunks = chunkPayloadIntoQRCodes(serialized);
-
-    if (chunks.length === 0) {
-      chunks = ['{}'];
-    }
-
-    const total = chunks.length;
-
-    qrPreviewContent.innerHTML = '';
-
-    chunks.forEach((chunk, index) => {
-      const tile = document.createElement('div');
-      tile.className = 'wizard-qr__tile';
-      tile.setAttribute('data-chunk', String(index + 1));
-      tile.setAttribute('data-total', String(total));
-
-      const label = document.createElement('span');
-      label.className = 'wizard-qr__tile-label';
-      label.textContent = `${index + 1}/${total}`;
-      label.setAttribute('aria-hidden', 'true');
-
-      const canvas = document.createElement('canvas');
-      canvas.width = 180;
-      canvas.height = 180;
-      canvas.setAttribute('role', 'img');
-      canvas.setAttribute('aria-label', `QR code chunk ${index + 1} of ${total}`);
-
-      tile.appendChild(label);
-      tile.appendChild(canvas);
-      qrPreviewContent.appendChild(tile);
-
-      const qr = TinyQR.create({ element: canvas, size: 180 });
-      qr.render(chunk);
-    });
   }
 
   function renderJsonPreview() {
@@ -9845,21 +9714,19 @@
 
   function registrationStubFor(method) {
     switch (method) {
-      case 'mobile':
-        return { channel: 'qr', steps: ['chunk-payload', 'scan-sequence'], status: 'draft' };
       case 'det':
         return { channel: 'json', tooling: 'det', status: 'export-ready' };
       case 'self':
         return { channel: 'library', caution: 'not_recommended', status: 'manual' };
       default:
-        return { channel: 'unknown', status: 'pending-selection' };
+        return { channel: 'json', tooling: 'det', status: 'export-ready' };
     }
   }
 
   function getRegistrationPayload() {
     const rawName = wizardState.form.tokenName || '';
     const tokenName = rawName.trim() || 'Unnamed Token';
-    const registrationMethod = wizardState.form.registration.method || 'mobile';
+    const registrationMethod = wizardState.form.registration.method || 'det';
 
     // Build complete token configuration
     const payload = {
@@ -9951,14 +9818,6 @@
     }
 
     return payload;
-  }
-
-  function chunkPayloadIntoQRCodes(str, maxCharsPerQR = 800) {
-    const output = [];
-    for (let i = 0; i < str.length; i += maxCharsPerQR) {
-      output.push(str.slice(i, i + maxCharsPerQR));
-    }
-    return output;
   }
 
   /**
@@ -11205,7 +11064,6 @@
 
   window.getRegistrationPayload = getRegistrationPayload;
   window.generatePlatformContractJSON = generatePlatformContractJSON;
-  window.chunkPayloadIntoQRCodes = chunkPayloadIntoQRCodes;
   window.testPlatformContracts = testPlatformContracts;
   window.createTestState = createTestState;
   window.generateTestContract = generateTestContract;
@@ -11708,133 +11566,6 @@
     initializeExportScreen();
   }
 })();
-
-/*!
- * TinyQR v0.1.0
- * Lightweight QR preview helper for demo purposes (MIT License).
- * This renderer mimics QR placement for prototyping and does not guarantee scanability.
- */
-(function (root, factory) {
-  if (typeof define === 'function' && define.amd) {
-    define([], factory);
-  } else if (typeof module === 'object' && module.exports) {
-    module.exports = factory();
-  } else {
-    root.TinyQR = factory();
-  }
-})(typeof self !== 'undefined' ? self : this, function () {
-  'use strict';
-
-  function TinyQR(options) {
-    if (!options || !options.element) {
-      throw new Error('TinyQR requires a target canvas element.');
-    }
-    this.canvas = options.element;
-    this.size = options.size || 160;
-    this.background = options.background || '#ffffff';
-    this.foreground = options.foreground || '#1a1f2c';
-  }
-
-  TinyQR.prototype.render = function (value) {
-    if (typeof value !== 'string') {
-      value = String(value ?? '');
-    }
-    const ctx = this.canvas.getContext('2d');
-    if (!ctx) {
-      return;
-    }
-
-    const modules = 33;
-    const cellSize = this.size / modules;
-    this.canvas.width = this.size;
-    this.canvas.height = this.size;
-
-    ctx.fillStyle = this.background;
-    ctx.fillRect(0, 0, this.size, this.size);
-
-    const matrix = buildMatrix(value, modules);
-
-    ctx.fillStyle = this.foreground;
-    matrix.forEach((row, y) => {
-      row.forEach((isDark, x) => {
-        if (isDark) {
-          ctx.fillRect(Math.round(x * cellSize), Math.round(y * cellSize), Math.ceil(cellSize), Math.ceil(cellSize));
-        }
-      });
-    });
-
-    drawFinderPatterns(ctx, cellSize, modules, this.foreground, this.background);
-  };
-
-  function buildMatrix(value, size) {
-    const matrix = Array.from({ length: size }, () => Array.from({ length: size }, () => false));
-    const seeds = hashSeeds(value);
-    const length = value.length || 1;
-
-    for (let y = 0; y < size; y += 1) {
-      for (let x = 0; x < size; x += 1) {
-        const index = (y * size + x) % length;
-        const charCode = value.charCodeAt(index) || 0;
-        const seed = seeds[(x + y) % seeds.length];
-        const bit = ((seed >> ((x * 7 + y * 11) % 24)) ^ charCode) & 1;
-        matrix[y][x] = Boolean(bit);
-      }
-    }
-
-    imposeFinderPattern(matrix, 0, 0);
-    imposeFinderPattern(matrix, 0, size - 7);
-    imposeFinderPattern(matrix, size - 7, 0);
-    return matrix;
-  }
-
-  function hashSeeds(value) {
-    const seeds = new Uint32Array([0x811c9dc5, 0xabcdef01, 0x12345678, 0xdeadbeef]);
-    for (let i = 0; i < value.length; i += 1) {
-      const code = value.charCodeAt(i);
-      for (let j = 0; j < seeds.length; j += 1) {
-        seeds[j] ^= code + j;
-        seeds[j] = Math.imul(seeds[j] ^ (seeds[j] >>> 16), 0x45d9f3b);
-      }
-    }
-    return Array.from(seeds, (seed) => seed >>> 1);
-  }
-
-  function imposeFinderPattern(matrix, startY, startX) {
-    for (let y = 0; y < 7; y += 1) {
-      for (let x = 0; x < 7; x += 1) {
-        const border = y === 0 || y === 6 || x === 0 || x === 6;
-        const inner = y >= 2 && y <= 4 && x >= 2 && x <= 4;
-        matrix[startY + y][startX + x] = border || inner;
-      }
-    }
-  }
-
-  function drawFinderPatterns(ctx, cellSize, modules, foreground, background) {
-    ctx.fillStyle = background;
-    const locations = [
-      { x: 0, y: 0 },
-      { x: 0, y: modules - 7 },
-      { x: modules - 7, y: 0 }
-    ];
-
-    locations.forEach(({ x, y }) => {
-      ctx.fillRect(Math.round(x * cellSize), Math.round(y * cellSize), Math.ceil(7 * cellSize), Math.ceil(7 * cellSize));
-      ctx.fillStyle = foreground;
-      ctx.fillRect(Math.round((x + 1) * cellSize), Math.round((y + 1) * cellSize), Math.ceil(5 * cellSize), Math.ceil(5 * cellSize));
-      ctx.fillStyle = background;
-      ctx.fillRect(Math.round((x + 2) * cellSize), Math.round((y + 2) * cellSize), Math.ceil(3 * cellSize), Math.ceil(3 * cellSize));
-      ctx.fillStyle = foreground;
-      ctx.fillRect(Math.round((x + 3) * cellSize), Math.round((y + 3) * cellSize), Math.ceil(cellSize), Math.ceil(cellSize));
-      ctx.fillStyle = background;
-    });
-  }
-
-  return {
-    create(options) {
-      return new TinyQR(options);
-    }
-  };
-});
 
 // ========================================
 // NEW EMISSION FUNCTIONS - EVENT LISTENERS
@@ -15583,22 +15314,6 @@
     },
 
     // Priority 6: Registration
-    'registration-mobile': {
-      title: 'Mobile QR Code Registration',
-      content: `
-        <p>Generate animated QR codes containing your token configuration.</p>
-        <p><strong>Workflow:</strong></p>
-        <ol style="margin: 8px 0; padding-left: 20px;">
-          <li>Complete wizard configuration</li>
-          <li>Generate QR codes</li>
-          <li>Open Dash wallet on mobile device</li>
-          <li>Scan QR code sequence</li>
-          <li>Confirm registration in wallet</li>
-        </ol>
-        <p><strong>Limitation:</strong> Very large configurations may create QR codes too complex to scan.</p>
-      `
-    },
-
     'registration-det': {
       title: 'DET Registration (Dash Evo Tool)',
       content: `

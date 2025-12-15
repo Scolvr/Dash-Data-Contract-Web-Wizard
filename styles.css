@@ -5000,60 +5000,6 @@ html[data-theme='dark'] .wizard-button[disabled] {
   opacity: 1;
 }
 
-.wizard-qr {
-  border-top: 1px solid var(--color-border);
-  padding-top: var(--space-lg);
-  margin-top: var(--space-lg);
-  display: grid;
-  gap: var(--space-md);
-}
-
-.wizard-qr__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-sm);
-}
-
-.wizard-qr__content {
-  display: grid;
-  gap: var(--space-md);
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-}
-
-.wizard-qr__tile {
-  background: var(--color-surface);
-  border-radius: var(--radius-md);
-  padding: var(--space-md);
-  border: 1px solid var(--color-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-.wizard-qr__tile canvas {
-  max-width: 100%;
-}
-
-.wizard-qr__tile-label {
-  position: absolute;
-  top: var(--space-sm);
-  left: var(--space-sm);
-  padding: 0 var(--space-xs);
-  border-radius: var(--radius-sm);
-  background: rgba(26, 31, 44, 0.8);
-  color: #fff;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.wizard-qr__hint {
-  margin: 0;
-  color: var(--color-muted);
-  font-size: var(--font-size-sm);
-}
-
 .wizard-json {
   border-top: 1px solid var(--color-border);
   padding-top: var(--space-lg);
@@ -5531,12 +5477,6 @@ html[data-theme='dark'] .wizard-button[disabled] {
   .registration-methods__options {
     grid-template-columns: 1fr;
     gap: var(--space-3);
-  }
-
-  .registration-panel canvas,
-  .registration-panel .qr-container {
-    max-width: 280px;
-    margin: 0 auto;
   }
 
   .registration-panel pre,
