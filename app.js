@@ -482,8 +482,12 @@
   // Mobile Hamburger Menu
   // ═══════════════════════════════════════════════════════
 
+  // PERFORMANCE: AbortController for event listener cleanup
+  let mobileMenuAbortController = null;
+
   /**
    * Initializes mobile menu functionality
+   * Uses AbortController to prevent memory leaks from duplicate listeners
    */
   function initMobileMenu() {
     const mobileHeader = document.querySelector('.mobile-header');
@@ -492,6 +496,13 @@
     const overlay = document.querySelector('.mobile-menu-overlay'); // May be null - that's OK
 
     if (!sidebar) return;
+
+    // PERFORMANCE: Clean up previous listeners before adding new ones
+    if (mobileMenuAbortController) {
+      mobileMenuAbortController.abort();
+    }
+    mobileMenuAbortController = new AbortController();
+    const { signal } = mobileMenuAbortController;
 
     // Toggle mobile menu
     function toggleMobileMenu() {
@@ -529,11 +540,11 @@
       }
     }
 
-    // Event listeners - attach to all menu toggles
+    // Event listeners - attach to all menu toggles with AbortController signal
     menuToggles.forEach(toggle => {
-      toggle.addEventListener('click', toggleMobileMenu);
+      toggle.addEventListener('click', toggleMobileMenu, { signal });
     });
-    if (overlay) overlay.addEventListener('click', closeMobileMenu);
+    if (overlay) overlay.addEventListener('click', closeMobileMenu, { signal });
 
     // Close menu ONLY when subitem (actual page link) is clicked
     // Do NOT close when clicking expandable parent items
@@ -543,7 +554,7 @@
         if (window.innerWidth <= 900) {
           closeMobileMenu();
         }
-      });
+      }, { signal });
     });
 
     // Close menu on escape key
@@ -551,14 +562,14 @@
       if (e.key === 'Escape' && sidebar.classList.contains('mobile-menu-open')) {
         closeMobileMenu();
       }
-    });
+    }, { signal });
 
     // Handle window resize
     window.addEventListener('resize', () => {
       if (window.innerWidth > 900 && sidebar.classList.contains('mobile-menu-open')) {
         closeMobileMenu();
       }
-    });
+    }, { signal });
   }
 
   // ═══════════════════════════════════════════════════════
@@ -4586,12 +4597,10 @@
         openStates.set(existingCard.dataset.groupId, existingCard.hasAttribute('open'));
       });
     }
-    // Performance Enhancement: Complete DOM cleanup
-    // Removing all child elements also removes their event listeners,
-    // preventing memory leaks when the list is re-rendered
-    while (groupListElement.firstChild) {
-      groupListElement.removeChild(groupListElement.firstChild);
-    }
+    // PERFORMANCE: Use replaceChildren() for faster DOM cleanup
+    // This is more efficient than the while-loop approach and also
+    // removes all event listeners, preventing memory leaks
+    groupListElement.replaceChildren();
 
     if (!groups.length) {
       if (groupMainPositionInput) {
@@ -5690,57 +5699,59 @@
 
     currentScreenId = screenId;
 
-    // DEFENSIVE: Remove any lingering 'hidden' attributes from all screens
-    // This ensures CSS classes have full control over visibility
+    // OPTIMIZED: Single pass DOM operations to reduce reflows
+    // Pre-calculate direction and target screen outside loop
+    const allScreenIds = screenDefinitions.map(d => d.id);
+    const previousActiveScreen = document.querySelector('.wizard-screen--active');
+    let targetDefinition = null;
+    let direction = 'forward';
+
+    // Find target and calculate direction
+    for (const definition of screenDefinitions) {
+      const isActiveDefinition = activeScreens.some((active) => active.id === definition.id);
+      const shouldShow = isActiveDefinition && definition.id === screenId;
+      if (shouldShow) {
+        targetDefinition = definition;
+        if (previousActiveScreen && previousActiveScreen !== definition.element) {
+          const prevIndex = allScreenIds.indexOf(previousActiveScreen.id.replace('screen-', ''));
+          const newIndex = allScreenIds.indexOf(definition.id);
+          direction = newIndex >= prevIndex ? 'forward' : 'backward';
+        }
+        break;
+      }
+    }
+
+    // Single pass: update all screens in one iteration
     screenDefinitions.forEach((definition) => {
-      if (definition.element && definition.element.hasAttribute('hidden')) {
+      if (!definition.element) return;
+
+      // Remove hidden attribute if present
+      if (definition.element.hasAttribute('hidden')) {
         definition.element.removeAttribute('hidden');
       }
-    });
 
-    // Simple class swap - CSS handles all transition timing
-    screenDefinitions.forEach((definition) => {
+      // Remove direction classes from all screens
+      definition.element.classList.remove('wizard-screen--enter-forward', 'wizard-screen--enter-backward');
+
       const isActiveDefinition = activeScreens.some((active) => active.id === definition.id);
       const shouldShow = isActiveDefinition && definition.id === screenId;
 
-      if (definition.element) {
-        if (shouldShow) {
-          // T5: Direction-aware navigation - determine forward/backward based on screen order
-          const allScreenIds = screenDefinitions.map(d => d.id);
-          const previousActiveScreen = document.querySelector('.wizard-screen--active');
-          let direction = 'forward'; // default
+      if (shouldShow) {
+        // Add direction class for animation
+        definition.element.classList.add(direction === 'forward' ? 'wizard-screen--enter-forward' : 'wizard-screen--enter-backward');
+        // Make this screen active
+        definition.element.classList.add('wizard-screen--active');
 
-          if (previousActiveScreen && previousActiveScreen !== definition.element) {
-            const prevIndex = allScreenIds.indexOf(previousActiveScreen.id.replace('screen-', ''));
-            const newIndex = allScreenIds.indexOf(definition.id);
-            direction = newIndex >= prevIndex ? 'forward' : 'backward';
+        // Focus handling
+        if (!suppressFocus) {
+          const targetHeading = definition.element.querySelector('h1');
+          if (targetHeading) {
+            setTimeout(() => targetHeading.focus({ preventScroll: false }), 220);
           }
-
-          // Remove direction classes from all screens
-          screenDefinitions.forEach(d => {
-            if (d.element) {
-              d.element.classList.remove('wizard-screen--enter-forward', 'wizard-screen--enter-backward');
-            }
-          });
-
-          // Add direction class for animation
-          definition.element.classList.add(direction === 'forward' ? 'wizard-screen--enter-forward' : 'wizard-screen--enter-backward');
-
-          // Make this screen active
-          definition.element.classList.add('wizard-screen--active');
-
-          // Focus handling
-          if (!suppressFocus) {
-            const targetHeading = definition.element.querySelector('h1');
-            if (targetHeading) {
-              // Wait for transition to complete before focusing
-              setTimeout(() => targetHeading.focus({ preventScroll: false }), 220);
-            }
-          }
-        } else {
-          // Remove active class - CSS will handle fade out
-          definition.element.classList.remove('wizard-screen--active');
         }
+      } else {
+        // Remove active class - CSS will handle fade out
+        definition.element.classList.remove('wizard-screen--active');
       }
     });
 
@@ -5757,8 +5768,8 @@
     }
 
     // FIXED: Track previous parent step from current active screen
-    const previousActiveScreen = wizardState.active;
-    const previousParentStep = previousActiveScreen ? getPrimaryStepId(previousActiveScreen) : null;
+    const previousActiveStepId = wizardState.active;
+    const previousParentStep = previousActiveStepId ? getPrimaryStepId(previousActiveStepId) : null;
     const currentParentStep = getPrimaryStepId(screenId);
     const parentStepChanged = previousParentStep !== currentParentStep;
 
@@ -5772,80 +5783,74 @@
     // Update progress indicator
     updateProgressIndicator(getPrimaryStepId(screenId));
 
-    // Update configuration overview when showing overview step
-    if (screenId === 'overview' || getPrimaryStepId(screenId) === 'overview') {
-      requestAnimationFrame(() => {
+    // OPTIMIZED: Consolidate all screen-specific updates into a single RAF call
+    requestAnimationFrame(() => {
+      const primaryStep = getPrimaryStepId(screenId);
+
+      // Update configuration overview when showing overview step
+      if (screenId === 'overview' || primaryStep === 'overview') {
         if (typeof updateConfigurationOverview === 'function') {
           updateConfigurationOverview();
         }
-      });
-    }
+      }
 
-    // Restore preset selection when showing permissions screen
-    if (screenId === 'permissions' || getPrimaryStepId(screenId) === 'permissions') {
-      requestAnimationFrame(() => {
+      // Restore preset selection when showing permissions screen
+      if (screenId === 'permissions' || primaryStep === 'permissions') {
         if (typeof window.restorePresetSelection === 'function') {
           window.restorePresetSelection();
         }
-      });
-    }
+      }
 
-    // Sync search form when showing search screen
-    if (screenId === 'search' || getPrimaryStepId(screenId) === 'search') {
-      requestAnimationFrame(() => {
+      // Sync search form when showing search screen
+      if (screenId === 'search' || primaryStep === 'search') {
         syncSearchUI();
-      });
-    }
+      }
 
-    // Validate contract when showing registration step
-    if (screenId === 'registration' || getPrimaryStepId(screenId) === 'registration') {
-      requestAnimationFrame(() => {
+      // Validate contract when showing registration step
+      if (screenId === 'registration' || primaryStep === 'registration') {
         validateRegistrationContract();
-      });
-    }
+      }
 
-    // Update recipient visibility when showing distribution-perpetual screen
-    if (screenId === 'distribution-perpetual') {
-      requestAnimationFrame(() => {
-        if (distributionUI && typeof distributionUI.updateRecipientVisibility === 'function') {
-          distributionUI.updateRecipientVisibility();
+      // Distribution screen updates
+      if (screenId === 'distribution-perpetual' || screenId === 'distribution-preprogrammed' || primaryStep === 'distribution') {
+        // Update recipient visibility for perpetual
+        if (screenId === 'distribution-perpetual') {
+          if (distributionUI && typeof distributionUI.updateRecipientVisibility === 'function') {
+            distributionUI.updateRecipientVisibility();
+          }
         }
-      });
-    }
 
-    // Sync preprogrammed distribution form when showing preprogrammed screen
-    if (screenId === 'distribution-preprogrammed' || getPrimaryStepId(screenId) === 'distribution') {
-      requestAnimationFrame(() => {
-        const yesRadio = document.querySelector('input[name="preprogrammed-enable"][value="yes"]');
-        const noRadio = document.querySelector('input[name="preprogrammed-enable"][value="no"]');
-        const container = document.getElementById('preprogrammed-entries-container');
+        // Sync preprogrammed distribution form
+        if (screenId === 'distribution-preprogrammed' || primaryStep === 'distribution') {
+          const preprogrammedYes = document.querySelector('input[name="preprogrammed-enable"][value="yes"]');
+          const preprogrammedNo = document.querySelector('input[name="preprogrammed-enable"][value="no"]');
+          const preprogrammedContainer = document.getElementById('preprogrammed-entries-container');
 
-        if (wizardState.form.distribution.enablePreProgrammed) {
-          if (yesRadio) yesRadio.checked = true;
-          if (container) container.removeAttribute('hidden');
-        } else {
-          if (noRadio) noRadio.checked = true;
-          if (container) container.setAttribute('hidden', '');
+          if (wizardState.form.distribution.enablePreProgrammed) {
+            if (preprogrammedYes) preprogrammedYes.checked = true;
+            if (preprogrammedContainer) preprogrammedContainer.removeAttribute('hidden');
+          } else {
+            if (preprogrammedNo) preprogrammedNo.checked = true;
+            if (preprogrammedContainer) preprogrammedContainer.setAttribute('hidden', '');
+          }
         }
-      });
-    }
 
-    // Sync perpetual distribution form when showing perpetual screen
-    if (screenId === 'distribution-perpetual' || getPrimaryStepId(screenId) === 'distribution') {
-      requestAnimationFrame(() => {
-        const yesRadio = document.querySelector('input[name="perpetual-enable"][value="yes"]');
-        const noRadio = document.querySelector('input[name="perpetual-enable"][value="no"]');
-        const container = document.getElementById('perpetual-config-container');
+        // Sync perpetual distribution form
+        if (screenId === 'distribution-perpetual' || primaryStep === 'distribution') {
+          const perpetualYes = document.querySelector('input[name="perpetual-enable"][value="yes"]');
+          const perpetualNo = document.querySelector('input[name="perpetual-enable"][value="no"]');
+          const perpetualContainer = document.getElementById('perpetual-config-container');
 
-        if (wizardState.form.distribution.enablePerpetual) {
-          if (yesRadio) yesRadio.checked = true;
-          if (container) container.removeAttribute('hidden');
-        } else {
-          if (noRadio) noRadio.checked = true;
-          if (container) container.setAttribute('hidden', '');
+          if (wizardState.form.distribution.enablePerpetual) {
+            if (perpetualYes) perpetualYes.checked = true;
+            if (perpetualContainer) perpetualContainer.removeAttribute('hidden');
+          } else {
+            if (perpetualNo) perpetualNo.checked = true;
+            if (perpetualContainer) perpetualContainer.setAttribute('hidden', '');
+          }
         }
-      });
-    }
+      }
+    });
 
     // FIXED: Never fold sections on manual navigation - only on Continue/Back between parent steps
     const shouldFoldSections = false;  // Manual clicks don't fold anything
@@ -6731,7 +6736,7 @@
    * Returns sanitized snapshot safe for localStorage
    */
   function sanitizeSnapshot(snapshot) {
-    const sanitized = JSON.parse(JSON.stringify(snapshot));
+    const sanitized = structuredClone(snapshot);
 
     // Clear owner identity
     sanitized.form.ownerIdentityId = '';
@@ -6785,7 +6790,7 @@
   function mergeSensitiveData(snapshot, sensitiveData) {
     if (!sensitiveData) return snapshot;
 
-    const merged = JSON.parse(JSON.stringify(snapshot));
+    const merged = structuredClone(snapshot);
 
     // Restore owner identity
     if (sensitiveData.ownerIdentityId) {
@@ -6971,6 +6976,7 @@
    * Performance Enhancement: Debounced auto-save functionality
    * Schedules an automatic save after a period of inactivity to reduce
    * localStorage write operations and improve performance.
+   * Uses requestIdleCallback when available for better performance.
    */
   function scheduleAutoSave() {
     // Clear any existing timer
@@ -6978,11 +6984,21 @@
       clearTimeout(autoSaveTimer);
     }
 
-    // Schedule new save
+    // Schedule new save with requestIdleCallback for better performance
     autoSaveTimer = setTimeout(() => {
-      _persistStateNow();
-      showAutoSaveIndicator();
-      debug.log('Auto-saved wizard state');
+      // PERFORMANCE: Use requestIdleCallback to save during browser idle time
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => {
+          _persistStateNow();
+          showAutoSaveIndicator();
+          debug.log('Auto-saved wizard state (idle)');
+        }, { timeout: 2000 }); // Max 2 seconds wait
+      } else {
+        // Fallback for browsers without requestIdleCallback
+        _persistStateNow();
+        showAutoSaveIndicator();
+        debug.log('Auto-saved wizard state');
+      }
     }, AUTO_SAVE_DELAY_MS);
   }
 
@@ -11257,7 +11273,7 @@
 
         // Update features checklist (modal only)
         if (modalVisible && featuresElement && typeof window.wizardState !== 'undefined') {
-          const state = JSON.parse(JSON.stringify(window.wizardState.form));
+          const state = structuredClone(window.wizardState.form);
           featuresElement.innerHTML = generateFeaturesHTML(state);
         }
 

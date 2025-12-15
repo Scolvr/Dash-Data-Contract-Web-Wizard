@@ -875,7 +875,7 @@ img {
   animation: slideDown 0.25s ease-out;
   overflow: hidden;
   transition: opacity 0.25s ease-out, transform 0.25s ease-out;
-  will-change: transform, opacity;
+  /* PERFORMANCE: Removed will-change - only needed for continuous animations */
 }
 
 .distribution-inline-panel.collapsing {
@@ -2209,7 +2209,7 @@ body.guide-panel-collapsed .wizard-tabs {
   color: var(--color-silver);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  will-change: transform;
+  /* PERFORMANCE: Removed will-change - hover only, not continuous */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -2668,7 +2668,7 @@ html[data-theme='light'] .wizard-screen__inner {
 .template-card:hover {
   border-color: rgba(255, 255, 255, 0.2);
   transform: translateY(-4px);
-  will-change: transform;
+  /* PERFORMANCE: Removed will-change - applied by browser during hover */
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.45),
     0 0 40px var(--card-glow, rgba(99, 102, 241, 0.15));
@@ -4216,7 +4216,7 @@ html[data-theme='light'] .form-card--optional {
   box-shadow: none;
   /* I7: Localization row add/remove animation */
   animation: locRowEnter 0.3s cubic-bezier(0.2, 0.6, 0.2, 1);
-  will-change: transform, opacity;
+  /* PERFORMANCE: Removed will-change - one-time animation */
 }
 
 /* I7: Localization row entrance animation */
@@ -12541,7 +12541,7 @@ a:not(.btn):not(.wizard-button):not(.wizard-nav-item):hover {
 .wizard-button--secondary,
 .wizard-button--tertiary {
   transition: all var(--transition-base);
-  will-change: transform;
+  /* PERFORMANCE: Removed will-change - hover only, many elements */
 }
 
 .wizard-button:hover:not(:disabled),
