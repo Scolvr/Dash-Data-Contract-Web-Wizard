@@ -73,6 +73,19 @@
     { key: 'directPricing', stepId: 'permissions-direct-pricing-change', domPrefix: 'direct-pricing' },
     { key: 'mainControl', stepId: 'permissions-main-control-change', domPrefix: 'main-control' }
   ]);
+
+  // Configuration for wizard-choice automation: auto-set dropdowns when Yes/No is clicked
+  const WIZARD_CHOICE_AUTOMATION = Object.freeze([
+    { radioName: 'manual-mint-enabled', stateKey: 'manualMint', performDropdown: 'manual-mint-permission', ruleChangerDropdown: 'manual-mint-change-rules' },
+    { radioName: 'manual-burn-enabled', stateKey: 'manualBurn', performDropdown: 'manual-burn-permission', ruleChangerDropdown: 'manual-burn-change-rules' },
+    { radioName: 'manual-freeze-enabled', stateKey: 'manualFreeze', performDropdown: 'manual-freeze-permission', ruleChangerDropdown: 'manual-freeze-change-rules' },
+    { radioName: 'manual-unfreeze-enabled', stateKey: 'unfreeze', performDropdown: 'manual-unfreeze-permission', ruleChangerDropdown: 'manual-unfreeze-change-rules' },
+    { radioName: 'destroy-frozen-enabled', stateKey: 'destroyFrozen', performDropdown: 'destroy-frozen-permission', ruleChangerDropdown: 'destroy-frozen-change-rules' },
+    { radioName: 'emergency-enabled', stateKey: 'emergencyAction', performDropdown: 'emergency-permission', ruleChangerDropdown: 'emergency-change-rules' },
+    { radioName: 'update-names-enabled', stateKey: 'updateNames', performDropdown: 'update-names-permission', ruleChangerDropdown: 'update-names-rule-changer' },
+    { radioName: 'change-max-supply-enabled', stateKey: 'changeMaxSupply', performDropdown: 'change-max-supply-permission', ruleChangerDropdown: 'change-max-supply-change-rules' }
+  ]);
+
   const INFO_STEP_PARENT = Object.freeze({
     // Naming substeps
     'naming-localization': 'naming',
@@ -7376,59 +7389,56 @@
       });
     }
 
-    // Unfreeze Enable/Disable Radio Buttons
-    const unfreezeEnabledRadios = document.getElementsByName('manual-unfreeze-enabled');
-    const unfreezePermissionSelectForSync = document.getElementById('manual-unfreeze-permission');
-    const unfreezeRuleChangerSelectForSync = document.getElementById('manual-unfreeze-change-rules');
-    unfreezeEnabledRadios.forEach(radio => {
-      radio.addEventListener('change', () => {
-        const enable = radio.value === 'enabled';
-        wizardState.form.permissions.unfreeze.enabled = enable;
-        if (enable) {
-          // Auto-set performerType and ruleChangerType to 'owner' when enabling
-          if (wizardState.form.permissions.unfreeze.performerType === 'none') {
-            wizardState.form.permissions.unfreeze.performerType = 'owner';
-            if (unfreezePermissionSelectForSync) unfreezePermissionSelectForSync.value = 'owner';
-          }
-          if (wizardState.form.permissions.unfreeze.ruleChangerType === 'none') {
-            wizardState.form.permissions.unfreeze.ruleChangerType = 'owner';
-            if (unfreezeRuleChangerSelectForSync) unfreezeRuleChangerSelectForSync.value = 'owner';
-          }
-        }
-        persistState();
-        // Sync UI dropdowns to reflect new state
-        if (typeof hydrateAuthorizationDropdowns === 'function') {
-          hydrateAuthorizationDropdowns();
-        }
-      });
-    });
+    /**
+     * Centralized automation for wizard-choice radio buttons (Yes/No toggles)
+     * When Yes/Enabled: Sets both dropdowns to "Contract Owner"
+     * When No/Disabled: Resets both dropdowns to "No One" and clears references
+     */
+    function initWizardChoiceAutomation() {
+      WIZARD_CHOICE_AUTOMATION.forEach(config => {
+        const radios = document.getElementsByName(config.radioName);
+        const performDropdown = document.getElementById(config.performDropdown);
+        const ruleChangerDropdown = document.getElementById(config.ruleChangerDropdown);
 
-    // Destroy Frozen Enable/Disable Radio Buttons
-    const destroyFrozenEnabledRadios = document.getElementsByName('destroy-frozen-enabled');
-    const destroyFrozenPermissionSelectForSync = document.getElementById('destroy-frozen-permission');
-    const destroyFrozenRuleChangerSelectForSync = document.getElementById('destroy-frozen-change-rules');
-    destroyFrozenEnabledRadios.forEach(radio => {
-      radio.addEventListener('change', () => {
-        const enable = radio.value === 'enabled';
-        wizardState.form.permissions.destroyFrozen.enabled = enable;
-        if (enable) {
-          // Auto-set performerType and ruleChangerType to 'owner' when enabling
-          if (wizardState.form.permissions.destroyFrozen.performerType === 'none') {
-            wizardState.form.permissions.destroyFrozen.performerType = 'owner';
-            if (destroyFrozenPermissionSelectForSync) destroyFrozenPermissionSelectForSync.value = 'owner';
-          }
-          if (wizardState.form.permissions.destroyFrozen.ruleChangerType === 'none') {
-            wizardState.form.permissions.destroyFrozen.ruleChangerType = 'owner';
-            if (destroyFrozenRuleChangerSelectForSync) destroyFrozenRuleChangerSelectForSync.value = 'owner';
-          }
-        }
-        persistState();
-        // Sync UI dropdowns to reflect new state
-        if (typeof hydrateAuthorizationDropdowns === 'function') {
-          hydrateAuthorizationDropdowns();
-        }
+        if (!radios.length) return;
+
+        radios.forEach(radio => {
+          radio.addEventListener('change', () => {
+            const isEnabled = radio.value === 'enabled';
+            const stateObj = wizardState.form.permissions[config.stateKey];
+
+            if (!stateObj) return;
+
+            // Update enabled state
+            stateObj.enabled = isEnabled;
+
+            if (isEnabled) {
+              // YES: Set to Contract Owner
+              stateObj.performerType = 'owner';
+              stateObj.ruleChangerType = 'owner';
+              if (performDropdown) performDropdown.value = 'owner';
+              if (ruleChangerDropdown) ruleChangerDropdown.value = 'owner';
+            } else {
+              // NO: Reset to No One
+              stateObj.performerType = 'none';
+              stateObj.ruleChangerType = 'none';
+              stateObj.performerReference = '';
+              stateObj.ruleChangerReference = '';
+              if (performDropdown) performDropdown.value = 'no-one';
+              if (ruleChangerDropdown) ruleChangerDropdown.value = 'no-one';
+            }
+
+            persistState();
+            // Note: Removed hydrateAuthorizationDropdowns() call - dropdowns are already set directly
+            // and the call was resetting values. Panel visibility is handled by dropdown change events.
+          });
+        });
       });
-    });
+    }
+
+    // Initialize wizard-choice automation for all enabled/disabled toggles
+    // Handles: Mint, Burn, Freeze, Unfreeze, DestroyFrozen, Emergency, UpdateNames, ChangeMaxSupply
+    initWizardChoiceAutomation();
 
     // Freeze System Enable/Disable Radio Buttons
     const freezeEnabledRadios = document.getElementsByName('freeze-enabled');
@@ -13584,6 +13594,7 @@
       manualMint: { enabled: false },
       manualBurn: { enabled: true },
       manualFreeze: { enabled: false },
+      unfreeze: { enabled: false },
       destroyFrozen: { enabled: false },
       emergency: { enabled: false },
       transferNotesEnabled: true,
@@ -13607,6 +13618,8 @@
         manualMint: false,
         manualBurn: true,
         manualFreeze: false,
+        unfreeze: false,
+        destroyFrozen: false,
         distribution: false,
         transferNotes: true
       },
@@ -13649,6 +13662,7 @@
       manualMint: { enabled: true },
       manualBurn: { enabled: true },
       manualFreeze: { enabled: true },
+      unfreeze: { enabled: true },
       destroyFrozen: { enabled: true },
       emergency: { enabled: true },
       tradeMode: 'closed',
@@ -13666,6 +13680,8 @@
         manualMint: true,
         manualBurn: true,
         manualFreeze: true,
+        unfreeze: true,
+        destroyFrozen: true,
         distribution: false,
         transferNotes: true
       },
@@ -13704,6 +13720,7 @@
       manualMint: { enabled: true },
       manualBurn: { enabled: true },
       manualFreeze: { enabled: false },
+      unfreeze: { enabled: false },
       destroyFrozen: { enabled: false },
       emergency: { enabled: false },
       tradeMode: 'closed',
@@ -13730,6 +13747,8 @@
         manualMint: true,
         manualBurn: true,
         manualFreeze: false,
+        unfreeze: false,
+        destroyFrozen: false,
         distribution: true,
         transferNotes: false
       },
@@ -14646,6 +14665,8 @@
       mint: template?.manualMint?.enabled || false,
       burn: template?.manualBurn?.enabled || false,
       freeze: template?.manualFreeze?.enabled || false,
+      unfreeze: template?.unfreeze?.enabled || false,
+      destroyFrozen: template?.destroyFrozen?.enabled || false,
       transfer: template?.transferNotesEnabled || true, // Transfers always enabled by default
       distribution: !!(template?.distribution?.cadence || template?.distribution?.emission),
       history: !!(template?.keepsHistory?.transfers || template?.keepsHistory?.mints ||
