@@ -8066,6 +8066,30 @@
     </div>
   </div>
 
+  <!-- Settings Confirmation Modal (before Registration) -->
+  <div class="modal modal--large" id="settings-confirmation-modal" hidden>
+    <div class="modal__overlay"></div>
+    <div class="modal__content">
+      <div class="modal__header">
+        <h2 class="modal__title">Review Your Token Configuration</h2>
+      </div>
+      <div class="modal__body">
+        <p class="modal__intro">Please review your settings before proceeding to registration. Once registered, these settings cannot be changed.</p>
+
+        <!-- Settings Summary Container -->
+        <div class="settings-summary" id="settings-confirmation-summary">
+          <!-- Settings will be populated by JavaScript -->
+        </div>
+
+        <p class="modal__warning">Are you sure you want to use these settings?</p>
+      </div>
+      <div class="modal__footer">
+        <button class="wizard-button wizard-button--secondary" type="button" id="settings-confirmation-back">← Go Back</button>
+        <button class="wizard-button wizard-button--primary" type="button" id="settings-confirmation-continue">Continue to Registration →</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Contract Preview Modal -->
   <div class="contract-preview-modal" id="contract-preview-modal" hidden>
     <div class="contract-preview-modal__overlay"></div>

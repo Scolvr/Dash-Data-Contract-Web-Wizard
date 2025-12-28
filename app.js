@@ -1308,8 +1308,8 @@
     item.addEventListener('click', (event) => {
       event.preventDefault();
       if (hasChildren) {
-        // FIXED: Just toggle the section, don't navigate
-        const nestedList = item.querySelector('.wizard-subpath');
+        // Toggle the submenu visibility
+        // Use nestedList from outer scope (found via data-toggle -> getElementById)
         const isOpen = item.classList.toggle('is-open');
         if (isOpen) {
           delete item.dataset.userCollapsed;
@@ -1324,7 +1324,11 @@
             nestedList.setAttribute('hidden', '');
           }
         }
-        // Don't navigate when toggling - user can click substeps to navigate
+        // ALSO navigate to first substep when opening (not just toggle)
+        // This ensures clicking "Distribution" shows content, not blank screen
+        if (isOpen) {
+          activateWizardStepFromPath(item.getAttribute('data-step'));
+        }
         return;
       }
       activateWizardStepFromPath(item.getAttribute('data-step'));
@@ -1333,8 +1337,8 @@
       if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
         event.preventDefault();
         if (hasChildren) {
-          // FIXED: Just toggle the section, don't navigate
-          const nestedList = item.querySelector('.wizard-subpath');
+          // Toggle the submenu visibility
+          // Use nestedList from outer scope (found via data-toggle -> getElementById)
           const isOpen = item.classList.toggle('is-open');
           if (isOpen) {
             delete item.dataset.userCollapsed;
@@ -1349,7 +1353,11 @@
               nestedList.setAttribute('hidden', '');
             }
           }
-          // Don't navigate when toggling - user can click substeps to navigate
+          // ALSO navigate to first substep when opening (not just toggle)
+          // This ensures pressing Enter on "Distribution" shows content, not blank screen
+          if (isOpen) {
+            activateWizardStepFromPath(item.getAttribute('data-step'));
+          }
           return;
         }
         activateWizardStepFromPath(item.getAttribute('data-step'));
@@ -1406,8 +1414,23 @@
     if (!stepId || (!STEP_SEQUENCE.includes(stepId) && !INFO_STEPS.includes(stepId))) {
       return;
     }
+
+    // INTERCEPT: When clicking on "Register Token" in sidebar, show validation modal first
+    if (stepId === 'registration') {
+      if (typeof window.showSettingsConfirmationModal === 'function') {
+        window.showSettingsConfirmationModal();
+        return;
+      }
+    }
+
     manualNavigationActive = true;
-    showScreen(stepId, { force: true, isManualNavigation: true });
+    // FIX: Resolve primary step to first substep if it has substeps
+    // This prevents blank screens when clicking on steps like "Distribution" that have no main screen
+    let targetScreenId = stepId;
+    if (SUBSTEP_SEQUENCES[stepId] && SUBSTEP_SEQUENCES[stepId].length > 0) {
+      targetScreenId = SUBSTEP_SEQUENCES[stepId][0];
+    }
+    showScreen(targetScreenId, { force: true, isManualNavigation: true });
   }
 
   const namingForm = document.getElementById('naming-form');
@@ -2283,7 +2306,22 @@
   }
 
   if (searchNextButton) {
-    searchNextButton.addEventListener('click', () => handleStepAdvance('search'));
+    searchNextButton.addEventListener('click', () => {
+      // Validate search step first
+      const validation = evaluateSearch({ touched: true });
+      if (!validation.valid) {
+        announce(validation.message || 'Complete the search configuration to continue.');
+        return;
+      }
+
+      // Show confirmation modal instead of direct navigation
+      if (typeof window.showSettingsConfirmationModal === 'function') {
+        window.showSettingsConfirmationModal();
+      } else {
+        // Fallback to direct navigation if modal not available
+        handleStepAdvance('search');
+      }
+    });
   }
 
   if (searchKeywordsInput) {
@@ -11082,6 +11120,16 @@
   window.announce = announce;
   window.wizardState = wizardState;
 
+  // Expose validation functions for template system
+  window.evaluateNaming = evaluateNaming;
+  window.evaluatePermissions = evaluatePermissions;
+  window.evaluateAdvanced = evaluateAdvanced;
+  window.evaluateDistribution = evaluateDistribution;
+  window.evaluateSearch = evaluateSearch;
+  window.computeFurthestValidIndexFromSteps = computeFurthestValidIndexFromSteps;
+  window.updateStepStatusUI = updateStepStatusUI;
+  window.TRACKED_STEPS = TRACKED_STEPS;
+
   // ========================================
   // Tab Navigation Event Listener
   // ========================================
@@ -14079,10 +14127,66 @@
     // Update feature indicators in sidebar
     updateFeatureIndicators();
 
+    // AUTO-VALIDATE: Run validation on all steps that were pre-filled by the template
+    // This ensures steps like Permissions, Advanced, Distribution show as "valid" in the sidebar
+    validateAllStepsAfterTemplateLoad();
+
     // Show success message
     if (window.announce) {
       window.announce(`✓ Template "${template.name}" loaded successfully! Please enter a token name to continue.`);
     }
+  }
+
+  /**
+   * Validate all steps after template load to update sidebar status indicators.
+   * Steps with valid pre-filled data will be marked as valid.
+   */
+  function validateAllStepsAfterTemplateLoad() {
+    const state = window.wizardState;
+    if (!state) return;
+
+    // Validate each step and update wizardState.steps
+    // Naming - won't be valid yet (user needs to enter token name)
+    if (typeof window.evaluateNaming === 'function') {
+      window.evaluateNaming({ touched: true, silent: true });
+    }
+
+    // Permissions - should be valid from template defaults
+    if (typeof window.evaluatePermissions === 'function') {
+      window.evaluatePermissions({ touched: true });
+    }
+
+    // Advanced - should be valid from template defaults
+    if (typeof window.evaluateAdvanced === 'function') {
+      window.evaluateAdvanced({ touched: true, silent: true });
+    }
+
+    // Distribution - validate if template included distribution settings
+    if (typeof window.evaluateDistribution === 'function') {
+      window.evaluateDistribution({ touched: true, silent: true });
+    }
+
+    // Search - optional, validate if template included search data
+    if (typeof window.evaluateSearch === 'function') {
+      window.evaluateSearch({ touched: true, silent: true });
+    }
+
+    // Update the furthest valid index based on actual step validity
+    if (typeof window.computeFurthestValidIndexFromSteps === 'function') {
+      state.furthestValidIndex = window.computeFurthestValidIndexFromSteps(state.steps);
+    }
+
+    // Update sidebar status indicators for all tracked steps
+    if (window.TRACKED_STEPS && typeof window.updateStepStatusUI === 'function') {
+      window.TRACKED_STEPS.forEach(step => window.updateStepStatusUI(step));
+    }
+
+    // Persist the updated state
+    if (typeof window.persistState === 'function') {
+      window.persistState();
+    }
+
+    console.log('✓ Template validation complete - step statuses updated');
   }
 
   // Step highlighting functions for template wiring
@@ -14876,6 +14980,401 @@
   });
 
   console.log('✓ Start Over modal initialized');
+})();
+
+// =============================================
+// Settings Confirmation Modal (Before Registration)
+// =============================================
+(function initSettingsConfirmationModal() {
+  const modal = document.getElementById('settings-confirmation-modal');
+  const summaryContainer = document.getElementById('settings-confirmation-summary');
+  const backBtn = document.getElementById('settings-confirmation-back');
+  const continueBtn = document.getElementById('settings-confirmation-continue');
+
+  if (!modal) {
+    console.warn('Settings confirmation modal not found');
+    return;
+  }
+
+  // Steps that must be valid before registration (excluding optional ones)
+  const REQUIRED_STEPS = ['naming', 'permissions', 'advanced'];
+  const OPTIONAL_STEPS = ['distribution', 'search'];
+  const ALL_STEPS = [...REQUIRED_STEPS, ...OPTIONAL_STEPS];
+
+  const STEP_DISPLAY_NAMES = {
+    naming: 'Token Naming',
+    permissions: 'Permissions & Supply',
+    advanced: 'Usage & Trading',
+    distribution: 'Distribution',
+    search: 'Search & Discovery'
+  };
+
+  /**
+   * Run validation on all steps and return results
+   */
+  function validateAllSteps() {
+    const results = {};
+
+    // Run each step's validation function
+    ALL_STEPS.forEach(stepId => {
+      let isValid = false;
+      let message = '';
+
+      try {
+        switch (stepId) {
+          case 'naming':
+            if (typeof evaluateNaming === 'function') {
+              const result = evaluateNaming({ touched: true, silent: true });
+              isValid = result.valid;
+              message = result.message || '';
+            }
+            break;
+          case 'permissions':
+            if (typeof evaluatePermissions === 'function') {
+              const result = evaluatePermissions({ touched: true });
+              isValid = result.valid;
+              message = result.message || '';
+            }
+            break;
+          case 'advanced':
+            if (typeof evaluateAdvanced === 'function') {
+              const result = evaluateAdvanced({ touched: true, silent: true });
+              isValid = result.valid;
+              message = result.message || '';
+            }
+            break;
+          case 'distribution':
+            if (typeof evaluateDistribution === 'function') {
+              const result = evaluateDistribution({ touched: true, silent: true });
+              isValid = result.valid;
+              message = result.message || '';
+            } else {
+              // Distribution is optional - mark as valid if not configured
+              isValid = true;
+            }
+            break;
+          case 'search':
+            if (typeof evaluateSearch === 'function') {
+              const result = evaluateSearch({ touched: true, silent: true });
+              isValid = result.valid;
+              message = result.message || '';
+            } else {
+              // Search is optional
+              isValid = true;
+            }
+            break;
+        }
+      } catch (err) {
+        console.warn(`Validation error for step ${stepId}:`, err);
+        isValid = false;
+        message = 'Validation error';
+      }
+
+      // Also check wizardState.steps for validity
+      const stepState = window.wizardState?.steps?.[stepId];
+      if (stepState?.validity === 'valid') {
+        isValid = true;
+      }
+
+      results[stepId] = {
+        valid: isValid,
+        required: REQUIRED_STEPS.includes(stepId),
+        message: message
+      };
+    });
+
+    return results;
+  }
+
+  /**
+   * Generate HTML for the validation status section
+   */
+  function generateValidationStatusHTML(validationResults) {
+    const allRequiredValid = REQUIRED_STEPS.every(step => validationResults[step]?.valid);
+
+    let statusHTML = `
+      <div class="validation-status ${allRequiredValid ? 'validation-status--ready' : 'validation-status--blocked'}">
+        <div class="validation-status__header">
+          <span class="validation-status__icon">${allRequiredValid ? '✓' : '!'}</span>
+          <h4 class="validation-status__title">${allRequiredValid ? 'Ready for Registration' : 'Configuration Incomplete'}</h4>
+        </div>
+        <p class="validation-status__message">${allRequiredValid
+          ? 'All required steps are complete. Review your settings below.'
+          : 'Please complete the required steps before proceeding to registration.'}</p>
+        <div class="validation-status__steps">
+    `;
+
+    ALL_STEPS.forEach(stepId => {
+      const result = validationResults[stepId];
+      const displayName = STEP_DISPLAY_NAMES[stepId] || stepId;
+      const isRequired = REQUIRED_STEPS.includes(stepId);
+      const statusClass = result.valid ? 'valid' : (isRequired ? 'invalid' : 'optional');
+      const statusIcon = result.valid ? '✓' : (isRequired ? '✗' : '○');
+      const statusText = result.valid ? 'Complete' : (isRequired ? 'Required' : 'Optional');
+
+      statusHTML += `
+        <div class="validation-step validation-step--${statusClass}">
+          <span class="validation-step__icon">${statusIcon}</span>
+          <span class="validation-step__name">${displayName}</span>
+          <span class="validation-step__status">${statusText}</span>
+          ${!result.valid && result.message ? `<span class="validation-step__message">${result.message}</span>` : ''}
+        </div>
+      `;
+    });
+
+    statusHTML += '</div></div>';
+    return statusHTML;
+  }
+
+  /**
+   * Generate HTML for the settings summary
+   */
+  function generateSettingsSummaryHTML() {
+    const state = window.wizardState?.form;
+    if (!state) return '<p>Unable to load settings.</p>';
+
+    const categories = [];
+
+    // Token Identity
+    const tokenIdentity = [];
+    if (state.tokenName) {
+      tokenIdentity.push({ label: 'Token Name', value: state.tokenName });
+    }
+    if (state.permissions?.decimals !== undefined) {
+      tokenIdentity.push({ label: 'Decimals', value: state.permissions.decimals.toString() });
+    }
+    // Localizations count
+    const localizationCount = state.naming?.conventions?.localizations
+      ? Object.keys(state.naming.conventions.localizations).length
+      : 0;
+    if (localizationCount > 0) {
+      tokenIdentity.push({ label: 'Localizations', value: `${localizationCount} language(s)` });
+    }
+    if (tokenIdentity.length > 0) {
+      categories.push({ icon: '🏷️', title: 'Token Identity', items: tokenIdentity });
+    }
+
+    // Supply Settings
+    const supplySettings = [];
+    if (state.permissions?.baseSupply) {
+      supplySettings.push({ label: 'Base Supply', value: formatNumber(state.permissions.baseSupply) });
+    }
+    if (state.permissions?.maxSupply) {
+      supplySettings.push({ label: 'Max Supply', value: formatNumber(state.permissions.maxSupply) });
+    }
+    if (supplySettings.length > 0) {
+      categories.push({ icon: '💰', title: 'Supply Settings', items: supplySettings });
+    }
+
+    // Token Actions
+    const tokenActions = [];
+    tokenActions.push({
+      label: 'Minting',
+      value: state.permissions?.manualMint?.enabled ? 'Enabled' : 'Disabled',
+      enabled: state.permissions?.manualMint?.enabled
+    });
+    tokenActions.push({
+      label: 'Burning',
+      value: state.permissions?.manualBurn?.enabled ? 'Enabled' : 'Disabled',
+      enabled: state.permissions?.manualBurn?.enabled
+    });
+    tokenActions.push({
+      label: 'Freezing',
+      value: state.permissions?.manualFreeze?.enabled ? 'Enabled' : 'Disabled',
+      enabled: state.permissions?.manualFreeze?.enabled
+    });
+    categories.push({ icon: '⚙️', title: 'Token Actions', items: tokenActions });
+
+    // Transfer Settings
+    const transferSettings = [];
+    transferSettings.push({
+      label: 'Transfers',
+      value: state.permissions?.transferable !== false ? 'Allowed' : 'Disabled',
+      enabled: state.permissions?.transferable !== false
+    });
+    if (state.permissions?.transferNotes?.enabled) {
+      transferSettings.push({ label: 'Transfer Notes', value: 'Enabled', enabled: true });
+    }
+    categories.push({ icon: '↔️', title: 'Transfer Settings', items: transferSettings });
+
+    // Distribution (if configured)
+    const distributionSettings = [];
+    if (state.distribution?.emission?.type) {
+      const emissionType = state.distribution.emission.type;
+      const emissionLabels = {
+        'FixedAmount': 'Fixed Amount',
+        'Exponential': 'Exponential',
+        'StepFunction': 'Step Function',
+        'Linear': 'Linear'
+      };
+      distributionSettings.push({ label: 'Emission Type', value: emissionLabels[emissionType] || emissionType });
+    }
+    if (state.distribution?.cadence?.type) {
+      const cadenceType = state.distribution.cadence.type;
+      const cadenceLabels = {
+        'BlockBasedDistribution': 'Block-based',
+        'TimeBasedDistribution': 'Time-based',
+        'EpochBasedDistribution': 'Epoch-based'
+      };
+      distributionSettings.push({ label: 'Cadence', value: cadenceLabels[cadenceType] || cadenceType });
+    }
+    if (state.distribution?.perpetualEnabled) {
+      distributionSettings.push({ label: 'Perpetual Distribution', value: 'Enabled', enabled: true });
+    }
+    if (distributionSettings.length > 0) {
+      categories.push({ icon: '📊', title: 'Distribution', items: distributionSettings });
+    }
+
+    // Launch Settings
+    const launchSettings = [];
+    launchSettings.push({
+      label: 'Start as Paused',
+      value: state.permissions?.startAsPaused ? 'Yes' : 'No',
+      enabled: state.permissions?.startAsPaused
+    });
+    categories.push({ icon: '🚀', title: 'Launch Settings', items: launchSettings });
+
+    // Search & Discovery
+    const searchSettings = [];
+    if (state.search?.description) {
+      const desc = state.search.description;
+      searchSettings.push({
+        label: 'Description',
+        value: desc.length > 50 ? desc.substring(0, 50) + '...' : desc
+      });
+    }
+    if (state.search?.keywords) {
+      const keywords = state.search.keywords.split(',').filter(k => k.trim()).length;
+      if (keywords > 0) {
+        searchSettings.push({ label: 'Keywords', value: `${keywords} keyword(s)` });
+      }
+    }
+    if (searchSettings.length > 0) {
+      categories.push({ icon: '🔍', title: 'Search & Discovery', items: searchSettings });
+    }
+
+    // Render categories
+    return categories.map(category => `
+      <div class="settings-summary__category">
+        <div class="settings-summary__category-header">
+          <span class="settings-summary__category-icon">${category.icon}</span>
+          <h4 class="settings-summary__category-title">${category.title}</h4>
+        </div>
+        <div class="settings-summary__items">
+          ${category.items.map(item => `
+            <div class="settings-summary__item">
+              <span class="settings-summary__label">${item.label}</span>
+              ${item.enabled !== undefined
+                ? `<span class="settings-summary__badge ${item.enabled ? '' : 'settings-summary__badge--off'}">${item.enabled ? '✓ ' : ''}${item.value}</span>`
+                : `<span class="settings-summary__value">${item.value}</span>`
+              }
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  /**
+   * Format large numbers with commas
+   */
+  function formatNumber(num) {
+    if (!num) return '0';
+    const str = num.toString();
+    return str.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  // Track validation state for the continue button
+  let currentValidationResults = null;
+
+  /**
+   * Show the confirmation modal
+   */
+  function showSettingsConfirmationModal() {
+    // Run validation on all steps
+    currentValidationResults = validateAllSteps();
+    const allRequiredValid = REQUIRED_STEPS.every(step => currentValidationResults[step]?.valid);
+
+    // Populate validation status and settings summary
+    if (summaryContainer) {
+      summaryContainer.innerHTML = generateValidationStatusHTML(currentValidationResults) + generateSettingsSummaryHTML();
+    }
+
+    // Update continue button state
+    if (continueBtn) {
+      if (allRequiredValid) {
+        continueBtn.disabled = false;
+        continueBtn.classList.remove('wizard-button--disabled');
+        continueBtn.textContent = 'Continue to Registration →';
+      } else {
+        continueBtn.disabled = true;
+        continueBtn.classList.add('wizard-button--disabled');
+        continueBtn.textContent = 'Complete Required Steps First';
+      }
+    }
+
+    modal.removeAttribute('hidden');
+    document.body.classList.add('modal-open');
+    continueBtn?.focus();
+  }
+
+  /**
+   * Hide the confirmation modal
+   */
+  function hideSettingsConfirmationModal() {
+    modal.setAttribute('hidden', '');
+    document.body.classList.remove('modal-open');
+  }
+
+  /**
+   * Handle continue to registration
+   */
+  function handleContinueToRegistration() {
+    // Double-check validation before proceeding
+    const allRequiredValid = currentValidationResults &&
+      REQUIRED_STEPS.every(step => currentValidationResults[step]?.valid);
+
+    if (!allRequiredValid) {
+      console.warn('Cannot proceed - required steps not complete');
+      return;
+    }
+
+    hideSettingsConfirmationModal();
+
+    // Navigate to registration step
+    if (typeof goToNextScreen === 'function') {
+      goToNextScreen('search');
+    } else if (typeof showScreen === 'function') {
+      showScreen('registration');
+    }
+  }
+
+  // Event listeners
+  if (backBtn) {
+    backBtn.addEventListener('click', hideSettingsConfirmationModal);
+  }
+
+  if (continueBtn) {
+    continueBtn.addEventListener('click', handleContinueToRegistration);
+  }
+
+  // Overlay click to close
+  const overlay = modal.querySelector('.modal__overlay');
+  if (overlay) {
+    overlay.addEventListener('click', hideSettingsConfirmationModal);
+  }
+
+  // ESC key to close
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modal.hasAttribute('hidden')) {
+      hideSettingsConfirmationModal();
+    }
+  });
+
+  // Expose function globally for use by search-next button
+  window.showSettingsConfirmationModal = showSettingsConfirmationModal;
+
+  console.log('✓ Settings confirmation modal initialized');
 })();
 
 // ═══════════════════════════════════════════════════════
