@@ -5744,13 +5744,23 @@
     // DEFENSIVE: Verify only one screen is active (catch any future bugs)
     const activeScreenElements = document.querySelectorAll('.wizard-screen--active');
     if (activeScreenElements.length !== 1) {
-      debug.error('Multiple or zero active screens detected:', activeScreenElements.length);
+      // Only log error if we have multiple (not zero) - zero can happen during tab switches
+      if (activeScreenElements.length > 1) {
+        debug.error('Multiple active screens detected:', activeScreenElements.length);
+      }
       // Force-fix: Remove active class from all except the current one
       activeScreenElements.forEach((el) => {
         if (el.id !== 'screen-' + screenId) {
           el.classList.remove('wizard-screen--active');
         }
       });
+      // If no screen is active, try to activate the target screen directly
+      if (activeScreenElements.length === 0) {
+        const targetScreen = document.getElementById('screen-' + screenId);
+        if (targetScreen) {
+          targetScreen.classList.add('wizard-screen--active');
+        }
+      }
     }
 
     // FIXED: Track previous parent step from current active screen
