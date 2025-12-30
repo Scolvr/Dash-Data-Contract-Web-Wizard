@@ -7183,6 +7183,7 @@ html[data-theme='light'] .validation-step--invalid {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
               padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  scroll-behavior: smooth;
 }
 
 /* Collapsed state */
@@ -14530,5 +14531,26 @@ div.mobile-menu-overlay {
 
   html[data-theme='light'] .mobile-placeholder__background img {
     filter: grayscale(100%) invert(1);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   ACCESSIBILITY - REDUCED MOTION
+   Respects user's OS preference for reduced motion
+   ═══════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Disable smooth scrolling for users who prefer reduced motion */
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+
+  /* Keep essential transitions but make them instant */
+  .page-guide,
+  .wizard-screen,
+  .modal {
+    transition-duration: 0.01ms !important;
   }
 }

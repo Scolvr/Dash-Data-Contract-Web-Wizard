@@ -366,16 +366,14 @@
     const firstError = searchContainer.querySelector('.wizard-field__input--error, .is-invalid, [aria-invalid="true"]');
     if (!firstError) return;
 
-    // Scroll into view with offset for header
-    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Scroll into view with offset for header - use auto for instant scroll
+    firstError.scrollIntoView({ behavior: 'auto', block: 'center' });
 
     // Add pulse animation
     firstError.classList.add('wizard-field__input--error-pulse');
 
-    // Focus the field
-    setTimeout(() => {
-      firstError.focus();
-    }, 300);
+    // Focus the field immediately (no delay needed with instant scroll)
+    firstError.focus();
 
     // Remove pulse class after animation
     setTimeout(() => {
@@ -16256,20 +16254,19 @@
     // Scroll the guide panel to show the highlighted section
     const guidePanel = targetSection.closest('.page-guide');
     if (guidePanel) {
-      // Small delay to allow panel expansion animation to complete
-      setTimeout(() => {
-        // Calculate position relative to the guide panel's scroll container
-        const targetOffset = targetSection.offsetTop;
-        const toggleHeight = 60; // Approximate height of sticky toggle button
+      // Calculate position relative to the guide panel's scroll container
+      const targetOffset = targetSection.offsetTop;
+      const toggleHeight = 60; // Approximate height of sticky toggle button
 
-        // Scroll the guide panel container
-        guidePanel.scrollTo({
-          top: targetOffset - toggleHeight - 20, // 20px padding
-          behavior: 'smooth'
-        });
+      // Scroll the guide panel container - fast smooth for polished feel
+      // Respects user's reduced motion preference automatically via CSS
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      guidePanel.scrollTo({
+        top: targetOffset - toggleHeight - 20, // 20px padding
+        behavior: prefersReducedMotion ? 'auto' : 'smooth'
+      });
 
-        console.log('✓ Scrolled to section:', targetId);
-      }, 350); // Slightly longer delay for expansion animation
+      console.log('✓ Scrolled to section:', targetId);
     }
 
     // Auto-remove highlight after 3 seconds
