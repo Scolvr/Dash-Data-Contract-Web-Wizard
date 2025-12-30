@@ -1797,8 +1797,7 @@
     tokenNameInput.addEventListener('blur', () => evaluateNaming({
       touched: true,
       silent: true,
-      showFieldIndicators: true,
-      showValidityImmediately: true
+      showFieldIndicators: true
     }));
   }
 
@@ -1807,8 +1806,7 @@
     ownerIdentityInput.addEventListener('blur', () => evaluateNaming({
       touched: true,
       silent: true,
-      showFieldIndicators: true,
-      showValidityImmediately: true
+      showFieldIndicators: true
     }));
   }
 
@@ -1818,8 +1816,7 @@
     tokenPluralInput.addEventListener('blur', () => evaluateNaming({
       touched: true,
       silent: true,
-      showFieldIndicators: true,
-      showValidityImmediately: true
+      showFieldIndicators: true
     }));
   }
   if (tokenCapitalizeInput) {
@@ -2644,14 +2641,13 @@
   function initialiseUI() {
     hydrateFormsFromState();
     TRACKED_STEPS.forEach(updateStepStatusUI);
-    // Re-evaluate all steps with showValidityImmediately to show Valid/Invalid in sidebar
-    // Silent: true suppresses error messages on page load
+    // Re-evaluate all steps - only show Invalid if previously touched
+    // Unvisited steps will show Pending
     STEP_SEQUENCE.forEach((stepId) => {
       const step = wizardState.steps[stepId];
       evaluateStep(stepId, {
-        touched: step.touched,
-        silent: true,                   // Suppress error messages on page load
-        showValidityImmediately: true   // But always show Valid/Invalid in sidebar
+        touched: step.touched,  // Only show Invalid if previously visited
+        silent: true            // Suppress error messages on page load
       });
     });
     // FIX: Recalculate furthestValidIndex based on newly evaluated step validity
@@ -3194,7 +3190,7 @@
     }
   }
 
-  function evaluateNaming({ touched = false, silent = false, showValidityImmediately = false, showFieldIndicators = false } = {}) {
+  function evaluateNaming({ touched = false, silent = false, showFieldIndicators = false } = {}) {
     const rawValue = tokenNameInput.value;
     const nameResult = validateTokenName(rawValue);
 
@@ -3305,13 +3301,13 @@
       namingLocalizationNextButton.disabled = !localizationResult.valid;
     }
 
-    updateStepStatusFromValidation('naming', { valid: isValid }, touched, { showValidityImmediately });
+    updateStepStatusFromValidation('naming', { valid: isValid }, touched);
 
     persistState();
     return { valid: isValid };
   }
 
-  function evaluatePermissions({ touched = false, silent = false, showValidityImmediately = false, showFieldIndicators = false } = {}) {
+  function evaluatePermissions({ touched = false, silent = false, showFieldIndicators = false } = {}) {
     // FIXED: Return invalid if permissionsUI not initialized (don't default to valid)
     if (!permissionsUI || typeof permissionsUI.getValues !== 'function') {
       debug.warn('evaluatePermissions called but permissionsUI not initialized');
@@ -3465,17 +3461,19 @@
       allowTransferToFrozenBalance: Boolean(values.allowTransferToFrozenBalance)
     };
 
-    updateStepStatusFromValidation('permissions', result, touched, { showValidityImmediately });
+    updateStepStatusFromValidation('permissions', result, touched);
     persistState();
 
     return result;
   }
 
-  function evaluateDistribution({ touched = false, silent = false, showValidityImmediately = false, showFieldIndicators = false } = {}) {
+  function evaluateDistribution({ touched = false, silent = false, showFieldIndicators = false } = {}) {
     if (!distributionUI || typeof distributionUI.getValues !== 'function') {
-      // UI not ready - mark as valid
+      // UI not ready - return valid but only update status if touched
       const result = { valid: true, message: '' };
-      updateStepStatusFromValidation('distribution', result, touched, { showValidityImmediately });
+      if (touched) {
+        updateStepStatusFromValidation('distribution', result, touched);
+      }
       return result;
     }
 
@@ -3497,7 +3495,7 @@
         distributionNextButton.disabled = !scheduleValidation.valid;
       }
       // Update sidebar status based on Schedule validation
-      updateStepStatusFromValidation('distribution', scheduleValidation, touched, { showValidityImmediately });
+      updateStepStatusFromValidation('distribution', scheduleValidation, touched);
 
       wizardState.form.distribution = values;
       if (!silent) {
@@ -3533,7 +3531,7 @@
         updateStepStatusUI('distribution');
         updateFurthestValidIndex();
       } else {
-        updateStepStatusFromValidation('distribution', scheduleValidation, touched, { showValidityImmediately });
+        updateStepStatusFromValidation('distribution', scheduleValidation, touched);
       }
 
       wizardState.form.distribution = values;
@@ -3545,11 +3543,14 @@
     }
   }
 
-  function evaluateAdvanced({ touched = false, silent = false, showValidityImmediately = false, showFieldIndicators = false } = {}) {
+  function evaluateAdvanced({ touched = false, silent = false, showFieldIndicators = false } = {}) {
     if (!advancedUI || typeof advancedUI.getValues !== 'function') {
       // UI removed - functionality moved to dedicated permission screens
+      // Only update status if touched, otherwise stay Pending
       const result = { valid: true, message: '' };
-      updateStepStatusFromValidation('advanced', result, touched, { showValidityImmediately });
+      if (touched) {
+        updateStepStatusFromValidation('advanced', result, touched);
+      }
       return result;
     }
 
@@ -3574,7 +3575,7 @@
     advancedMessage.textContent = !silent && !result.valid ? result.message : '';
     advancedNextButton.disabled = !result.valid;
 
-    updateStepStatusFromValidation('advanced', result, touched, { showValidityImmediately });
+    updateStepStatusFromValidation('advanced', result, touched);
     persistState();
 
     return result;
@@ -3652,7 +3653,7 @@
     return result;
   }
 
-  function evaluateRegistration({ touched = false, silent = false, showValidityImmediately = false, showFieldIndicators = false } = {}) {
+  function evaluateRegistration({ touched = false, silent = false, showFieldIndicators = false } = {}) {
     const refreshStatus =
       !silent &&
       touched &&
@@ -3680,7 +3681,7 @@
 
     const result = ready ? { valid: true, message: '' } : { valid: false, message };
 
-    updateStepStatusFromValidation('registration', result, touched, { showValidityImmediately });
+    updateStepStatusFromValidation('registration', result, touched);
     persistState();
     return result;
   }
@@ -5871,13 +5872,11 @@
     updateSidebarNavState(screenId, previousParentStep, shouldFoldSections, shouldAutoExpandOnSwitch);
     // FIXED: Get parent step for substeps when checking state
     const stepForState = getParentStep(screenId) || screenId;
-    const activeStepState = wizardState.steps[stepForState];
-    // Validate on navigation: show Valid/Invalid in sidebar, but suppress error messages
+    // Mark step as touched when user navigates to it - this triggers Invalid/Valid display
     evaluateStep(screenId, {
-      touched: activeStepState ? activeStepState.touched : false,
-      silent: true,                    // Suppress error messages on navigation
-      showValidityImmediately: true,   // But always show Valid/Invalid in sidebar
-      showFieldIndicators: true        // Show green/red field borders
+      touched: true,           // Always mark as touched when visiting
+      silent: true,            // Suppress error messages on navigation
+      showFieldIndicators: true
     });
 
     // Unlock transitions after animation completes
@@ -6278,19 +6277,18 @@
     element.dataset.status = status;
   }
 
-  function updateStepStatusFromValidation(stepId, validation, touched, options = {}) {
+  function updateStepStatusFromValidation(stepId, validation, touched) {
     const step = getStepState(stepId);
     const nextTouched = touched || (step && step.touched);
-    // NEW: Option to always show validity status regardless of touched state
-    const showValidityImmediately = options.showValidityImmediately !== false;
 
     let nextValidity = step ? step.validity : 'unknown';
     if (validation.valid) {
       nextValidity = 'valid';
-    } else if (showValidityImmediately || nextTouched) {
-      // Show 'invalid' immediately when navigating, not just when touched
+    } else if (nextTouched) {
+      // Only show 'invalid' if user has visited/touched the step
       nextValidity = 'invalid';
     } else {
+      // Unvisited steps stay 'unknown' (shows as Pending)
       nextValidity = 'unknown';
     }
     updateStepState(stepId, { validity: nextValidity, touched: nextTouched });
