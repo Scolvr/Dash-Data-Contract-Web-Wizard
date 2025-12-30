@@ -412,6 +412,10 @@ body {
   overflow-x: hidden;
   width: 100%;
   max-width: 100vw;
+  /* iOS momentum scrolling for main page */
+  -webkit-overflow-scrolling: touch;
+  /* Scroll anchoring to prevent content jumps */
+  overflow-anchor: auto;
 }
 
 * {
@@ -1214,6 +1218,10 @@ body {
   overflow-x: hidden;
   width: 100%;
   max-width: 100vw;
+  /* iOS momentum scrolling for main page */
+  -webkit-overflow-scrolling: touch;
+  /* Scroll anchoring to prevent content jumps */
+  overflow-anchor: auto;
 }
 
 * {
@@ -1292,7 +1300,15 @@ img {
   scrollbar-gutter: stable;
   z-index: 10;
   overscroll-behavior: contain;
-  /* direction: rtl removed - was breaking mobile touch interactions */
+  /* GPU acceleration for smooth 60fps scrolling */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: scroll-position;
+  contain: layout style;
+  /* iOS momentum scrolling */
+  -webkit-overflow-scrolling: touch;
+  /* Scroll anchoring to prevent content jumps */
+  overflow-anchor: auto;
 }
 
 /* Enhanced fade gradient on right edge */
@@ -6055,7 +6071,8 @@ body.modal-open .modal__content {
   position: relative;
   z-index: 2;
   opacity: 1;
-  transform: translateY(0) scale(1);
+  transform: translateY(0) scale(1) translateZ(0);
+  -webkit-transform: translateY(0) scale(1) translateZ(0);
   background: linear-gradient(165deg, #1E2128 0%, #14161A 100%);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-2xl);
@@ -6068,6 +6085,14 @@ body.modal-open .modal__content {
   max-height: 90vh;
   overflow-y: auto;
   overflow-x: hidden;
+  /* GPU acceleration for smooth 60fps scrolling */
+  will-change: scroll-position, transform;
+  contain: layout style;
+  /* iOS momentum scrolling */
+  -webkit-overflow-scrolling: touch;
+  /* Scroll anchoring to prevent content jumps */
+  overflow-anchor: auto;
+  overscroll-behavior: contain;
 }
 
 /* Accent glow at top */
@@ -7184,6 +7209,16 @@ html[data-theme='light'] .validation-step--invalid {
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
               padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   scroll-behavior: smooth;
+  /* GPU acceleration for smooth 60fps scrolling */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: scroll-position;
+  contain: layout style;
+  /* iOS momentum scrolling */
+  -webkit-overflow-scrolling: touch;
+  /* Scroll anchoring to prevent content jumps */
+  overflow-anchor: auto;
+  overscroll-behavior: contain;
 }
 
 /* Collapsed state */
