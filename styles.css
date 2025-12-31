@@ -1289,8 +1289,7 @@ img {
   height: 100vh;
   padding: 0;
   background: var(--sidebar-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  /* PERFORMANCE: Removed backdrop-filter blur - causes repaint on every scroll frame */
   border-right: 1px solid var(--sidebar-border);
   box-shadow: none;
   overflow-y: auto;
@@ -7238,20 +7237,21 @@ html[data-theme='light'] .validation-step--invalid {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: rgba(247, 250, 252, 0.85);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  /* PERFORMANCE: Using solid color instead of backdrop-filter for smooth scrolling */
+  background: var(--color-bg-secondary);
+  /* GPU layer for sticky element */
+  transform: translateZ(0);
 }
 
-/* Dark mode support for blurred header */
+/* Dark mode support for header */
 @media (prefers-color-scheme: dark) {
   html:not([data-theme='light']) .page-guide__header {
-    background: rgba(28, 28, 30, 0.85);
+    background: var(--color-bg-secondary);
   }
 }
 
 html[data-theme='dark'] .page-guide__header {
-  background: rgba(28, 28, 30, 0.85);
+  background: var(--color-bg-secondary);
 }
 
 /* Horizontal tabs container */
@@ -14588,4 +14588,21 @@ div.mobile-menu-overlay {
   .modal {
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ═══════════════════════════════════════════════════════
+   SCROLL PERFORMANCE - Disable transitions during scroll
+   Applied via JS when scrolling to prevent jank
+   ═══════════════════════════════════════════════════════ */
+
+html.is-scrolling * {
+  transition: none !important;
+}
+
+/* GPU-accelerate all sticky elements to prevent repaint during scroll */
+[style*="position: sticky"],
+.page-guide__step-heading {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
 }

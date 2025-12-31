@@ -19,6 +19,24 @@
   }
   // ============================================
 
+  // ============================================
+  // Scroll Performance Optimization
+  // Disables CSS transitions during scroll for 60fps
+  // ============================================
+  let scrollTimeout = null;
+  window.addEventListener('scroll', () => {
+    // Add class to disable transitions during scroll
+    if (!document.documentElement.classList.contains('is-scrolling')) {
+      document.documentElement.classList.add('is-scrolling');
+    }
+    // Remove class after scrolling stops
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      document.documentElement.classList.remove('is-scrolling');
+    }, 150);
+  }, { passive: true });
+  // ============================================
+
   // Development mode - set to false for production
   const DEV_MODE = false;
 
