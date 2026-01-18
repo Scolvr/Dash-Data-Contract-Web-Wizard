@@ -16400,3 +16400,125 @@
 
   console.log('✓ Background glow system initialized (optimized CSS gradients)');
 })();
+
+// ============================================
+// Landing Page Handler
+// Full-screen introduction before wizard entry
+// ============================================
+(function initLandingPage() {
+  'use strict';
+
+  const LANDING_STORAGE_KEY = 'dash-wizard-landing-seen';
+
+  function setupLandingPage() {
+    const landingPage = document.getElementById('landing-page');
+    const enterWizardBtn = document.getElementById('enter-wizard-btn');
+    const wizardShell = document.querySelector('.wizard-shell');
+
+    console.log('[Landing] Elements found:', {
+      landingPage: !!landingPage,
+      enterWizardBtn: !!enterWizardBtn,
+      wizardShell: !!wizardShell
+    });
+
+    if (!landingPage) {
+      console.log('[Landing] Landing page element not found, skipping initialization');
+      return;
+    }
+
+    // Check if user has already seen the landing page in this session
+    function hasSeenLanding() {
+      return sessionStorage.getItem(LANDING_STORAGE_KEY) === 'true';
+    }
+
+    // Mark landing as seen
+    function markLandingSeen() {
+      sessionStorage.setItem(LANDING_STORAGE_KEY, 'true');
+    }
+
+    // Hide landing page with animation
+    function hideLandingPage() {
+      console.log('[Landing] Hiding landing page...');
+      landingPage.classList.add('landing-page--hidden');
+
+      // After animation completes, fully hide and remove from DOM flow
+      setTimeout(() => {
+        landingPage.style.display = 'none';
+        // Ensure wizard shell is visible
+        if (wizardShell) {
+          wizardShell.classList.remove('wizard-shell--hidden');
+          wizardShell.style.opacity = '1';
+          wizardShell.style.pointerEvents = 'auto';
+        }
+        console.log('[Landing] Landing page hidden, wizard visible');
+      }, 500); // Match CSS transition duration
+
+      markLandingSeen();
+    }
+
+    // Show landing page
+    function showLandingPageUI() {
+      console.log('[Landing] Showing landing page...');
+      landingPage.style.display = 'flex';
+      landingPage.classList.remove('landing-page--hidden');
+      if (wizardShell) {
+        wizardShell.classList.add('wizard-shell--hidden');
+        wizardShell.style.opacity = '0';
+        wizardShell.style.pointerEvents = 'none';
+      }
+    }
+
+    // Initialize
+    if (hasSeenLanding()) {
+      // User has already seen landing, hide it immediately
+      landingPage.style.display = 'none';
+      if (wizardShell) {
+        wizardShell.classList.remove('wizard-shell--hidden');
+        wizardShell.style.opacity = '1';
+        wizardShell.style.pointerEvents = 'auto';
+      }
+      console.log('[Landing] Landing page skipped (already seen this session)');
+    } else {
+      // Show landing page
+      showLandingPageUI();
+      console.log('[Landing] Landing page displayed');
+    }
+
+    // Event listeners for enter button
+    if (enterWizardBtn) {
+      enterWizardBtn.addEventListener('click', function(e) {
+        console.log('[Landing] Button clicked!');
+        e.preventDefault();
+        e.stopPropagation();
+        hideLandingPage();
+      });
+
+      // Also allow Enter key to proceed
+      enterWizardBtn.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          console.log('[Landing] Button keydown:', e.key);
+          e.preventDefault();
+          hideLandingPage();
+        }
+      });
+    }
+
+    // Expose function to show landing again (for testing/reset)
+    window.showLandingPage = function() {
+      sessionStorage.removeItem(LANDING_STORAGE_KEY);
+      showLandingPageUI();
+    };
+
+    // Expose function to hide landing (for programmatic access)
+    window.hideLandingPage = hideLandingPage;
+
+    console.log('[Landing] Landing page handler initialized successfully');
+  }
+
+  // Run setup when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupLandingPage);
+  } else {
+    setupLandingPage();
+  }
+})();

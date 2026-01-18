@@ -24,8 +24,8 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dash Token Wizard</title>
-  <link rel="preload" href="styles.css?v=112" as="style">
-  <link rel="stylesheet" href="styles.css?v=112">
+  <link rel="preload" href="styles.css?v=115" as="style">
+  <link rel="stylesheet" href="styles.css?v=115">
 </head>
 
 <body>
@@ -59,6 +59,159 @@
 
   <!-- Mobile Menu Overlay - REMOVED: was blocking touch events -->
   <!-- <div class="mobile-menu-overlay" aria-hidden="true"></div> -->
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       LANDING PAGE - Full-screen introduction before wizard
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="landing-page" id="landing-page">
+    <!-- Animated Background -->
+    <div class="landing-bg" aria-hidden="true">
+      <div class="landing-bg__gradient"></div>
+      <div class="landing-bg__grid"></div>
+      <div class="landing-bg__glow landing-bg__glow--1"></div>
+      <div class="landing-bg__glow landing-bg__glow--2"></div>
+      <div class="landing-bg__glow landing-bg__glow--3"></div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="landing-nav">
+      <div class="landing-nav__brand">
+        <img src="https://media.dash.org/wp-content/uploads/dash-d-rounded-square-1000.png" alt="Dash" class="landing-nav__logo">
+        <span class="landing-nav__title">Dash Platform</span>
+      </div>
+      <div class="landing-nav__links">
+        <a href="https://docs.dash.org" target="_blank" rel="noopener" class="landing-nav__link">Documentation</a>
+        <a href="https://www.dash.org" target="_blank" rel="noopener" class="landing-nav__link">Dash.org</a>
+      </div>
+    </nav>
+
+    <!-- Hero Content -->
+    <main class="landing-hero">
+      <div class="landing-hero__content">
+        <!-- Badge -->
+        <div class="landing-badge">
+          <span class="landing-badge__icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="currentColor"/>
+            </svg>
+          </span>
+          <span class="landing-badge__text">Powered by Dash Platform</span>
+        </div>
+
+        <!-- Main Headline -->
+        <h1 class="landing-headline">
+          <span class="landing-headline__line">Create Custom</span>
+          <span class="landing-headline__line landing-headline__line--gradient">Tokens on Dash</span>
+        </h1>
+
+        <!-- Subtitle -->
+        <p class="landing-subtitle">
+          The guided wizard for creating, configuring, and deploying tokens on Dash Platform.
+          From simple fixed-supply tokens to complex reward systems — all without writing code.
+        </p>
+
+        <!-- Features Grid -->
+        <div class="landing-features">
+          <div class="landing-feature">
+            <div class="landing-feature__icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="landing-feature__text">
+              <strong>Flexible Supply</strong>
+              <span>Fixed, mintable, or emission-based</span>
+            </div>
+          </div>
+          <div class="landing-feature">
+            <div class="landing-feature__icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="landing-feature__text">
+              <strong>Full Control</strong>
+              <span>Freeze, burn, and permission rules</span>
+            </div>
+          </div>
+          <div class="landing-feature">
+            <div class="landing-feature__icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="landing-feature__text">
+              <strong>Automated Distribution</strong>
+              <span>Time-based, block-based, or epoch-based</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CTA Button -->
+        <div class="landing-cta">
+          <button class="landing-cta__button" id="enter-wizard-btn" type="button">
+            <span class="landing-cta__text">Create Your Token</span>
+            <svg class="landing-cta__arrow" width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <p class="landing-cta__hint">Choose from templates or build from scratch</p>
+        </div>
+      </div>
+
+      <!-- Decorative Token Preview -->
+      <div class="landing-preview" aria-hidden="true">
+        <div class="landing-preview__card">
+          <div class="landing-preview__header">
+            <div class="landing-preview__token-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                <path d="M12 6v12M6 12h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="landing-preview__token-info">
+              <span class="landing-preview__token-name">MyToken</span>
+              <span class="landing-preview__token-symbol">MTK</span>
+            </div>
+          </div>
+          <div class="landing-preview__stats">
+            <div class="landing-preview__stat">
+              <span class="landing-preview__stat-label">Total Supply</span>
+              <span class="landing-preview__stat-value">1,000,000</span>
+            </div>
+            <div class="landing-preview__stat">
+              <span class="landing-preview__stat-label">Decimals</span>
+              <span class="landing-preview__stat-value">8</span>
+            </div>
+            <div class="landing-preview__stat">
+              <span class="landing-preview__stat-label">Type</span>
+              <span class="landing-preview__stat-value">Fixed Supply</span>
+            </div>
+          </div>
+          <div class="landing-preview__features">
+            <span class="landing-preview__feature-tag">Burnable</span>
+            <span class="landing-preview__feature-tag">Transfer Notes</span>
+            <span class="landing-preview__feature-tag">Tradeable</span>
+          </div>
+        </div>
+        <!-- Floating elements for visual interest -->
+        <div class="landing-preview__float landing-preview__float--1"></div>
+        <div class="landing-preview__float landing-preview__float--2"></div>
+        <div class="landing-preview__float landing-preview__float--3"></div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+      <p class="landing-footer__text">Built for Dash Platform v2.0</p>
+      <div class="landing-footer__links">
+        <a href="https://github.com/dashpay" target="_blank" rel="noopener" class="landing-footer__link">GitHub</a>
+        <span class="landing-footer__divider">•</span>
+        <a href="https://discord.gg/dash" target="_blank" rel="noopener" class="landing-footer__link">Discord</a>
+      </div>
+    </footer>
+  </div>
 
   <!-- Mobile Header (visible only on mobile) - HIDDEN by placeholder -->
   <header class="mobile-header">
@@ -566,13 +719,12 @@
 
           <div class="wizard-screen__inner wizard-screen__inner--centered">
             <div class="welcome-container">
-              <h1 class="welcome-title">Dash Token Wizard</h1>
-              <p class="welcome-subtitle">Create custom tokens on Dash Platform with ease</p>
+              <h1 class="welcome-title">Choose Your Template</h1>
+              <p class="welcome-subtitle">Start with a pre-configured template for your use case, or build your token from scratch with full customization control</p>
 
               <div class="template-selection">
-                <h2 class="template-selection__title">Choose a starting point</h2>
-                <p class="template-selection__description">Select a template to get started quickly, or start from
-                  scratch</p>
+                <h2 class="template-selection__title">Available Templates</h2>
+                <p class="template-selection__description">Click a template to select it and begin configuration</p>
 
                 <div class="template-grid">
                   <!-- Featured: Start from Scratch -->
