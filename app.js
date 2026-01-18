@@ -1617,6 +1617,7 @@
   const searchScreen = document.getElementById('screen-search');
   const overviewScreen = document.getElementById('screen-overview');
   const registrationScreen = document.getElementById('screen-registration');
+  const documentsScreen = document.getElementById('screen-documents');
   const manualMintScreen = document.getElementById('screen-permissions-manual-mint');
   const manualBurnScreen = document.getElementById('screen-permissions-manual-burn');
   const manualFreezeScreen = document.getElementById('screen-permissions-manual-freeze');
@@ -1659,6 +1660,12 @@
       isAdvanced: false,
       shouldSkip: () => false,
       element: welcomeScreen
+    },
+    {
+      id: 'documents',
+      isAdvanced: false,
+      shouldSkip: () => false,
+      element: documentsScreen
     },
     {
       id: 'naming',
@@ -16402,27 +16409,33 @@
 })();
 
 // ============================================
-// Landing Page Handler
-// Full-screen introduction before wizard entry
+// Landing Page & Hub Page Handler
+// Full-screen introduction flow: Landing -> Hub -> Wizard
 // ============================================
-(function initLandingPage() {
+(function initLandingAndHubPages() {
   'use strict';
 
   const LANDING_STORAGE_KEY = 'dash-wizard-landing-seen';
 
-  function setupLandingPage() {
+  function setupPages() {
     const landingPage = document.getElementById('landing-page');
+    const hubPage = document.getElementById('hub-page');
     const enterWizardBtn = document.getElementById('enter-wizard-btn');
+    const hubCreateTokenBtn = document.getElementById('hub-create-token');
+    const hubDocumentsBtn = document.getElementById('hub-documents');
     const wizardShell = document.querySelector('.wizard-shell');
 
-    console.log('[Landing] Elements found:', {
+    console.log('[Pages] Elements found:', {
       landingPage: !!landingPage,
+      hubPage: !!hubPage,
       enterWizardBtn: !!enterWizardBtn,
+      hubCreateTokenBtn: !!hubCreateTokenBtn,
+      hubDocumentsBtn: !!hubDocumentsBtn,
       wizardShell: !!wizardShell
     });
 
     if (!landingPage) {
-      console.log('[Landing] Landing page element not found, skipping initialization');
+      console.log('[Pages] Landing page element not found, skipping initialization');
       return;
     }
 
@@ -16436,31 +16449,82 @@
       sessionStorage.setItem(LANDING_STORAGE_KEY, 'true');
     }
 
-    // Hide landing page with animation
-    function hideLandingPage() {
-      console.log('[Landing] Hiding landing page...');
-      landingPage.classList.add('landing-page--hidden');
+    // Hide all intro pages and show wizard
+    function showWizard() {
+      console.log('[Pages] Showing wizard...');
 
-      // After animation completes, fully hide and remove from DOM flow
-      setTimeout(() => {
+      // Hide landing page
+      if (landingPage) {
+        landingPage.classList.add('landing-page--hidden');
         landingPage.style.display = 'none';
-        // Ensure wizard shell is visible
-        if (wizardShell) {
-          wizardShell.classList.remove('wizard-shell--hidden');
-          wizardShell.style.opacity = '1';
-          wizardShell.style.pointerEvents = 'auto';
-        }
-        console.log('[Landing] Landing page hidden, wizard visible');
-      }, 500); // Match CSS transition duration
+      }
 
-      markLandingSeen();
+      // Hide hub page
+      if (hubPage) {
+        hubPage.classList.add('hub-page--hidden');
+        hubPage.hidden = true;
+      }
+
+      // Show wizard
+      document.body.classList.remove('landing-visible');
+      document.body.classList.remove('hub-visible');
+      if (wizardShell) {
+        wizardShell.classList.remove('wizard-shell--hidden');
+        wizardShell.style.opacity = '1';
+        wizardShell.style.pointerEvents = 'auto';
+      }
+
+      console.log('[Pages] Wizard visible');
     }
 
-    // Show landing page
+    // Show hub page (hide landing and wizard)
+    function showHubPage() {
+      console.log('[Pages] Showing hub page...');
+
+      // Hide landing page with animation
+      if (landingPage) {
+        landingPage.classList.add('landing-page--hidden');
+        setTimeout(() => {
+          landingPage.style.display = 'none';
+        }, 500);
+      }
+
+      // Show hub page
+      if (hubPage) {
+        hubPage.hidden = false;
+        hubPage.classList.remove('hub-page--hidden');
+      }
+
+      // Keep wizard hidden
+      document.body.classList.remove('landing-visible');
+      document.body.classList.add('hub-visible');
+      if (wizardShell) {
+        wizardShell.classList.add('wizard-shell--hidden');
+        wizardShell.style.opacity = '0';
+        wizardShell.style.pointerEvents = 'none';
+      }
+
+      markLandingSeen();
+      console.log('[Pages] Hub page visible');
+    }
+
+    // Show landing page (hide hub and wizard)
     function showLandingPageUI() {
-      console.log('[Landing] Showing landing page...');
-      landingPage.style.display = 'flex';
-      landingPage.classList.remove('landing-page--hidden');
+      console.log('[Pages] Showing landing page...');
+
+      // Hide hub page
+      if (hubPage) {
+        hubPage.hidden = true;
+        hubPage.classList.add('hub-page--hidden');
+      }
+
+      // Show landing page
+      document.body.classList.add('landing-visible');
+      document.body.classList.remove('hub-visible');
+      if (landingPage) {
+        landingPage.style.display = 'flex';
+        landingPage.classList.remove('landing-page--hidden');
+      }
       if (wizardShell) {
         wizardShell.classList.add('wizard-shell--hidden');
         wizardShell.style.opacity = '0';
@@ -16468,57 +16532,1528 @@
       }
     }
 
-    // Initialize
+    // Initialize - determine which page to show
     if (hasSeenLanding()) {
-      // User has already seen landing, hide it immediately
-      landingPage.style.display = 'none';
-      if (wizardShell) {
-        wizardShell.classList.remove('wizard-shell--hidden');
-        wizardShell.style.opacity = '1';
-        wizardShell.style.pointerEvents = 'auto';
+      // User has already seen landing, show hub page
+      if (landingPage) landingPage.style.display = 'none';
+      if (hubPage) {
+        hubPage.hidden = false;
+        hubPage.classList.remove('hub-page--hidden');
       }
-      console.log('[Landing] Landing page skipped (already seen this session)');
+      document.body.classList.add('hub-visible');
+      if (wizardShell) {
+        wizardShell.classList.add('wizard-shell--hidden');
+        wizardShell.style.opacity = '0';
+        wizardShell.style.pointerEvents = 'none';
+      }
+      console.log('[Pages] Showing hub page (landing already seen)');
     } else {
-      // Show landing page
+      // Show landing page first
       showLandingPageUI();
-      console.log('[Landing] Landing page displayed');
+      console.log('[Pages] Landing page displayed');
     }
 
-    // Event listeners for enter button
+    // Event listeners for landing page "Create Your Token" button
     if (enterWizardBtn) {
       enterWizardBtn.addEventListener('click', function(e) {
-        console.log('[Landing] Button clicked!');
+        console.log('[Pages] Landing button clicked - showing hub');
         e.preventDefault();
         e.stopPropagation();
-        hideLandingPage();
+        showHubPage();
       });
 
-      // Also allow Enter key to proceed
       enterWizardBtn.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' || e.key === ' ') {
-          console.log('[Landing] Button keydown:', e.key);
           e.preventDefault();
-          hideLandingPage();
+          showHubPage();
         }
       });
     }
 
-    // Expose function to show landing again (for testing/reset)
+    // Event listeners for hub page buttons
+    if (hubCreateTokenBtn) {
+      hubCreateTokenBtn.addEventListener('click', function(e) {
+        console.log('[Pages] Hub Create Token clicked');
+        e.preventDefault();
+        showWizard();
+        // Navigate to tokens page (templates)
+        if (window.globalHeader && typeof window.globalHeader.switchPage === 'function') {
+          setTimeout(() => {
+            window.globalHeader.switchPage('tokens');
+          }, 100);
+        }
+      });
+    }
+
+    if (hubDocumentsBtn) {
+      hubDocumentsBtn.addEventListener('click', function(e) {
+        console.log('[Pages] Hub Documents clicked');
+        e.preventDefault();
+        showWizard();
+        // Navigate to documents page
+        if (window.globalHeader && typeof window.globalHeader.switchPage === 'function') {
+          setTimeout(() => {
+            window.globalHeader.switchPage('documents');
+          }, 100);
+        }
+      });
+    }
+
+    // Expose functions for external access
     window.showLandingPage = function() {
       sessionStorage.removeItem(LANDING_STORAGE_KEY);
       showLandingPageUI();
     };
 
-    // Expose function to hide landing (for programmatic access)
-    window.hideLandingPage = hideLandingPage;
+    window.showHubPage = showHubPage;
+    window.hideIntroPages = showWizard;
 
-    console.log('[Landing] Landing page handler initialized successfully');
+    console.log('[Pages] Landing and Hub page handler initialized successfully');
   }
 
   // Run setup when DOM is ready
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setupLandingPage);
+    document.addEventListener('DOMContentLoaded', setupPages);
   } else {
-    setupLandingPage();
+    setupPages();
+  }
+})();
+
+// ============================================
+// Global Header Controller
+// Handles navigation, theme toggle, and register button
+// ============================================
+(function initGlobalHeader() {
+  'use strict';
+
+  // Current active page
+  let currentPage = 'tokens';
+
+  function setupGlobalHeader() {
+    const globalHeader = document.getElementById('global-header');
+    const headerNavLinks = document.querySelectorAll('.global-header__link');
+    const headerThemeBtns = document.querySelectorAll('.global-header__theme-btn');
+    const headerResetBtn = document.getElementById('header-reset-btn');
+    const headerRegisterBtn = document.getElementById('header-register-btn');
+    const registerDropdown = document.getElementById('register-dropdown');
+    const missingStepsList = document.getElementById('missing-steps-list');
+    const headerBrandLink = document.getElementById('header-brand-link');
+
+    if (!globalHeader) {
+      console.log('[GlobalHeader] Global header not found, skipping initialization');
+      return;
+    }
+
+    console.log('[GlobalHeader] Initializing global header...');
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Page Navigation
+    // ─────────────────────────────────────────────────────────────────────
+    function switchPage(pageId) {
+      currentPage = pageId;
+
+      // Update header nav active state
+      headerNavLinks.forEach(link => {
+        const isActive = link.dataset.page === pageId;
+        link.classList.toggle('global-header__link--active', isActive);
+      });
+
+      // Show/hide sidebar content based on page
+      const tokenSidebar = document.querySelector('[data-sidebar="token"]');
+      const groupSidebar = document.querySelector('[data-sidebar="group"]');
+      const documentsSidebar = document.querySelector('[data-sidebar="documents"]');
+      const wizardOutline = document.querySelector('.wizard-outline');
+
+      // Hide all sidebars first
+      if (tokenSidebar) tokenSidebar.hidden = true;
+      if (groupSidebar) groupSidebar.hidden = true;
+      if (documentsSidebar) documentsSidebar.hidden = true;
+
+      // Show the appropriate sidebar (or hide for fullpage screens)
+      if (pageId === 'documents') {
+        // Documents is a fullpage layout - hide the entire sidebar
+        if (wizardOutline) wizardOutline.style.display = 'none';
+        document.body.classList.add('fullpage-mode');
+      } else {
+        // Show sidebar for other pages
+        if (wizardOutline) wizardOutline.style.display = '';
+        document.body.classList.remove('fullpage-mode');
+
+        if (pageId === 'groups' && groupSidebar) {
+          groupSidebar.hidden = false;
+        } else if (tokenSidebar) {
+          tokenSidebar.hidden = false;
+        }
+      }
+
+      // Handle page-specific content visibility
+      if (pageId === 'tokens') {
+        // Show token wizard screens
+        if (typeof showScreen === 'function') {
+          const activeStep = wizardState?.active || 'naming';
+          showScreen(activeStep);
+        }
+      } else if (pageId === 'templates') {
+        // Show templates/welcome screen
+        if (typeof showScreen === 'function') {
+          showScreen('welcome', { force: true });
+        }
+      } else if (pageId === 'groups') {
+        // Switch to group mode
+        if (typeof switchTab === 'function') {
+          switchTab('group');
+        }
+        if (typeof showScreen === 'function') {
+          showScreen('permissions-group', { force: true });
+        }
+      } else if (pageId === 'documents') {
+        // Show documents page - handle directly since it's not part of wizard flow
+        // Hide all wizard screens first
+        document.querySelectorAll('.wizard-screen').forEach(screen => {
+          screen.classList.remove('wizard-screen--active');
+        });
+        // Show documents screen
+        const documentsScreen = document.getElementById('screen-documents');
+        if (documentsScreen) {
+          documentsScreen.classList.add('wizard-screen--active');
+          documentsScreen.removeAttribute('hidden');
+        }
+        // Refresh document list
+        if (window.documentStorage && typeof window.documentStorage.render === 'function') {
+          window.documentStorage.render();
+        }
+      }
+
+      // Close dropdown if open
+      if (registerDropdown) {
+        registerDropdown.hidden = true;
+      }
+
+      console.log('[GlobalHeader] Switched to page:', pageId);
+    }
+
+    // Add click handlers to nav links
+    headerNavLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const pageId = link.dataset.page;
+        if (pageId) {
+          switchPage(pageId);
+        }
+      });
+    });
+
+    // Brand link - return to hub page
+    if (headerBrandLink) {
+      headerBrandLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        // Show hub page (main navigation hub)
+        if (typeof window.showHubPage === 'function') {
+          window.showHubPage();
+        }
+      });
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Theme Toggle
+    // ─────────────────────────────────────────────────────────────────────
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('ui-theme', theme);
+
+      // Update button states
+      headerThemeBtns.forEach(btn => {
+        btn.classList.toggle('global-header__theme-btn--active', btn.dataset.theme === theme);
+      });
+
+      // Also update sidebar theme toggles to stay in sync
+      const sidebarThemeRadios = document.querySelectorAll('input[name="ui-theme"], input[name="ui-theme-group"]');
+      sidebarThemeRadios.forEach(radio => {
+        radio.checked = radio.value === theme;
+      });
+
+      console.log('[GlobalHeader] Theme set to:', theme);
+    }
+
+    headerThemeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const theme = btn.dataset.theme;
+        if (theme) {
+          setTheme(theme);
+        }
+      });
+    });
+
+    // Initialize theme from localStorage or preference
+    const savedTheme = localStorage.getItem('ui-theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+    setTheme(initialTheme);
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Reset Button
+    // ─────────────────────────────────────────────────────────────────────
+    if (headerResetBtn) {
+      headerResetBtn.addEventListener('click', () => {
+        // Use existing reset functionality
+        const existingResetBtn = document.getElementById('start-over-btn');
+        if (existingResetBtn) {
+          existingResetBtn.click();
+        } else if (typeof resetWizard === 'function') {
+          resetWizard();
+        } else {
+          // Fallback: confirm and reload
+          if (confirm('Are you sure you want to reset all wizard data?')) {
+            localStorage.removeItem('wizard-state');
+            sessionStorage.removeItem('dash-wizard-landing-seen');
+            location.reload();
+          }
+        }
+      });
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Register Button with Dropdown for Missing Steps
+    // ─────────────────────────────────────────────────────────────────────
+    function getStepDisplayName(stepId) {
+      const names = {
+        'naming': 'Naming',
+        'permissions': 'Permissions',
+        'distribution': 'Distribution',
+        'advanced': 'Usage',
+        'search': 'Search Ability',
+        'registration': 'Registration'
+      };
+      return names[stepId] || stepId;
+    }
+
+    function getStepIssue(stepId) {
+      const issues = {
+        'naming': 'Token name required',
+        'permissions': 'Supply settings required',
+        'distribution': 'Distribution settings needed',
+        'advanced': 'Configuration needed',
+        'search': 'Search settings needed'
+      };
+      return issues[stepId] || 'Configuration incomplete';
+    }
+
+    function getMissingRequiredSteps() {
+      // Required steps that must be valid before registration
+      const required = ['naming', 'permissions'];
+      const missing = [];
+
+      if (typeof wizardState !== 'undefined' && wizardState.steps) {
+        required.forEach(stepId => {
+          const state = wizardState.steps[stepId];
+          if (!state || state.validity !== 'valid') {
+            missing.push({
+              id: stepId,
+              name: getStepDisplayName(stepId),
+              issue: getStepIssue(stepId)
+            });
+          }
+        });
+      } else {
+        // If wizard state not available, assume all required
+        required.forEach(stepId => {
+          missing.push({
+            id: stepId,
+            name: getStepDisplayName(stepId),
+            issue: getStepIssue(stepId)
+          });
+        });
+      }
+
+      return missing;
+    }
+
+    function showRegisterDropdown(missingSteps) {
+      if (!registerDropdown || !missingStepsList) return;
+
+      // Populate list with clickable links
+      missingStepsList.innerHTML = missingSteps.map(step => `
+        <li>
+          <a href="#" class="register-dropdown__link" data-step="${step.id}">
+            <span class="register-dropdown__step-name">${step.name}</span>
+            <span class="register-dropdown__step-issue">${step.issue}</span>
+          </a>
+        </li>
+      `).join('');
+
+      registerDropdown.hidden = false;
+
+      // Add click handlers to navigate
+      missingStepsList.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          registerDropdown.hidden = true;
+          switchPage('tokens');
+          if (typeof showScreen === 'function') {
+            showScreen(link.dataset.step);
+          }
+        });
+      });
+    }
+
+    function handleRegisterClick() {
+      const missingSteps = getMissingRequiredSteps();
+
+      if (missingSteps.length === 0) {
+        // All complete - go to registration
+        switchPage('tokens');
+        if (typeof showScreen === 'function') {
+          showScreen('registration');
+        }
+      } else {
+        // Show dropdown with missing steps
+        showRegisterDropdown(missingSteps);
+      }
+    }
+
+    if (headerRegisterBtn) {
+      headerRegisterBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleRegisterClick();
+      });
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (registerDropdown && !registerDropdown.hidden) {
+        const isInsideDropdown = registerDropdown.contains(e.target);
+        const isRegisterBtn = headerRegisterBtn && headerRegisterBtn.contains(e.target);
+        if (!isInsideDropdown && !isRegisterBtn) {
+          registerDropdown.hidden = true;
+        }
+      }
+    });
+
+    // Close dropdown on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && registerDropdown && !registerDropdown.hidden) {
+        registerDropdown.hidden = true;
+        headerRegisterBtn?.focus();
+      }
+    });
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Expose functions globally for integration
+    // ─────────────────────────────────────────────────────────────────────
+    window.globalHeader = {
+      switchPage,
+      setTheme,
+      getCurrentPage: () => currentPage
+    };
+
+    console.log('[GlobalHeader] Global header initialized successfully');
+  }
+
+  // Run setup when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupGlobalHeader);
+  } else {
+    setupGlobalHeader();
+  }
+})();
+
+// ============================================
+// Document Storage Controller
+// Handles save/load/edit/delete of token configurations
+// ============================================
+(function initDocumentStorage() {
+  'use strict';
+
+  const STORAGE_KEY = 'dash-wizard-documents';
+  let documents = [];
+  let editingDocId = null;
+
+  // ─────────────────────────────────────────────────────────────────────
+  // Helper: Show toast notification (wrapper for global function)
+  // ─────────────────────────────────────────────────────────────────────
+  function showToast(message, type = 'info') {
+    // Try to use the global showToast if available
+    if (typeof window.showToast === 'function') {
+      window.showToast({ type, title: message });
+    } else {
+      // Fallback: log to console
+      console.log(`[Toast ${type}] ${message}`);
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // Storage Functions
+  // ─────────────────────────────────────────────────────────────────────
+  function loadDocuments() {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      documents = stored ? JSON.parse(stored) : [];
+      console.log('[Documents] Loaded', documents.length, 'documents');
+    } catch (e) {
+      console.error('[Documents] Error loading documents:', e);
+      documents = [];
+    }
+    return documents;
+  }
+
+  function saveDocuments() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(documents));
+      console.log('[Documents] Saved', documents.length, 'documents');
+    } catch (e) {
+      console.error('[Documents] Error saving documents:', e);
+      showToast('Error saving documents', 'error');
+    }
+  }
+
+  function generateId() {
+    return 'doc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // Document CRUD Operations
+  // ─────────────────────────────────────────────────────────────────────
+  function createDocument(name, notes, wizardData) {
+    const doc = {
+      id: generateId(),
+      name: name.trim(),
+      notes: notes.trim(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      data: JSON.parse(JSON.stringify(wizardData)) // Deep clone
+    };
+    documents.unshift(doc); // Add to beginning
+    saveDocuments();
+    return doc;
+  }
+
+  function updateDocument(id, updates) {
+    const index = documents.findIndex(d => d.id === id);
+    if (index !== -1) {
+      documents[index] = {
+        ...documents[index],
+        ...updates,
+        updatedAt: new Date().toISOString()
+      };
+      saveDocuments();
+      return documents[index];
+    }
+    return null;
+  }
+
+  function deleteDocument(id) {
+    const index = documents.findIndex(d => d.id === id);
+    if (index !== -1) {
+      documents.splice(index, 1);
+      saveDocuments();
+      return true;
+    }
+    return false;
+  }
+
+  function getDocument(id) {
+    return documents.find(d => d.id === id);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // UI Rendering
+  // ─────────────────────────────────────────────────────────────────────
+  function formatDate(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = now - date;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+    if (days === 0) {
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      if (hours === 0) {
+        const mins = Math.floor(diff / (1000 * 60));
+        return mins <= 1 ? 'Just now' : `${mins} minutes ago`;
+      }
+      return hours === 1 ? '1 hour ago' : `${hours} hours ago`;
+    } else if (days === 1) {
+      return 'Yesterday';
+    } else if (days < 7) {
+      return `${days} days ago`;
+    } else {
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+      });
+    }
+  }
+
+  function getTokenSummary(data) {
+    const summary = [];
+    if (data.tokenName) {
+      summary.push({ label: 'Token', value: data.tokenName, primary: true });
+    }
+    if (data.permissions?.baseSupply) {
+      const supply = parseInt(data.permissions.baseSupply).toLocaleString();
+      summary.push({ label: 'Supply', value: supply });
+    }
+    if (data.permissions?.decimals !== undefined) {
+      summary.push({ label: 'Decimals', value: data.permissions.decimals });
+    }
+    return summary;
+  }
+
+  function createDocumentCard(doc) {
+    const summary = getTokenSummary(doc.data);
+
+    const card = document.createElement('div');
+    card.className = 'document-card';
+    card.dataset.id = doc.id;
+
+    card.innerHTML = `
+      <div class="document-card__header">
+        <div class="document-card__icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M4 2h8l4 4v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 2v4h4" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="document-card__info">
+          <h3 class="document-card__name">${escapeHtml(doc.name)}</h3>
+          <span class="document-card__date">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+              <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            ${formatDate(doc.updatedAt)}
+          </span>
+        </div>
+      </div>
+      <div class="document-card__body">
+        ${doc.notes ? `<p class="document-card__notes">${escapeHtml(doc.notes)}</p>` : ''}
+        <div class="document-card__summary">
+          ${summary.map(item => `
+            <span class="document-card__tag ${item.primary ? 'document-card__tag--primary' : ''}">
+              <span>${item.label}:</span> ${escapeHtml(String(item.value))}
+            </span>
+          `).join('')}
+        </div>
+      </div>
+      <div class="document-card__actions">
+        <button class="document-card__action document-card__action--primary" data-action="load" title="Load this configuration">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          Load
+        </button>
+        <button class="document-card__action" data-action="export" title="Export as JSON">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          Export
+        </button>
+        <button class="document-card__action" data-action="edit" title="Edit document name/notes">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          Edit
+        </button>
+        <button class="document-card__action document-card__action--danger" data-action="delete" title="Delete document">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          Delete
+        </button>
+      </div>
+    `;
+
+    // Add click handlers
+    card.querySelectorAll('[data-action]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        handleCardAction(doc.id, btn.dataset.action);
+      });
+    });
+
+    return card;
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function renderDocuments(filter = '') {
+    const listEl = document.getElementById('documents-list');
+    const emptyEl = document.getElementById('documents-empty');
+    const countBadge = document.getElementById('documents-count');
+
+    if (!listEl) {
+      console.warn('[Documents] documents-list element not found');
+      return;
+    }
+
+    // Filter documents
+    let filtered = documents;
+    if (filter) {
+      const search = filter.toLowerCase();
+      filtered = documents.filter(doc =>
+        doc.name.toLowerCase().includes(search) ||
+        (doc.notes && doc.notes.toLowerCase().includes(search)) ||
+        (doc.data.tokenName && doc.data.tokenName.toLowerCase().includes(search))
+      );
+    }
+
+    // Update count badge
+    if (countBadge) {
+      countBadge.textContent = documents.length;
+    }
+
+    // Clear existing items (except empty state)
+    listEl.querySelectorAll('.docs-item').forEach(el => el.remove());
+
+    // Show/hide empty state
+    if (emptyEl) {
+      emptyEl.style.display = filtered.length === 0 ? 'flex' : 'none';
+    }
+
+    // Add document items
+    filtered.forEach(doc => {
+      const item = document.createElement('div');
+      item.className = 'docs-item';
+      item.dataset.id = doc.id;
+
+      item.innerHTML = `
+        <div class="docs-item__icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M4 2h8l4 4v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 2v4h4" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="docs-item__info">
+          <p class="docs-item__name">${escapeHtml(doc.name)}</p>
+          <span class="docs-item__date">${formatDate(doc.updatedAt)}</span>
+        </div>
+        <div class="docs-item__actions">
+          <button class="docs-item__action" data-action="export" title="Export">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button class="docs-item__action docs-item__action--danger" data-action="delete" title="Delete">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+      `;
+
+      // Click to load into editor
+      item.addEventListener('click', (e) => {
+        if (e.target.closest('[data-action]')) return;
+        if (window.contractEditor) {
+          window.contractEditor.loadDocument(doc);
+        }
+      });
+
+      // Action buttons
+      item.querySelectorAll('[data-action]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const action = btn.dataset.action;
+          if (action === 'export') {
+            exportDocument(doc);
+          } else if (action === 'delete') {
+            openDeleteModal(doc.id);
+          }
+        });
+      });
+
+      listEl.appendChild(item);
+    });
+
+    console.log('[Documents] Rendered', filtered.length, 'documents');
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // Modal Handlers
+  // ─────────────────────────────────────────────────────────────────────
+  let pendingSaveData = null; // Holds data from editor when saving
+
+  function openSaveModal(isEdit = false, docId = null, editorData = null) {
+    const modal = document.getElementById('save-document-modal');
+    const titleEl = document.getElementById('save-document-modal-title');
+    const nameInput = document.getElementById('document-name-input');
+    const notesInput = document.getElementById('document-notes-input');
+    const summaryContent = document.getElementById('document-summary-content');
+    const confirmBtn = document.getElementById('save-document-confirm');
+
+    if (!modal || !nameInput) return;
+
+    editingDocId = docId;
+    pendingSaveData = editorData; // Store editor data if provided
+
+    // Set modal title
+    if (titleEl) {
+      titleEl.textContent = isEdit ? 'Edit Document' : 'Save Document';
+    }
+    if (confirmBtn) {
+      confirmBtn.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" stroke="currentColor" stroke-width="2"/>
+          <path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        ${isEdit ? 'Update Document' : 'Save Document'}
+      `;
+    }
+
+    // Populate fields
+    if (isEdit && docId) {
+      const doc = getDocument(docId);
+      if (doc) {
+        nameInput.value = doc.name;
+        notesInput.value = doc.notes || '';
+      }
+    } else {
+      // Generate default name from token name or editor data
+      let tokenName = 'Token';
+      if (editorData && editorData.tokenName) {
+        tokenName = editorData.tokenName;
+      } else if (typeof wizardState !== 'undefined' && wizardState.form?.tokenName) {
+        tokenName = wizardState.form.tokenName;
+      }
+      nameInput.value = `${tokenName} Configuration`;
+      notesInput.value = '';
+    }
+
+    // Populate summary
+    const dataToSummarize = editorData || (typeof wizardState !== 'undefined' ? wizardState.form : null);
+    if (summaryContent && dataToSummarize) {
+      const summary = getTokenSummary(dataToSummarize);
+      summaryContent.innerHTML = summary.map(item => `
+        <div class="document-preview-summary__item">
+          <span class="document-preview-summary__item-label">${item.label}:</span>
+          <span class="document-preview-summary__item-value">${escapeHtml(String(item.value))}</span>
+        </div>
+      `).join('');
+    }
+
+    modal.hidden = false;
+    nameInput.focus();
+  }
+
+  function closeSaveModal() {
+    const modal = document.getElementById('save-document-modal');
+    if (modal) {
+      modal.hidden = true;
+      editingDocId = null;
+      pendingSaveData = null;
+    }
+  }
+
+  function handleSaveConfirm() {
+    const nameInput = document.getElementById('document-name-input');
+    const notesInput = document.getElementById('document-notes-input');
+
+    if (!nameInput) return;
+
+    const name = nameInput.value.trim();
+    if (!name) {
+      showToast('Please enter a document name', 'warning');
+      nameInput.focus();
+      return;
+    }
+
+    if (editingDocId) {
+      // Update existing document
+      updateDocument(editingDocId, { name, notes: notesInput.value.trim() });
+      showToast('Document updated successfully', 'success');
+    } else {
+      // Create new document - use pendingSaveData if available, otherwise use wizardState
+      const dataToSave = pendingSaveData || (typeof wizardState !== 'undefined' ? wizardState.form : null);
+      if (!dataToSave) {
+        showToast('No configuration to save', 'error');
+        return;
+      }
+      createDocument(name, notesInput.value, dataToSave);
+      showToast('Document saved successfully', 'success');
+    }
+
+    closeSaveModal();
+    renderDocuments();
+  }
+
+  function openDeleteModal(docId) {
+    const modal = document.getElementById('delete-document-modal');
+    const nameEl = document.getElementById('delete-document-name');
+    const confirmBtn = document.getElementById('delete-document-confirm');
+
+    if (!modal) return;
+
+    const doc = getDocument(docId);
+    if (!doc) return;
+
+    if (nameEl) {
+      nameEl.textContent = doc.name;
+    }
+
+    // Store doc ID for confirmation
+    if (confirmBtn) {
+      confirmBtn.dataset.docId = docId;
+    }
+
+    modal.hidden = false;
+  }
+
+  function closeDeleteModal() {
+    const modal = document.getElementById('delete-document-modal');
+    if (modal) modal.hidden = true;
+  }
+
+  function handleDeleteConfirm() {
+    const confirmBtn = document.getElementById('delete-document-confirm');
+    if (!confirmBtn) return;
+
+    const docId = confirmBtn.dataset.docId;
+    if (docId && deleteDocument(docId)) {
+      showToast('Document deleted', 'success');
+      renderDocuments();
+    }
+    closeDeleteModal();
+  }
+
+  function openLoadModal(docId) {
+    const modal = document.getElementById('load-document-modal');
+    const nameEl = document.getElementById('load-document-name');
+    const confirmBtn = document.getElementById('load-document-confirm');
+
+    if (!modal) return;
+
+    const doc = getDocument(docId);
+    if (!doc) return;
+
+    if (nameEl) {
+      nameEl.textContent = doc.name;
+    }
+
+    // Store doc ID for confirmation
+    if (confirmBtn) {
+      confirmBtn.dataset.docId = docId;
+    }
+
+    modal.hidden = false;
+  }
+
+  function closeLoadModal() {
+    const modal = document.getElementById('load-document-modal');
+    if (modal) modal.hidden = true;
+  }
+
+  function handleLoadConfirm() {
+    const confirmBtn = document.getElementById('load-document-confirm');
+    if (!confirmBtn) return;
+
+    const docId = confirmBtn.dataset.docId;
+    const doc = getDocument(docId);
+
+    if (doc && typeof wizardState !== 'undefined') {
+      // Restore wizard state from document
+      Object.assign(wizardState.form, doc.data);
+
+      // Save to localStorage
+      localStorage.setItem('wizard-state', JSON.stringify(wizardState));
+
+      showToast(`Loaded "${doc.name}"`, 'success');
+
+      // Navigate to tokens page
+      if (window.globalHeader) {
+        window.globalHeader.switchPage('tokens');
+      }
+
+      // Refresh UI
+      if (typeof updateAllValidationStates === 'function') {
+        updateAllValidationStates();
+      }
+      if (typeof showScreen === 'function') {
+        showScreen('naming');
+      }
+    }
+
+    closeLoadModal();
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // Card Actions
+  // ─────────────────────────────────────────────────────────────────────
+  function handleCardAction(docId, action) {
+    const doc = getDocument(docId);
+    if (!doc) return;
+
+    switch (action) {
+      case 'load':
+        openLoadModal(docId);
+        break;
+
+      case 'export':
+        exportDocument(doc);
+        break;
+
+      case 'edit':
+        openSaveModal(true, docId);
+        break;
+
+      case 'delete':
+        openDeleteModal(docId);
+        break;
+    }
+  }
+
+  function exportDocument(doc) {
+    const exportData = {
+      name: doc.name,
+      notes: doc.notes,
+      createdAt: doc.createdAt,
+      exportedAt: new Date().toISOString(),
+      version: '1.0',
+      data: doc.data
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${doc.name.replace(/[^a-z0-9]/gi, '_')}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showToast('Document exported', 'success');
+  }
+
+  function importDocument(file) {
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+      try {
+        const content = e.target.result;
+        const imported = JSON.parse(content);
+
+        let documentData;
+        let documentName;
+        let documentNotes = '';
+
+        // Check if it's a wrapped export format (has .data property)
+        if (imported.data && typeof imported.data === 'object') {
+          // Wrapped format from our export
+          documentData = imported.data;
+          documentName = imported.name || file.name.replace(/\.json$/i, '');
+          documentNotes = imported.notes || '';
+        } else if (typeof imported === 'object') {
+          // Raw contract JSON - use file contents directly
+          documentData = imported;
+          documentName = imported.tokenName || file.name.replace(/\.json$/i, '');
+          documentNotes = 'Imported from ' + file.name;
+        } else {
+          throw new Error('Invalid JSON format');
+        }
+
+        // Create document from imported data
+        const doc = createDocument(documentName, documentNotes, documentData);
+
+        // Also load into the editor for immediate viewing
+        if (window.contractEditor && typeof window.contractEditor.loadDocument === 'function') {
+          window.contractEditor.loadDocument(doc);
+        }
+
+        showToast(`Imported "${doc.name}"`, 'success');
+        renderDocuments();
+
+      } catch (err) {
+        console.error('[Documents] Import error:', err);
+
+        // Provide helpful error message
+        if (err instanceof SyntaxError) {
+          showToast('Invalid JSON file - please check the file format', 'error');
+        } else {
+          showToast('Failed to import: ' + err.message, 'error');
+        }
+      }
+    };
+
+    reader.onerror = function() {
+      showToast('Failed to read file', 'error');
+    };
+
+    reader.readAsText(file);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // Event Setup
+  // ─────────────────────────────────────────────────────────────────────
+  function setupDocumentStorage() {
+    // Load existing documents
+    loadDocuments();
+
+    // Save buttons
+    const saveBtn = document.getElementById('save-current-doc-btn');
+    const emptySaveBtn = document.getElementById('empty-save-btn');
+    const sidebarSaveBtn = document.getElementById('sidebar-save-doc-btn');
+
+    [saveBtn, emptySaveBtn, sidebarSaveBtn].forEach(btn => {
+      if (btn) {
+        btn.addEventListener('click', () => openSaveModal(false));
+      }
+    });
+
+    // Import buttons
+    const importBtn = document.getElementById('import-doc-btn');
+    const sidebarImportBtn = document.getElementById('sidebar-import-doc-btn');
+    const importInput = document.getElementById('import-doc-input');
+
+    [importBtn, sidebarImportBtn].forEach(btn => {
+      if (btn) {
+        btn.addEventListener('click', () => {
+          if (importInput) importInput.click();
+        });
+      }
+    });
+
+    if (importInput) {
+      importInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+          importDocument(e.target.files[0]);
+          e.target.value = ''; // Reset for next import
+        }
+      });
+    }
+
+    // Search input
+    const searchInput = document.getElementById('documents-search-input');
+    if (searchInput) {
+      let searchTimeout;
+      searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+          renderDocuments(e.target.value);
+        }, 200);
+      });
+    }
+
+    // Save modal
+    const saveModalClose = document.getElementById('save-document-modal-close');
+    const saveCancel = document.getElementById('save-document-cancel');
+    const saveConfirm = document.getElementById('save-document-confirm');
+
+    [saveModalClose, saveCancel].forEach(btn => {
+      if (btn) btn.addEventListener('click', closeSaveModal);
+    });
+
+    if (saveConfirm) {
+      saveConfirm.addEventListener('click', handleSaveConfirm);
+    }
+
+    // Delete modal
+    const deleteCancel = document.getElementById('delete-document-cancel');
+    const deleteConfirm = document.getElementById('delete-document-confirm');
+
+    if (deleteCancel) deleteCancel.addEventListener('click', closeDeleteModal);
+    if (deleteConfirm) deleteConfirm.addEventListener('click', handleDeleteConfirm);
+
+    // Load modal
+    const loadCancel = document.getElementById('load-document-cancel');
+    const loadConfirm = document.getElementById('load-document-confirm');
+
+    if (loadCancel) loadCancel.addEventListener('click', closeLoadModal);
+    if (loadConfirm) loadConfirm.addEventListener('click', handleLoadConfirm);
+
+    // Modal overlay close
+    document.querySelectorAll('#save-document-modal .modal__overlay, #delete-document-modal .modal__overlay, #load-document-modal .modal__overlay').forEach(overlay => {
+      overlay.addEventListener('click', () => {
+        closeSaveModal();
+        closeDeleteModal();
+        closeLoadModal();
+      });
+    });
+
+    // Escape key closes modals
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeSaveModal();
+        closeDeleteModal();
+        closeLoadModal();
+      }
+    });
+
+    // Initial render
+    renderDocuments();
+
+    console.log('[Documents] Document storage initialized');
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // Contract Editor Functions
+  // ─────────────────────────────────────────────────────────────────────
+  let currentEditorDocId = null;
+  let editorContent = '';
+
+  function setupEditor() {
+    const editor = document.getElementById('contract-editor');
+    const lineNumbers = document.getElementById('editor-line-numbers');
+    const linesInfo = document.getElementById('editor-lines');
+    const charsInfo = document.getElementById('editor-chars');
+    const validationInfo = document.getElementById('editor-validation');
+    const editorStatus = document.getElementById('editor-status');
+    const editorStatusText = document.getElementById('editor-status-text');
+
+    if (!editor) {
+      console.warn('[Documents] Editor element not found, retrying in 500ms...');
+      setTimeout(setupEditor, 500);
+      return;
+    }
+
+    console.log('[Documents] Setting up contract editor...');
+
+    // Update line numbers
+    function updateLineNumbers() {
+      const lines = editor.value.split('\n').length;
+      const numbers = Array.from({ length: lines }, (_, i) => i + 1).join('\n');
+      if (lineNumbers) lineNumbers.textContent = numbers;
+      if (linesInfo) linesInfo.textContent = `Lines: ${lines}`;
+      if (charsInfo) charsInfo.textContent = `Characters: ${editor.value.length}`;
+    }
+
+    // Validate JSON
+    function validateJSON() {
+      const value = editor.value.trim();
+      if (!value) {
+        if (validationInfo) {
+          validationInfo.className = 'docs-editor__info-item docs-editor__info-item--validation';
+          validationInfo.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+              <path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Paste JSON to validate
+          `;
+        }
+        return false;
+      }
+
+      try {
+        JSON.parse(value);
+        if (validationInfo) {
+          validationInfo.className = 'docs-editor__info-item docs-editor__info-item--validation docs-editor__info-item--valid';
+          validationInfo.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Valid JSON
+          `;
+        }
+        return true;
+      } catch (e) {
+        if (validationInfo) {
+          validationInfo.className = 'docs-editor__info-item docs-editor__info-item--validation docs-editor__info-item--invalid';
+          validationInfo.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+              <path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Invalid JSON
+          `;
+        }
+        return false;
+      }
+    }
+
+    // Update editor status
+    function updateEditorStatus(status, text) {
+      if (editorStatus) {
+        editorStatus.className = 'docs-editor__status' + (status ? ' docs-editor__status--' + status : '');
+      }
+      if (editorStatusText) {
+        editorStatusText.textContent = text;
+      }
+    }
+
+    // Sync scroll for line numbers
+    editor.addEventListener('scroll', () => {
+      if (lineNumbers) lineNumbers.scrollTop = editor.scrollTop;
+    });
+
+    // Input event
+    editor.addEventListener('input', () => {
+      updateLineNumbers();
+      validateJSON();
+      if (currentEditorDocId) {
+        updateEditorStatus('modified', 'Modified (unsaved)');
+      }
+    });
+
+    // Initial update
+    updateLineNumbers();
+
+    // Format button
+    const formatBtn = document.getElementById('editor-format-btn');
+    if (formatBtn) {
+      formatBtn.addEventListener('click', () => {
+        try {
+          const parsed = JSON.parse(editor.value);
+          editor.value = JSON.stringify(parsed, null, 2);
+          updateLineNumbers();
+          validateJSON();
+          showToast('JSON formatted', 'success');
+        } catch (e) {
+          showToast('Cannot format invalid JSON', 'error');
+        }
+      });
+    }
+
+    // Copy button
+    const copyBtn = document.getElementById('editor-copy-btn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(editor.value);
+          showToast('Copied to clipboard', 'success');
+        } catch (e) {
+          showToast('Failed to copy', 'error');
+        }
+      });
+    }
+
+    // Download button
+    const downloadBtn = document.getElementById('editor-download-btn');
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', () => {
+        const blob = new Blob([editor.value], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'contract.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Downloaded', 'success');
+      });
+    }
+
+    // Load to Wizard button
+    const loadToWizardBtn = document.getElementById('editor-load-to-wizard-btn');
+    if (loadToWizardBtn) {
+      loadToWizardBtn.addEventListener('click', () => {
+        if (!validateJSON()) {
+          showToast('Please enter valid JSON first', 'error');
+          return;
+        }
+
+        try {
+          const data = JSON.parse(editor.value);
+
+          if (typeof wizardState !== 'undefined') {
+            Object.assign(wizardState.form, data);
+            localStorage.setItem('wizard-state', JSON.stringify(wizardState));
+
+            showToast('Loaded to wizard', 'success');
+
+            if (window.globalHeader) {
+              window.globalHeader.switchPage('tokens');
+            }
+
+            if (typeof updateAllValidationStates === 'function') {
+              updateAllValidationStates();
+            }
+            if (typeof showScreen === 'function') {
+              showScreen('naming');
+            }
+          }
+        } catch (e) {
+          showToast('Failed to load: ' + e.message, 'error');
+        }
+      });
+    }
+
+    // Save as Document button (from editor)
+    const editorSaveBtn = document.getElementById('editor-save-btn');
+    if (editorSaveBtn) {
+      editorSaveBtn.addEventListener('click', () => {
+        if (!validateJSON()) {
+          showToast('Please enter valid JSON first', 'error');
+          return;
+        }
+
+        try {
+          const data = JSON.parse(editor.value);
+          const tokenName = data.tokenName || 'Untitled';
+
+          // Open save modal with editor content
+          openSaveModal(false, null, data);
+        } catch (e) {
+          showToast('Failed to parse JSON', 'error');
+        }
+      });
+    }
+
+    // Expose editor functions
+    window.contractEditor = {
+      loadDocument: (doc) => {
+        currentEditorDocId = doc.id;
+        editor.value = JSON.stringify(doc.data, null, 2);
+        updateLineNumbers();
+        validateJSON();
+        updateEditorStatus('loaded', `Editing: ${doc.name}`);
+
+        // Highlight in list
+        highlightDocumentInList(doc.id);
+      },
+      loadJSON: (json) => {
+        currentEditorDocId = null;
+        editor.value = typeof json === 'string' ? json : JSON.stringify(json, null, 2);
+        updateLineNumbers();
+        validateJSON();
+        updateEditorStatus('', 'New document');
+      },
+      clear: () => {
+        currentEditorDocId = null;
+        editor.value = '';
+        updateLineNumbers();
+        validateJSON();
+        updateEditorStatus('', 'No document loaded');
+        highlightDocumentInList(null);
+      },
+      getContent: () => editor.value,
+      isValid: validateJSON
+    };
+
+    console.log('[Documents] Contract editor setup complete');
+  }
+
+  function highlightDocumentInList(docId) {
+    const items = document.querySelectorAll('.docs-item');
+    items.forEach(item => {
+      item.classList.toggle('docs-item--active', item.dataset.id === docId);
+    });
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // Updated Event Setup
+  // ─────────────────────────────────────────────────────────────────────
+  function setupDocumentStorage() {
+    // Load existing documents
+    loadDocuments();
+
+    // Setup editor
+    setupEditor();
+
+    // Save buttons
+    const saveBtn = document.getElementById('save-current-doc-btn');
+    const emptySaveBtn = document.getElementById('empty-save-btn');
+    const sidebarSaveBtn = document.getElementById('sidebar-save-doc-btn');
+
+    [saveBtn, emptySaveBtn, sidebarSaveBtn].forEach(btn => {
+      if (btn) {
+        btn.addEventListener('click', () => openSaveModal(false));
+      }
+    });
+
+    // Import buttons
+    const importBtn = document.getElementById('import-doc-btn');
+    const sidebarImportBtn = document.getElementById('sidebar-import-doc-btn');
+    const importInput = document.getElementById('import-doc-input');
+
+    [importBtn, sidebarImportBtn].forEach(btn => {
+      if (btn) {
+        btn.addEventListener('click', () => {
+          if (importInput) importInput.click();
+        });
+      }
+    });
+
+    if (importInput) {
+      importInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+          importDocument(e.target.files[0]);
+          e.target.value = ''; // Reset for next import
+        }
+      });
+    }
+
+    // Search input
+    const searchInput = document.getElementById('documents-search-input');
+    if (searchInput) {
+      let searchTimeout;
+      searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+          renderDocuments(e.target.value);
+        }, 200);
+      });
+    }
+
+    // Save modal
+    const saveModalClose = document.getElementById('save-document-modal-close');
+    const saveCancel = document.getElementById('save-document-cancel');
+    const saveConfirm = document.getElementById('save-document-confirm');
+
+    [saveModalClose, saveCancel].forEach(btn => {
+      if (btn) btn.addEventListener('click', closeSaveModal);
+    });
+
+    if (saveConfirm) {
+      saveConfirm.addEventListener('click', handleSaveConfirm);
+    }
+
+    // Delete modal
+    const deleteCancel = document.getElementById('delete-document-cancel');
+    const deleteConfirm = document.getElementById('delete-document-confirm');
+
+    if (deleteCancel) deleteCancel.addEventListener('click', closeDeleteModal);
+    if (deleteConfirm) deleteConfirm.addEventListener('click', handleDeleteConfirm);
+
+    // Load modal
+    const loadCancel = document.getElementById('load-document-cancel');
+    const loadConfirm = document.getElementById('load-document-confirm');
+
+    if (loadCancel) loadCancel.addEventListener('click', closeLoadModal);
+    if (loadConfirm) loadConfirm.addEventListener('click', handleLoadConfirm);
+
+    // Modal overlay close
+    document.querySelectorAll('#save-document-modal .modal__overlay, #delete-document-modal .modal__overlay, #load-document-modal .modal__overlay').forEach(overlay => {
+      overlay.addEventListener('click', () => {
+        closeSaveModal();
+        closeDeleteModal();
+        closeLoadModal();
+      });
+    });
+
+    // Escape key closes modals
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeSaveModal();
+        closeDeleteModal();
+        closeLoadModal();
+      }
+    });
+
+    // Initial render
+    renderDocuments();
+
+    console.log('[Documents] Document storage initialized with editor');
+  }
+
+  // Expose for external use
+  window.documentStorage = {
+    save: () => openSaveModal(false),
+    load: loadDocuments,
+    render: renderDocuments,
+    getCount: () => documents.length
+  };
+
+  // Run setup when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupDocumentStorage);
+  } else {
+    setupDocumentStorage();
   }
 })();
