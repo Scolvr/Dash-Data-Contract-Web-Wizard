@@ -1333,6 +1333,11 @@
           item.dataset.userCollapsed = 'true';
         }
         item.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        // Also update parent .sidebar-step wrapper for CSS styling
+        const parentStep = item.closest('.sidebar-step');
+        if (parentStep) {
+          parentStep.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        }
         if (nestedList) {
           if (isOpen) {
             nestedList.removeAttribute('hidden');
@@ -1362,6 +1367,11 @@
             item.dataset.userCollapsed = 'true';
           }
           item.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+          // Also update parent .sidebar-step wrapper for CSS styling
+          const parentStep = item.closest('.sidebar-step');
+          if (parentStep) {
+            parentStep.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+          }
           if (nestedList) {
             if (isOpen) {
               nestedList.removeAttribute('hidden');
@@ -1404,6 +1414,11 @@
         parent.classList.add('is-open');
         delete parent.dataset.userCollapsed;
         parent.setAttribute('aria-expanded', 'true');
+        // Also update parent .sidebar-step wrapper for CSS styling
+        const sidebarStep = parent.closest('.sidebar-step');
+        if (sidebarStep) {
+          sidebarStep.setAttribute('aria-expanded', 'true');
+        }
         const nestedList = parent.querySelector('.wizard-subpath');
         if (nestedList) {
           nestedList.removeAttribute('hidden');
@@ -5948,6 +5963,11 @@
 
         const isOpen = item.classList.contains('is-open');
         item.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        // Also update parent .sidebar-step wrapper for CSS styling
+        const sidebarStep = item.closest('.sidebar-step');
+        if (sidebarStep) {
+          sidebarStep.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        }
         const nestedList = item.querySelector('.wizard-subpath');
         if (nestedList) {
           if (isOpen) {
@@ -5987,12 +6007,16 @@
       const submenuId = button.getAttribute('data-toggle');
       const submenu = submenuId ? document.getElementById(submenuId) : null;
       const shouldExpand = step === resolvedActiveId;
+      const sidebarStep = button.closest('.sidebar-step');
 
       // FIXED: Auto-expand on Continue/Back when switching to new section
       // Keep all previously visited sections expanded
       if (shouldAutoExpandOnSwitch && shouldExpand) {
         // Continue/Back switched to this parent step - auto-expand it
         button.setAttribute('aria-expanded', 'true');
+        if (sidebarStep) {
+          sidebarStep.setAttribute('aria-expanded', 'true');
+        }
         if (submenu) {
           submenu.hidden = false;
         }
@@ -6001,6 +6025,9 @@
         const currentExpanded = button.getAttribute('aria-expanded') === 'true';
         if (!currentExpanded) {
           button.setAttribute('aria-expanded', 'true');
+          if (sidebarStep) {
+            sidebarStep.setAttribute('aria-expanded', 'true');
+          }
           if (submenu) {
             submenu.hidden = false;
           }
@@ -12699,6 +12726,10 @@
             // Expand parent if collapsed
             if (item.parentNavItem.classList.contains('wizard-nav-item--expandable')) {
               item.parentNavItem.setAttribute('aria-expanded', 'true');
+              const sidebarStep = item.parentNavItem.closest('.sidebar-step');
+              if (sidebarStep) {
+                sidebarStep.setAttribute('aria-expanded', 'true');
+              }
             }
           }
 
@@ -12707,6 +12738,10 @@
             item.submenu.style.display = '';
             item.submenu.hidden = false;
             item.element.setAttribute('aria-expanded', 'true');
+            const sidebarStep = item.element.closest('.sidebar-step');
+            if (sidebarStep) {
+              sidebarStep.setAttribute('aria-expanded', 'true');
+            }
           }
         } else {
           // Hide non-matching item
@@ -13894,6 +13929,10 @@
       if (permissionsSubmenu && permissionsButton) {
         permissionsSubmenu.hidden = false;
         permissionsButton.setAttribute('aria-expanded', 'true');
+        const sidebarStep = permissionsButton.closest('.sidebar-step');
+        if (sidebarStep) {
+          sidebarStep.setAttribute('aria-expanded', 'true');
+        }
       }
     }
 
@@ -13905,6 +13944,10 @@
       if (distributionSubmenu && distributionButton) {
         distributionSubmenu.hidden = false;
         distributionButton.setAttribute('aria-expanded', 'true');
+        const sidebarStep = distributionButton.closest('.sidebar-step');
+        if (sidebarStep) {
+          sidebarStep.setAttribute('aria-expanded', 'true');
+        }
       }
     }
 
@@ -13916,6 +13959,10 @@
       if (advancedSubmenu && advancedButton) {
         advancedSubmenu.hidden = false;
         advancedButton.setAttribute('aria-expanded', 'true');
+        const sidebarStep = advancedButton.closest('.sidebar-step');
+        if (sidebarStep) {
+          sidebarStep.setAttribute('aria-expanded', 'true');
+        }
       }
     }
   }
@@ -14164,6 +14211,10 @@
     if (namingSubmenu && namingButton) {
       namingSubmenu.hidden = false;
       namingButton.setAttribute('aria-expanded', 'true');
+      const sidebarStep = namingButton.closest('.sidebar-step');
+      if (sidebarStep) {
+        sidebarStep.setAttribute('aria-expanded', 'true');
+      }
     }
 
     // Navigate to Token Name (first sub-step of naming)
@@ -14191,6 +14242,162 @@
       window.announce(`✓ Template "${template.name}" loaded successfully! Please enter a token name to continue.`);
     }
   }
+
+  /**
+   * Simplified template loader for the Templates Page.
+   * Applies template configuration without wizard step highlighting or "Enabled" badges.
+   * Used from the standalone Templates page to provide a clean start experience.
+   */
+  function loadTemplateSimple(templateKey) {
+    console.log('[Templates Page] loadTemplateSimple called with:', templateKey);
+    const template = TOKEN_TEMPLATES[templateKey];
+    const state = window.wizardState;
+
+    if (!state) {
+      console.error('wizardState not available');
+      return;
+    }
+
+    // Clear any previous template highlights that might exist
+    clearTemplateHighlights();
+    clearFeatureIndicators();
+
+    if (templateKey === 'scratch' || !template) {
+      // Start from scratch - reset to fresh state
+      state.activeTemplate = null;
+      state.templateMeta = null;
+
+      // Hide the templates page screen first to avoid multiple active screens
+      const templatesScreen = document.getElementById('screen-templates-page');
+      if (templatesScreen) {
+        templatesScreen.classList.remove('wizard-screen--active');
+        templatesScreen.setAttribute('hidden', '');
+      }
+
+      // Remove fullpage mode
+      document.body.classList.remove('fullpage-mode');
+
+      // Show the wizard outline/sidebar
+      const wizardOutline = document.querySelector('.wizard-outline');
+      if (wizardOutline) {
+        wizardOutline.style.display = '';
+      }
+
+      // Switch to Token tab and show wizard
+      if (window.switchTab) {
+        window.switchTab('token');
+      }
+
+      if (window.showScreen) {
+        window.showScreen('naming', { force: true });
+      }
+      return;
+    }
+
+    // Store minimal template metadata (no tracking for deviations)
+    state.activeTemplate = templateKey;
+    state.templateMeta = {
+      appliedTemplate: templateKey,
+      appliedAt: Date.now(),
+      customizations: {},
+      deviations: {}
+    };
+
+    // Apply template values to wizard state
+    // Token name intentionally left empty - users must choose their own
+    state.form.tokenName = '';
+
+    // Search metadata
+    state.form.search = state.form.search || {};
+    state.form.search.description = template.description || '';
+    state.form.search.keywords = template.keywords && Array.isArray(template.keywords) ? template.keywords.join(', ') : '';
+
+    // Permissions
+    state.form.permissions = state.form.permissions || {};
+    state.form.permissions.decimals = template.decimals ?? 8;
+    state.form.permissions.baseSupply = template.baseSupply ?? '0';
+    state.form.permissions.maxSupply = template.maxSupply ?? '';
+    state.form.permissions.useMaxSupply = template.useMaxSupply ?? false;
+    state.form.permissions.keepsHistory = template.keepsHistory ? { ...template.keepsHistory } : {
+      transfers: true, mints: true, burns: true, freezes: false, purchases: false
+    };
+    state.form.permissions.startAsPaused = template.startAsPaused ?? false;
+    state.form.permissions.allowTransferToFrozenBalance = template.allowTransferToFrozenBalance ?? false;
+    state.form.permissions.transferNotesEnabled = template.transferNotesEnabled ?? false;
+    if (template.transferNoteTypes) {
+      state.form.permissions.transferNoteTypes = { ...template.transferNoteTypes };
+    }
+    state.form.permissions.manualMint = template.manualMint ? { ...template.manualMint } : { enabled: false };
+    state.form.permissions.manualBurn = template.manualBurn ? { ...template.manualBurn } : { enabled: false };
+    state.form.permissions.manualFreeze = template.manualFreeze ? { ...template.manualFreeze } : { enabled: false };
+    state.form.permissions.unfreeze = template.unfreeze ? { ...template.unfreeze } : { enabled: false };
+    state.form.permissions.destroyFrozen = template.destroyFrozen ? { ...template.destroyFrozen } : { enabled: false };
+    state.form.permissions.emergencyAction = template.emergency ? { ...template.emergency } : { enabled: false };
+
+    // Advanced settings
+    state.form.advanced = state.form.advanced || {};
+    state.form.advanced.tradeMode = template.tradeMode ?? 'closed';
+    state.form.advanced.changeControl = template.changeControl ? { ...template.changeControl } : {
+      mint: false, burn: false, freeze: false, unfreeze: false, destroyFrozen: false, emergency: false
+    };
+
+    // Distribution (if template has it)
+    if (template.distribution) {
+      state.form.distribution = state.form.distribution || {};
+      state.form.distribution.enablePerpetual = true;
+      state.form.distribution.cadence = template.distribution.cadence ? { ...template.distribution.cadence } : null;
+      state.form.distribution.emission = template.distribution.emission ? { ...template.distribution.emission } : null;
+    }
+
+    // Sync UI with state values
+    if (typeof window.syncPermissionsUIFromState === 'function') {
+      window.syncPermissionsUIFromState();
+    }
+    if (typeof window.syncAdvancedUIFromState === 'function') {
+      window.syncAdvancedUIFromState();
+    }
+    if (typeof window.syncDistributionUIFromState === 'function') {
+      window.syncDistributionUIFromState();
+    }
+
+    // Hide the templates page screen first to avoid multiple active screens
+    const templatesScreen = document.getElementById('screen-templates-page');
+    if (templatesScreen) {
+      templatesScreen.classList.remove('wizard-screen--active');
+      templatesScreen.setAttribute('hidden', '');
+    }
+
+    // Remove fullpage mode
+    document.body.classList.remove('fullpage-mode');
+
+    // Show the wizard outline/sidebar
+    const wizardOutline = document.querySelector('.wizard-outline');
+    if (wizardOutline) {
+      wizardOutline.style.display = '';
+    }
+
+    // Switch to Token tab and navigate to naming
+    if (window.switchTab) {
+      window.switchTab('token');
+    }
+
+    if (window.showScreen) {
+      window.showScreen('naming', { force: true });
+    }
+
+    // Validate steps silently (updates sidebar status)
+    validateAllStepsAfterTemplateLoad();
+
+    // Persist state
+    if (typeof window.persistState === 'function') {
+      window.persistState();
+    }
+
+    console.log('[Templates Page] Template applied successfully:', template.name);
+  }
+
+  // Expose loadTemplateSimple globally for templates page
+  window.loadTemplateSimple = loadTemplateSimple;
 
   /**
    * Validate all steps after template load to update sidebar status indicators.
@@ -14286,6 +14493,10 @@
       if (submenu && toggleBtn) {
         submenu.hidden = false;
         toggleBtn.setAttribute('aria-expanded', 'true');
+        const sidebarStep = toggleBtn.closest('.sidebar-step');
+        if (sidebarStep) {
+          sidebarStep.setAttribute('aria-expanded', 'true');
+        }
       }
     });
   }
@@ -14398,6 +14609,7 @@
   const confirmBtn = document.getElementById('template-confirm-btn');
   const cancelBtn = document.getElementById('template-cancel-btn');
   let pendingTemplateKey = null;
+  let pendingTemplateFromPage = false; // Track if selection came from Templates Page
 
   // Supply config elements (for quick edit in modal)
   const supplyConfigSection = document.getElementById('template-supply-config');
@@ -14648,16 +14860,21 @@
   // Initialize feature toggles
   setupFeatureToggles();
 
-  function showTemplateConfirmation(templateKey) {
+  function showTemplateConfirmation(templateKey, fromPage = false) {
     const template = TOKEN_TEMPLATES[templateKey];
 
     if (templateKey === 'scratch' || !template) {
       // No confirmation needed for "Start from Scratch"
-      loadTemplate(templateKey);
+      if (fromPage) {
+        loadTemplateSimple(templateKey);
+      } else {
+        loadTemplate(templateKey);
+      }
       return;
     }
 
     pendingTemplateKey = templateKey;
+    pendingTemplateFromPage = fromPage;
 
     // Update modal content
     confirmModalTitle.textContent = `Apply "${template.name}" Template?`;
@@ -14848,6 +15065,7 @@
   function hideTemplateConfirmation() {
     confirmModal.setAttribute('hidden', '');
     pendingTemplateKey = null;
+    pendingTemplateFromPage = false;
     // Reset feature overrides when closing modal
     resetFeatureOverrides();
     // Restore body scroll and position
@@ -14874,9 +15092,15 @@
   // Confirm button
   if (confirmBtn) {
     confirmBtn.addEventListener('click', () => {
-      console.log('Apply Template clicked, pendingTemplateKey:', pendingTemplateKey);
+      console.log('Apply Template clicked, pendingTemplateKey:', pendingTemplateKey, 'fromPage:', pendingTemplateFromPage);
       if (pendingTemplateKey) {
-        loadTemplate(pendingTemplateKey);
+        if (pendingTemplateFromPage) {
+          // From Templates Page - use simple loader (no wizard highlights)
+          loadTemplateSimple(pendingTemplateKey);
+        } else {
+          // From wizard flow - use regular loader with highlights
+          loadTemplate(pendingTemplateKey);
+        }
         hideTemplateConfirmation();
       }
     });
@@ -14902,6 +15126,9 @@
       hideTemplateConfirmation();
     }
   });
+
+  // Expose showTemplateConfirmation globally for templates page
+  window.showTemplateConfirmation = showTemplateConfirmation;
 
   // Restore template indicator and highlights on page load
   if (window.wizardState && window.wizardState.activeTemplate) {
@@ -16422,6 +16649,7 @@
     const hubPage = document.getElementById('hub-page');
     const enterWizardBtn = document.getElementById('enter-wizard-btn');
     const hubCreateTokenBtn = document.getElementById('hub-create-token');
+    const hubTemplatesBtn = document.getElementById('hub-templates');
     const hubDocumentsBtn = document.getElementById('hub-documents');
     const wizardShell = document.querySelector('.wizard-shell');
 
@@ -16430,6 +16658,7 @@
       hubPage: !!hubPage,
       enterWizardBtn: !!enterWizardBtn,
       hubCreateTokenBtn: !!hubCreateTokenBtn,
+      hubTemplatesBtn: !!hubTemplatesBtn,
       hubDocumentsBtn: !!hubDocumentsBtn,
       wizardShell: !!wizardShell
     });
@@ -16471,6 +16700,7 @@
       if (wizardShell) {
         wizardShell.classList.remove('wizard-shell--hidden');
         wizardShell.style.opacity = '1';
+        wizardShell.style.visibility = 'visible';
         wizardShell.style.pointerEvents = 'auto';
       }
 
@@ -16501,6 +16731,7 @@
       if (wizardShell) {
         wizardShell.classList.add('wizard-shell--hidden');
         wizardShell.style.opacity = '0';
+        wizardShell.style.visibility = 'hidden';
         wizardShell.style.pointerEvents = 'none';
       }
 
@@ -16528,6 +16759,7 @@
       if (wizardShell) {
         wizardShell.classList.add('wizard-shell--hidden');
         wizardShell.style.opacity = '0';
+        wizardShell.style.visibility = 'hidden';
         wizardShell.style.pointerEvents = 'none';
       }
     }
@@ -16544,6 +16776,7 @@
       if (wizardShell) {
         wizardShell.classList.add('wizard-shell--hidden');
         wizardShell.style.opacity = '0';
+        wizardShell.style.visibility = 'hidden';
         wizardShell.style.pointerEvents = 'none';
       }
       console.log('[Pages] Showing hub page (landing already seen)');
@@ -16581,6 +16814,49 @@
           setTimeout(() => {
             window.globalHeader.switchPage('tokens');
           }, 100);
+        }
+      });
+    }
+
+    if (hubTemplatesBtn) {
+      hubTemplatesBtn.addEventListener('click', function(e) {
+        console.log('[Pages] Hub Templates clicked');
+        e.preventDefault();
+
+        // Show wizard shell and use global header's switchPage for consistency
+        showWizard();
+
+        // Use global header's switchPage to navigate to templates
+        if (window.globalHeader && typeof window.globalHeader.switchPage === 'function') {
+          window.globalHeader.switchPage('templates');
+        }
+      });
+    }
+
+    // Back to hub button on templates page
+    const templatesBackBtn = document.getElementById('templates-back-to-hub');
+    if (templatesBackBtn) {
+      templatesBackBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        showHubPage();
+      });
+    }
+
+    // Templates page card click handlers
+    const templatesContent = document.getElementById('templates-content');
+    if (templatesContent) {
+      templatesContent.addEventListener('click', function(e) {
+        const card = e.target.closest('[data-tpl]');
+        if (card) {
+          const templateKey = card.getAttribute('data-tpl');
+          console.log('[Templates Page] Card clicked:', templateKey);
+
+          // Show the template confirmation modal (fromPage = true for simple loading)
+          if (typeof window.showTemplateConfirmation === 'function') {
+            window.showTemplateConfirmation(templateKey, true);
+          } else {
+            console.error('showTemplateConfirmation not available');
+          }
         }
       });
     }
@@ -16670,8 +16946,8 @@
       if (documentsSidebar) documentsSidebar.hidden = true;
 
       // Show the appropriate sidebar (or hide for fullpage screens)
-      if (pageId === 'documents') {
-        // Documents is a fullpage layout - hide the entire sidebar
+      if (pageId === 'documents' || pageId === 'templates') {
+        // Documents and Templates are fullpage layouts - hide the entire sidebar
         if (wizardOutline) wizardOutline.style.display = 'none';
         document.body.classList.add('fullpage-mode');
       } else {
@@ -16694,9 +16970,16 @@
           showScreen(activeStep);
         }
       } else if (pageId === 'templates') {
-        // Show templates/welcome screen
-        if (typeof showScreen === 'function') {
-          showScreen('welcome', { force: true });
+        // Show standalone templates page (not the wizard welcome screen)
+        // Hide all wizard screens first
+        document.querySelectorAll('.wizard-screen').forEach(screen => {
+          screen.classList.remove('wizard-screen--active');
+        });
+        // Show templates page
+        const templatesScreen = document.getElementById('screen-templates-page');
+        if (templatesScreen) {
+          templatesScreen.classList.add('wizard-screen--active');
+          templatesScreen.removeAttribute('hidden');
         }
       } else if (pageId === 'groups') {
         // Switch to group mode
