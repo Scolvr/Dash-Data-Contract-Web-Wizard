@@ -6783,6 +6783,28 @@ body.modal-open .modal__content {
 }
 
 /* ===========================================
+   TEMPLATE NAMING CONFIGURATION
+   =========================================== */
+
+.template-naming-config {
+  margin: var(--space-5) 0;
+  padding: var(--space-5);
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.template-naming-config__subtitle {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: -0.5rem 0 var(--space-4) 0;
+}
+
+.template-naming-config .supply-config__cards {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* ===========================================
    ENHANCED SUPPLY CONFIGURATION
    =========================================== */
 
@@ -14173,6 +14195,16 @@ html[data-theme='light'] .template-supply-config .preview-value {
   color: #5B4FCF;
 }
 
+/* Template Naming - Light Mode */
+html[data-theme='light'] .template-naming-config {
+  background: rgba(254, 251, 247, 0.9);
+  border: 1px solid rgba(120, 100, 80, 0.1);
+}
+
+html[data-theme='light'] .template-naming-config__subtitle {
+  color: #64748B;
+}
+
 /* Supply Cards - Light Mode */
 html[data-theme='light'] .supply-config-enhanced {
   background: rgba(254, 251, 247, 0.9);
@@ -17635,6 +17667,532 @@ html[data-theme='light'] .templates-back-btn {
   color: var(--color-muted);
 }
 
+/* ─────────────────────────────────────────────────────────────────────
+   Template Card Settings Panels
+   Detailed configuration preview within template cards
+   ───────────────────────────────────────────────────────────────────── */
+
+.tpl-card-wrapper {
+  display: contents;
+}
+
+.tpl-card__settings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.tpl-settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.tpl-settings-group--highlight {
+  background: rgba(14, 118, 253, 0.05);
+  border-radius: 8px;
+  padding: var(--space-3);
+  margin: 0 calc(-1 * var(--space-3));
+}
+
+.tpl-settings-group__label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(245, 245, 247, 0.4);
+}
+
+.tpl-settings-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.tpl-setting {
+  font-size: 0.8125rem;
+  color: rgba(245, 245, 247, 0.7);
+}
+
+.tpl-setting strong {
+  color: rgba(245, 245, 247, 0.5);
+  font-weight: 500;
+}
+
+/* Feature toggles grid */
+.tpl-features-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.tpl-feat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.tpl-feat svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.tpl-feat--on {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10B981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.tpl-feat--on svg {
+  color: #10B981;
+}
+
+.tpl-feat--off {
+  background: rgba(255, 255, 255, 0.02);
+  color: rgba(245, 245, 247, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.tpl-feat--off svg {
+  color: rgba(245, 245, 247, 0.25);
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   Interactive Template Cards
+   Editable settings within template cards
+   ───────────────────────────────────────────────────────────────────── */
+
+.tpl-card--interactive {
+  cursor: default;
+}
+
+.tpl-card--interactive:hover {
+  transform: none;
+}
+
+.tpl-card__header {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  margin-bottom: var(--space-2);
+}
+
+.tpl-card__header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.tpl-card--interactive .tpl-card__title {
+  margin-bottom: var(--space-1);
+}
+
+.tpl-card--interactive .tpl-card__desc {
+  margin-bottom: 0;
+}
+
+/* Primary settings group (naming) */
+.tpl-settings-group--primary {
+  background: rgba(14, 118, 253, 0.05);
+  border: 1px solid rgba(14, 118, 253, 0.15);
+  border-radius: 10px;
+  padding: var(--space-3);
+  margin: 0 calc(-1 * var(--space-1));
+}
+
+/* Input rows */
+.tpl-input-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.tpl-input-row--triple {
+  grid-template-columns: 1fr 1fr auto;
+}
+
+/* Input fields */
+.tpl-input-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tpl-input-field--small {
+  max-width: 90px;
+}
+
+.tpl-input-field__label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: rgba(245, 245, 247, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.tpl-input {
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  color: var(--color-text);
+  transition: all 0.15s ease;
+}
+
+.tpl-input::placeholder {
+  color: rgba(245, 245, 247, 0.3);
+}
+
+.tpl-input:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.tpl-input:focus {
+  outline: none;
+  border-color: #0E76FD;
+  background: rgba(14, 118, 253, 0.05);
+  box-shadow: 0 0 0 3px rgba(14, 118, 253, 0.1);
+}
+
+/* Feature toggles (interactive) */
+.tpl-features-grid--toggleable {
+  gap: 8px;
+}
+
+.tpl-feat-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.tpl-feat-toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tpl-feat-toggle svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.tpl-feat-toggle--on {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10B981;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.tpl-feat-toggle--on svg {
+  color: #10B981;
+}
+
+.tpl-feat-toggle--off {
+  background: rgba(255, 255, 255, 0.02);
+  color: rgba(245, 245, 247, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.tpl-feat-toggle--off svg {
+  color: rgba(245, 245, 247, 0.3);
+}
+
+.tpl-feat-toggle:hover {
+  transform: translateY(-1px);
+}
+
+.tpl-feat-toggle--on:hover {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.tpl-feat-toggle--off:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* History toggles (interactive) */
+.tpl-history-tags--toggleable {
+  gap: 8px;
+}
+
+.tpl-history-toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.tpl-history-toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tpl-history-toggle--on {
+  background: rgba(14, 118, 253, 0.12);
+  color: #0E76FD;
+  border: 1px solid rgba(14, 118, 253, 0.25);
+}
+
+.tpl-history-toggle--off {
+  background: rgba(255, 255, 255, 0.02);
+  color: rgba(245, 245, 247, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.tpl-history-toggle:hover {
+  transform: translateY(-1px);
+}
+
+.tpl-history-toggle--on:hover {
+  background: rgba(14, 118, 253, 0.18);
+  border-color: rgba(14, 118, 253, 0.35);
+}
+
+.tpl-history-toggle--off:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Option toggles (single checkbox options) */
+.tpl-option-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.tpl-option-toggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: #10B981;
+  cursor: pointer;
+}
+
+.tpl-option-toggle__label {
+  font-size: 0.8125rem;
+  color: rgba(245, 245, 247, 0.8);
+}
+
+/* Action button (instead of passive text) */
+.tpl-card__action--btn {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: linear-gradient(135deg, #0E76FD 0%, #0A5FCC 100%);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tpl-card__action--btn:hover {
+  background: linear-gradient(135deg, #3D9AFF 0%, #0E76FD 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(14, 118, 253, 0.3);
+}
+
+.tpl-card__action--btn:active {
+  transform: translateY(0);
+}
+
+.tpl-card__action--btn svg {
+  transition: transform 0.2s ease;
+}
+
+.tpl-card__action--btn:hover svg {
+  transform: translateX(4px);
+}
+
+/* Light theme for interactive cards */
+html[data-theme='light'] .tpl-settings-group--primary {
+  background: rgba(14, 118, 253, 0.06);
+  border-color: rgba(14, 118, 253, 0.2);
+}
+
+html[data-theme='light'] .tpl-input {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: var(--color-text);
+}
+
+html[data-theme='light'] .tpl-input::placeholder {
+  color: rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme='light'] .tpl-input:hover {
+  border-color: rgba(0, 0, 0, 0.18);
+}
+
+html[data-theme='light'] .tpl-input:focus {
+  background: rgba(14, 118, 253, 0.04);
+}
+
+html[data-theme='light'] .tpl-input-field__label {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+html[data-theme='light'] .tpl-feat-toggle--off {
+  background: rgba(0, 0, 0, 0.03);
+  color: rgba(0, 0, 0, 0.4);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme='light'] .tpl-feat-toggle--off svg {
+  color: rgba(0, 0, 0, 0.3);
+}
+
+html[data-theme='light'] .tpl-feat-toggle--off:hover {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+html[data-theme='light'] .tpl-history-toggle--off {
+  background: rgba(0, 0, 0, 0.03);
+  color: rgba(0, 0, 0, 0.4);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme='light'] .tpl-history-toggle--off:hover {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+html[data-theme='light'] .tpl-option-toggle__label {
+  color: rgba(0, 0, 0, 0.8);
+}
+
+/* History tracking tags */
+.tpl-history-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tpl-history-tag {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.tpl-history-tag--on {
+  background: rgba(14, 118, 253, 0.1);
+  color: #0E76FD;
+  border: 1px solid rgba(14, 118, 253, 0.2);
+}
+
+.tpl-history-tag--off {
+  background: rgba(255, 255, 255, 0.02);
+  color: rgba(245, 245, 247, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* Distribution info section */
+.tpl-distribution-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.tpl-dist-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tpl-dist-label {
+  font-size: 0.8125rem;
+  color: rgba(245, 245, 247, 0.5);
+}
+
+.tpl-dist-value {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: rgba(245, 245, 247, 0.8);
+}
+
+/* Setting value badges */
+.tpl-setting-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(245, 245, 247, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.tpl-setting-value--on {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10B981;
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+/* Card action footer */
+.tpl-card__action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0E76FD;
+  transition: all 0.2s ease;
+}
+
+.tpl-card__action svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.2s ease;
+}
+
+.tpl-card:hover .tpl-card__action {
+  color: #3D9AFF;
+}
+
+.tpl-card:hover .tpl-card__action svg {
+  transform: translateX(4px);
+}
+
 /* Light Theme Overrides */
 html[data-theme='light'] .tpl-card {
   background: rgba(0, 0, 0, 0.02);
@@ -17678,6 +18236,61 @@ html[data-theme='light'] .tpl-feature {
   border-color: rgba(0, 0, 0, 0.08);
 }
 
+/* Light theme for settings panels */
+html[data-theme='light'] .tpl-card__settings {
+  border-top-color: rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme='light'] .tpl-settings-group__label {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+html[data-theme='light'] .tpl-setting {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+html[data-theme='light'] .tpl-setting strong {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+html[data-theme='light'] .tpl-feat--off {
+  background: rgba(0, 0, 0, 0.03);
+  color: rgba(0, 0, 0, 0.35);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+html[data-theme='light'] .tpl-feat--off svg {
+  color: rgba(0, 0, 0, 0.25);
+}
+
+html[data-theme='light'] .tpl-history-tag--off {
+  background: rgba(0, 0, 0, 0.03);
+  color: rgba(0, 0, 0, 0.35);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+html[data-theme='light'] .tpl-dist-label {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+html[data-theme='light'] .tpl-dist-value {
+  color: rgba(0, 0, 0, 0.8);
+}
+
+html[data-theme='light'] .tpl-setting-value {
+  background: rgba(0, 0, 0, 0.04);
+  color: rgba(0, 0, 0, 0.6);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme='light'] .tpl-card__action {
+  border-top-color: rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme='light'] .tpl-settings-group--highlight {
+  background: rgba(14, 118, 253, 0.06);
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   .tpl-card--scratch {
@@ -17691,6 +18304,34 @@ html[data-theme='light'] .tpl-feature {
 
   .tpl-grid {
     grid-template-columns: 1fr;
+  }
+
+  /* Settings panels responsive */
+  .tpl-settings-row {
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .tpl-features-grid {
+    gap: 6px;
+  }
+
+  .tpl-feat {
+    font-size: 0.6875rem;
+    padding: 3px 8px;
+  }
+
+  .tpl-history-tags {
+    gap: 4px;
+  }
+
+  .tpl-history-tag {
+    font-size: 0.625rem;
+    padding: 2px 6px;
+  }
+
+  .tpl-card__settings {
+    gap: var(--space-2);
   }
 }
 

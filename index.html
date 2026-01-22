@@ -462,6 +462,12 @@
         </svg>
         <span>Tokens</span>
       </a>
+      <a href="#" class="global-header__link" data-page="groups">
+        <svg class="global-header__link-icon" width="18" height="18" viewBox="0 0 20 20" fill="none">
+          <path d="M7 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM13 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM7 11c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4zM13 11c-.33 0-.69.02-1.07.05C13.05 11.69 14 12.66 14 14v2h6v-2c0-2.66-5.33-4-8-4z" fill="currentColor"/>
+        </svg>
+        <span>Groups</span>
+      </a>
       <a href="#" class="global-header__link" data-page="templates">
         <svg class="global-header__link-icon" width="18" height="18" viewBox="0 0 20 20" fill="none">
           <rect x="2" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
@@ -470,12 +476,6 @@
           <rect x="11" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
         </svg>
         <span>Templates</span>
-      </a>
-      <a href="#" class="global-header__link" data-page="groups">
-        <svg class="global-header__link-icon" width="18" height="18" viewBox="0 0 20 20" fill="none">
-          <path d="M7 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM13 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM7 11c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4zM13 11c-.33 0-.69.02-1.07.05C13.05 11.69 14 12.66 14 14v2h6v-2c0-2.66-5.33-4-8-4z" fill="currentColor"/>
-        </svg>
-        <span>Groups</span>
       </a>
       <a href="#" class="global-header__link" data-page="documents">
         <svg class="global-header__link-icon" width="18" height="18" viewBox="0 0 20 20" fill="none">
@@ -565,22 +565,6 @@
 
         <!-- Navigation -->
         <nav class="sidebar-nav--redesigned wizard-nav" aria-label="Wizard progress">
-          <!-- Templates Step -->
-          <div class="sidebar-step" data-step="welcome">
-            <button class="sidebar-step__header wizard-nav-item" data-step="welcome">
-              <span class="sidebar-step__indicator">
-                <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
-                  <rect x="2" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
-                  <rect x="11" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
-                  <rect x="2" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
-                  <rect x="11" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
-                </svg>
-              </span>
-              <span class="sidebar-step__title wizard-nav-item__text">Templates</span>
-              <span class="sidebar-step__status sidebar-step__status--pending wizard-path__pill pill" id="status-welcome" aria-live="polite"></span>
-            </button>
-          </div>
-
           <!-- Naming Step -->
           <div class="sidebar-step sidebar-step--active" data-step="naming" aria-expanded="true">
             <button class="sidebar-step__header wizard-nav-item wizard-nav-item--expandable" data-step="naming" data-toggle="naming-submenu">
@@ -770,8 +754,8 @@
       <div class="sidebar-section" data-sidebar="group" hidden>
         <!-- Sidebar Header with Branding -->
         <div class="wizard-sidebar__header">
-          <button class="brand" aria-label="Return to template selection" type="button"
-            onclick="showScreen('welcome', { force: true })">
+          <button class="brand" aria-label="Return to naming step" type="button"
+            onclick="showScreen('naming', { force: true })">
             <div class="brand__icon">
               <img src="https://media.dash.org/wp-content/uploads/dash-d-rounded-square-1000.png" alt="Dash" width="32"
                 height="32">
@@ -962,292 +946,6 @@
       </div>
 
       <div class="wizard-content">
-        <!-- Welcome/Template Selection Screen -->
-        <section class="wizard-screen wizard-screen--active wizard-screen--redesigned" id="screen-welcome" data-step="welcome" data-tab="token">
-
-          <!-- Right Side Guide Panel -->
-          <aside class="page-guide page-guide--glass" aria-label="Page guide" data-collapsed="false">
-            <div class="page-guide__header">
-              <div class="page-guide__tabs-horizontal">
-                <button class="page-guide__tab page-guide__tab--info active" data-panel="info" aria-label="Show Information" aria-pressed="true">
-                  Information
-                </button>
-                <button class="page-guide__tab page-guide__tab--guide" data-panel="guide" aria-label="Show User Guide" aria-pressed="false">
-                  User Guide
-                </button>
-              </div>
-              <button class="page-guide__collapse" aria-label="Collapse panel" aria-expanded="true">
-                <svg class="page-guide__collapse-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M6 12l4-4-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </button>
-            </div>
-
-            <div class="page-guide__panel page-guide__panel--info active" data-panel="info">
-              <div class="page-guide__content">
-                <h2 class="page-guide__title">Templates Library</h2>
-                <p class="page-guide__intro">Start by choosing a base template that defines your token's starting
-                  structure. You can also begin from scratch for full customization.</p>
-
-                <div class="page-guide__section">
-                  <h3 class="page-guide__section-title">Quick Reference</h3>
-
-                  <h4 class="page-guide__step-heading" id="guide-available-templates">Available Templates</h4>
-                  <p><strong>Start from Scratch</strong> – Full control over every setting. Build your token step-by-step with complete customization. Best for experienced users who want precise control.</p>
-                  <p><strong>Simple Fixed Supply</strong> – A basic token with fixed supply that never changes. Includes burn capability and transfer notes. Perfect for simple use cases or small projects.</p>
-                  <p><strong>Utility Token</strong> – Enterprise-ready token with freeze controls, compliance tools, and encrypted transfer notes. Ideal for platforms, payment systems, and regulated environments.</p>
-                  <p><strong>Reward/Points Token</strong> – Continuous token emission for loyalty programs and reward systems. Features time-based fixed emission with burn capability.</p>
-
-                  <h4 class="page-guide__step-heading" id="guide-template-features">Template Features</h4>
-                  <p>Each template pre-configures:</p>
-                  <ul class="page-guide__list">
-                    <li><strong>Supply settings:</strong> Base supply, max supply, decimals</li>
-                    <li><strong>Permissions:</strong> Minting, burning, freezing controls</li>
-                    <li><strong>Distribution:</strong> Manual, pre-programmed, or perpetual</li>
-                    <li><strong>Transfer notes:</strong> Public, encrypted, or disabled</li>
-                  </ul>
-
-                  <h4 class="page-guide__step-heading" id="guide-what-happens-next">What Happens Next</h4>
-                  <p>After choosing a template, you'll customize your token's name, supply settings, permissions, distribution rules, and more. All template defaults can be adjusted to match your specific needs.</p>
-                </div>
-              </div>
-            </div>
-
-            <div class="page-guide__panel page-guide__panel--guide" data-panel="guide" hidden>
-              <div class="page-guide__content">
-                <h2 class="page-guide__title">Templates Library</h2>
-                <p class="page-guide__intro">Step-by-step guide to selecting your token template.</p>
-
-                <div class="page-guide__section">
-                  <h3 class="page-guide__section-title">Step 1: Review Template Options</h3>
-                  <p>Review the four available templates based on your needs and experience level. Each shows estimated completion time and key features.</p>
-                </div>
-
-                <div class="page-guide__section">
-                  <h3 class="page-guide__section-title">Step 2: Choose Your Template</h3>
-
-                  <h4 class="page-guide__step-heading">Start from Scratch (Intermediate, ~10 min)</h4>
-                  <p>Select this for full control over every token setting. Build your token step-by-step with complete customization.</p>
-
-                  <h4 class="page-guide__step-heading">Simple Fixed Supply (Beginner, ~5 min)</h4>
-                  <p>Select this for a basic token with fixed supply, burn capability, and transfer notes. Best for straightforward use cases with minimal complexity.</p>
-
-                  <h4 class="page-guide__step-heading">Utility Token (Intermediate, ~10 min)</h4>
-                  <p>Select this for enterprise features including freeze controls, compliance tools, and encrypted transfer notes. Ideal for platforms and payment systems.</p>
-
-                  <h4 class="page-guide__step-heading">Reward/Points Token (Advanced, ~10 min)</h4>
-                  <p>Select this for continuous token emission. Best for loyalty programs and reward systems with time-based fixed emission and burn capability.</p>
-                </div>
-
-                <div class="page-guide__section">
-                  <h3 class="page-guide__section-title">Step 3: Click Your Selection</h3>
-                  <p>Click on your chosen template card to proceed. The system will pre-configure settings based on your selection, which you can customize in subsequent steps.</p>
-                </div>
-
-                <div class="page-guide__section">
-                  <h3 class="page-guide__section-title">Step 4: Continue</h3>
-                  <p>Once selected, you'll advance to the detailed configuration screens with template-specific defaults already applied.</p>
-                </div>
-              </div>
-            </div>
-          </aside>
-
-          <div class="wizard-screen__inner">
-            <div class="welcome-container">
-              <h1 class="welcome-title">Choose Your Template</h1>
-              <p class="welcome-subtitle">Start with a pre-configured template for your use case, or build your token from scratch with full customization control</p>
-
-              <div class="template-selection template-selection--glass">
-                <!-- First-time user guidance tip -->
-                <div class="template-tip">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"/>
-                    <path d="M12 16v-4"/>
-                    <path d="M12 8h.01"/>
-                  </svg>
-                  <p><strong>First time here?</strong> Start with "Start from Scratch" for a guided experience that helps you understand each token configuration option.</p>
-                </div>
-
-                <!-- Primary: Start from Scratch -->
-                <div class="template-grid__primary">
-                    <button class="template-card template-card--featured template-card--glass" type="button" data-template="scratch">
-                      <span class="difficulty-badge difficulty-badge--intermediate">Intermediate</span>
-                      <div class="template-card__icon">
-                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <!-- Pencil with creative sparkles -->
-                          <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/>
-                          <path d="M20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                          <circle cx="18" cy="4" r="1.2" opacity="0.6"/>
-                          <circle cx="21" cy="2" r="0.8" opacity="0.4"/>
-                          <circle cx="15" cy="2" r="1" opacity="0.5"/>
-                        </svg>
-                      </div>
-                      <div class="template-card__content">
-                        <h3 class="template-card__title">Start from Scratch</h3>
-                        <span class="time-estimate">~10 min</span>
-                        <p class="template-card__description">Build your token step-by-step with full control over every setting</p>
-                      </div>
-                      <div class="template-card__preview">
-                        <h4 class="template-card__preview-title">Configuration</h4>
-                        <ul class="template-card__preview-list">
-                          <li class="template-card__preview-item">
-                            <span class="template-card__preview-label">Supply:</span>
-                            <span class="template-card__preview-value">Custom</span>
-                          </li>
-                          <li class="template-card__preview-item">
-                            <span class="template-card__preview-label">Distribution:</span>
-                            <span class="template-card__preview-value">Custom</span>
-                          </li>
-                          <li class="template-card__preview-item">
-                            <span class="template-card__preview-label">Control:</span>
-                            <span class="template-card__preview-value">Full</span>
-                          </li>
-                        </ul>
-                      </div>
-                    </button>
-                  </div>
-
-                  <!-- Templates Section -->
-                  <div class="template-grid__section">
-                    <h3 class="template-grid__section-title">Or choose a template</h3>
-                    <p class="template-grid__section-subtitle">Pre-configured starting points for common use cases</p>
-                    <div class="template-grid__templates">
-                    <!-- Simple Fixed Supply -->
-                    <button class="template-card template-card--compact template-card--glass" type="button" data-template="simple-fixed">
-                    <span class="difficulty-badge difficulty-badge--beginner">Beginner</span>
-                    <div class="template-card__icon">
-                      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Coin stack - stable/fixed supply -->
-                        <ellipse cx="12" cy="18" rx="7" ry="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
-                        <ellipse cx="12" cy="14" rx="7" ry="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
-                        <ellipse cx="12" cy="10" rx="7" ry="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
-                        <path d="M5 10v8M19 10v8" stroke="currentColor" stroke-width="1.5"/>
-                        <path d="M12 4l-2 2h4l-2-2z"/>
-                        <rect x="10" y="5" width="4" height="3" rx="0.5"/>
-                      </svg>
-                    </div>
-                    <div class="template-card__content">
-                      <h3 class="template-card__title">Simple Fixed Supply</h3>
-                      <span class="time-estimate">~5 min</span>
-                      <p class="template-card__description">Basic token with fixed supply, burn capability, and transfer notes. Perfect for simple use cases with basic controls</p>
-                      <div class="template-card__specs">
-                        <span class="spec-badge">Fixed Supply</span>
-                        <span class="spec-badge">Burnable</span>
-                        <span class="spec-badge">Transfer Notes</span>
-                      </div>
-                      <div class="template-card__preview">
-                        <h4 class="template-card__preview-title">Configuration</h4>
-                        <ul class="template-card__preview-list">
-                          <li class="template-card__preview-item">
-                            <span class="template-card__preview-label">Max Supply:</span>
-                            <span class="template-card__preview-value">1,000,000</span>
-                          </li>
-                          <li class="template-card__preview-item">
-                            <span class="template-card__preview-label">Decimals:</span>
-                            <span class="template-card__preview-value">8</span>
-                          </li>
-                          <li class="template-card__preview-item">
-                            <span class="template-card__preview-label">Distribution:</span>
-                            <span class="template-card__preview-value">None</span>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </button>
-
-                    <!-- Utility Token -->
-                    <button class="template-card template-card--compact template-card--glass" type="button" data-template="utility">
-                    <span class="difficulty-badge difficulty-badge--intermediate">Intermediate</span>
-                    <div class="template-card__icon">
-                      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Interlocking gears - utility/functional -->
-                        <circle cx="9" cy="13" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
-                        <circle cx="9" cy="13" r="1.5"/>
-                        <path d="M9 7v2M9 17v2M3 13h2M13 13h2"/>
-                        <path d="M5.5 9.5l1.4 1.4M11 15l1.4 1.4M5.5 16.5l1.4-1.4M11 11l1.4-1.4"/>
-                        <circle cx="17" cy="9" r="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
-                        <circle cx="17" cy="9" r="1"/>
-                        <path d="M17 5v1.5M17 11.5v1.5M13.5 9h1.5M19.5 9h1.5"/>
-                      </svg>
-                    </div>
-                    <div class="template-card__content">
-                      <h3 class="template-card__title">Utility Token</h3>
-                      <span class="time-estimate">~10 min</span>
-                      <p class="template-card__description">Enterprise-ready token with freeze controls, compliance features, and encrypted transfer notes. Perfect for platforms and payment systems</p>
-                      <div class="template-card__specs">
-                        <span class="spec-badge">Freeze Controls</span>
-                        <span class="spec-badge">Transfer Notes</span>
-                        <span class="spec-badge">Compliance Ready</span>
-                      </div>
-                      <div class="template-card__preview">
-                        <h4 class="template-card__preview-title">Configuration</h4>
-                        <ul class="template-card__preview-list">
-                          <li class="template-card__preview-item">
-                            <span class="template-card__preview-label">Max Supply:</span>
-                            <span class="template-card__preview-value">10,000,000</span>
-                          </li>
-                          <li class="template-card__preview-item">
-                            <span class="template-card__preview-label">Trading:</span>
-                            <span class="template-card__preview-value">Permissionless</span>
-                          </li>
-                          <li class="template-card__preview-item">
-                            <span class="template-card__preview-label">Burn:</span>
-                            <span class="template-card__preview-value">Enabled</span>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </button>
-
-                    <!-- Reward Token -->
-                    <button class="template-card template-card--compact template-card--glass" type="button" data-template="reward">
-                    <span class="difficulty-badge difficulty-badge--advanced">Advanced</span>
-                    <div class="template-card__icon">
-                      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Trophy with star - reward/achievement -->
-                        <path d="M6 9V6a2 2 0 012-2h8a2 2 0 012 2v3" fill="none" stroke="currentColor" stroke-width="1.5"/>
-                        <path d="M18 9a3 3 0 003-3h-3M6 9a3 3 0 01-3-3h3" fill="none" stroke="currentColor" stroke-width="1.5"/>
-                        <path d="M6 9h12v4a6 6 0 01-12 0V9z" fill="none" stroke="currentColor" stroke-width="1.5"/>
-                        <path d="M9 20h6M12 17v3" stroke="currentColor" stroke-width="1.5"/>
-                        <path d="M12 8l1 2h2l-1.5 1.5.5 2-2-1-2 1 .5-2L9 10h2l1-2z"/>
-                      </svg>
-                    </div>
-                    <div class="template-card__content">
-                      <h3 class="template-card__title">Reward/Points Token</h3>
-                      <span class="time-estimate">~10 min</span>
-                      <p class="template-card__description">Continuous emission for user rewards and loyalty programs
-                      </p>
-                      <div class="template-card__specs">
-                        <span class="spec-badge">Time-Based</span>
-                        <span class="spec-badge">Fixed Emission</span>
-                        <span class="spec-badge">Burn Enabled</span>
-                      </div>
-                      <div class="template-card__preview">
-                        <h4 class="template-card__preview-title">Configuration</h4>
-                        <ul class="template-card__preview-list">
-                          <li class="template-card__preview-item">
-                            <span class="template-card__preview-label">Emission:</span>
-                            <span class="template-card__preview-value">100/day</span>
-                          </li>
-                          <li class="template-card__preview-item">
-                            <span class="template-card__preview-label">Cadence:</span>
-                            <span class="template-card__preview-value">Time-based</span>
-                          </li>
-                          <li class="template-card__preview-item">
-                            <span class="template-card__preview-label">Max Supply:</span>
-                            <span class="template-card__preview-value">Unlimited</span>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </button>
-                    </div>
-                  </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
         <!-- Start Over Confirmation Modal -->
         <div class="modal" id="start-over-modal" hidden>
           <div class="modal__overlay"></div>
@@ -1267,8 +965,7 @@
         </div>
 
         <!-- Naming: Token Name Sub-step -->
-        <section class="wizard-screen wizard-screen--redesigned" id="screen-naming" data-step="naming" data-substep="naming" data-tab="token"
-          hidden>
+        <section class="wizard-screen wizard-screen--active wizard-screen--redesigned" id="screen-naming" data-step="naming" data-substep="naming" data-tab="token">
 
           <!-- Right Side Guide Panel -->
           <aside class="page-guide page-guide--glass" aria-label="Page guide" data-collapsed="false">
@@ -8425,11 +8122,11 @@
                       </svg>
                     </div>
                     <h3 class="tpl-card__title">Simple Fixed Supply</h3>
-                    <p class="tpl-card__desc">Basic token with fixed supply, burn capability, and transfer notes. Great for loyalty points or simple currencies.</p>
+                    <p class="tpl-card__desc">Basic token with fixed supply and burn capability. Perfect for loyalty points or simple currencies.</p>
                     <div class="tpl-card__features">
-                      <span class="tpl-feature">1M Supply</span>
-                      <span class="tpl-feature">Burnable</span>
-                      <span class="tpl-feature">8 Decimals</span>
+                      <span class="tpl-feature">Fixed supply</span>
+                      <span class="tpl-feature">Burn enabled</span>
+                      <span class="tpl-feature">8 decimals</span>
                     </div>
                   </button>
 
@@ -8442,11 +8139,11 @@
                       </svg>
                     </div>
                     <h3 class="tpl-card__title">Utility Token</h3>
-                    <p class="tpl-card__desc">Full-featured token for platform access and payments. Includes freeze, emergency actions, and compliance features.</p>
+                    <p class="tpl-card__desc">Enterprise-ready token with freeze controls, emergency actions, and compliance features.</p>
                     <div class="tpl-card__features">
-                      <span class="tpl-feature">10M-100M Supply</span>
-                      <span class="tpl-feature">Freeze</span>
-                      <span class="tpl-feature">Emergency</span>
+                      <span class="tpl-feature">Mint & Burn</span>
+                      <span class="tpl-feature">Freeze controls</span>
+                      <span class="tpl-feature">Emergency actions</span>
                     </div>
                   </button>
 
@@ -8459,11 +8156,11 @@
                       </svg>
                     </div>
                     <h3 class="tpl-card__title">Reward Token</h3>
-                    <p class="tpl-card__desc">Continuous emission token for user rewards and loyalty programs. Distributes 1,000 tokens daily with no max supply.</p>
+                    <p class="tpl-card__desc">Continuous emission for rewards and loyalty programs. Time-based distribution with no maximum supply.</p>
                     <div class="tpl-card__features">
-                      <span class="tpl-feature">Daily Emissions</span>
-                      <span class="tpl-feature">No Max</span>
-                      <span class="tpl-feature">0 Decimals</span>
+                      <span class="tpl-feature">Auto emissions</span>
+                      <span class="tpl-feature">No max supply</span>
+                      <span class="tpl-feature">Time-based</span>
                     </div>
                   </button>
                 </div>
@@ -8780,9 +8477,97 @@
           <!-- Template details will be inserted here -->
         </div>
 
+        <!-- Token Naming Configuration -->
+        <div class="template-naming-config" id="template-naming-config">
+          <h3 class="supply-config__title">Token Name</h3>
+          <p class="template-naming-config__subtitle">Define how your token will be displayed</p>
+
+          <div class="supply-config__cards">
+            <div class="supply-card">
+              <label class="supply-card__label" for="template-singular">Singular Form</label>
+              <input type="text"
+                     class="supply-card__input"
+                     id="template-singular"
+                     placeholder="e.g. Token"
+                     maxlength="32"
+                     autocomplete="off">
+              <span class="supply-card__hint">One unit (e.g. "1 Token")</span>
+            </div>
+
+            <div class="supply-card">
+              <label class="supply-card__label" for="template-plural">Plural Form</label>
+              <input type="text"
+                     class="supply-card__input"
+                     id="template-plural"
+                     placeholder="e.g. Tokens"
+                     maxlength="32"
+                     autocomplete="off">
+              <span class="supply-card__hint">Multiple units (e.g. "5 Tokens")</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Feature Showcase Grid -->
         <div class="template-features" id="template-features">
           <h4 class="template-features__title">What's Included</h4>
+
+          <!-- Template Global / Supply Configuration -->
+          <div class="template-features__group">
+            <span class="template-features__group-label">Template Global</span>
+            <div class="supply-config-enhanced" id="template-supply-config">
+              <div class="supply-config__cards">
+                <div class="supply-card">
+                  <label class="supply-card__label" for="template-base-supply">Base Supply</label>
+                  <input type="text"
+                         class="supply-card__input"
+                         id="template-base-supply"
+                         inputmode="numeric"
+                         pattern="[0-9]*"
+                         placeholder="1,000,000">
+                  <span class="supply-card__hint">Initial tokens</span>
+                </div>
+
+                <div class="supply-card">
+                  <label class="supply-card__label" for="template-max-supply">Max Supply</label>
+                  <input type="text"
+                         class="supply-card__input"
+                         id="template-max-supply"
+                         inputmode="numeric"
+                         pattern="[0-9]*"
+                         placeholder="Unlimited">
+                  <span class="supply-card__hint">Cap (optional)</span>
+                </div>
+
+                <div class="supply-card supply-card--select">
+                  <label class="supply-card__label" for="template-decimals">Decimals</label>
+                  <select class="supply-card__select" id="template-decimals">
+                    <option value="0">0</option>
+                    <option value="2">2</option>
+                    <option value="8" selected>8</option>
+                    <option value="11">11</option>
+                  </select>
+                  <span class="supply-card__hint">Precision</span>
+                </div>
+              </div>
+
+              <!-- Supply ratio bar -->
+              <div class="supply-ratio">
+                <div class="supply-ratio__bar">
+                  <div class="supply-ratio__fill" id="supply-ratio-fill"></div>
+                </div>
+                <span class="supply-ratio__label" id="supply-ratio-label">Base supply configured</span>
+              </div>
+
+              <!-- Enhanced preview -->
+              <div class="supply-preview">
+                <span class="supply-preview__value" id="template-preview-value">1,000,000</span>
+                <span class="supply-preview__symbol">TOKENS</span>
+                <span class="supply-preview__details" id="supply-preview-details">
+                  8 decimal places
+                </span>
+              </div>
+            </div>
+          </div>
 
           <!-- Token Actions Group -->
           <div class="template-features__group">
@@ -8872,63 +8657,6 @@
                 <span class="template-feature__status">On</span>
               </div>
             </div>
-          </div>
-        </div>
-
-        <!-- Enhanced Supply Configuration -->
-        <div class="supply-config-enhanced" id="template-supply-config" hidden>
-          <h3 class="supply-config__title">Token Supply</h3>
-
-          <div class="supply-config__cards">
-            <div class="supply-card">
-              <label class="supply-card__label" for="template-base-supply">Base Supply</label>
-              <input type="text"
-                     class="supply-card__input"
-                     id="template-base-supply"
-                     inputmode="numeric"
-                     pattern="[0-9]*"
-                     placeholder="1,000,000">
-              <span class="supply-card__hint">Initial tokens</span>
-            </div>
-
-            <div class="supply-card">
-              <label class="supply-card__label" for="template-max-supply">Max Supply</label>
-              <input type="text"
-                     class="supply-card__input"
-                     id="template-max-supply"
-                     inputmode="numeric"
-                     pattern="[0-9]*"
-                     placeholder="Unlimited">
-              <span class="supply-card__hint">Cap (optional)</span>
-            </div>
-
-            <div class="supply-card supply-card--select">
-              <label class="supply-card__label" for="template-decimals">Decimals</label>
-              <select class="supply-card__select" id="template-decimals">
-                <option value="0">0</option>
-                <option value="2">2</option>
-                <option value="8" selected>8</option>
-                <option value="11">11</option>
-              </select>
-              <span class="supply-card__hint">Precision</span>
-            </div>
-          </div>
-
-          <!-- Supply ratio bar -->
-          <div class="supply-ratio">
-            <div class="supply-ratio__bar">
-              <div class="supply-ratio__fill" id="supply-ratio-fill"></div>
-            </div>
-            <span class="supply-ratio__label" id="supply-ratio-label">Base supply configured</span>
-          </div>
-
-          <!-- Enhanced preview -->
-          <div class="supply-preview">
-            <span class="supply-preview__value" id="template-preview-value">1,000,000</span>
-            <span class="supply-preview__symbol">TOKENS</span>
-            <span class="supply-preview__details" id="supply-preview-details">
-              8 decimal places
-            </span>
           </div>
         </div>
 
@@ -9323,7 +9051,7 @@
       (function () {
         // State memory object to track last active screen in each tab
         const tabStateMemory = {
-          token: 'screen-welcome',  // Templates Library is the starting point
+          token: 'screen-naming',  // Naming is the starting point
           group: 'screen-permissions-group',
           document: 'screen-document'
         };

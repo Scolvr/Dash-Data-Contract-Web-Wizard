@@ -67,7 +67,8 @@
   const AUTO_SAVE_DELAY_MS = TIMINGS.AUTO_SAVE_INTERVAL;
   // FIXED: Correct order matching sidebar navigation
   // Note: 'overview' removed from sequence - accessible only from Document tab
-  const STEP_SEQUENCE = ['welcome', 'naming', 'permissions', 'advanced', 'distribution', 'search', 'registration'];
+  // Note: 'welcome' removed - templates now on standalone page
+  const STEP_SEQUENCE = ['naming', 'permissions', 'advanced', 'distribution', 'search', 'registration'];
   const INFO_STEPS = Object.freeze([
     'permissions-group',
     'permissions-manual-mint',
@@ -143,7 +144,6 @@
   // search: Keywords & Description (single screen)
   // registration: Register Token (no substeps)
   const SUBSTEP_SEQUENCES = Object.freeze({
-    welcome: ['welcome'],
     naming: ['naming', 'naming-localization', 'naming-update'],
     permissions: ['permissions', 'permissions-transfer', 'permissions-manual-mint', 'permissions-manual-burn', 'permissions-manual-freeze', 'permissions-emergency', 'permissions-marketplace-trade-mode-change', 'permissions-direct-pricing-change', 'permissions-main-control-change'],
     advanced: ['advanced-history', 'advanced', 'advanced-launch'],
@@ -154,7 +154,6 @@
 
   const MAX_U32 = 4294967295;
   const STEP_LABELS = {
-    welcome: 'Welcome',
     naming: 'Naming',
     permissions: 'Permissions',
     distribution: 'Distribution',
@@ -613,12 +612,11 @@
    * Map of step IDs to their position in the main wizard flow
    */
   const PROGRESS_STEP_MAP = {
-    'welcome': 0,
-    'naming': 1,
-    'permissions': 2,
-    'distribution': 3,
-    'advanced': 4,
-    'registration': 5
+    'naming': 0,
+    'permissions': 1,
+    'distribution': 2,
+    'advanced': 3,
+    'registration': 4
   };
 
   /**
@@ -1623,7 +1621,6 @@
   syncRegistrationPreflightUI();
   syncWizardReadiness({ refreshStatus: true });
 
-  const welcomeScreen = document.getElementById('screen-welcome');
   const namingScreen = document.getElementById('screen-naming');
   const permissionsScreen = document.getElementById('screen-permissions');
   // Note: distribution step uses substeps only (distribution-preprogrammed, distribution-perpetual)
@@ -1670,12 +1667,6 @@
   };
 
   const screenDefinitions = [
-    {
-      id: 'welcome',
-      isAdvanced: false,
-      shouldSkip: () => false,
-      element: welcomeScreen
-    },
     {
       id: 'documents',
       isAdvanced: false,
@@ -1934,6 +1925,42 @@
   if (tokenCapitalizeInput) {
     tokenCapitalizeInput.addEventListener('change', syncToEnglishLocalization);
   }
+
+  /**
+   * Sync naming UI inputs from wizard state.
+   * Called when a template with custom values is applied.
+   */
+  function syncNamingUIFromState() {
+    const state = window.wizardState;
+    if (!state) return;
+
+    // Update token name (singular) input
+    if (tokenNameInput) {
+      tokenNameInput.value = state.form.tokenName || '';
+    }
+
+    // Get English localization if it exists
+    const enLoc = state.form.naming?.conventions?.localizations?.en;
+
+    // Update plural input from English localization
+    if (tokenPluralInput) {
+      tokenPluralInput.value = enLoc?.plural_form || '';
+    }
+
+    // Update capitalize checkbox from English localization
+    if (tokenCapitalizeInput) {
+      tokenCapitalizeInput.checked = enLoc?.should_capitalize ?? false;
+    }
+
+    console.log('[Naming] UI synced from state:', {
+      singular: state.form.tokenName,
+      plural: enLoc?.plural_form,
+      capitalize: enLoc?.should_capitalize
+    });
+  }
+
+  // Expose globally for template loading
+  window.syncNamingUIFromState = syncNamingUIFromState;
 
   if (registrationMethodsContainer) {
     registrationMethodsContainer.addEventListener('change', handleRegistrationSelection);
@@ -3631,20 +3658,6 @@
     refreshFlow({ suppressFocus: true });
   }
 
-  function evaluateWelcome({ touched = false, silent = false } = {}) {
-    // Welcome step is always valid - it's a template selection screen
-    const stepState = wizardState.steps.welcome;
-    stepState.touched = touched;
-    stepState.validity = 'valid';
-
-    if (!silent) {
-      updateStepStatusUI('welcome');
-      persistState();
-    }
-
-    return { valid: true, message: '' };
-  }
-
   function evaluateOverview({ touched = false, silent = false } = {}) {
     // Overview step is always valid - it's just a review screen
     const stepState = wizardState.steps.overview;
@@ -3874,8 +3887,6 @@
     const parentStep = getParentStep(stepId) || stepId;
 
     switch (parentStep) {
-      case 'welcome':
-        return evaluateWelcome(options);
       case 'naming':
         return evaluateNaming(options);
       case 'permissions':
@@ -13700,12 +13711,8 @@
 // ═══════════════════════════════════════════════════════
 
 (function initializeTemplateSelection() {
-  const templateCards = document.querySelectorAll('[data-template]');
-
-  if (templateCards.length === 0) {
-    console.warn('No template cards found');
-    return;
-  }
+  // Note: Template cards are now on the standalone Templates Page with [data-tpl] attribute
+  // The modal and template logic still needs to be initialized for that page to work
 
   // Note: Access window functions directly in functions below since they may not be defined yet when this IIFE runs
 
@@ -14400,6 +14407,222 @@
   window.loadTemplateSimple = loadTemplateSimple;
 
   /**
+   * Load a template with custom values from the interactive template cards.
+   * This applies the template base configuration and then overwrites with user-entered values.
+   * Includes automatic English localization from singular/plural name inputs.
+   */
+  function loadTemplateWithCustomValues(templateKey, customValues) {
+    console.log('[Templates Page] loadTemplateWithCustomValues called:', templateKey, customValues);
+    const template = TOKEN_TEMPLATES[templateKey];
+    const state = window.wizardState;
+
+    if (!state) {
+      console.error('wizardState not available');
+      return;
+    }
+
+    // Clear any previous template highlights
+    clearTemplateHighlights();
+    clearFeatureIndicators();
+
+    if (templateKey === 'scratch' || !template) {
+      // Start from scratch - reset to fresh state
+      state.activeTemplate = null;
+      state.templateMeta = null;
+
+      // Hide templates page and show wizard
+      const templatesScreen = document.getElementById('screen-templates-page');
+      if (templatesScreen) {
+        templatesScreen.classList.remove('wizard-screen--active');
+        templatesScreen.setAttribute('hidden', '');
+      }
+      document.body.classList.remove('fullpage-mode');
+      const wizardOutline = document.querySelector('.wizard-outline');
+      if (wizardOutline) wizardOutline.style.display = '';
+
+      if (window.switchTab) window.switchTab('token');
+      if (window.showScreen) window.showScreen('naming', { force: true });
+      return;
+    }
+
+    // Store template metadata
+    state.activeTemplate = templateKey;
+    state.templateMeta = {
+      appliedTemplate: templateKey,
+      appliedAt: Date.now(),
+      customizations: customValues,
+      deviations: {}
+    };
+
+    // Initialize form sections if needed
+    state.form.naming = state.form.naming || { conventions: { localizations: {} }, rows: [] };
+    state.form.naming.conventions = state.form.naming.conventions || { localizations: {} };
+    state.form.naming.conventions.localizations = state.form.naming.conventions.localizations || {};
+    state.form.permissions = state.form.permissions || {};
+    state.form.advanced = state.form.advanced || {};
+    state.form.distribution = state.form.distribution || {};
+    state.form.search = state.form.search || {};
+
+    // Apply naming from custom values (with English localization)
+    const singular = customValues.naming?.singular || '';
+    const plural = customValues.naming?.plural || '';
+
+    // Set the token name to the singular form (used as display name)
+    state.form.tokenName = singular;
+
+    // Create English localization automatically from singular/plural
+    if (singular) {
+      state.form.naming.conventions.localizations.en = {
+        singular_form: singular,
+        plural_form: plural || singular + 's', // Default plural if not provided
+        should_capitalize: true
+      };
+      // Also ensure naming rows are updated for the UI
+      state.form.naming.rows = [{
+        code: 'en',
+        singularForm: singular,
+        pluralForm: plural || singular + 's',
+        shouldCapitalize: true
+      }];
+    } else {
+      // Clear if no singular provided
+      delete state.form.naming.conventions.localizations.en;
+      state.form.naming.rows = [];
+    }
+
+    // Apply supply settings from custom values (override template defaults)
+    state.form.permissions.decimals = customValues.supply?.decimals ?? template.decimals ?? 8;
+    state.form.permissions.baseSupply = customValues.supply?.baseSupply || template.baseSupply || '0';
+    state.form.permissions.maxSupply = customValues.supply?.maxSupply || template.maxSupply || '';
+    state.form.permissions.useMaxSupply = Boolean(customValues.supply?.maxSupply || template.useMaxSupply);
+
+    // Apply feature toggles from custom values
+    const features = customValues.features || {};
+    state.form.permissions.manualMint = {
+      enabled: features.mint ?? template.manualMint?.enabled ?? false,
+      authorizedBy: 'owner',
+      rules: []
+    };
+    state.form.permissions.manualBurn = {
+      enabled: features.burn ?? template.manualBurn?.enabled ?? false,
+      authorizedBy: 'owner',
+      rules: []
+    };
+    state.form.permissions.manualFreeze = {
+      enabled: features.freeze ?? template.manualFreeze?.enabled ?? false,
+      authorizedBy: 'owner',
+      rules: []
+    };
+    state.form.permissions.unfreeze = {
+      enabled: features.freeze ?? template.unfreeze?.enabled ?? false, // Unfreeze tied to freeze
+      authorizedBy: 'owner',
+      rules: []
+    };
+    state.form.permissions.emergencyAction = {
+      enabled: features.emergency ?? template.emergency?.enabled ?? false,
+      authorizedBy: 'owner',
+      rules: []
+    };
+    state.form.permissions.transferNotesEnabled = features.notes ?? template.transferNotesEnabled ?? false;
+    if (features.notes || template.transferNotesEnabled) {
+      state.form.permissions.transferNoteTypes = template.transferNoteTypes || {
+        encrypted: true,
+        public: true
+      };
+    }
+
+    // Apply history tracking from custom values
+    const history = customValues.history || {};
+    state.form.permissions.keepsHistory = {
+      transfers: history.transfers ?? template.keepsHistory?.transfers ?? true,
+      mints: history.mints ?? template.keepsHistory?.mints ?? true,
+      burns: history.burns ?? template.keepsHistory?.burns ?? true,
+      freezes: history.freezes ?? template.keepsHistory?.freezes ?? false,
+      purchases: history.purchases ?? template.keepsHistory?.purchases ?? false
+    };
+
+    // Apply option toggles
+    const options = customValues.options || {};
+    state.form.permissions.allowTransferToFrozenBalance = options.transferToFrozen ?? template.allowTransferToFrozenBalance ?? false;
+    state.form.permissions.startAsPaused = template.startAsPaused ?? false;
+    state.form.permissions.destroyFrozen = template.destroyFrozen ? { ...template.destroyFrozen } : { enabled: false };
+
+    // Apply advanced settings from template
+    state.form.advanced.tradeMode = template.tradeMode ?? 'closed';
+    state.form.advanced.changeControl = template.changeControl ? { ...template.changeControl } : {
+      mint: false, burn: false, freeze: false, unfreeze: false, destroyFrozen: false, emergency: false
+    };
+
+    // Apply distribution settings (for reward template with custom values)
+    if (template.distribution || (customValues.distribution?.intervalHours && customValues.distribution?.emissionAmount)) {
+      state.form.distribution.enablePerpetual = true;
+
+      // Use custom distribution values if provided
+      const intervalHours = customValues.distribution?.intervalHours || 24;
+      const emissionAmount = customValues.distribution?.emissionAmount || '1000';
+
+      state.form.distribution.cadence = {
+        type: 'TimeBasedDistribution',
+        intervalMs: String(intervalHours * 60 * 60 * 1000) // Convert hours to milliseconds
+      };
+      state.form.distribution.emission = {
+        type: 'FixedAmount',
+        amount: emissionAmount
+      };
+    } else if (template.distribution) {
+      state.form.distribution.enablePerpetual = true;
+      state.form.distribution.cadence = template.distribution.cadence ? { ...template.distribution.cadence } : null;
+      state.form.distribution.emission = template.distribution.emission ? { ...template.distribution.emission } : null;
+    }
+
+    // Apply search metadata from template
+    state.form.search.description = template.description || '';
+    state.form.search.keywords = template.keywords && Array.isArray(template.keywords) ? template.keywords.join(', ') : '';
+
+    // Sync UI with state values
+    if (typeof window.syncPermissionsUIFromState === 'function') {
+      window.syncPermissionsUIFromState();
+    }
+    if (typeof window.syncAdvancedUIFromState === 'function') {
+      window.syncAdvancedUIFromState();
+    }
+    if (typeof window.syncDistributionUIFromState === 'function') {
+      window.syncDistributionUIFromState();
+    }
+    // Sync naming UI
+    if (typeof window.syncNamingUIFromState === 'function') {
+      window.syncNamingUIFromState();
+    }
+
+    // Hide templates page and show wizard
+    const templatesScreen = document.getElementById('screen-templates-page');
+    if (templatesScreen) {
+      templatesScreen.classList.remove('wizard-screen--active');
+      templatesScreen.setAttribute('hidden', '');
+    }
+    document.body.classList.remove('fullpage-mode');
+    const wizardOutline = document.querySelector('.wizard-outline');
+    if (wizardOutline) wizardOutline.style.display = '';
+
+    // Switch to Token tab and navigate to naming
+    if (window.switchTab) window.switchTab('token');
+    if (window.showScreen) window.showScreen('naming', { force: true });
+
+    // Validate steps
+    validateAllStepsAfterTemplateLoad();
+
+    // Persist state
+    if (typeof window.persistState === 'function') {
+      window.persistState();
+    }
+
+    console.log('[Templates Page] Template with custom values applied successfully:', template.name);
+  }
+
+  // Expose globally
+  window.loadTemplateWithCustomValues = loadTemplateWithCustomValues;
+
+  /**
    * Validate all steps after template load to update sidebar status indicators.
    * Steps with valid pre-filled data will be marked as valid.
    */
@@ -14575,30 +14798,9 @@
   window.clearFeatureIndicators = clearFeatureIndicators;
 
   function updateTemplateIndicator(templateKey) {
-    const welcomePill = document.getElementById('status-welcome');
-    if (!welcomePill) return;
-
-    const templateNames = {
-      'scratch': 'Custom',
-      'simple-fixed': 'Simple',
-      'utility': 'Utility',
-      'reward': 'Reward'
-    };
-
-    const name = templateNames[templateKey] || 'Active';
-    welcomePill.textContent = name;
-    welcomePill.className = 'wizard-path__pill pill pill--valid';
-    welcomePill.style.display = 'inline-block';
-
-    // Highlight the selected template card
-    templateCards.forEach(card => {
-      const cardTemplateKey = card.getAttribute('data-template');
-      if (cardTemplateKey === templateKey) {
-        card.classList.add('template-card--selected');
-      } else {
-        card.classList.remove('template-card--selected');
-      }
-    });
+    // Templates sidebar step removed - this function now only tracks internal state
+    // The template indicator was shown in the sidebar Templates step which is no longer present
+    console.log('[Template] Active template:', templateKey);
   }
 
   // Template confirmation modal elements
@@ -14610,6 +14812,11 @@
   const cancelBtn = document.getElementById('template-cancel-btn');
   let pendingTemplateKey = null;
   let pendingTemplateFromPage = false; // Track if selection came from Templates Page
+
+  // Naming config elements (for quick edit in modal)
+  const namingConfigSection = document.getElementById('template-naming-config');
+  const singularInput = document.getElementById('template-singular');
+  const pluralInput = document.getElementById('template-plural');
 
   // Supply config elements (for quick edit in modal)
   const supplyConfigSection = document.getElementById('template-supply-config');
@@ -14970,19 +15177,24 @@
       ` : ''}
     `;
 
-    // Handle supply configuration section
-    if (supplyConfigSection && template.supplyConfig?.editable) {
-      supplyConfigSection.hidden = false;
+    // Handle naming configuration section (always visible)
+    if (namingConfigSection) {
+      // Clear previous values
+      if (singularInput) singularInput.value = '';
+      if (pluralInput) pluralInput.value = '';
+    }
 
-      // Pre-fill with template defaults
+    // Handle supply configuration section (always visible now)
+    if (supplyConfigSection) {
+      // Pre-fill with template defaults or clear
       if (baseSupplyInput) {
-        baseSupplyInput.value = template.supplyConfig.baseSupplyDefault || '';
+        baseSupplyInput.value = template.supplyConfig?.baseSupplyDefault || '';
       }
       if (maxSupplyInput) {
-        maxSupplyInput.value = template.supplyConfig.maxSupplyDefault || '';
+        maxSupplyInput.value = template.supplyConfig?.maxSupplyDefault || '';
       }
       if (decimalsSelect) {
-        decimalsSelect.value = String(template.supplyConfig.decimalsDefault ?? 8);
+        decimalsSelect.value = String(template.supplyConfig?.decimalsDefault ?? template.decimals ?? 8);
       }
 
       // Update preview
@@ -14996,8 +15208,6 @@
       baseSupplyInput?.addEventListener('input', updateTemplateSupplyPreview);
       maxSupplyInput?.addEventListener('input', updateTemplateSupplyPreview);
       decimalsSelect?.addEventListener('change', updateTemplateSupplyPreview);
-    } else if (supplyConfigSection) {
-      supplyConfigSection.hidden = true;
     }
 
     // Set modal accent color based on template
@@ -15076,29 +15286,37 @@
     window.scrollTo(0, parseInt(scrollY, 10));
   }
 
-  // Add click listeners to all template cards
-  templateCards.forEach(card => {
-    card.addEventListener('click', () => {
-      const templateKey = card.getAttribute('data-template');
-
-      // Visual feedback: highlight the clicked card immediately
-      templateCards.forEach(c => c.classList.remove('template-card--selected'));
-      card.classList.add('template-card--selected');
-
-      showTemplateConfirmation(templateKey);
-    });
-  });
+  // Note: Template card click handlers are now on the Templates Page (setupPages function)
+  // The [data-tpl] cards use window.showTemplateConfirmation directly
 
   // Confirm button
   if (confirmBtn) {
     confirmBtn.addEventListener('click', () => {
       console.log('Apply Template clicked, pendingTemplateKey:', pendingTemplateKey, 'fromPage:', pendingTemplateFromPage);
       if (pendingTemplateKey) {
-        if (pendingTemplateFromPage) {
-          // From Templates Page - use simple loader (no wizard highlights)
+        // Collect custom values from modal inputs
+        const customValues = {
+          naming: {
+            singular: singularInput?.value?.trim() || '',
+            plural: pluralInput?.value?.trim() || ''
+          },
+          supply: {
+            baseSupply: baseSupplyInput?.value?.replace(/,/g, '') || '',
+            maxSupply: maxSupplyInput?.value?.replace(/,/g, '') || '',
+            decimals: parseInt(decimalsSelect?.value, 10) || 8
+          }
+        };
+
+        console.log('Collected custom values:', customValues);
+
+        // Use loadTemplateWithCustomValues for both flows
+        if (typeof window.loadTemplateWithCustomValues === 'function') {
+          window.loadTemplateWithCustomValues(pendingTemplateKey, customValues);
+        } else if (pendingTemplateFromPage) {
+          // Fallback: From Templates Page - use simple loader (no wizard highlights)
           loadTemplateSimple(pendingTemplateKey);
         } else {
-          // From wizard flow - use regular loader with highlights
+          // Fallback: From wizard flow - use regular loader with highlights
           loadTemplate(pendingTemplateKey);
         }
         hideTemplateConfirmation();
@@ -15171,18 +15389,12 @@
   }
 
   function updateTemplateDeviationIndicator() {
+    // Templates sidebar step removed - deviation indicator no longer shown
+    // Just log for debugging purposes
     const state = window.wizardState;
     const deviationCount = Object.keys(state?.templateMeta?.deviations || {}).length;
-    const welcomePill = document.getElementById('status-welcome');
-
-    if (!welcomePill) return;
-
     if (deviationCount > 0) {
-      welcomePill.classList.add('pill--modified');
-      welcomePill.title = `${deviationCount} customization(s) from template`;
-    } else {
-      welcomePill.classList.remove('pill--modified');
-      welcomePill.title = '';
+      console.log('[Template] Deviations from template:', deviationCount);
     }
   }
 
@@ -15190,7 +15402,7 @@
   window.trackTemplateDeviation = trackTemplateDeviation;
   window.updateTemplateDeviationIndicator = updateTemplateDeviationIndicator;
 
-  console.log('✓ Template selection initialized with', templateCards.length, 'templates');
+  console.log('✓ Template selection modal initialized');
 })();
 
 // =============================================
@@ -16842,7 +17054,7 @@
       });
     }
 
-    // Templates page card click handlers
+    // Templates page card click handlers - opens the confirmation modal
     const templatesContent = document.getElementById('templates-content');
     if (templatesContent) {
       templatesContent.addEventListener('click', function(e) {
