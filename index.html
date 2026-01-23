@@ -953,20 +953,44 @@
       </div>
 
       <div class="wizard-content">
-        <!-- Start Over Confirmation Modal -->
+        <!-- Start Over Confirmation Modal (Wizard Reset Only) -->
         <div class="modal" id="start-over-modal" hidden>
           <div class="modal__overlay"></div>
           <div class="modal__content">
             <div class="modal__header">
-              <h2 class="modal__title">Start Over?</h2>
+              <h2 class="modal__title">Reset Wizard?</h2>
             </div>
             <div class="modal__body">
-              <p>Are you sure you would like to start over? All your progress will be lost.</p>
-              <p class="modal__warning">This action cannot be undone.</p>
+              <p>This will reset all wizard settings (token name, permissions, distribution, etc.) to their defaults.</p>
+              <p class="modal__warning">Your progress will be lost, but theme preferences will be preserved.</p>
             </div>
             <div class="modal__footer">
               <button class="wizard-button wizard-button--secondary" type="button" id="start-over-cancel-btn">Cancel</button>
-              <button class="wizard-button wizard-button--danger" type="button" id="start-over-confirm-btn">Start Over</button>
+              <button class="wizard-button wizard-button--danger" type="button" id="start-over-confirm-btn">Reset Wizard</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Full Reset Confirmation Modal (Entire Website) -->
+        <div class="modal" id="full-reset-modal" hidden>
+          <div class="modal__overlay"></div>
+          <div class="modal__content">
+            <div class="modal__header">
+              <h2 class="modal__title">Reset Everything?</h2>
+            </div>
+            <div class="modal__body">
+              <p>This will completely reset the website to its initial state, including:</p>
+              <ul class="modal__list">
+                <li>All wizard settings and progress</li>
+                <li>Saved templates and documents</li>
+                <li>Groups configuration</li>
+                <li>Theme preferences</li>
+              </ul>
+              <p class="modal__warning">This action cannot be undone. The page will reload.</p>
+            </div>
+            <div class="modal__footer">
+              <button class="wizard-button wizard-button--secondary" type="button" id="full-reset-cancel-btn">Cancel</button>
+              <button class="wizard-button wizard-button--danger" type="button" id="full-reset-confirm-btn">Reset Everything</button>
             </div>
           </div>
         </div>

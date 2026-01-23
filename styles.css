@@ -6482,6 +6482,21 @@ body.modal-open .modal__content {
   line-height: 1.5;
 }
 
+.modal__list {
+  margin: var(--space-3) 0;
+  padding-left: var(--space-5);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.modal__list li {
+  margin-bottom: var(--space-2);
+  line-height: 1.5;
+}
+
+html[data-theme='light'] .modal__list {
+  color: rgba(0, 0, 0, 0.7);
+}
+
 /* Template preview in modal - Redesigned */
 .template-preview {
   background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.2) 100%);

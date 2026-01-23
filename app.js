@@ -17401,23 +17401,56 @@
     setTheme(initialTheme);
 
     // ─────────────────────────────────────────────────────────────────────
-    // Reset Button
+    // Reset Button (Full Website Reset)
     // ─────────────────────────────────────────────────────────────────────
     if (headerResetBtn) {
       headerResetBtn.addEventListener('click', () => {
-        // Use existing reset functionality
-        const existingResetBtn = document.getElementById('start-over-btn');
-        if (existingResetBtn) {
-          existingResetBtn.click();
-        } else if (typeof resetWizard === 'function') {
-          resetWizard();
-        } else {
-          // Fallback: confirm and reload
-          if (confirm('Are you sure you want to reset all wizard data?')) {
-            localStorage.removeItem('wizard-state');
-            sessionStorage.removeItem('dash-wizard-landing-seen');
-            location.reload();
+        // Show full reset modal
+        const fullResetModal = document.getElementById('full-reset-modal');
+        if (fullResetModal) {
+          fullResetModal.removeAttribute('hidden');
+        }
+      });
+    }
+
+    // Full Reset Modal Handlers
+    const fullResetModal = document.getElementById('full-reset-modal');
+    const fullResetCancelBtn = document.getElementById('full-reset-cancel-btn');
+    const fullResetConfirmBtn = document.getElementById('full-reset-confirm-btn');
+
+    if (fullResetModal) {
+      // Cancel button
+      if (fullResetCancelBtn) {
+        fullResetCancelBtn.addEventListener('click', () => {
+          fullResetModal.setAttribute('hidden', '');
+        });
+      }
+
+      // Confirm button - clear everything and reload
+      if (fullResetConfirmBtn) {
+        fullResetConfirmBtn.addEventListener('click', () => {
+          try {
+            localStorage.clear();
+            sessionStorage.clear();
+          } catch (e) {
+            console.debug('Unable to clear storage', e);
           }
+          window.location.reload();
+        });
+      }
+
+      // Overlay click to close
+      const overlay = fullResetModal.querySelector('.modal__overlay');
+      if (overlay) {
+        overlay.addEventListener('click', () => {
+          fullResetModal.setAttribute('hidden', '');
+        });
+      }
+
+      // ESC key to close
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !fullResetModal.hasAttribute('hidden')) {
+          fullResetModal.setAttribute('hidden', '');
         }
       });
     }
