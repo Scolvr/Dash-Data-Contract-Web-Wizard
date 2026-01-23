@@ -17083,12 +17083,20 @@
 
     // Event listeners for landing page "Create Your Token" button
     if (enterWizardBtn) {
+      // Click event (works for both mouse and touch on most browsers)
       enterWizardBtn.addEventListener('click', function(e) {
         console.log('[Pages] Landing button clicked - showing hub');
         e.preventDefault();
         e.stopPropagation();
         showHubPage();
       });
+
+      // Touch event for better mobile support
+      enterWizardBtn.addEventListener('touchend', function(e) {
+        console.log('[Pages] Landing button touched - showing hub');
+        e.preventDefault();
+        showHubPage();
+      }, { passive: false });
 
       enterWizardBtn.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' || e.key === ' ') {
