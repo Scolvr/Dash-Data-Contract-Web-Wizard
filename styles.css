@@ -18261,6 +18261,10 @@ html[data-theme='light'] .groups-field__input {
   color: #1D1D1F;
 }
 
+html[data-theme='light'] .groups-field__input::placeholder {
+  color: rgba(0, 0, 0, 0.4);
+}
+
 html[data-theme='light'] .groups-members {
   background: rgba(0, 0, 0, 0.02);
 }
