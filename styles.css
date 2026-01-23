@@ -1542,13 +1542,24 @@ html[data-theme='light'] {
 body.landing-visible .global-header,
 body.hub-visible .global-header {
   display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
 }
 
 /* Hide wizard shell when landing page or hub page is shown */
 body.landing-visible .wizard-shell,
 body.hub-visible .wizard-shell {
+  display: none !important;
   opacity: 0;
-  pointer-events: none;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
+/* Hide mobile nav drawer when on landing/hub pages */
+body.landing-visible .mobile-nav-drawer,
+body.hub-visible .mobile-nav-drawer {
+  display: none !important;
+  pointer-events: none !important;
 }
 
 .wizard-shell {
@@ -14930,9 +14941,11 @@ div.mobile-menu-overlay {
   z-index: 2000;
   pointer-events: none;
   visibility: hidden;
+  display: none; /* Completely hidden when not open */
 }
 
 .mobile-nav-drawer.is-open {
+  display: block;
   pointer-events: auto;
   visibility: visible;
 }
@@ -16284,7 +16297,9 @@ html[data-theme='light'] .landing-footer__divider {
 
 @media (max-width: 900px) {
   .landing-hero {
-    grid-template-columns: 1fr;
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: unset !important;
     text-align: center;
     padding: 2rem;
   }
@@ -16292,6 +16307,9 @@ html[data-theme='light'] .landing-footer__divider {
   .landing-hero__content {
     max-width: 600px;
     margin: 0 auto;
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 100;
   }
 
   .landing-features {
@@ -16304,10 +16322,19 @@ html[data-theme='light'] .landing-footer__divider {
 
   .landing-cta {
     align-items: center;
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 200;
+  }
+
+  .landing-cta__button {
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 300;
   }
 
   .landing-preview {
-    display: none;
+    display: none !important;
   }
 }
 
