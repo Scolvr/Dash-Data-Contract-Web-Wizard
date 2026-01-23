@@ -1,7 +1,63 @@
 /*
  * Dash Token Wizard front-end logic.
- * Version: 22.0
+ * Version: 22.2
  */
+
+// ============================================
+// FULL RESET CHECK - Must run FIRST before IIFE wraps
+// Sets a global flag to prevent persistState from saving
+// ============================================
+window.__WIZARD_RESET_MODE__ = false;
+
+(function checkForPendingReset() {
+  'use strict';
+  try {
+    // Check URL for reset parameter (more reliable than sessionStorage)
+    const urlParams = new URLSearchParams(window.location.search);
+    const resetRequested = urlParams.has('reset') || sessionStorage.getItem('__wizard_reset_pending__') === '1';
+
+    if (resetRequested) {
+      console.log('[App] Reset requested - BLOCKING all state persistence');
+
+      // SET GLOBAL FLAG TO BLOCK persistState
+      window.__WIZARD_RESET_MODE__ = true;
+
+      // Clear the flag
+      sessionStorage.removeItem('__wizard_reset_pending__');
+
+      // Clear ALL localStorage keys one by one (more thorough)
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        keysToRemove.push(localStorage.key(i));
+      }
+      keysToRemove.forEach(key => {
+        if (key) localStorage.removeItem(key);
+      });
+      localStorage.clear();
+
+      // Clear sessionStorage (except our flag check is done)
+      sessionStorage.clear();
+
+      console.log('[App] Storage cleared, localStorage:', localStorage.length, 'sessionStorage:', sessionStorage.length);
+
+      // If URL has reset param, clean it up and redirect to fresh page
+      if (urlParams.has('reset')) {
+        urlParams.delete('reset');
+        const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+        // Use replace to ensure clean URL, then reload to get fresh state
+        window.history.replaceState({}, '', newUrl);
+        console.log('[App] Cleaned reset param from URL, reloading fresh...');
+        // Force a complete reload without the reset param
+        window.location.reload();
+        return; // Stop execution - page will reload
+      }
+    }
+  } catch (e) {
+    console.error('[App] Reset check error:', e);
+  }
+})();
+// ============================================
+
 (function () {
   'use strict';
 
@@ -6932,6 +6988,11 @@
    * This performs the actual save operation without debouncing
    */
   function _persistStateNow() {
+    // BLOCK ALL STATE PERSISTENCE IF IN RESET MODE
+    if (window.__WIZARD_RESET_MODE__) {
+      console.log('[App] persistState BLOCKED - reset mode active');
+      return;
+    }
     try {
       const limitedRows = limitLocalizationRows(
         Array.isArray(wizardState.form.naming?.rows) ? wizardState.form.naming.rows : []
@@ -17416,12 +17477,19 @@
     // ─────────────────────────────────────────────────────────────────────
     if (headerResetBtn) {
       headerResetBtn.addEventListener('click', () => {
+        console.log('[GlobalHeader] Reset button clicked');
         // Show full reset modal
         const fullResetModal = document.getElementById('full-reset-modal');
+        console.log('[GlobalHeader] Reset modal found:', !!fullResetModal);
         if (fullResetModal) {
           fullResetModal.removeAttribute('hidden');
+          console.log('[GlobalHeader] Reset modal shown');
+        } else {
+          console.error('[GlobalHeader] Reset modal not found!');
         }
       });
+    } else {
+      console.warn('[GlobalHeader] Reset button not found');
     }
 
     // Full Reset Modal Handlers
@@ -17429,26 +17497,23 @@
     const fullResetCancelBtn = document.getElementById('full-reset-cancel-btn');
     const fullResetConfirmBtn = document.getElementById('full-reset-confirm-btn');
 
+    console.log('[GlobalHeader] Reset modal elements:', {
+      modal: !!fullResetModal,
+      cancelBtn: !!fullResetCancelBtn,
+      confirmBtn: !!fullResetConfirmBtn
+    });
+
     if (fullResetModal) {
       // Cancel button
       if (fullResetCancelBtn) {
         fullResetCancelBtn.addEventListener('click', () => {
+          console.log('[Full Reset] Cancel clicked');
           fullResetModal.setAttribute('hidden', '');
         });
       }
 
-      // Confirm button - clear everything and reload
-      if (fullResetConfirmBtn) {
-        fullResetConfirmBtn.addEventListener('click', () => {
-          try {
-            localStorage.clear();
-            sessionStorage.clear();
-          } catch (e) {
-            console.debug('Unable to clear storage', e);
-          }
-          window.location.reload();
-        });
-      }
+      // Confirm button handler is in index.html inline onclick
+      // This prevents race conditions between handlers
 
       // Overlay click to close
       const overlay = fullResetModal.querySelector('.modal__overlay');

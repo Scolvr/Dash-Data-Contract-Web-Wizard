@@ -1667,30 +1667,6 @@
           </div>
         </div>
 
-        <!-- Full Reset Confirmation Modal (Entire Website) -->
-        <div class="modal" id="full-reset-modal" hidden>
-          <div class="modal__overlay"></div>
-          <div class="modal__content">
-            <div class="modal__header">
-              <h2 class="modal__title">Reset Everything?</h2>
-            </div>
-            <div class="modal__body">
-              <p>This will completely reset the website to its initial state, including:</p>
-              <ul class="modal__list">
-                <li>All wizard settings and progress</li>
-                <li>Saved templates and documents</li>
-                <li>Groups configuration</li>
-                <li>Theme preferences</li>
-              </ul>
-              <p class="modal__warning">This action cannot be undone. The page will reload.</p>
-            </div>
-            <div class="modal__footer">
-              <button class="wizard-button wizard-button--secondary" type="button" id="full-reset-cancel-btn">Cancel</button>
-              <button class="wizard-button wizard-button--danger" type="button" id="full-reset-confirm-btn">Reset Everything</button>
-            </div>
-          </div>
-        </div>
-
         <!-- Naming: Token Name Sub-step -->
         <section class="wizard-screen wizard-screen--active wizard-screen--redesigned" id="screen-naming" data-step="naming" data-substep="naming" data-tab="token">
 
@@ -1816,8 +1792,8 @@
                       Token Name <span class="field-required">*</span>
                     </label>
                     <input class="field-input--glass wizard-field__input" id="token-name" name="token-name" type="text" inputmode="text"
-                      autocomplete="off" placeholder="e.g., Mega Awesome Token" required maxlength="64"
-                      aria-describedby="token-name-message">
+                      autocomplete="new-password" placeholder="e.g., Mega Awesome Token" required maxlength="64"
+                      aria-describedby="token-name-message" data-lpignore="true" data-form-type="other">
                     <span class="field-hint--glass">2-64 characters • This is what users will see</span>
                     <p class="wizard-field__message" id="token-name-message" role="status" aria-live="polite"></p>
                   </div>
@@ -2568,8 +2544,8 @@
                       </button>
                     </label>
                     <input class="wizard-field__input" id="base-supply" name="base-supply" type="text"
-                      inputmode="decimal" placeholder="e.g., 1000000" required
-                      aria-describedby="base-supply-hint base-supply-conversion">
+                      inputmode="decimal" placeholder="e.g., 1000000" required autocomplete="new-password"
+                      aria-describedby="base-supply-hint base-supply-conversion" data-lpignore="true" data-form-type="other">
                     <span class="field-hint" id="base-supply-hint">Enter the number of tokens to create</span>
                     <div class="supply-conversion" id="base-supply-conversion" hidden>
                       <span class="supply-conversion__label">= </span>
@@ -2611,8 +2587,8 @@
                       </button>
                     </label>
                     <input class="wizard-field__input" id="max-supply" name="max-supply" type="text" inputmode="decimal"
-                      placeholder="e.g., 10000000"
-                      aria-describedby="max-supply-hint max-supply-conversion max-supply-message">
+                      placeholder="e.g., 10000000" autocomplete="new-password"
+                      aria-describedby="max-supply-hint max-supply-conversion max-supply-message" data-lpignore="true" data-form-type="other">
                     <span class="field-hint" id="max-supply-hint">Optional • Leave blank for no limit • Must be ≥
                       initial supply</span>
                     <p class="wizard-field__message" id="max-supply-message" role="status" aria-live="polite"></p>
@@ -11055,10 +11031,68 @@
   <script type="module" src="/src/main.js"></script>
 
   <!-- Legacy monolithic app.js (will be phased out) -->
-  <script src="app.js?v=98" defer></script>
+  <script src="app.js?v=103" defer></script>
 
   <!-- Enhancements Module (ES6) - DISABLED due to navigation freeze -->
   <!-- <script type="module" src="js/wizard-enhancements.js"></script> -->
+
+  <!-- Full Reset Confirmation Modal (at root level for accessibility from any page) -->
+  <div class="modal" id="full-reset-modal" hidden style="position: fixed; z-index: 10000;">
+    <div class="modal__overlay" onclick="document.getElementById('full-reset-modal').setAttribute('hidden', '')"></div>
+    <div class="modal__content">
+      <div class="modal__header">
+        <h2 class="modal__title">Reset Everything?</h2>
+      </div>
+      <div class="modal__body">
+        <p>This will completely reset the website to its initial state, including:</p>
+        <ul class="modal__list">
+          <li>All wizard settings and progress</li>
+          <li>Saved templates and documents</li>
+          <li>Groups configuration</li>
+          <li>Theme preferences</li>
+        </ul>
+        <p class="modal__warning">This action cannot be undone. The page will reload.</p>
+      </div>
+      <div class="modal__footer">
+        <button class="wizard-button wizard-button--secondary" type="button" id="full-reset-cancel-btn"
+                onclick="document.getElementById('full-reset-modal').setAttribute('hidden', '')">Cancel</button>
+        <button class="wizard-button wizard-button--danger" type="button" id="full-reset-confirm-btn"
+                onclick="(async function() {
+                  console.log('[Full Reset] Button clicked');
+
+                  // Clear localStorage SYNCHRONOUSLY before anything else
+                  try {
+                    var keys = [];
+                    for (var i = 0; i < localStorage.length; i++) keys.push(localStorage.key(i));
+                    keys.forEach(function(k) { if (k) localStorage.removeItem(k); });
+                    localStorage.clear();
+                    console.log('[Full Reset] localStorage cleared:', localStorage.length);
+                  } catch(e) { console.error('[Full Reset] localStorage error:', e); }
+
+                  // Clear sessionStorage
+                  try { sessionStorage.clear(); } catch(e) {}
+
+                  // Clear service workers (async but don't wait)
+                  if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(function(regs) {
+                      regs.forEach(function(r) { r.unregister(); });
+                    }).catch(function() {});
+                  }
+
+                  // Clear caches (async but don't wait)
+                  if ('caches' in window) {
+                    caches.keys().then(function(keys) {
+                      keys.forEach(function(k) { caches.delete(k); });
+                    }).catch(function() {});
+                  }
+
+                  // Navigate with reset flag in URL - this triggers cleanup in app.js
+                  console.log('[Full Reset] Reloading with reset flag...');
+                  window.location.href = window.location.origin + window.location.pathname + '?reset=1';
+                })()">Reset Everything</button>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>
