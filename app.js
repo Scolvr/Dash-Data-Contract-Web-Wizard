@@ -747,6 +747,7 @@
     const members = Array.isArray(group.members) ? group.members.map(normalisePermissionMember) : [];
     return {
       id: typeof group.id === 'string' && group.id ? group.id : generateId('group'),
+      name: typeof group.name === 'string' ? group.name : '',
       requiredPower: normaliseUnsignedValue(group.requiredPower),
       members
     };
@@ -1343,10 +1344,19 @@
             nestedList.setAttribute('hidden', '');
           }
         }
-        // ALSO navigate to first substep when opening (not just toggle)
+        // ALSO navigate to the substep when opening (not just toggle)
         // This ensures clicking "Distribution" shows content, not blank screen
+        // FIX: If the item has data-substep, navigate directly to that substep
+        // instead of resolving to the first substep of the step
         if (isOpen) {
-          activateWizardStepFromPath(item.getAttribute('data-step'));
+          const targetSubstep = item.getAttribute('data-substep');
+          if (targetSubstep) {
+            // Navigate directly to the specified substep
+            manualNavigationActive = true;
+            showScreen(targetSubstep, { force: true, isManualNavigation: true });
+          } else {
+            activateWizardStepFromPath(item.getAttribute('data-step'));
+          }
         }
         return;
       }
@@ -1377,10 +1387,17 @@
               nestedList.setAttribute('hidden', '');
             }
           }
-          // ALSO navigate to first substep when opening (not just toggle)
+          // ALSO navigate to the substep when opening (not just toggle)
           // This ensures pressing Enter on "Distribution" shows content, not blank screen
+          // FIX: If the item has data-substep, navigate directly to that substep
           if (isOpen) {
-            activateWizardStepFromPath(item.getAttribute('data-step'));
+            const targetSubstep = item.getAttribute('data-substep');
+            if (targetSubstep) {
+              manualNavigationActive = true;
+              showScreen(targetSubstep, { force: true, isManualNavigation: true });
+            } else {
+              activateWizardStepFromPath(item.getAttribute('data-step'));
+            }
           }
           return;
         }
@@ -5724,6 +5741,16 @@
     }
 
     isTransitioning = true;
+
+    // FIX: Deactivate standalone pages (groups, templates) before showing wizard screens
+    // These pages are not in screenDefinitions, so they must be handled separately
+    const standalonePagesIds = ['screen-groups-page', 'screen-templates-page'];
+    standalonePagesIds.forEach(pageId => {
+      const page = document.getElementById(pageId);
+      if (page && page.classList.contains('wizard-screen--active')) {
+        page.classList.remove('wizard-screen--active');
+      }
+    });
 
     // FIX: Check if screenId is a valid substep to allow forced navigation to substeps
     const isValidSubstep = Object.values(SUBSTEP_SEQUENCES).some(substeps =>
@@ -12340,14 +12367,25 @@
 // ========================================
 
 (function initializeGroupActionTakerSelectors() {
-  // Define all group selector IDs for manual actions
+  // Define all group selector IDs for manual actions and permission changes
   const groupSelectors = [
+    // Manual actions
     { selectId: 'manual-mint-group-id', containerId: 'manual-mint-group-selector-container', hintId: 'manual-mint-group-hint', noGroupsMessageId: 'manual-mint-no-groups-message' },
+    { selectId: 'manual-mint-rules-group-id' },
     { selectId: 'manual-burn-group-id', containerId: 'manual-burn-group-selector-container', hintId: 'manual-burn-group-hint', noGroupsMessageId: 'manual-burn-no-groups-message' },
+    { selectId: 'manual-burn-rules-group-id' },
     { selectId: 'manual-freeze-group-id', containerId: 'manual-freeze-group-selector-container', hintId: 'manual-freeze-group-hint', noGroupsMessageId: 'manual-freeze-no-groups-message' },
+    { selectId: 'manual-freeze-rules-group-id' },
+    { selectId: 'manual-unfreeze-group-id' },
+    { selectId: 'manual-unfreeze-rules-group-id' },
     { selectId: 'destroy-frozen-group-id', containerId: 'destroy-frozen-group-selector-container', hintId: 'destroy-frozen-group-hint', noGroupsMessageId: 'destroy-frozen-no-groups-message' },
+    { selectId: 'destroy-frozen-rules-group-id' },
     { selectId: 'emergency-group-id', containerId: 'emergency-group-selector-container', hintId: 'emergency-group-hint', noGroupsMessageId: 'emergency-no-groups-message' },
-    // New permission change pages
+    { selectId: 'emergency-rules-group-id' },
+    // Max supply change
+    { selectId: 'change-max-supply-group-id' },
+    { selectId: 'change-max-supply-rules-group-id' },
+    // Permission change pages
     { selectId: 'conventions-perform-group-id' },
     { selectId: 'conventions-rules-group-id' },
     { selectId: 'marketplace-trade-mode-perform-group-id' },
@@ -12358,7 +12396,10 @@
     { selectId: 'main-control-rules-group-id' },
     // Update Names group selectors
     { selectId: 'update-names-group-id', containerId: 'update-names-group-selector-container', hintId: 'update-names-group-hint', noGroupsMessageId: 'update-names-no-groups-message' },
-    { selectId: 'update-names-rule-group-id', containerId: 'update-names-rule-group-selector-container', hintId: 'update-names-rule-group-hint', noGroupsMessageId: 'update-names-rule-no-groups-message' }
+    { selectId: 'update-names-rule-group-id', containerId: 'update-names-rule-group-selector-container', hintId: 'update-names-rule-group-hint', noGroupsMessageId: 'update-names-rule-no-groups-message' },
+    // Distribution group selectors
+    { selectId: 'preprogrammed-group-id' },
+    { selectId: 'preprogrammed-rule-group-id' }
   ];
 
   // Function to update all group selectors with current groups
@@ -12370,6 +12411,33 @@
 
     const groups = wizardState.form.permissions.groups || [];
     const hasGroups = groups.length > 0;
+
+    // Sort groups: named groups first (alphabetically), then unnamed groups by creation order
+    const sortedGroups = [...groups].sort((a, b) => {
+      const aIsUnnamed = !a.name || a.name.trim() === '' || a.name.startsWith('Unnamed Group');
+      const bIsUnnamed = !b.name || b.name.trim() === '' || b.name.startsWith('Unnamed Group');
+
+      if (aIsUnnamed && !bIsUnnamed) return 1;  // Unnamed goes after named
+      if (!aIsUnnamed && bIsUnnamed) return -1; // Named goes before unnamed
+      if (!aIsUnnamed && !bIsUnnamed) {
+        // Both named - sort alphabetically
+        return a.name.localeCompare(b.name);
+      }
+      // Both unnamed - keep original order (by index in original array)
+      return groups.indexOf(a) - groups.indexOf(b);
+    });
+
+    // Count unnamed groups for numbering
+    let unnamedCounter = 0;
+    const getDisplayName = (group) => {
+      if (group.name && group.name.trim() !== '' && !group.name.startsWith('Unnamed Group')) {
+        return group.name;
+      }
+      // Find the position of this unnamed group among all unnamed groups
+      const unnamedGroups = groups.filter(g => !g.name || g.name.trim() === '' || g.name.startsWith('Unnamed Group'));
+      const unnamedIndex = unnamedGroups.indexOf(group) + 1;
+      return `Unnamed Group ${unnamedIndex}`;
+    };
 
     groupSelectors.forEach(config => {
       const selectElement = document.getElementById(config.selectId);
@@ -12391,11 +12459,11 @@
         // Clear existing options
         selectElement.innerHTML = '<option value="">Select a group...</option>';
 
-        // Add option for each group
-        groups.forEach((group, index) => {
+        // Add option for each group (sorted)
+        sortedGroups.forEach((group) => {
           const option = document.createElement('option');
           option.value = group.id;
-          option.textContent = `Group ${index + 1}`;
+          option.textContent = getDisplayName(group);
           selectElement.appendChild(option);
         });
 
@@ -12446,6 +12514,9 @@
       }
     }
   });
+
+  // Expose for external use (Groups Page)
+  window.updateGroupSelectors = updateGroupSelectors;
 
   console.log('Group action taker selectors initialized');
 })();
@@ -16863,6 +16934,7 @@
     const hubCreateTokenBtn = document.getElementById('hub-create-token');
     const hubTemplatesBtn = document.getElementById('hub-templates');
     const hubDocumentsBtn = document.getElementById('hub-documents');
+    const hubGroupsBtn = document.getElementById('hub-groups');
     const wizardShell = document.querySelector('.wizard-shell');
 
     console.log('[Pages] Elements found:', {
@@ -16872,6 +16944,7 @@
       hubCreateTokenBtn: !!hubCreateTokenBtn,
       hubTemplatesBtn: !!hubTemplatesBtn,
       hubDocumentsBtn: !!hubDocumentsBtn,
+      hubGroupsBtn: !!hubGroupsBtn,
       wizardShell: !!wizardShell
     });
 
@@ -17087,6 +17160,20 @@
       });
     }
 
+    if (hubGroupsBtn) {
+      hubGroupsBtn.addEventListener('click', function(e) {
+        console.log('[Pages] Hub Groups clicked');
+        e.preventDefault();
+        showWizard();
+        // Navigate to groups page
+        if (window.globalHeader && typeof window.globalHeader.switchPage === 'function') {
+          setTimeout(() => {
+            window.globalHeader.switchPage('groups');
+          }, 100);
+        }
+      });
+    }
+
     // Expose functions for external access
     window.showLandingPage = function() {
       sessionStorage.removeItem(LANDING_STORAGE_KEY);
@@ -17158,8 +17245,8 @@
       if (documentsSidebar) documentsSidebar.hidden = true;
 
       // Show the appropriate sidebar (or hide for fullpage screens)
-      if (pageId === 'documents' || pageId === 'templates') {
-        // Documents and Templates are fullpage layouts - hide the entire sidebar
+      if (pageId === 'documents' || pageId === 'templates' || pageId === 'groups') {
+        // Documents, Templates, and Groups are fullpage layouts - hide the entire sidebar
         if (wizardOutline) wizardOutline.style.display = 'none';
         document.body.classList.add('fullpage-mode');
       } else {
@@ -17167,11 +17254,16 @@
         if (wizardOutline) wizardOutline.style.display = '';
         document.body.classList.remove('fullpage-mode');
 
-        if (pageId === 'groups' && groupSidebar) {
-          groupSidebar.hidden = false;
-        } else if (tokenSidebar) {
+        if (tokenSidebar) {
           tokenSidebar.hidden = false;
         }
+      }
+
+      // Clean up groups page state when leaving
+      if (pageId !== 'groups') {
+        document.body.classList.remove('groups-page-active');
+        const sidebar = document.querySelector('.wizard-sidebar');
+        if (sidebar) sidebar.style.display = '';
       }
 
       // Handle page-specific content visibility
@@ -17194,12 +17286,25 @@
           templatesScreen.removeAttribute('hidden');
         }
       } else if (pageId === 'groups') {
-        // Switch to group mode
-        if (typeof switchTab === 'function') {
-          switchTab('group');
+        // Show groups page - handle directly since it's a standalone page
+        // Hide all wizard screens first
+        document.querySelectorAll('.wizard-screen').forEach(screen => {
+          screen.classList.remove('wizard-screen--active');
+        });
+        // Show groups screen
+        const groupsScreen = document.getElementById('screen-groups-page');
+        if (groupsScreen) {
+          groupsScreen.classList.add('wizard-screen--active');
+          groupsScreen.removeAttribute('hidden');
         }
-        if (typeof showScreen === 'function') {
-          showScreen('permissions-group', { force: true });
+        // Add body class for fullpage styling
+        document.body.classList.add('groups-page-active');
+        // Also explicitly hide the sidebar
+        const sidebar = document.querySelector('.wizard-sidebar');
+        if (sidebar) sidebar.style.display = 'none';
+        // Render group list
+        if (typeof window.groupsPage !== 'undefined' && typeof window.groupsPage.render === 'function') {
+          window.groupsPage.render();
         }
       } else if (pageId === 'documents') {
         // Show documents page - handle directly since it's not part of wizard flow
@@ -18550,5 +18655,741 @@
     document.addEventListener('DOMContentLoaded', setupDocumentStorage);
   } else {
     setupDocumentStorage();
+  }
+})();
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GROUPS PAGE - Manage permission groups from standalone page
+// ═══════════════════════════════════════════════════════════════════════════
+(function initializeGroupsPage() {
+  'use strict';
+
+  // State
+  let selectedGroupId = null;
+
+  // Helper to get fresh element references
+  const $ = (id) => document.getElementById(id);
+
+  // Check if page exists at init time
+  if (!$('groups-list')) {
+    console.log('[GroupsPage] Groups page elements not found, skipping initialization');
+    return;
+  }
+
+  /**
+   * Get groups from wizardState
+   */
+  function getGroups() {
+    if (!window.wizardState || !window.wizardState.form || !window.wizardState.form.permissions) {
+      return [];
+    }
+    return window.wizardState.form.permissions.groups || [];
+  }
+
+  /**
+   * Save groups to wizardState
+   */
+  function saveGroups(groups) {
+    if (!window.wizardState || !window.wizardState.form || !window.wizardState.form.permissions) {
+      console.error('[GroupsPage] wizardState not available');
+      return;
+    }
+    window.wizardState.form.permissions.groups = groups;
+    if (typeof window.persistState === 'function') {
+      window.persistState();
+    }
+    // Update group selectors in permissions dropdowns
+    if (typeof window.updateGroupSelectors === 'function') {
+      window.updateGroupSelectors();
+    }
+  }
+
+  /**
+   * Generate unique group ID
+   */
+  function generateGroupId() {
+    return 'group-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+  }
+
+  /**
+   * Generate unique member ID
+   */
+  function generateMemberId() {
+    return 'member-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+  }
+
+  /**
+   * Get display name for a group (numbered for unnamed groups)
+   */
+  function getGroupDisplayName(group, allGroups) {
+    if (group.name && group.name.trim() !== '' && !group.name.startsWith('Unnamed Group')) {
+      return group.name;
+    }
+    // Find the position of this unnamed group among all unnamed groups
+    const unnamedGroups = allGroups.filter(g => !g.name || g.name.trim() === '' || g.name.startsWith('Unnamed Group'));
+    const unnamedIndex = unnamedGroups.findIndex(g => g.id === group.id) + 1;
+    return `Unnamed Group ${unnamedIndex}`;
+  }
+
+  /**
+   * Sort groups: named groups first (alphabetically), then unnamed groups by creation order
+   */
+  function getSortedGroups(groups) {
+    return [...groups].sort((a, b) => {
+      const aIsUnnamed = !a.name || a.name.trim() === '' || a.name.startsWith('Unnamed Group');
+      const bIsUnnamed = !b.name || b.name.trim() === '' || b.name.startsWith('Unnamed Group');
+
+      if (aIsUnnamed && !bIsUnnamed) return 1;  // Unnamed goes after named
+      if (!aIsUnnamed && bIsUnnamed) return -1; // Named goes before unnamed
+      if (!aIsUnnamed && !bIsUnnamed) {
+        // Both named - sort alphabetically
+        return a.name.localeCompare(b.name);
+      }
+      // Both unnamed - keep original order (by index in original array)
+      return groups.indexOf(a) - groups.indexOf(b);
+    });
+  }
+
+  /**
+   * Render the groups list
+   */
+  function renderGroupsList() {
+    const groups = getGroups();
+    const sortedGroups = getSortedGroups(groups);
+    const groupsList = $('groups-list');
+    const groupsEmpty = $('groups-empty');
+    const groupsCount = $('groups-count');
+
+    // Update count
+    if (groupsCount) {
+      groupsCount.textContent = groups.length;
+    }
+
+    // Show/hide empty state
+    if (groupsEmpty) {
+      groupsEmpty.hidden = groups.length > 0;
+    }
+
+    if (!groupsList) return;
+
+    // Clear existing items (except empty state)
+    const existingItems = groupsList.querySelectorAll('.groups-list__item');
+    existingItems.forEach(item => item.remove());
+
+    // Render each group (sorted)
+    sortedGroups.forEach((group) => {
+      const item = document.createElement('button');
+      item.className = 'groups-list__item';
+      item.type = 'button';
+      item.dataset.groupId = group.id;
+      if (group.id === selectedGroupId) {
+        item.classList.add('groups-list__item--active');
+      }
+
+      const memberCount = Array.isArray(group.members) ? group.members.length : 0;
+      const totalPower = Array.isArray(group.members)
+        ? group.members.reduce((sum, m) => sum + (parseInt(m.power, 10) || 0), 0)
+        : 0;
+      const displayName = getGroupDisplayName(group, groups);
+      const validationStatus = validateGroup(group);
+
+      item.innerHTML = `
+        <div class="groups-list__item-icon ${validationStatus.valid ? 'groups-list__item-icon--valid' : ''}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2"/>
+            <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="groups-list__item-content">
+          <div class="groups-list__item-name">${escapeHtml(displayName)}</div>
+          <div class="groups-list__item-meta">${memberCount} member${memberCount !== 1 ? 's' : ''} · Power: ${totalPower}/${group.requiredPower || 0}</div>
+        </div>
+        ${!validationStatus.valid ? `<div class="groups-list__item-warning" title="${escapeHtml(validationStatus.message)}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M12 9v4M12 17h.01M12 3l9.5 16.5H2.5L12 3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>` : ''}
+      `;
+
+      item.addEventListener('click', () => selectGroup(group.id));
+      groupsList.appendChild(item);
+    });
+  }
+
+  /**
+   * Validate Base58 identity ID
+   */
+  function validateBase58Identity(rawValue) {
+    const trimmed = (rawValue || '').trim();
+    if (trimmed.length === 0) {
+      return { valid: false, message: 'Identity ID is required' };
+    }
+    if (trimmed.length < 43 || trimmed.length > 44) {
+      return { valid: false, message: 'Must be 43-44 characters' };
+    }
+    // Base58 alphabet: 123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz
+    const base58Pattern = /^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$/;
+    if (!base58Pattern.test(trimmed)) {
+      return { valid: false, message: 'Invalid Base58 format' };
+    }
+    return { valid: true, message: 'Valid identity' };
+  }
+
+  /**
+   * Validate a group
+   */
+  function validateGroup(group) {
+    const errors = [];
+
+    // Check if group has members
+    if (!group.members || group.members.length === 0) {
+      errors.push('Group needs at least one member');
+    }
+
+    // Check if required power is set
+    const requiredPower = parseInt(group.requiredPower, 10) || 0;
+    if (requiredPower <= 0) {
+      errors.push('Required power must be greater than 0');
+    }
+
+    // Check if total power meets required power
+    const totalPower = (group.members || []).reduce((sum, m) => sum + (parseInt(m.power, 10) || 0), 0);
+    if (totalPower < requiredPower) {
+      errors.push(`Total member power (${totalPower}) is less than required (${requiredPower})`);
+    }
+
+    // Check if all members have valid identities (Base58)
+    const invalidIdentityMembers = (group.members || []).filter(m => {
+      const validation = validateBase58Identity(m.identity);
+      return !validation.valid;
+    });
+    if (invalidIdentityMembers.length > 0) {
+      errors.push(`${invalidIdentityMembers.length} member(s) with invalid identity`);
+    }
+
+    // Check if all members have power > 0
+    const zeroPowerMembers = (group.members || []).filter(m => !m.power || parseInt(m.power, 10) <= 0);
+    if (zeroPowerMembers.length > 0) {
+      errors.push(`${zeroPowerMembers.length} member(s) have no voting power`);
+    }
+
+    return {
+      valid: errors.length === 0,
+      message: errors.join('; ') || 'Group is valid'
+    };
+  }
+
+  /**
+   * Select a group for editing
+   */
+  function selectGroup(groupId) {
+    const groups = getGroups();
+    const group = groups.find(g => g.id === groupId);
+
+    if (!group) {
+      console.error('[GroupsPage] Group not found:', groupId);
+      return;
+    }
+
+    const displayName = getGroupDisplayName(group, groups);
+    console.log('[GroupsPage] Selecting group:', groupId, displayName);
+    selectedGroupId = groupId;
+
+    const groupsList = $('groups-list');
+    const groupEditorEmpty = $('group-editor-empty');
+    const groupEditorContent = $('group-editor-content');
+    const groupDeleteBtn = $('group-delete-btn');
+    const groupEditorStatusText = $('group-editor-status-text');
+    const groupEditorStatus = $('group-editor-status');
+    const groupEditName = $('group-edit-name');
+    const groupEditThreshold = $('group-edit-threshold');
+
+    // Update list active state
+    if (groupsList) {
+      groupsList.querySelectorAll('.groups-list__item').forEach(item => {
+        item.classList.toggle('groups-list__item--active', item.dataset.groupId === groupId);
+      });
+    }
+
+    // Show editor content
+    if (groupEditorEmpty) groupEditorEmpty.hidden = true;
+    if (groupEditorContent) groupEditorContent.hidden = false;
+    if (groupDeleteBtn) groupDeleteBtn.hidden = false;
+
+    // Validate and update status
+    const validationStatus = validateGroup(group);
+    if (groupEditorStatusText) {
+      groupEditorStatusText.textContent = 'Editing: ' + displayName;
+    }
+    if (groupEditorStatus) {
+      groupEditorStatus.classList.toggle('groups-editor__status--editing', true);
+      groupEditorStatus.classList.toggle('groups-editor__status--valid', validationStatus.valid);
+      groupEditorStatus.classList.toggle('groups-editor__status--invalid', !validationStatus.valid);
+    }
+
+    // Populate form - use actual name (not display name) so user can edit it
+    if (groupEditName) groupEditName.value = group.name || '';
+    if (groupEditThreshold) groupEditThreshold.value = group.requiredPower || '';
+
+    // Render members
+    renderMembers(group.members || []);
+    updateSummary();
+  }
+
+  /**
+   * Render member rows
+   */
+  function renderMembers(members) {
+    const groupMembersList = $('gp-members-list');
+    const groupMembersEmpty = $('gp-members-empty');
+
+    if (!groupMembersList) {
+      return;
+    }
+
+    groupMembersList.innerHTML = '';
+
+    // Hide empty state when we have members
+    if (groupMembersEmpty) {
+      groupMembersEmpty.hidden = members.length > 0;
+    }
+
+    members.forEach((member, index) => {
+      const row = document.createElement('div');
+      row.className = 'groups-member';
+      row.dataset.memberId = member.id;
+
+      // Validate identity
+      const identityValidation = validateBase58Identity(member.identity);
+      const identityStatusClass = member.identity && member.identity.trim()
+        ? (identityValidation.valid ? 'groups-member__identity--valid' : 'groups-member__identity--invalid')
+        : '';
+
+      row.innerHTML = `
+        <div class="groups-member__number">${index + 1}</div>
+        <div class="groups-member__identity ${identityStatusClass}">
+          <input type="text"
+                 class="groups-member__identity-input"
+                 placeholder="Enter Base58 Identity ID (43-44 chars)"
+                 value="${escapeHtml(member.identity || '')}"
+                 data-field="identity"
+                 spellcheck="false"
+                 autocomplete="off">
+          <span class="groups-member__identity-status" title="${escapeHtml(identityValidation.message)}">
+            ${identityValidation.valid && member.identity ? `
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            ` : member.identity ? `
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                <path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            ` : ''}
+          </span>
+        </div>
+        <div class="groups-member__power">
+          <input type="text"
+                 class="groups-member__power-input"
+                 placeholder="Power"
+                 value="${escapeHtml(String(member.power || ''))}"
+                 inputmode="numeric"
+                 pattern="[0-9]*"
+                 data-field="power">
+        </div>
+        <button type="button" class="groups-member__remove-btn" data-action="remove" title="Remove member">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      `;
+
+      // Add event listeners
+      const identityInput = row.querySelector('[data-field="identity"]');
+      const powerInput = row.querySelector('[data-field="power"]');
+      const removeBtn = row.querySelector('[data-action="remove"]');
+
+      identityInput.addEventListener('input', () => {
+        updateMemberField(member.id, 'identity', identityInput.value);
+        // Re-render to update validation status
+        const groups = getGroups();
+        const group = groups.find(g => g.id === selectedGroupId);
+        if (group) {
+          renderMembers(group.members);
+        }
+      });
+
+      identityInput.addEventListener('blur', () => {
+        updateSummary();
+        renderGroupsList(); // Update list to show validation
+      });
+
+      powerInput.addEventListener('input', () => {
+        updateMemberField(member.id, 'power', powerInput.value);
+        updateSummary();
+      });
+
+      powerInput.addEventListener('blur', () => {
+        renderGroupsList(); // Update list to show validation
+      });
+
+      removeBtn.addEventListener('click', () => {
+        removeMember(member.id);
+      });
+
+      groupMembersList.appendChild(row);
+    });
+  }
+
+  /**
+   * Update member field in current group
+   */
+  function updateMemberField(memberId, field, value) {
+    if (!selectedGroupId) return;
+
+    const groups = getGroups();
+    const group = groups.find(g => g.id === selectedGroupId);
+    if (!group || !group.members) return;
+
+    const member = group.members.find(m => m.id === memberId);
+    if (!member) return;
+
+    member[field] = value;
+    // Don't save yet - wait for explicit save
+  }
+
+  /**
+   * Add a new member to current group
+   */
+  function addMember() {
+    if (!selectedGroupId) {
+      showToast('Please select a group first', 'warning');
+      return;
+    }
+
+    const groups = getGroups();
+    const group = groups.find(g => g.id === selectedGroupId);
+    if (!group) {
+      return;
+    }
+
+    if (!Array.isArray(group.members)) {
+      group.members = [];
+    }
+
+    const newMember = {
+      id: generateMemberId(),
+      identity: '',
+      power: ''
+    };
+
+    group.members.push(newMember);
+    renderMembers(group.members);
+    updateSummary();
+
+    // Focus the new identity input
+    const gpMembersList = $('gp-members-list');
+    if (gpMembersList) {
+      const newRow = gpMembersList.querySelector(`[data-member-id="${newMember.id}"]`);
+      if (newRow) {
+        const input = newRow.querySelector('[data-field="identity"]');
+        if (input) input.focus();
+      }
+    }
+  }
+
+  /**
+   * Remove a member from current group
+   */
+  function removeMember(memberId) {
+    if (!selectedGroupId) return;
+
+    const groups = getGroups();
+    const group = groups.find(g => g.id === selectedGroupId);
+    if (!group || !group.members) return;
+
+    const index = group.members.findIndex(m => m.id === memberId);
+    if (index !== -1) {
+      group.members.splice(index, 1);
+      renderMembers(group.members);
+      updateSummary();
+    }
+  }
+
+  /**
+   * Update the summary display
+   */
+  function updateSummary() {
+    if (!selectedGroupId) return;
+
+    const groups = getGroups();
+    const group = groups.find(g => g.id === selectedGroupId);
+    if (!group) return;
+
+    const groupEditThreshold = $('group-edit-threshold');
+    const groupTotalMembers = $('gp-total-members');
+    const groupTotalPower = $('gp-total-power');
+    const groupRequiredPower = $('gp-required-power');
+
+    const members = Array.isArray(group.members) ? group.members : [];
+    const totalMembers = members.length;
+    const totalPower = members.reduce((sum, m) => sum + (parseInt(m.power, 10) || 0), 0);
+    const requiredPower = parseInt(groupEditThreshold?.value, 10) || 0;
+
+    if (groupTotalMembers) groupTotalMembers.textContent = totalMembers;
+    if (groupTotalPower) groupTotalPower.textContent = totalPower;
+    if (groupRequiredPower) groupRequiredPower.textContent = requiredPower;
+  }
+
+  /**
+   * Create a new group
+   */
+  function createGroup() {
+    console.log('[GroupsPage] Creating new group...');
+
+    const newGroup = {
+      id: generateGroupId(),
+      name: '',
+      requiredPower: '',
+      members: []
+    };
+
+    const groups = getGroups();
+    groups.push(newGroup);
+    saveGroups(groups);
+
+    renderGroupsList();
+    selectGroup(newGroup.id);
+
+    // Focus the name input
+    const groupEditName = $('group-edit-name');
+    if (groupEditName) {
+      setTimeout(() => groupEditName.focus(), 50);
+    }
+  }
+
+  /**
+   * Save the current group
+   */
+  function saveCurrentGroup() {
+    if (!selectedGroupId) return;
+
+    const groups = getGroups();
+    const group = groups.find(g => g.id === selectedGroupId);
+    if (!group) return;
+
+    const groupEditName = $('group-edit-name');
+    const groupEditThreshold = $('group-edit-threshold');
+    const groupEditorStatusText = $('group-editor-status-text');
+
+    // Update from form
+    group.name = groupEditName?.value?.trim() || '';
+    group.requiredPower = groupEditThreshold?.value?.trim() || '';
+
+    // Validate
+    if (!group.name) {
+      showToast('Please enter a group name', 'warning');
+      if (groupEditName) groupEditName.focus();
+      return;
+    }
+
+    saveGroups(groups);
+    renderGroupsList();
+
+    // Update group selectors throughout the wizard
+    if (typeof window.updateGroupSelectors === 'function') {
+      window.updateGroupSelectors();
+    }
+
+    // Update status
+    if (groupEditorStatusText) {
+      groupEditorStatusText.textContent = 'Saved: ' + group.name;
+    }
+
+    showToast('Group saved successfully', 'success');
+
+    // Also update the permission groups UI if it exists
+    if (typeof window.renderPermissionGroups === 'function') {
+      window.renderPermissionGroups();
+    }
+  }
+
+  /**
+   * Delete the current group
+   */
+  function deleteCurrentGroup() {
+    if (!selectedGroupId) return;
+
+    const groups = getGroups();
+    const group = groups.find(g => g.id === selectedGroupId);
+    if (!group) return;
+
+    if (!confirm(`Are you sure you want to delete "${group.name || 'this group'}"? This cannot be undone.`)) {
+      return;
+    }
+
+    const index = groups.findIndex(g => g.id === selectedGroupId);
+    if (index !== -1) {
+      groups.splice(index, 1);
+      saveGroups(groups);
+    }
+
+    selectedGroupId = null;
+
+    const groupEditorEmpty = $('group-editor-empty');
+    const groupEditorContent = $('group-editor-content');
+    const groupDeleteBtn = $('group-delete-btn');
+    const groupEditorStatusText = $('group-editor-status-text');
+
+    // Reset editor
+    if (groupEditorEmpty) groupEditorEmpty.hidden = false;
+    if (groupEditorContent) groupEditorContent.hidden = true;
+    if (groupDeleteBtn) groupDeleteBtn.hidden = true;
+    if (groupEditorStatusText) groupEditorStatusText.textContent = 'No group selected';
+
+    renderGroupsList();
+
+    // Update group selectors throughout the wizard
+    if (typeof window.updateGroupSelectors === 'function') {
+      window.updateGroupSelectors();
+    }
+
+    showToast('Group deleted', 'success');
+
+    // Also update the permission groups UI if it exists
+    if (typeof window.renderPermissionGroups === 'function') {
+      window.renderPermissionGroups();
+    }
+  }
+
+  /**
+   * Cancel editing
+   */
+  function cancelEditing() {
+    selectedGroupId = null;
+
+    const groupsList = $('groups-list');
+    const groupEditorEmpty = $('group-editor-empty');
+    const groupEditorContent = $('group-editor-content');
+    const groupDeleteBtn = $('group-delete-btn');
+    const groupEditorStatusText = $('group-editor-status-text');
+
+    // Reset editor
+    if (groupEditorEmpty) groupEditorEmpty.hidden = false;
+    if (groupEditorContent) groupEditorContent.hidden = true;
+    if (groupDeleteBtn) groupDeleteBtn.hidden = true;
+    if (groupEditorStatusText) groupEditorStatusText.textContent = 'No group selected';
+
+    // Clear active state
+    if (groupsList) {
+      groupsList.querySelectorAll('.groups-list__item').forEach(item => {
+        item.classList.remove('groups-list__item--active');
+      });
+    }
+  }
+
+  /**
+   * Escape HTML for safe rendering
+   */
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  /**
+   * Show toast notification
+   */
+  function showToast(message, type = 'info') {
+    if (typeof window.showToast === 'function') {
+      window.showToast(message, type);
+    } else {
+      console.log(`[Toast] ${type}: ${message}`);
+    }
+  }
+
+  /**
+   * Setup event listeners
+   */
+  function setupEventListeners() {
+    const createGroupBtn = $('create-group-btn');
+    const groupAddMemberBtn = $('group-add-member-btn');
+    const groupSaveBtn = $('group-save-btn');
+    const groupCancelBtn = $('group-cancel-btn');
+    const groupDeleteBtn = $('group-delete-btn');
+    const groupEditThreshold = $('group-edit-threshold');
+    const groupsBackToHub = $('groups-back-to-hub');
+
+    // Create group button
+    if (createGroupBtn) {
+      createGroupBtn.addEventListener('click', createGroup);
+    }
+
+    // Add member button
+    if (groupAddMemberBtn) {
+      groupAddMemberBtn.addEventListener('click', addMember);
+    }
+
+    // Save button
+    if (groupSaveBtn) {
+      groupSaveBtn.addEventListener('click', saveCurrentGroup);
+    }
+
+    // Cancel button
+    if (groupCancelBtn) {
+      groupCancelBtn.addEventListener('click', cancelEditing);
+    }
+
+    // Delete button
+    if (groupDeleteBtn) {
+      groupDeleteBtn.addEventListener('click', deleteCurrentGroup);
+    }
+
+    // Threshold input - update summary on change
+    if (groupEditThreshold) {
+      groupEditThreshold.addEventListener('input', updateSummary);
+    }
+
+    // Back to hub button
+    if (groupsBackToHub) {
+      groupsBackToHub.addEventListener('click', () => {
+        // Show hub page
+        const hubPage = document.getElementById('hub-page');
+        const globalHeader = document.getElementById('global-header');
+        const wizardShell = document.getElementById('wizard-shell');
+
+        if (hubPage) hubPage.hidden = false;
+        if (globalHeader) globalHeader.hidden = true;
+        if (wizardShell) wizardShell.hidden = true;
+
+        document.body.classList.remove('fullpage-mode');
+      });
+    }
+  }
+
+  /**
+   * Initialize the groups page
+   */
+  function init() {
+    console.log('[GroupsPage] Initializing groups page...');
+
+    setupEventListeners();
+    renderGroupsList();
+
+    console.log('[GroupsPage] Groups page initialized');
+  }
+
+  // Expose for external use
+  window.groupsPage = {
+    render: renderGroupsList,
+    getCount: () => getGroups().length,
+    selectGroup: selectGroup
+  };
+
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
   }
 })();

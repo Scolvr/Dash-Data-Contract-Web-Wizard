@@ -24,8 +24,8 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dash Token Wizard</title>
-  <link rel="preload" href="styles.css?v=128" as="style">
-  <link rel="stylesheet" href="styles.css?v=128">
+  <link rel="preload" href="styles.css?v=129" as="style">
+  <link rel="stylesheet" href="styles.css?v=129">
 </head>
 
 <body>
@@ -324,6 +324,28 @@
               <h3 class="hub-action-card__title">Templates</h3>
               <p class="hub-action-card__desc">
                 Quick-start with pre-configured templates for common token types like rewards, utilities, or simple fixed-supply tokens.
+              </p>
+            </div>
+            <div class="hub-action-card__arrow">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </button>
+
+          <!-- Groups Card -->
+          <button class="hub-action-card" id="hub-groups">
+            <div class="hub-action-card__icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="hub-action-card__content">
+              <h3 class="hub-action-card__title">Permission Groups</h3>
+              <p class="hub-action-card__desc">
+                Create multi-signature groups for token governance. Control who can mint, burn, freeze, and manage your token.
               </p>
             </div>
             <div class="hub-action-card__arrow">
@@ -8171,6 +8193,312 @@
             <!-- Back to Hub Button -->
             <footer class="templates-footer">
               <button class="templates-back-btn" id="templates-back-to-hub" type="button">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Back to Hub
+              </button>
+            </footer>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             GROUPS PAGE - Manage permission groups for token governance
+             Standalone fullpage view accessible from hub
+             ═══════════════════════════════════════════════════════════════════ -->
+        <section class="wizard-screen wizard-screen--fullpage" id="screen-groups-page" data-step="groups-page" data-tab="groups" hidden>
+          <!-- Background Effects -->
+          <div class="groups-page-bg" aria-hidden="true">
+            <div class="groups-page-bg__gradient"></div>
+            <div class="groups-page-bg__grid"></div>
+            <div class="groups-page-bg__glow groups-page-bg__glow--1"></div>
+            <div class="groups-page-bg__glow groups-page-bg__glow--2"></div>
+          </div>
+
+          <div class="groups-page">
+            <!-- Hero Section -->
+            <header class="groups-hero">
+              <div class="groups-hero__badge">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span>Permission Groups</span>
+              </div>
+              <h1 class="groups-hero__title">Manage Groups</h1>
+              <p class="groups-hero__subtitle">Create and manage permission groups for token governance. Groups can control minting, burning, freezing, and other critical actions.</p>
+            </header>
+
+            <!-- Main Content - Two Column Layout -->
+            <div class="groups-content">
+              <!-- Left Column: Groups List -->
+              <div class="groups-sidebar">
+                <div class="groups-sidebar__header">
+                  <h2 class="groups-sidebar__title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2"/>
+                      <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    Your Groups
+                  </h2>
+                  <span class="groups-sidebar__count" id="groups-count">0</span>
+                </div>
+
+                <!-- Group List -->
+                <div class="groups-list" id="groups-list">
+                  <!-- Empty State -->
+                  <div class="groups-list__empty" id="groups-empty">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+                      <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+                    </svg>
+                    <p>No groups created yet</p>
+                    <span>Create your first group to get started</span>
+                  </div>
+                  <!-- Group items inserted here dynamically -->
+                </div>
+
+                <!-- Create Group Button -->
+                <div class="groups-sidebar__actions">
+                  <button class="groups-action-btn groups-action-btn--primary" id="create-group-btn" type="button">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    Create New Group
+                  </button>
+                </div>
+              </div>
+
+              <!-- Right Column: Group Editor -->
+              <div class="groups-editor">
+                <div class="groups-editor__header">
+                  <div class="groups-editor__title-row">
+                    <h2 class="groups-editor__title">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2"/>
+                      </svg>
+                      Group Editor
+                    </h2>
+                    <span class="groups-editor__status" id="group-editor-status">
+                      <span class="groups-editor__status-dot"></span>
+                      <span id="group-editor-status-text">No group selected</span>
+                    </span>
+                  </div>
+                  <div class="groups-editor__actions">
+                    <button class="groups-editor__action groups-editor__action--delete" id="group-delete-btn" type="button" title="Delete group" hidden>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      </svg>
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Editor Form -->
+                <div class="groups-editor__form" id="group-editor-form">
+                  <!-- Empty state when no group selected -->
+                  <div class="groups-editor__empty" id="group-editor-empty">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+                      <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+                    </svg>
+                    <h3>Select or Create a Group</h3>
+                    <p>Choose a group from the list to edit, or create a new one to get started.</p>
+                  </div>
+
+                  <!-- Group edit form (hidden by default) -->
+                  <div class="groups-editor__content" id="group-editor-content" hidden>
+                    <!-- Group Name -->
+                    <div class="groups-field">
+                      <label class="groups-field__label" for="group-edit-name">
+                        Group Name
+                        <span class="groups-field__required">*</span>
+                      </label>
+                      <input type="text"
+                             class="groups-field__input"
+                             id="group-edit-name"
+                             placeholder="e.g. Treasury Committee"
+                             maxlength="64"
+                             autocomplete="off">
+                      <span class="groups-field__hint">A descriptive name for this permission group</span>
+                    </div>
+
+                    <!-- Required Power (Threshold) -->
+                    <div class="groups-field">
+                      <label class="groups-field__label" for="group-edit-threshold">
+                        Required Power (Threshold)
+                        <span class="groups-field__required">*</span>
+                      </label>
+                      <input type="text"
+                             class="groups-field__input"
+                             id="group-edit-threshold"
+                             placeholder="e.g. 2"
+                             inputmode="numeric"
+                             pattern="[0-9]*"
+                             autocomplete="off">
+                      <span class="groups-field__hint">Minimum combined voting power needed to approve actions</span>
+                    </div>
+
+                    <!-- Members Section -->
+                    <div class="groups-members">
+                      <div class="groups-members__header">
+                        <h3 class="groups-members__title">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2"/>
+                            <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+                          </svg>
+                          Members
+                        </h3>
+                        <button class="groups-members__add-btn" id="group-add-member-btn" type="button">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                          </svg>
+                          Add Member
+                        </button>
+                      </div>
+
+                      <!-- Members List -->
+                      <div class="groups-members__list" id="gp-members-list">
+                        <!-- Members will be rendered here -->
+                      </div>
+
+                      <!-- Members Empty State -->
+                      <div class="groups-members__empty" id="gp-members-empty">
+                        <p>No members added yet. Add at least one member to this group.</p>
+                      </div>
+                    </div>
+
+                    <!-- Power Summary -->
+                    <div class="groups-summary" id="gp-power-summary">
+                      <div class="groups-summary__item">
+                        <span class="groups-summary__label">Total Members</span>
+                        <span class="groups-summary__value" id="gp-total-members">0</span>
+                      </div>
+                      <div class="groups-summary__item">
+                        <span class="groups-summary__label">Total Power</span>
+                        <span class="groups-summary__value" id="gp-total-power">0</span>
+                      </div>
+                      <div class="groups-summary__item groups-summary__item--highlight">
+                        <span class="groups-summary__label">Required Power</span>
+                        <span class="groups-summary__value" id="gp-required-power">0</span>
+                      </div>
+                    </div>
+
+                    <!-- Save Button -->
+                    <div class="groups-editor__footer">
+                      <button class="groups-action-btn" id="group-cancel-btn" type="button">
+                        Cancel
+                      </button>
+                      <button class="groups-action-btn groups-action-btn--primary" id="group-save-btn" type="button">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" stroke="currentColor" stroke-width="2"/>
+                          <path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        Save Group
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right Column: Guide Panel -->
+                <div class="groups-guide">
+                  <div class="groups-guide__header">
+                    <div class="groups-guide__icon">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                        <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      </svg>
+                    </div>
+                    <h3 class="groups-guide__title">Quick Guide</h3>
+                  </div>
+
+                  <div class="groups-guide__section">
+                    <h4 class="groups-guide__section-title">What are Groups?</h4>
+                    <p class="groups-guide__text">Groups are collections of identities that can collectively control token permissions. They enable multi-signature governance for critical actions like minting, burning, and freezing.</p>
+                  </div>
+
+                  <div class="groups-guide__section">
+                    <h4 class="groups-guide__section-title">How Voting Power Works</h4>
+                    <ul class="groups-guide__list">
+                      <li class="groups-guide__list-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                          <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>Each member has a <strong>voting power</strong> value</span>
+                      </li>
+                      <li class="groups-guide__list-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                          <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>The <strong>threshold</strong> is the minimum power needed</span>
+                      </li>
+                      <li class="groups-guide__list-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                          <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>Actions require approval from members whose combined power meets the threshold</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div class="groups-guide__section">
+                    <h4 class="groups-guide__section-title">Example</h4>
+                    <div class="groups-guide__example">
+                      <p><strong>3-of-5 Multisig:</strong> Create a group with 5 members (each with power 1) and set threshold to 3. Any 3 members must approve for actions to proceed.</p>
+                    </div>
+                  </div>
+
+                  <div class="groups-guide__tip">
+                    <svg class="groups-guide__tip-icon" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <p class="groups-guide__tip-text"><strong>Pro tip:</strong> Groups you create here will appear in the "Authorized to perform action" and "Authorized to change rules" dropdowns throughout the wizard.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Feature Cards -->
+            <div class="groups-features">
+              <div class="groups-feature">
+                <div class="groups-feature__icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </div>
+                <h3 class="groups-feature__title">Multi-Signature Security</h3>
+                <p class="groups-feature__text">Require multiple approvals for sensitive token operations</p>
+              </div>
+              <div class="groups-feature">
+                <div class="groups-feature__icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </div>
+                <h3 class="groups-feature__title">Flexible Governance</h3>
+                <p class="groups-feature__text">Assign different voting weights to different members</p>
+              </div>
+              <div class="groups-feature">
+                <div class="groups-feature__icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </div>
+                <h3 class="groups-feature__title">Access Control</h3>
+                <p class="groups-feature__text">Control who can mint, burn, freeze, and manage your token</p>
+              </div>
+            </div>
+
+            <!-- Back to Hub Button -->
+            <footer class="groups-footer">
+              <button class="groups-back-btn" id="groups-back-to-hub" type="button">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                   <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
