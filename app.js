@@ -17602,6 +17602,202 @@
 })();
 
 // ============================================
+// Mobile Navigation Controller
+// Handles hamburger menu and mobile nav drawer
+// ============================================
+(function initMobileNavigation() {
+  'use strict';
+
+  function setupMobileNav() {
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    const navDrawer = document.getElementById('mobile-nav-drawer');
+    const navBackdrop = document.getElementById('mobile-nav-backdrop');
+    const navClose = document.getElementById('mobile-nav-close');
+    const navLinks = document.querySelectorAll('.mobile-nav-drawer__link');
+
+    if (!menuBtn || !navDrawer) {
+      console.log('[MobileNav] Elements not found, skipping initialization');
+      return;
+    }
+
+    // Open drawer
+    function openDrawer() {
+      navDrawer.classList.add('is-open');
+      menuBtn.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+    }
+
+    // Close drawer
+    function closeDrawer() {
+      navDrawer.classList.remove('is-open');
+      menuBtn.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    }
+
+    // Toggle drawer
+    menuBtn.addEventListener('click', () => {
+      if (navDrawer.classList.contains('is-open')) {
+        closeDrawer();
+      } else {
+        openDrawer();
+      }
+    });
+
+    // Close on backdrop click
+    if (navBackdrop) {
+      navBackdrop.addEventListener('click', closeDrawer);
+    }
+
+    // Close button
+    if (navClose) {
+      navClose.addEventListener('click', closeDrawer);
+    }
+
+    // Handle nav link clicks
+    navLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const page = link.dataset.page;
+
+        // Update active state
+        navLinks.forEach(l => l.classList.remove('mobile-nav-drawer__link--active'));
+        link.classList.add('mobile-nav-drawer__link--active');
+
+        // Also update header nav active state
+        const headerLinks = document.querySelectorAll('.global-header__link');
+        headerLinks.forEach(l => {
+          l.classList.toggle('global-header__link--active', l.dataset.page === page);
+        });
+
+        // Navigate to page
+        if (typeof window.GlobalHeader !== 'undefined' && window.GlobalHeader.navigateTo) {
+          window.GlobalHeader.navigateTo(page);
+        }
+
+        // Close drawer
+        closeDrawer();
+      });
+    });
+
+    // Close on escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && navDrawer.classList.contains('is-open')) {
+        closeDrawer();
+      }
+    });
+
+    // Sync with header nav when pages change
+    const headerLinks = document.querySelectorAll('.global-header__link');
+    headerLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        const page = link.dataset.page;
+        navLinks.forEach(l => {
+          l.classList.toggle('mobile-nav-drawer__link--active', l.dataset.page === page);
+        });
+      });
+    });
+
+    console.log('[MobileNav] Mobile navigation initialized');
+  }
+
+  // Run setup when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupMobileNav);
+  } else {
+    setupMobileNav();
+  }
+})();
+
+// ============================================
+// Mobile Sidebar Toggle Controller
+// Handles the floating button to open wizard sidebar on mobile
+// ============================================
+(function initMobileSidebarToggle() {
+  'use strict';
+
+  function setupMobileSidebar() {
+    const sidebar = document.querySelector('.wizard-sidebar');
+
+    if (!sidebar) {
+      console.log('[MobileSidebar] Sidebar not found, skipping initialization');
+      return;
+    }
+
+    // Create the floating toggle button if it doesn't exist
+    let toggleBtn = document.querySelector('.mobile-sidebar-toggle');
+    if (!toggleBtn) {
+      toggleBtn = document.createElement('button');
+      toggleBtn.className = 'mobile-sidebar-toggle';
+      toggleBtn.setAttribute('aria-label', 'Open wizard steps');
+      toggleBtn.innerHTML = `
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      `;
+      document.body.appendChild(toggleBtn);
+    }
+
+    // Create backdrop if it doesn't exist
+    let backdrop = document.querySelector('.sidebar-backdrop');
+    if (!backdrop) {
+      backdrop = document.createElement('div');
+      backdrop.className = 'sidebar-backdrop';
+      document.body.appendChild(backdrop);
+    }
+
+    // Open sidebar
+    function openSidebar() {
+      sidebar.classList.add('is-open');
+      backdrop.classList.add('is-visible');
+      document.body.style.overflow = 'hidden';
+    }
+
+    // Close sidebar
+    function closeSidebar() {
+      sidebar.classList.remove('is-open');
+      backdrop.classList.remove('is-visible');
+      document.body.style.overflow = '';
+    }
+
+    // Toggle button click
+    toggleBtn.addEventListener('click', openSidebar);
+
+    // Backdrop click closes sidebar
+    backdrop.addEventListener('click', closeSidebar);
+
+    // Close on escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && sidebar.classList.contains('is-open')) {
+        closeSidebar();
+      }
+    });
+
+    // Close sidebar when a step is clicked (on mobile)
+    const stepItems = sidebar.querySelectorAll('.wizard-path__item, .wizard-nav-item');
+    stepItems.forEach(item => {
+      item.addEventListener('click', () => {
+        // Only close on mobile
+        if (window.innerWidth <= 900) {
+          closeSidebar();
+        }
+      });
+    });
+
+    // Expose close function globally
+    window.closeMobileSidebar = closeSidebar;
+
+    console.log('[MobileSidebar] Mobile sidebar toggle initialized');
+  }
+
+  // Run setup when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupMobileSidebar);
+  } else {
+    setupMobileSidebar();
+  }
+})();
+
+// ============================================
 // Document Storage Controller
 // Handles save/load/edit/delete of token configurations
 // ============================================
