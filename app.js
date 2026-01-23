@@ -11239,6 +11239,7 @@
   window.hydrateFormsFromState = hydrateFormsFromState;
   window.announce = announce;
   window.wizardState = wizardState;
+  window.resetWizard = resetWizard;
 
   // Expose validation functions for template system
   window.evaluateNaming = evaluateNaming;
@@ -15501,14 +15502,23 @@
   }
 
   function confirmStartOver() {
-    // Clear all storage and reload
-    try {
-      localStorage.clear();
-      sessionStorage.clear();
-    } catch (e) {
-      console.debug('Unable to clear storage', e);
+    // Reset wizard state without reloading the page
+    hideStartOverModal();
+
+    // Call the exposed resetWizard function
+    if (typeof window.resetWizard === 'function') {
+      window.resetWizard();
     }
-    window.location.reload();
+
+    // Navigate to first step of the wizard
+    if (typeof window.showScreen === 'function') {
+      window.showScreen('naming', { force: true });
+    }
+
+    // Show success toast
+    if (typeof window.showToast === 'function') {
+      window.showToast('Wizard has been reset', 'success');
+    }
   }
 
   // Show modal when Start Over clicked (main sidebar)
