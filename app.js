@@ -17601,7 +17601,12 @@
       getCurrentPage: () => currentPage
     };
 
+    // Fire custom event to signal app is ready for navigation
+    window.dispatchEvent(new CustomEvent('wizardAppReady', { detail: { globalHeader: window.globalHeader } }));
+    window.wizardAppReady = true;
+
     console.log('[GlobalHeader] Global header initialized successfully');
+    console.log('[GlobalHeader] wizardAppReady event fired');
   }
 
   // Run setup when DOM is ready

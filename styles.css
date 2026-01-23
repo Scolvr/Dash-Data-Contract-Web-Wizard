@@ -21812,3 +21812,497 @@ html[data-theme='light'] .template-card--glass:hover {
     height: 40px;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COMPREHENSIVE MOBILE LAYOUT FIX
+   Unified mobile experience for all pages (Templates, Groups, Documents, Wizard)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Mobile bottom nav - hidden by default, only visible on mobile in wizard shell */
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  /* ─────────────────────────────────────────────────────────────────────
+     MOBILE LAYOUT: Hide sidebar completely, use bottom tab bar
+     ───────────────────────────────────────────────────────────────────── */
+
+  /* Hide the wizard sidebar completely on mobile when viewing pages */
+  .wizard-sidebar {
+    display: none !important;
+  }
+
+  /* Reset wizard-shell to be a simple single-column container */
+  .wizard-shell {
+    display: flex !important;
+    flex-direction: column !important;
+    padding-left: 0 !important;
+    min-height: 100vh;
+    min-height: 100dvh;
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Global header becomes the mobile header */
+  .global-header {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 56px !important;
+    z-index: 1000 !important;
+    display: flex !important;
+    padding: 0 16px !important;
+    background: var(--color-surface, #1a1a2e) !important;
+    border-bottom: 1px solid var(--color-border, rgba(255, 255, 255, 0.1)) !important;
+  }
+
+  /* Hide the old mobile header - we use global header */
+  .mobile-header {
+    display: none !important;
+  }
+
+  /* Main content area - fills space between header and bottom nav */
+  .wizard-main {
+    flex: 1 !important;
+    margin-top: 56px !important;
+    margin-bottom: 72px !important; /* Space for bottom tab bar */
+    padding: 16px !important;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    min-height: calc(100vh - 56px - 72px) !important;
+    min-height: calc(100dvh - 56px - 72px) !important;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────
+     MOBILE BOTTOM TAB BAR
+     Fixed navigation at bottom of screen
+     ───────────────────────────────────────────────────────────────────── */
+
+  .mobile-bottom-nav {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 72px !important;
+    height: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+    background: var(--color-surface, #1a1a2e) !important;
+    border-top: 1px solid var(--color-border, rgba(255, 255, 255, 0.1)) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-around !important;
+    z-index: 1000 !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+  }
+
+  .mobile-bottom-nav__item {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    padding: 8px 12px !important;
+    min-width: 64px !important;
+    min-height: 48px !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 12px !important;
+    color: var(--color-text-secondary, rgba(255, 255, 255, 0.6)) !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+
+  .mobile-bottom-nav__item:hover,
+  .mobile-bottom-nav__item:focus {
+    background: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  .mobile-bottom-nav__item--active {
+    color: var(--color-primary, #0E76FD) !important;
+    background: rgba(14, 118, 253, 0.1) !important;
+  }
+
+  .mobile-bottom-nav__item svg {
+    width: 24px !important;
+    height: 24px !important;
+  }
+
+  /* Light mode bottom nav */
+  html[data-theme='light'] .mobile-bottom-nav {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-top-color: rgba(0, 0, 0, 0.08) !important;
+  }
+
+  html[data-theme='light'] .mobile-bottom-nav__item {
+    color: rgba(29, 29, 31, 0.6) !important;
+  }
+
+  html[data-theme='light'] .mobile-bottom-nav__item:hover,
+  html[data-theme='light'] .mobile-bottom-nav__item:focus {
+    background: rgba(0, 0, 0, 0.05) !important;
+  }
+
+  html[data-theme='light'] .mobile-bottom-nav__item--active {
+    color: var(--color-primary, #0E76FD) !important;
+    background: rgba(14, 118, 253, 0.1) !important;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────
+     PAGE VIEWS - Full width mobile layout
+     ───────────────────────────────────────────────────────────────────── */
+
+  .page-view {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Templates page mobile */
+  .templates-page {
+    padding: 16px !important;
+    padding-top: 0 !important;
+  }
+
+  .templates-hero {
+    padding: 16px 0 !important;
+    margin-bottom: 16px !important;
+  }
+
+  .templates-hero__badge {
+    font-size: 12px !important;
+    padding: 6px 12px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .templates-hero__title {
+    font-size: 1.5rem !important;
+    margin-bottom: 8px !important;
+  }
+
+  .templates-hero__subtitle {
+    font-size: 0.875rem !important;
+    line-height: 1.5 !important;
+  }
+
+  .templates-content {
+    gap: 16px !important;
+  }
+
+  .tpl-section {
+    margin-bottom: 24px !important;
+  }
+
+  .tpl-section__header {
+    margin-bottom: 12px !important;
+  }
+
+  .tpl-section__title {
+    font-size: 1rem !important;
+  }
+
+  .tpl-section__subtitle {
+    font-size: 0.8125rem !important;
+  }
+
+  .tpl-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .tpl-card {
+    padding: 16px !important;
+    min-height: auto !important;
+  }
+
+  .tpl-card--scratch {
+    padding: 20px !important;
+  }
+
+  .tpl-card__icon {
+    width: 44px !important;
+    height: 44px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .tpl-card__title {
+    font-size: 1rem !important;
+    margin-bottom: 6px !important;
+  }
+
+  .tpl-card__desc {
+    font-size: 0.8125rem !important;
+    line-height: 1.4 !important;
+  }
+
+  .tpl-card__features {
+    margin-top: 12px !important;
+    gap: 6px !important;
+  }
+
+  .tpl-card__feature {
+    font-size: 0.75rem !important;
+    padding: 4px 8px !important;
+  }
+
+  /* Groups page mobile */
+  .groups-page {
+    padding: 16px !important;
+    padding-top: 0 !important;
+  }
+
+  .groups-hero {
+    padding: 16px 0 !important;
+    margin-bottom: 16px !important;
+  }
+
+  .groups-hero__badge {
+    font-size: 12px !important;
+    padding: 6px 12px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .groups-hero__title {
+    font-size: 1.5rem !important;
+    margin-bottom: 8px !important;
+  }
+
+  .groups-hero__subtitle {
+    font-size: 0.875rem !important;
+    line-height: 1.5 !important;
+  }
+
+  .groups-content {
+    gap: 16px !important;
+  }
+
+  .groups-list {
+    gap: 12px !important;
+  }
+
+  .group-card {
+    padding: 16px !important;
+  }
+
+  .group-card__header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .group-card__name {
+    font-size: 1rem !important;
+  }
+
+  .group-card__members {
+    font-size: 0.8125rem !important;
+  }
+
+  .group-card__actions {
+    width: 100% !important;
+    justify-content: flex-end !important;
+  }
+
+  /* Documents page mobile */
+  .documents-page {
+    padding: 16px !important;
+    padding-top: 0 !important;
+  }
+
+  .documents-hero {
+    padding: 16px 0 !important;
+    margin-bottom: 16px !important;
+  }
+
+  .documents-hero__badge {
+    font-size: 12px !important;
+    padding: 6px 12px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .documents-hero__title {
+    font-size: 1.5rem !important;
+    margin-bottom: 8px !important;
+  }
+
+  .documents-hero__subtitle {
+    font-size: 0.875rem !important;
+    line-height: 1.5 !important;
+  }
+
+  .documents-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .document-card {
+    padding: 16px !important;
+  }
+
+  .document-card__name {
+    font-size: 1rem !important;
+  }
+
+  .document-card__date {
+    font-size: 0.75rem !important;
+  }
+
+  /* Tokens/Wizard page mobile */
+  .wizard-screen {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  .wizard-screen__inner {
+    padding: 16px !important;
+    padding-bottom: 24px !important;
+    border-radius: 12px !important;
+    margin: 0 !important;
+  }
+
+  /* Form cards */
+  .form-card {
+    padding: 16px !important;
+    border-radius: 12px !important;
+  }
+
+  .form-card__header {
+    padding: 12px 16px !important;
+  }
+
+  .form-card__title {
+    font-size: 1rem !important;
+  }
+
+  .form-card__body {
+    padding: 16px !important;
+  }
+
+  /* Buttons */
+  .wizard-button {
+    min-height: 48px !important;
+    font-size: 1rem !important;
+    padding: 12px 20px !important;
+  }
+
+  .wizard-actions {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .wizard-actions .wizard-button {
+    width: 100% !important;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────
+     Hide elements not needed on mobile
+     ───────────────────────────────────────────────────────────────────── */
+
+  /* Hide guide panel on mobile */
+  .wizard-guide,
+  .guide-toggle-container,
+  .guide-panel {
+    display: none !important;
+  }
+
+  /* Hide wizard progress on mobile - use bottom nav instead */
+  .wizard-progress,
+  .wizard-progress-compact {
+    display: none !important;
+  }
+
+  /* Hide desktop nav in header - keep only essentials */
+  .global-header__nav {
+    display: none !important;
+  }
+
+  /* Hide hamburger menu button on mobile - we use bottom nav instead */
+  .mobile-menu-btn {
+    display: none !important;
+  }
+
+  /* Light mode header styles */
+  html[data-theme='light'] .global-header {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-bottom-color: rgba(0, 0, 0, 0.08) !important;
+  }
+
+  html[data-theme='light'] .mobile-menu-btn {
+    color: var(--color-text, #1d1d1f) !important;
+  }
+
+  /* Hide bottom nav on landing and hub pages */
+  body.landing-visible .mobile-bottom-nav,
+  body.hub-visible .mobile-bottom-nav {
+    display: none !important;
+  }
+
+  /* Hide global header on landing and hub pages - they have their own headers */
+  body.landing-visible .global-header,
+  body.hub-visible .global-header {
+    display: none !important;
+  }
+
+  /* Hide the mobile-nav-drawer on mobile - use bottom tab bar instead */
+  .mobile-nav-drawer,
+  .mobile-nav-drawer.is-open,
+  .mobile-nav-drawer__panel,
+  .mobile-nav-drawer__backdrop {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  /* Hide the old navigation links that show in wizard shell footer */
+  .wizard-sidebar__footer,
+  .mobile-menu-overlay {
+    display: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   EXTRA SMALL MOBILE (max-width: 480px)
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .global-header {
+    padding: 0 12px !important;
+  }
+
+  .global-header__title {
+    font-size: 0.875rem !important;
+  }
+
+  .mobile-bottom-nav__item {
+    min-width: 56px !important;
+    padding: 8px 8px !important;
+    font-size: 10px !important;
+  }
+
+  .mobile-bottom-nav__item svg {
+    width: 22px !important;
+    height: 22px !important;
+  }
+
+  .templates-hero__title,
+  .groups-hero__title,
+  .documents-hero__title {
+    font-size: 1.25rem !important;
+  }
+
+  .tpl-card,
+  .group-card,
+  .document-card {
+    padding: 14px !important;
+  }
+}

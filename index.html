@@ -24,8 +24,375 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dash Token Wizard</title>
-  <link rel="preload" href="styles.css?v=129" as="style">
-  <link rel="stylesheet" href="styles.css?v=129">
+  <link rel="preload" href="styles.css?v=130" as="style">
+  <link rel="stylesheet" href="styles.css?v=130">
+  <!-- Mobile override: hide old nav elements, show bottom tab bar -->
+  <style>
+    @media (max-width: 900px) {
+      .mobile-nav-drawer,
+      .mobile-nav-drawer.is-open,
+      .mobile-nav-drawer__panel,
+      .mobile-nav-drawer__backdrop,
+      .mobile-sidebar-toggle,
+      .sidebar-backdrop {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        opacity: 0 !important;
+      }
+    }
+
+    /* Mobile Steps Button - centered in header */
+    .global-header__steps-btn {
+      display: none; /* Hidden on desktop */
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .global-header__steps-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .global-header__steps-btn:active {
+      transform: scale(0.96);
+    }
+
+    .global-header__steps-btn svg {
+      width: 18px;
+      height: 18px;
+      opacity: 0.85;
+    }
+
+    .global-header__steps-label {
+      letter-spacing: 0.02em;
+    }
+
+    /* Light theme */
+    html[data-theme='light'] .global-header__steps-btn {
+      background: rgba(0, 0, 0, 0.04);
+      border-color: rgba(0, 0, 0, 0.08);
+      color: rgba(0, 0, 0, 0.8);
+    }
+
+    html[data-theme='light'] .global-header__steps-btn:hover {
+      background: rgba(0, 0, 0, 0.08);
+      border-color: rgba(0, 0, 0, 0.12);
+    }
+
+    /* Show on mobile */
+    @media (max-width: 900px) {
+      .global-header__steps-btn {
+        display: flex;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+    }
+
+    /* Mobile Steps Drawer */
+    .mobile-steps-drawer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2100;
+      pointer-events: none;
+      visibility: hidden;
+    }
+
+    .mobile-steps-drawer.is-open {
+      pointer-events: auto;
+      visibility: visible;
+    }
+
+    .mobile-steps-drawer__backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+
+    .mobile-steps-drawer.is-open .mobile-steps-drawer__backdrop {
+      opacity: 1;
+    }
+
+    .mobile-steps-drawer__panel {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      width: calc(100% - 48px);
+      max-width: 320px;
+      max-height: calc(100vh - 120px);
+      background: rgba(28, 28, 30, 0.98);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+      opacity: 0;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+    }
+
+    .mobile-steps-drawer.is-open .mobile-steps-drawer__panel {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
+
+    .mobile-steps-drawer__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .mobile-steps-drawer__title {
+      font-size: 15px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.95);
+      letter-spacing: 0.01em;
+    }
+
+    .mobile-steps-drawer__close {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: rgba(255, 255, 255, 0.08);
+      border: none;
+      border-radius: 8px;
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .mobile-steps-drawer__close:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .mobile-steps-drawer__nav {
+      display: flex;
+      flex-direction: column;
+      padding: 12px;
+      gap: 6px;
+    }
+
+    .mobile-steps-drawer__step {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      background: transparent;
+      border: none;
+      border-radius: 12px;
+      color: rgba(255, 255, 255, 0.7);
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .mobile-steps-drawer__step:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .mobile-steps-drawer__step.is-active {
+      background: rgba(14, 118, 253, 0.15);
+      color: #0E76FD;
+    }
+
+    .mobile-steps-drawer__step.is-completed {
+      color: rgba(52, 199, 89, 0.9);
+    }
+
+    .mobile-steps-drawer__step.is-disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .mobile-steps-drawer__step-num {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .mobile-steps-drawer__step.is-active .mobile-steps-drawer__step-num {
+      background: rgba(14, 118, 253, 0.2);
+    }
+
+    .mobile-steps-drawer__step.is-completed .mobile-steps-drawer__step-num {
+      background: rgba(52, 199, 89, 0.15);
+    }
+
+    .mobile-steps-drawer__step-label {
+      flex: 1;
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .mobile-steps-drawer__step-status {
+      font-size: 12px;
+      opacity: 0.6;
+    }
+
+    .mobile-steps-drawer__step.is-completed .mobile-steps-drawer__step-status::after {
+      content: '✓';
+      color: rgba(52, 199, 89, 0.9);
+    }
+
+    /* Light theme for steps drawer */
+    html[data-theme='light'] .mobile-steps-drawer__panel {
+      background: rgba(255, 255, 255, 0.98);
+      border-color: rgba(0, 0, 0, 0.08);
+    }
+
+    html[data-theme='light'] .mobile-steps-drawer__header {
+      border-bottom-color: rgba(0, 0, 0, 0.06);
+    }
+
+    html[data-theme='light'] .mobile-steps-drawer__title {
+      color: rgba(0, 0, 0, 0.9);
+    }
+
+    html[data-theme='light'] .mobile-steps-drawer__close {
+      background: rgba(0, 0, 0, 0.05);
+      color: rgba(0, 0, 0, 0.6);
+    }
+
+    html[data-theme='light'] .mobile-steps-drawer__close:hover {
+      background: rgba(0, 0, 0, 0.08);
+      color: rgba(0, 0, 0, 0.8);
+    }
+
+    html[data-theme='light'] .mobile-steps-drawer__step {
+      color: rgba(0, 0, 0, 0.7);
+    }
+
+    html[data-theme='light'] .mobile-steps-drawer__step:hover {
+      background: rgba(0, 0, 0, 0.04);
+    }
+
+    html[data-theme='light'] .mobile-steps-drawer__step.is-active {
+      background: rgba(14, 118, 253, 0.1);
+    }
+
+    html[data-theme='light'] .mobile-steps-drawer__step-num {
+      background: rgba(0, 0, 0, 0.06);
+    }
+
+    /* Expandable groups */
+    .mobile-steps-drawer__group {
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .mobile-steps-drawer__step--parent {
+      position: relative;
+    }
+
+    .mobile-steps-drawer__chevron {
+      margin-left: auto;
+      opacity: 0.5;
+      transition: transform 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .mobile-steps-drawer__group.is-expanded .mobile-steps-drawer__chevron {
+      transform: rotate(180deg);
+    }
+
+    .mobile-steps-drawer__substeps {
+      display: none;
+      flex-direction: column;
+      padding: 0 0 8px 42px;
+      gap: 2px;
+    }
+
+    .mobile-steps-drawer__group.is-expanded .mobile-steps-drawer__substeps {
+      display: flex;
+    }
+
+    .mobile-steps-drawer__substep {
+      display: flex;
+      align-items: center;
+      padding: 10px 14px;
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 13px;
+      font-weight: 400;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .mobile-steps-drawer__substep:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .mobile-steps-drawer__substep.is-active {
+      background: rgba(14, 118, 253, 0.12);
+      color: #0E76FD;
+      font-weight: 500;
+    }
+
+    .mobile-steps-drawer__substep.is-current::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: #0E76FD;
+      border-radius: 50%;
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+
+    /* Light theme for substeps */
+    html[data-theme='light'] .mobile-steps-drawer__substep {
+      color: rgba(0, 0, 0, 0.55);
+    }
+
+    html[data-theme='light'] .mobile-steps-drawer__substep:hover {
+      background: rgba(0, 0, 0, 0.04);
+      color: rgba(0, 0, 0, 0.8);
+    }
+
+    html[data-theme='light'] .mobile-steps-drawer__substep.is-active {
+      background: rgba(14, 118, 253, 0.1);
+      color: #0E76FD;
+    }
+
+    /* Scrollable nav area */
+    .mobile-steps-drawer__nav {
+      max-height: calc(100vh - 200px);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+  </style>
 </head>
 
 <body>
@@ -417,6 +784,156 @@
         </div>
       </section>
 
+      <!-- Immediate event handlers for hub action cards (mobile fix) -->
+      <script>
+        (function() {
+          'use strict';
+
+          // Screen IDs mapping
+          var screenIds = {
+            'tokens': 'screen-naming',
+            'templates': 'screen-templates-page',
+            'groups': 'screen-groups-page',
+            'documents': 'screen-documents'
+          };
+
+          // Queue to hold pending navigation requests
+          var pendingNavigation = null;
+
+          // Helper to show wizard shell
+          function showWizardShell() {
+            var landing = document.getElementById('landing-page');
+            var hub = document.getElementById('hub-page');
+            var wizardShell = document.querySelector('.wizard-shell');
+
+            // Hide landing page
+            if (landing) {
+              landing.classList.add('landing-page--hidden');
+              landing.style.display = 'none';
+            }
+
+            // Hide hub page
+            if (hub) {
+              hub.classList.add('hub-page--hidden');
+              hub.hidden = true;
+            }
+
+            // Show wizard shell
+            document.body.classList.remove('landing-visible');
+            document.body.classList.remove('hub-visible');
+            if (wizardShell) {
+              wizardShell.classList.remove('wizard-shell--hidden');
+              wizardShell.style.opacity = '1';
+              wizardShell.style.visibility = 'visible';
+              wizardShell.style.pointerEvents = 'auto';
+            }
+          }
+
+          // Navigate using globalHeader (the reliable way)
+          function navigateWithGlobalHeader(pageName) {
+            if (window.globalHeader && typeof window.globalHeader.switchPage === 'function') {
+              console.log('[Hub] Using globalHeader.switchPage for:', pageName);
+              window.globalHeader.switchPage(pageName);
+              return true;
+            }
+            return false;
+          }
+
+          // Helper to show wizard and switch page
+          function showWizardAndNavigate(pageName) {
+            console.log('[Hub] Card clicked - navigating to:', pageName);
+
+            // First, show the wizard shell immediately
+            showWizardShell();
+
+            // Check if app is already ready
+            if (window.wizardAppReady && navigateWithGlobalHeader(pageName)) {
+              console.log('[Hub] App was ready, navigated immediately');
+              return;
+            }
+
+            // Store the pending navigation
+            pendingNavigation = pageName;
+
+            // If not ready yet, wait for the ready event with polling fallback
+            var maxAttempts = 30; // 30 * 100ms = 3 seconds max
+            var attempts = 0;
+
+            function checkAndNavigate() {
+              attempts++;
+
+              if (window.wizardAppReady && navigateWithGlobalHeader(pendingNavigation)) {
+                console.log('[Hub] App became ready, navigated after', attempts * 100, 'ms');
+                pendingNavigation = null;
+                return;
+              }
+
+              if (attempts < maxAttempts) {
+                setTimeout(checkAndNavigate, 100);
+              } else {
+                console.error('[Hub] App never became ready after 3 seconds');
+                // As a last resort, try anyway
+                if (window.globalHeader && typeof window.globalHeader.switchPage === 'function') {
+                  window.globalHeader.switchPage(pendingNavigation);
+                }
+                pendingNavigation = null;
+              }
+            }
+
+            // Start polling
+            setTimeout(checkAndNavigate, 50);
+          }
+
+          // Also listen for the ready event (belt and suspenders)
+          window.addEventListener('wizardAppReady', function(e) {
+            console.log('[Hub] Received wizardAppReady event');
+            if (pendingNavigation) {
+              console.log('[Hub] Processing pending navigation to:', pendingNavigation);
+              navigateWithGlobalHeader(pendingNavigation);
+              pendingNavigation = null;
+            }
+          });
+
+          // Create Token card
+          var createTokenBtn = document.getElementById('hub-create-token');
+          if (createTokenBtn) {
+            createTokenBtn.addEventListener('click', function(e) {
+              e.preventDefault();
+              showWizardAndNavigate('tokens');
+            });
+          }
+
+          // Templates card
+          var templatesBtn = document.getElementById('hub-templates');
+          if (templatesBtn) {
+            templatesBtn.addEventListener('click', function(e) {
+              e.preventDefault();
+              showWizardAndNavigate('templates');
+            });
+          }
+
+          // Groups card
+          var groupsBtn = document.getElementById('hub-groups');
+          if (groupsBtn) {
+            groupsBtn.addEventListener('click', function(e) {
+              e.preventDefault();
+              showWizardAndNavigate('groups');
+            });
+          }
+
+          // Documents card
+          var documentsBtn = document.getElementById('hub-documents');
+          if (documentsBtn) {
+            documentsBtn.addEventListener('click', function(e) {
+              e.preventDefault();
+              showWizardAndNavigate('documents');
+            });
+          }
+
+          console.log('[Hub] Immediate card handlers attached');
+        })();
+      </script>
+
       <!-- Quick Info Cards -->
       <section class="hub-info">
         <div class="hub-info__grid">
@@ -532,6 +1049,14 @@
       </a>
     </nav>
 
+    <!-- Center: Mobile Steps Menu (visible only on mobile) -->
+    <button class="global-header__steps-btn" id="mobile-steps-btn" aria-label="Open wizard steps" aria-expanded="false">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+      <span class="global-header__steps-label">Steps</span>
+    </button>
+
     <!-- Right: Actions -->
     <div class="global-header__right">
       <!-- Theme Toggle -->
@@ -584,7 +1109,99 @@
     </div>
   </header>
 
-  <!-- Mobile Navigation Drawer -->
+  <!-- Mobile Steps Drawer - Shows wizard steps on mobile (Token creation only) -->
+  <div class="mobile-steps-drawer" id="mobile-steps-drawer">
+    <div class="mobile-steps-drawer__backdrop" id="mobile-steps-backdrop"></div>
+    <div class="mobile-steps-drawer__panel">
+      <div class="mobile-steps-drawer__header">
+        <span class="mobile-steps-drawer__title">Wizard Steps</span>
+        <button class="mobile-steps-drawer__close" id="mobile-steps-close" aria-label="Close">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <nav class="mobile-steps-drawer__nav" id="mobile-steps-nav">
+        <!-- 1. Naming -->
+        <div class="mobile-steps-drawer__group" data-step-group="naming">
+          <button class="mobile-steps-drawer__step mobile-steps-drawer__step--parent" data-step="naming">
+            <span class="mobile-steps-drawer__step-num">1</span>
+            <span class="mobile-steps-drawer__step-label">Naming</span>
+            <svg class="mobile-steps-drawer__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </button>
+          <div class="mobile-steps-drawer__substeps">
+            <button class="mobile-steps-drawer__substep" data-screen="screen-naming">Token Name</button>
+            <button class="mobile-steps-drawer__substep" data-screen="screen-naming-localization">Localization</button>
+            <button class="mobile-steps-drawer__substep" data-screen="screen-naming-update">Name Updates</button>
+          </div>
+        </div>
+
+        <!-- 2. Permissions -->
+        <div class="mobile-steps-drawer__group" data-step-group="permissions">
+          <button class="mobile-steps-drawer__step mobile-steps-drawer__step--parent" data-step="permissions">
+            <span class="mobile-steps-drawer__step-num">2</span>
+            <span class="mobile-steps-drawer__step-label">Permissions</span>
+            <svg class="mobile-steps-drawer__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </button>
+          <div class="mobile-steps-drawer__substeps">
+            <button class="mobile-steps-drawer__substep" data-screen="screen-permissions">Supply & Decimals</button>
+            <button class="mobile-steps-drawer__substep" data-screen="screen-permissions-manual-mint">Minting</button>
+            <button class="mobile-steps-drawer__substep" data-screen="screen-permissions-manual-burn">Burning</button>
+            <button class="mobile-steps-drawer__substep" data-screen="screen-permissions-manual-freeze">Freezing</button>
+            <button class="mobile-steps-drawer__substep" data-screen="screen-permissions-emergency">Emergency</button>
+            <button class="mobile-steps-drawer__substep" data-screen="screen-permissions-transfer">Transfers</button>
+            <button class="mobile-steps-drawer__substep" data-screen="screen-permissions-group">Groups</button>
+          </div>
+        </div>
+
+        <!-- 3. Distribution -->
+        <div class="mobile-steps-drawer__group" data-step-group="distribution">
+          <button class="mobile-steps-drawer__step mobile-steps-drawer__step--parent" data-step="distribution">
+            <span class="mobile-steps-drawer__step-num">3</span>
+            <span class="mobile-steps-drawer__step-label">Distribution</span>
+            <svg class="mobile-steps-drawer__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </button>
+          <div class="mobile-steps-drawer__substeps">
+            <button class="mobile-steps-drawer__substep" data-screen="screen-distribution-preprogrammed">Preprogrammed</button>
+            <button class="mobile-steps-drawer__substep" data-screen="screen-distribution-perpetual">Perpetual</button>
+          </div>
+        </div>
+
+        <!-- 4. Advanced -->
+        <div class="mobile-steps-drawer__group" data-step-group="advanced">
+          <button class="mobile-steps-drawer__step mobile-steps-drawer__step--parent" data-step="advanced">
+            <span class="mobile-steps-drawer__step-num">4</span>
+            <span class="mobile-steps-drawer__step-label">Advanced</span>
+            <svg class="mobile-steps-drawer__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </button>
+          <div class="mobile-steps-drawer__substeps">
+            <button class="mobile-steps-drawer__substep" data-screen="screen-advanced-history">History Tracking</button>
+            <button class="mobile-steps-drawer__substep" data-screen="screen-advanced">Marketplace</button>
+            <button class="mobile-steps-drawer__substep" data-screen="screen-advanced-launch">Launch Settings</button>
+          </div>
+        </div>
+
+        <!-- 5. Registration -->
+        <div class="mobile-steps-drawer__group" data-step-group="registration">
+          <button class="mobile-steps-drawer__step" data-step="registration" data-screen="screen-registration">
+            <span class="mobile-steps-drawer__step-num">5</span>
+            <span class="mobile-steps-drawer__step-label">Registration</span>
+            <span class="mobile-steps-drawer__step-status"></span>
+          </button>
+        </div>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Mobile Navigation Drawer - Hidden on mobile (< 900px), uses bottom tab bar instead -->
   <div class="mobile-nav-drawer" id="mobile-nav-drawer">
     <div class="mobile-nav-drawer__backdrop" id="mobile-nav-backdrop"></div>
     <div class="mobile-nav-drawer__panel">
@@ -10033,12 +10650,412 @@
     })();
   </script>
 
+  <!-- Mobile Bottom Navigation Bar -->
+  <nav class="mobile-bottom-nav" id="mobile-bottom-nav" aria-label="Mobile navigation">
+    <button type="button" class="mobile-bottom-nav__item" data-page="tokens">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+        <path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span>Tokens</span>
+    </button>
+    <button type="button" class="mobile-bottom-nav__item" data-page="templates">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+        <rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+        <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+        <rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+      </svg>
+      <span>Templates</span>
+    </button>
+    <button type="button" class="mobile-bottom-nav__item" data-page="groups">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span>Groups</span>
+    </button>
+    <button type="button" class="mobile-bottom-nav__item" data-page="documents">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Storage</span>
+    </button>
+  </nav>
+
+  <!-- Mobile Bottom Navigation Controller -->
+  <script>
+    (function() {
+      'use strict';
+
+      var bottomNav = document.getElementById('mobile-bottom-nav');
+      if (!bottomNav) return;
+
+      var navItems = bottomNav.querySelectorAll('.mobile-bottom-nav__item');
+      var currentPage = 'tokens';
+
+      function switchPage(pageName) {
+        console.log('[Mobile Nav] Switching to page:', pageName);
+        currentPage = pageName;
+
+        // Update active state on nav items
+        navItems.forEach(function(item) {
+          if (item.getAttribute('data-page') === pageName) {
+            item.classList.add('mobile-bottom-nav__item--active');
+          } else {
+            item.classList.remove('mobile-bottom-nav__item--active');
+          }
+        });
+
+        // Use globalHeader.switchPage - it should be ready by now since user is already in the app
+        if (window.globalHeader && typeof window.globalHeader.switchPage === 'function') {
+          window.globalHeader.switchPage(pageName);
+        } else {
+          // If not ready, wait and retry
+          console.log('[Mobile Nav] globalHeader not ready, waiting...');
+          var attempts = 20;
+          function retry() {
+            if (window.globalHeader && typeof window.globalHeader.switchPage === 'function') {
+              window.globalHeader.switchPage(pageName);
+            } else if (attempts > 0) {
+              attempts--;
+              setTimeout(retry, 100);
+            } else {
+              console.error('[Mobile Nav] globalHeader never became available');
+            }
+          }
+          setTimeout(retry, 100);
+        }
+      }
+
+      // Add click handlers to nav items
+      navItems.forEach(function(item) {
+        item.addEventListener('click', function(e) {
+          e.preventDefault();
+          var pageName = this.getAttribute('data-page');
+          if (pageName) {
+            switchPage(pageName);
+          }
+        });
+      });
+
+      // Set initial active state
+      navItems.forEach(function(item) {
+        if (item.getAttribute('data-page') === 'tokens') {
+          item.classList.add('mobile-bottom-nav__item--active');
+        }
+      });
+
+      // Hide bottom nav on landing and hub pages
+      function updateBottomNavVisibility() {
+        var isLandingVisible = document.body.classList.contains('landing-visible');
+        var isHubVisible = document.body.classList.contains('hub-visible');
+
+        if (isLandingVisible || isHubVisible) {
+          bottomNav.style.display = 'none';
+        } else {
+          // Only show on mobile
+          if (window.innerWidth <= 900) {
+            bottomNav.style.display = 'flex';
+          } else {
+            bottomNav.style.display = 'none';
+          }
+        }
+      }
+
+      // Update visibility on body class changes
+      var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.attributeName === 'class') {
+            updateBottomNavVisibility();
+          }
+        });
+      });
+      observer.observe(document.body, { attributes: true });
+
+      // Update on resize
+      window.addEventListener('resize', updateBottomNavVisibility);
+
+      // Initial check
+      updateBottomNavVisibility();
+
+      // Expose for external use
+      window.mobileBottomNav = {
+        switchPage: switchPage,
+        updateVisibility: updateBottomNavVisibility
+      };
+
+      console.log('[Mobile Nav] Bottom navigation initialized');
+    })();
+  </script>
+
+  <!-- Mobile Steps Drawer Controller -->
+  <script>
+    (function() {
+      'use strict';
+
+      var stepsBtn = document.getElementById('mobile-steps-btn');
+      var stepsDrawer = document.getElementById('mobile-steps-drawer');
+      var stepsBackdrop = document.getElementById('mobile-steps-backdrop');
+      var stepsClose = document.getElementById('mobile-steps-close');
+      var stepsNav = document.getElementById('mobile-steps-nav');
+
+      if (!stepsBtn || !stepsDrawer) {
+        console.log('[Mobile Steps] Elements not found');
+        return;
+      }
+
+      var stepGroups = stepsNav.querySelectorAll('.mobile-steps-drawer__group');
+      var parentSteps = stepsNav.querySelectorAll('.mobile-steps-drawer__step--parent');
+      var substeps = stepsNav.querySelectorAll('.mobile-steps-drawer__substep');
+      var allSteps = stepsNav.querySelectorAll('.mobile-steps-drawer__step');
+
+      // Track current page for visibility
+      var currentPage = 'tokens';
+
+      function openDrawer() {
+        stepsDrawer.classList.add('is-open');
+        stepsBtn.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+        updateStepStates();
+      }
+
+      function closeDrawer() {
+        stepsDrawer.classList.remove('is-open');
+        stepsBtn.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+      }
+
+      function toggleGroup(group) {
+        var isExpanded = group.classList.contains('is-expanded');
+
+        // Collapse all groups first
+        stepGroups.forEach(function(g) {
+          g.classList.remove('is-expanded');
+        });
+
+        // Expand clicked one if it wasn't expanded
+        if (!isExpanded) {
+          group.classList.add('is-expanded');
+        }
+      }
+
+      function updateStepStates() {
+        // Find current active screen
+        var activeScreen = document.querySelector('.wizard-screen.wizard-screen--active');
+        var activeScreenId = activeScreen ? activeScreen.id : null;
+        var activeStepName = activeScreen ? activeScreen.getAttribute('data-step') : null;
+
+        // Update parent step states - no disabled states, free navigation allowed
+        allSteps.forEach(function(btn) {
+          var stepName = btn.getAttribute('data-step');
+          btn.classList.remove('is-active', 'is-completed', 'is-disabled');
+
+          if (stepName === activeStepName) {
+            btn.classList.add('is-active');
+            // Auto-expand the active group
+            var group = btn.closest('.mobile-steps-drawer__group');
+            if (group && btn.classList.contains('mobile-steps-drawer__step--parent')) {
+              group.classList.add('is-expanded');
+            }
+          }
+        });
+
+        // Update substep states
+        substeps.forEach(function(btn) {
+          var screenId = btn.getAttribute('data-screen');
+          btn.classList.remove('is-active', 'is-current');
+
+          if (screenId === activeScreenId) {
+            btn.classList.add('is-active', 'is-current');
+          }
+        });
+      }
+
+      function navigateToScreen(screenId) {
+        console.log('[Mobile Steps] Navigate to screen:', screenId);
+
+        var screen = document.getElementById(screenId);
+        if (!screen) {
+          console.warn('[Mobile Steps] Screen not found:', screenId);
+          return;
+        }
+
+        // Direct DOM manipulation - bypass validation for free navigation
+        // Hide all wizard screens
+        document.querySelectorAll('.wizard-screen').forEach(function(s) {
+          s.classList.remove('wizard-screen--active');
+          s.removeAttribute('aria-hidden');
+        });
+
+        // Show target screen
+        screen.classList.add('wizard-screen--active');
+
+        // Update wizardState if available
+        var stepName = screen.getAttribute('data-step');
+        if (window.wizardState && stepName) {
+          window.wizardState.active = stepName;
+
+          // Update the active step in steps object too
+          if (window.wizardState.steps) {
+            Object.keys(window.wizardState.steps).forEach(function(key) {
+              window.wizardState.steps[key].active = (key === stepName);
+            });
+          }
+        }
+
+        // Update sidebar if available (for desktop sync)
+        var sidebarItems = document.querySelectorAll('.wizard-sidebar__item');
+        sidebarItems.forEach(function(item) {
+          var itemStep = item.getAttribute('data-step');
+          if (itemStep === stepName) {
+            item.classList.add('wizard-sidebar__item--active');
+          } else {
+            item.classList.remove('wizard-sidebar__item--active');
+          }
+        });
+
+        // Scroll to top of content
+        var wizardMain = document.querySelector('.wizard-main');
+        if (wizardMain) {
+          wizardMain.scrollTop = 0;
+        }
+        window.scrollTo(0, 0);
+
+        closeDrawer();
+        console.log('[Mobile Steps] Navigated to:', screenId, 'step:', stepName);
+      }
+
+      // Parent step click - toggle expand/collapse
+      parentSteps.forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          var group = this.closest('.mobile-steps-drawer__group');
+          if (group) {
+            toggleGroup(group);
+          }
+        });
+      });
+
+      // Substep click - navigate to specific screen
+      substeps.forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          var screenId = this.getAttribute('data-screen');
+          if (screenId) {
+            navigateToScreen(screenId);
+          }
+        });
+      });
+
+      // Non-parent steps (like Registration) - direct navigation
+      allSteps.forEach(function(btn) {
+        if (!btn.classList.contains('mobile-steps-drawer__step--parent')) {
+          btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            var screenId = this.getAttribute('data-screen');
+            if (screenId) {
+              navigateToScreen(screenId);
+            }
+          });
+        }
+      });
+
+      // Open/close drawer
+      stepsBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (stepsDrawer.classList.contains('is-open')) {
+          closeDrawer();
+        } else {
+          openDrawer();
+        }
+      });
+
+      stepsBackdrop.addEventListener('click', closeDrawer);
+      stepsClose.addEventListener('click', closeDrawer);
+
+      // Close on escape
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && stepsDrawer.classList.contains('is-open')) {
+          closeDrawer();
+        }
+      });
+
+      // Only show button when on Token creation page (tokens), not Templates/Groups/Documents
+      function updateButtonVisibility() {
+        var isLandingVisible = document.body.classList.contains('landing-visible');
+        var isHubVisible = document.body.classList.contains('hub-visible');
+        var isMobile = window.innerWidth <= 900;
+
+        // Check if we're on a non-token page (templates, groups, documents)
+        var isOnTemplates = document.querySelector('#screen-templates-page.wizard-screen--active');
+        var isOnGroups = document.querySelector('#screen-groups-page.wizard-screen--active');
+        var isOnDocuments = document.querySelector('#screen-documents.wizard-screen--active');
+        var isOnNonTokenPage = isOnTemplates || isOnGroups || isOnDocuments;
+
+        // Also check via globalHeader if available
+        if (window.globalHeader && window.globalHeader.getCurrentPage) {
+          var page = window.globalHeader.getCurrentPage();
+          if (page === 'templates' || page === 'groups' || page === 'documents') {
+            isOnNonTokenPage = true;
+          }
+        }
+
+        if (isLandingVisible || isHubVisible || !isMobile || isOnNonTokenPage) {
+          stepsBtn.style.display = 'none';
+        } else {
+          stepsBtn.style.display = 'flex';
+        }
+      }
+
+      // Observe body class changes
+      var bodyObserver = new MutationObserver(function() {
+        updateButtonVisibility();
+      });
+      bodyObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+      // Observe wizard-main for screen changes
+      var wizardMain = document.querySelector('.wizard-main');
+      if (wizardMain) {
+        var screenObserver = new MutationObserver(function() {
+          updateButtonVisibility();
+          if (stepsDrawer.classList.contains('is-open')) {
+            updateStepStates();
+          }
+        });
+        screenObserver.observe(wizardMain, { subtree: true, attributes: true, attributeFilter: ['class'] });
+      }
+
+      window.addEventListener('resize', updateButtonVisibility);
+      updateButtonVisibility();
+
+      // Listen for page switches
+      window.addEventListener('wizardPageChanged', function(e) {
+        if (e.detail && e.detail.page) {
+          currentPage = e.detail.page;
+          updateButtonVisibility();
+        }
+      });
+
+      // Expose for external use
+      window.mobileStepsDrawer = {
+        open: openDrawer,
+        close: closeDrawer,
+        updateStates: updateStepStates
+      };
+
+      console.log('[Mobile Steps] Drawer controller initialized');
+    })();
+  </script>
+
   <!-- Modular ES6 Entry Point (Vite build system) -->
   <!-- This runs alongside app.js during transition period -->
   <script type="module" src="/src/main.js"></script>
 
   <!-- Legacy monolithic app.js (will be phased out) -->
-  <script src="app.js?v=97" defer></script>
+  <script src="app.js?v=98" defer></script>
 
   <!-- Enhancements Module (ES6) - DISABLED due to navigation freeze -->
   <!-- <script type="module" src="js/wizard-enhancements.js"></script> -->
