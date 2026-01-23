@@ -17034,6 +17034,9 @@
       console.log('[Pages] Hub page visible');
     }
 
+    // Expose showHubPage globally for inline onclick fallback
+    window.showHubPage = showHubPage;
+
     // Show landing page (hide hub and wizard)
     function showLandingPageUI() {
       console.log('[Pages] Showing landing page...');

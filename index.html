@@ -143,6 +143,36 @@
               <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </button>
+          <script>
+            // Immediate event listener for landing CTA button (mobile fix)
+            (function() {
+              var btn = document.getElementById('enter-wizard-btn');
+              if (btn) {
+                btn.addEventListener('click', function(e) {
+                  console.log('[Landing] Button clicked - navigating to hub');
+                  e.preventDefault();
+                  // Hide landing page
+                  var landing = document.getElementById('landing-page');
+                  var hub = document.getElementById('hub-page');
+                  if (landing) {
+                    landing.classList.add('landing-page--hidden');
+                    setTimeout(function() { landing.style.display = 'none'; }, 500);
+                  }
+                  // Show hub page
+                  if (hub) {
+                    hub.hidden = false;
+                    hub.classList.remove('hub-page--hidden');
+                  }
+                  // Update body classes
+                  document.body.classList.remove('landing-visible');
+                  document.body.classList.add('hub-visible');
+                  // Mark as seen
+                  try { localStorage.setItem('dash-wizard-landing-seen', 'true'); } catch(e) {}
+                });
+                console.log('[Landing] Immediate button handler attached');
+              }
+            })();
+          </script>
           <p class="landing-cta__hint">Choose from templates or build from scratch</p>
         </div>
       </div>
