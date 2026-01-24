@@ -43,6 +43,15 @@ export default defineConfig({
           if (id.includes('/features/registration/')) {
             return 'registration';
           }
+          if (id.includes('/features/templates/')) {
+            return 'templates';
+          }
+          if (id.includes('/features/documents/')) {
+            return 'documents';
+          }
+          if (id.includes('/features/groups/')) {
+            return 'groups';
+          }
 
           // Group core utilities
           if (id.includes('/core/')) {
@@ -50,8 +59,19 @@ export default defineConfig({
           }
 
           // Group UI components
+          if (id.includes('/ui/header/')) {
+            return 'header';
+          }
+          if (id.includes('/ui/sidebar/')) {
+            return 'sidebar';
+          }
           if (id.includes('/ui/')) {
             return 'ui';
+          }
+
+          // Contract generation
+          if (id.includes('/contract/')) {
+            return 'contract';
           }
         }
       },

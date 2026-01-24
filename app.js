@@ -2788,6 +2788,11 @@ window.__WIZARD_RESET_MODE__ = false;
       ownerIdentityInput.value = wizardState.form.ownerIdentityId || '';
     }
 
+    // Sync plural name and capitalize from English localization
+    if (typeof syncNamingUIFromState === 'function') {
+      syncNamingUIFromState();
+    }
+
     ensureNamingFormState();
     renderLocalizationRows(wizardState.form.naming.rows);
     validateLocalizationRows({ silent: true });

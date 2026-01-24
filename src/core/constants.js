@@ -4,14 +4,15 @@
  */
 
 // Step sequence (order matters for navigation)
+// Note: 'overview' removed - accessible only from Document tab
+// Note: 'welcome' removed - templates now on standalone page
 export const STEP_SEQUENCE = [
-  'welcome',
   'naming',
   'permissions',
   'advanced',
   'distribution',
   'search',
-  'registration'
+  'export'
 ];
 
 // Info steps (help/documentation screens)
@@ -34,7 +35,6 @@ export const TRACKED_STEPS = Object.freeze([...STEP_SEQUENCE, ...INFO_STEPS]);
 
 // Substep sequences for each main step
 export const SUBSTEP_SEQUENCES = Object.freeze({
-  welcome: ['welcome'],
   naming: ['naming', 'naming-localization', 'naming-update'],
   permissions: [
     'permissions',
@@ -50,7 +50,7 @@ export const SUBSTEP_SEQUENCES = Object.freeze({
   advanced: ['advanced-history', 'advanced', 'advanced-launch'],
   distribution: ['distribution-preprogrammed', 'distribution-perpetual'],
   search: ['search'],
-  registration: ['registration']
+  export: ['export']
 });
 
 // Info step parent mapping (substep -> parent step)
@@ -87,13 +87,12 @@ export const INFO_STEP_PARENT = Object.freeze({
 
 // Step labels (for display)
 export const STEP_LABELS = {
-  welcome: 'Welcome',
   naming: 'Naming',
   permissions: 'Permissions',
   distribution: 'Distribution',
   advanced: 'Advanced',
   overview: 'Overview',
-  registration: 'Registration',
+  export: 'Export',
   search: 'Search',
   'permissions-group': 'Group permissions',
   'permissions-transfer': 'Transfer settings',
@@ -157,3 +156,37 @@ export const THEMES = Object.freeze({
   DARK: 'dark',
   AUTO: 'auto'
 });
+
+// Feature detection
+export const hasBigIntSupport = typeof BigInt !== 'undefined';
+
+// Timing constants
+export const TIMINGS = Object.freeze({
+  SCROLL_DELAY: 300,
+  ERROR_PULSE_DURATION: 1500,
+  TOAST_AUTO_DISMISS: 5000,
+  DEBOUNCE_DEFAULT: 300,
+  AUTO_SAVE_INTERVAL: 5000,
+  ANIMATION_BASE: 150,
+  ANIMATION_SLOW: 300
+});
+
+// Storage keys
+export const STORAGE_KEYS = Object.freeze({
+  STATE: 'dashTokenWizardState',
+  SENSITIVE: 'dashTokenWizardIdentities',
+  THEME: 'ui.theme',
+  DOCUMENTS: 'dash-wizard-documents'
+});
+
+// Wizard choice automation configuration
+export const WIZARD_CHOICE_AUTOMATION = Object.freeze([
+  { radioName: 'manual-mint-enabled', stateKey: 'manualMint', performDropdown: 'manual-mint-permission', ruleChangerDropdown: 'manual-mint-change-rules' },
+  { radioName: 'manual-burn-enabled', stateKey: 'manualBurn', performDropdown: 'manual-burn-permission', ruleChangerDropdown: 'manual-burn-change-rules' },
+  { radioName: 'manual-freeze-enabled', stateKey: 'manualFreeze', performDropdown: 'manual-freeze-permission', ruleChangerDropdown: 'manual-freeze-change-rules' },
+  { radioName: 'manual-unfreeze-enabled', stateKey: 'unfreeze', performDropdown: 'manual-unfreeze-permission', ruleChangerDropdown: 'manual-unfreeze-change-rules' },
+  { radioName: 'destroy-frozen-enabled', stateKey: 'destroyFrozen', performDropdown: 'destroy-frozen-permission', ruleChangerDropdown: 'destroy-frozen-change-rules' },
+  { radioName: 'emergency-enabled', stateKey: 'emergencyAction', performDropdown: 'emergency-permission', ruleChangerDropdown: 'emergency-change-rules' },
+  { radioName: 'update-names-enabled', stateKey: 'updateNames', performDropdown: 'update-names-permission', ruleChangerDropdown: 'update-names-rule-changer' },
+  { radioName: 'change-max-supply-enabled', stateKey: 'changeMaxSupply', performDropdown: 'change-max-supply-permission', ruleChangerDropdown: 'change-max-supply-change-rules' }
+]);
