@@ -224,3 +224,85 @@ The wizard generates JSON matching Dash Platform's Rust contract structures. Key
 
 See `contracts/` directory for authoritative schema definitions.
 - can we implement the rest the same way we used to do befor? can you do that as a professional webdesigner and senior developer in specifics of organisaiton?
+- remember the wizard path " Landing Page (Hub)
+      │
+      ├── Create Your Token ──────────────────────────────────────────────┐
+      │                                                                    │
+      │   ┌─────────────────────────────────────────────────────────────┐ │
+      │   │                     WIZARD STEPS                            │ │
+      │   │                                                             │ │
+      │   │  1. NAMING                                                  │ │
+      │   │     ├── Token Name (singular form)                          │ │
+      │   │     ├── Localizations                                       │ │
+      │   │     │     ├── Language Code (en, es, de, etc.)              │ │
+      │   │     │     ├── Singular Form                                 │ │
+      │   │     │     ├── Plural Form                                   │ │
+      │   │     │     └── Should Capitalize                             │ │
+      │   │     ├── Owner Identity ID                                   │ │
+      │   │     └── Update Names Permission                             │ │
+      │   │                                                             │ │
+      │   │  2. PERMISSIONS                                             │ │
+      │   │     ├── Decimals (0-18)                                     │ │
+      │   │     ├── Base Supply (Initial)                               │ │
+      │   │     ├── Max Supply (Cap)                                    │ │
+      │   │     ├── History Tracking                                    │ │
+      │   │     │     ├── Transfers                                     │ │
+      │   │     │     ├── Mints                                         │ │
+      │   │     │     ├── Burns                                         │ │
+      │   │     │     └── Freezes                                       │ │
+      │   │     ├── Start as Paused                                     │ │
+      │   │     ├── Manual Minting                                      │ │
+      │   │     │     ├── Authorized Performer                          │ │
+      │   │     │     └── Reference (Identity/Group)                    │ │
+      │   │     ├── Manual Burning                                      │ │
+      │   │     │     ├── Authorized Performer                          │ │
+      │   │     │     └── Reference                                     │ │
+      │   │     ├── Freeze/Unfreeze                                     │ │
+      │   │     │     ├── Freeze Performer                              │ │
+      │   │     │     ├── Unfreeze Performer                            │ │
+      │   │     │     └── References                                    │ │
+      │   │     └── Destroy Frozen Funds                                │ │
+      │   │           ├── Authorized Performer                          │ │
+      │   │           └── Reference                                     │ │
+      │   │                                                             │ │
+      │   │  3. DISTRIBUTION                                            │ │
+      │   │     ├── Cadence Type                                        │ │
+      │   │     │     ├── None                                          │ │
+      │   │     │     ├── Block-based                                   │ │
+      │   │     │     │     └── Interval Blocks                         │ │
+      │   │     │     ├── Time-based                                    │ │
+      │   │     │     │     └── Interval Milliseconds                   │ │
+      │   │     │     └── Epoch-based                                   │ │
+      │   │     │           └── Interval Epochs                         │ │
+      │   │     └── Emission Function                                   │ │
+      │   │           ├── Fixed Amount                                  │ │
+      │   │           │     └── Amount per interval                     │ │
+      │   │           ├── Exponential Decay                             │ │
+      │   │           │     ├── Initial Amount                          │ │
+      │   │           │     └── Decay Rate                              │ │
+      │   │           ├── Step Function                                 │ │
+      │   │           │     └── Steps (interval → amount)               │ │
+      │   │           └── Linear Decrease                               │ │
+      │   │                 ├── Start Amount                            │ │
+      │   │                 ├── Decrease Per Interval                   │ │
+      │   │                 └── Minimum Amount                          │ │
+      │   │                                                             │ │
+      │   │  4. USAGE (Advanced)                                        │ │
+      │   │     ├── New Tokens Destination                              │ │
+      │   │     │     ├── Prepaid Supply to Identity                    │ │
+      │   │     │     ├── Perpetual Distribution to Identity            │ │
+      │   │     │     └── Perpetual Distribution to Group               │ │
+      │   │     ├── Trade Mode                                          │ │
+      │   │     │     └── Permissionless / Committee-Approved           │ │
+      │   │     └── Change Control Rules                                │ │
+      │   │           ├── Authorized to Make Max Supply Larger          │ │
+      │   │           ├── Authorized to Change Main Control Group       │ │
+      │   │           └── Authorized to Change Token Metadata           │ │
+      │   │                                                             │ │
+      │   │  5. SEARCH ABILITY                                          │ │
+      │   │     ├── Public Token Registry (on/off)                      │ │
+      │   │     └── Token Metadata                                      │ │
+      │   │           ├── Description                                   │ │
+      │   │           ├── Website URL                                   │ │
+      │   │           ├── Logo URL                                      │ │
+      │   │           └── Social Links"

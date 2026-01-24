@@ -8879,6 +8879,66 @@
                       <span class="tpl-feature">Time-based</span>
                     </div>
                   </button>
+
+                  <!-- Membership Token -->
+                  <button class="tpl-card" type="button" data-tpl="membership">
+                    <div class="tpl-card__badge tpl-card__badge--orange">Business</div>
+                    <div class="tpl-card__icon tpl-card__icon--orange">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/>
+                        <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"/>
+                        <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/>
+                        <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      </svg>
+                    </div>
+                    <h3 class="tpl-card__title">Membership Token</h3>
+                    <p class="tpl-card__desc">Subscription-based access for tiered memberships. Freeze controls for suspending members.</p>
+                    <div class="tpl-card__features">
+                      <span class="tpl-feature">Access control</span>
+                      <span class="tpl-feature">Freeze/suspend</span>
+                      <span class="tpl-feature">Non-transferable</span>
+                    </div>
+                  </button>
+
+                  <!-- Testnet Token -->
+                  <button class="tpl-card" type="button" data-tpl="testnet">
+                    <div class="tpl-card__badge tpl-card__badge--cyan">Developer</div>
+                    <div class="tpl-card__icon tpl-card__icon--cyan">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                        <polyline points="16 18 22 12 16 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <polyline points="8 6 2 12 8 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <line x1="12" y1="2" x2="12" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 3"/>
+                      </svg>
+                    </div>
+                    <h3 class="tpl-card__title">Testnet Token</h3>
+                    <p class="tpl-card__desc">Developer sandbox with all features enabled. Perfect for testing integrations and experiments.</p>
+                    <div class="tpl-card__features">
+                      <span class="tpl-feature">All features</span>
+                      <span class="tpl-feature">Open trading</span>
+                      <span class="tpl-feature">Fast emissions</span>
+                    </div>
+                  </button>
+
+                  <!-- Invoice Token -->
+                  <button class="tpl-card" type="button" data-tpl="invoice">
+                    <div class="tpl-card__badge tpl-card__badge--teal">B2B</div>
+                    <div class="tpl-card__icon tpl-card__icon--teal">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <line x1="8" y1="13" x2="16" y2="13" stroke="currentColor" stroke-width="2"/>
+                        <line x1="8" y1="17" x2="13" y2="17" stroke="currentColor" stroke-width="2"/>
+                      </svg>
+                    </div>
+                    <h3 class="tpl-card__title">Invoice Token</h3>
+                    <p class="tpl-card__desc">B2B payments with encrypted notes for invoices. Full audit trail and dispute resolution.</p>
+                    <div class="tpl-card__features">
+                      <span class="tpl-feature">Encrypted notes</span>
+                      <span class="tpl-feature">Mint per invoice</span>
+                      <span class="tpl-feature">Audit trail</span>
+                    </div>
+                  </button>
                 </div>
               </div>
 
@@ -9670,15 +9730,140 @@
                 <span class="template-feature__label">Distribution</span>
                 <span class="template-feature__status">Off</span>
               </div>
-              <div class="template-feature" data-feature="history" data-active="true">
+              <div class="template-feature" data-feature="emergency" data-active="false">
+                <div class="template-feature__icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="12" cy="17" r="1" fill="currentColor"/>
+                  </svg>
+                </div>
+                <span class="template-feature__label">Emergency</span>
+                <span class="template-feature__status">Off</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Trading & History Group -->
+          <div class="template-features__group">
+            <span class="template-features__group-label">Trading & History</span>
+            <div class="template-features__grid template-features__grid--4col">
+              <div class="template-feature template-feature--select" data-feature="tradeMode" data-value="closed">
                 <div class="template-feature__icon">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                    <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M8 12h8M12 8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                   </svg>
                 </div>
-                <span class="template-feature__label">History</span>
+                <span class="template-feature__label">Trade Mode</span>
+                <select class="template-feature__select" id="template-trade-mode">
+                  <option value="closed">Closed</option>
+                  <option value="permissionless">Open</option>
+                  <option value="committee-approved">Committee</option>
+                </select>
+              </div>
+              <div class="template-feature" data-feature="historyTransfers" data-active="true">
+                <div class="template-feature__icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17 1l4 4-4 4M3 11V9a4 4 0 014-4h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <span class="template-feature__label">Track Transfers</span>
                 <span class="template-feature__status">On</span>
+              </div>
+              <div class="template-feature" data-feature="historyMints" data-active="true">
+                <div class="template-feature__icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2"/>
+                    <path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <span class="template-feature__label">Track Mints</span>
+                <span class="template-feature__status">On</span>
+              </div>
+              <div class="template-feature" data-feature="historyBurns" data-active="true">
+                <div class="template-feature__icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 22c4.97 0 9-4.03 9-9 0-5.25-4.5-9.75-9-15-4.5 5.25-9 9.75-9 15 0 4.97 4.03 9 9 9z" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </div>
+                <span class="template-feature__label">Track Burns</span>
+                <span class="template-feature__status">On</span>
+              </div>
+              <div class="template-feature" data-feature="historyFreezes" data-active="false">
+                <div class="template-feature__icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <span class="template-feature__label">Track Freezes</span>
+                <span class="template-feature__status">Off</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Transfer Notes Configuration -->
+          <div class="template-features__group" id="template-transfer-notes-group">
+            <span class="template-features__group-label">Transfer Note Types</span>
+            <div class="template-features__grid template-features__grid--3col">
+              <div class="template-feature" data-feature="notePublic" data-active="true">
+                <div class="template-feature__icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                    <path d="M2 12h20" stroke="currentColor" stroke-width="2"/>
+                    <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </div>
+                <span class="template-feature__label">Public Notes</span>
+                <span class="template-feature__status">On</span>
+              </div>
+              <div class="template-feature" data-feature="noteShared" data-active="false">
+                <div class="template-feature__icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="2"/>
+                    <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="12" cy="16" r="1" fill="currentColor"/>
+                  </svg>
+                </div>
+                <span class="template-feature__label">Shared Encrypted</span>
+                <span class="template-feature__status">Off</span>
+              </div>
+              <div class="template-feature" data-feature="notePrivate" data-active="false">
+                <div class="template-feature__icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 1l9 4v6c0 5.55-3.84 10.74-9 12-5.16-1.26-9-6.45-9-12V5l9-4z" stroke="currentColor" stroke-width="2"/>
+                    <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+                <span class="template-feature__label">Private Encrypted</span>
+                <span class="template-feature__status">Off</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Launch Settings Group -->
+          <div class="template-features__group">
+            <span class="template-features__group-label">Launch Settings</span>
+            <div class="template-features__grid template-features__grid--2col">
+              <div class="template-feature" data-feature="startPaused" data-active="false">
+                <div class="template-feature__icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                    <path d="M10 8v8M14 8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <span class="template-feature__label">Start Paused</span>
+                <span class="template-feature__status">Off</span>
+              </div>
+              <div class="template-feature" data-feature="allowTransferToFrozen" data-active="false">
+                <div class="template-feature__icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M17 8l-5 5-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+                <span class="template-feature__label">Allow Transfer to Frozen</span>
+                <span class="template-feature__status">Off</span>
               </div>
             </div>
           </div>

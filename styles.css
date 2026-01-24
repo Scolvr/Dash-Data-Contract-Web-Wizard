@@ -6735,9 +6735,85 @@ html[data-theme='light'] .modal__list {
   letter-spacing: 0.5px;
 }
 
+/* 4-column and 2-column grids for Trading & History section */
+.template-features__grid--4col {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.template-features__grid--2col {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+/* Select dropdown inside feature card */
+.template-feature--select {
+  cursor: default;
+}
+
+.template-feature__select {
+  width: 100%;
+  padding: var(--space-1) var(--space-2);
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--color-text);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: center;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-1) center;
+  padding-right: var(--space-4);
+}
+
+.template-feature__select:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.template-feature__select:focus {
+  outline: none;
+  border-color: var(--modal-accent, #0E76FD);
+  box-shadow: 0 0 0 2px rgba(14, 118, 253, 0.2);
+}
+
+.template-feature__select option {
+  background: #1A1F36;
+  color: #F5F5F7;
+  padding: var(--space-2);
+}
+
+html[data-theme='light'] .template-feature__select {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.15);
+  color: var(--color-text);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23555' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+}
+
+html[data-theme='light'] .template-feature__select:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+html[data-theme='light'] .template-feature__select option {
+  background: #fff;
+  color: #1A1F36;
+}
+
 @media (max-width: 600px) {
   .template-features__grid--5col,
-  .template-features__grid--3col {
+  .template-features__grid--3col,
+  .template-features__grid--4col,
+  .template-features__grid--2col {
     gap: var(--space-3);
   }
 
@@ -6752,7 +6828,9 @@ html[data-theme='light'] .modal__list {
   }
 
   .template-features__grid--5col,
-  .template-features__grid--3col {
+  .template-features__grid--3col,
+  .template-features__grid--4col,
+  .template-features__grid--2col {
     gap: var(--space-2);
   }
 
@@ -19644,6 +19722,21 @@ html[data-theme='light'] .templates-back-btn {
   color: #8B5CF6;
 }
 
+.tpl-card__icon--orange {
+  background: rgba(249, 115, 22, 0.12);
+  color: #F97316;
+}
+
+.tpl-card__icon--cyan {
+  background: rgba(6, 182, 212, 0.12);
+  color: #06B6D4;
+}
+
+.tpl-card__icon--teal {
+  background: rgba(20, 184, 166, 0.12);
+  color: #14B8A6;
+}
+
 /* Card Badge */
 .tpl-card__badge {
   position: absolute;
@@ -19667,6 +19760,21 @@ html[data-theme='light'] .templates-back-btn {
 .tpl-card__badge--purple {
   background: rgba(139, 92, 246, 0.15);
   color: #8B5CF6;
+}
+
+.tpl-card__badge--orange {
+  background: rgba(249, 115, 22, 0.15);
+  color: #F97316;
+}
+
+.tpl-card__badge--cyan {
+  background: rgba(6, 182, 212, 0.15);
+  color: #06B6D4;
+}
+
+.tpl-card__badge--teal {
+  background: rgba(20, 184, 166, 0.15);
+  color: #14B8A6;
 }
 
 /* Card Content */
@@ -20264,6 +20372,18 @@ html[data-theme='light'] .tpl-card__icon--green {
 
 html[data-theme='light'] .tpl-card__icon--purple {
   background: rgba(139, 92, 246, 0.1);
+}
+
+html[data-theme='light'] .tpl-card__icon--orange {
+  background: rgba(249, 115, 22, 0.1);
+}
+
+html[data-theme='light'] .tpl-card__icon--cyan {
+  background: rgba(6, 182, 212, 0.1);
+}
+
+html[data-theme='light'] .tpl-card__icon--teal {
+  background: rgba(20, 184, 166, 0.1);
 }
 
 html[data-theme='light'] .tpl-feature {

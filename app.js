@@ -14098,6 +14098,216 @@ window.__WIZARD_RESET_MODE__ = false;
         decimalsDefault: 0,
         useMaxSupplyDefault: false
       }
+    },
+
+    // ═══════════════════════════════════════════════════════════════════
+    // BUSINESS & EXPERIMENT TEMPLATES
+    // ═══════════════════════════════════════════════════════════════════
+
+    membership: {
+      name: 'MembershipToken',
+      description: 'Subscription-based access token for tiered memberships and gated content',
+      keywords: ['membership', 'subscription', 'access', 'tier', 'premium'],
+      decimals: 0,  // Whole tokens for membership levels
+      baseSupply: '10000',
+      maxSupply: '100000',
+      useMaxSupply: true,
+      keepsHistory: {
+        transfers: true,
+        mints: true,
+        burns: true,
+        freezes: true,
+        purchases: false
+      },
+      startAsPaused: false,
+      allowTransferToFrozenBalance: false,
+      transferNotesEnabled: true,
+      transferNoteTypes: {
+        public: true,
+        sharedEncrypted: true,
+        privateEncrypted: false
+      },
+      manualMint: { enabled: true },
+      manualBurn: { enabled: true },
+      manualFreeze: { enabled: true },  // Suspend members
+      unfreeze: { enabled: true },
+      destroyFrozen: { enabled: false },
+      emergency: { enabled: true },
+      tradeMode: 'closed',  // Non-transferable memberships
+      changeControl: {
+        mint: true,
+        burn: true,
+        freeze: true,
+        unfreeze: true,
+        destroyFrozen: false,
+        emergency: true
+      },
+      distribution: null,
+      // Template wiring metadata
+      enabledFeatures: {
+        manualMint: true,
+        manualBurn: true,
+        manualFreeze: true,
+        unfreeze: true,
+        destroyFrozen: false,
+        distribution: false,
+        transferNotes: true
+      },
+      recommendedSubsteps: [
+        'permissions-manual-mint',
+        'permissions-manual-burn',
+        'permissions-manual-freeze',
+        'permissions-emergency',
+        'permissions-transfer'
+      ],
+      supplyConfig: {
+        editable: true,
+        baseSupplyDefault: '10000',
+        maxSupplyDefault: '100000',
+        decimalsDefault: 0,
+        useMaxSupplyDefault: true
+      }
+    },
+
+    testnet: {
+      name: 'TestToken',
+      description: 'Developer sandbox token with all features enabled for experimentation',
+      keywords: ['test', 'dev', 'sandbox', 'experiment', 'debug'],
+      decimals: 8,
+      baseSupply: '1000000000',  // 1 billion for testing
+      maxSupply: null,
+      useMaxSupply: false,  // Unlimited for testing
+      keepsHistory: {
+        transfers: true,
+        mints: true,
+        burns: true,
+        freezes: true,
+        purchases: true
+      },
+      startAsPaused: false,
+      allowTransferToFrozenBalance: true,
+      transferNotesEnabled: true,
+      transferNoteTypes: {
+        public: true,
+        sharedEncrypted: true,
+        privateEncrypted: true
+      },
+      manualMint: { enabled: true },
+      manualBurn: { enabled: true },
+      manualFreeze: { enabled: true },
+      unfreeze: { enabled: true },
+      destroyFrozen: { enabled: true },
+      emergency: { enabled: true },
+      tradeMode: 'permissionless',  // Open trading for testing
+      changeControl: {
+        mint: true,
+        burn: true,
+        freeze: true,
+        unfreeze: true,
+        destroyFrozen: true,
+        emergency: true
+      },
+      distribution: {
+        cadence: {
+          type: 'BlockBasedDistribution',
+          intervalBlocks: '10'  // Fast emissions for testing
+        },
+        emission: {
+          type: 'FixedAmount',
+          amount: '10000'
+        }
+      },
+      // Template wiring metadata
+      enabledFeatures: {
+        manualMint: true,
+        manualBurn: true,
+        manualFreeze: true,
+        unfreeze: true,
+        destroyFrozen: true,
+        distribution: true,
+        transferNotes: true
+      },
+      recommendedSubsteps: [
+        'permissions-manual-mint',
+        'permissions-manual-burn',
+        'permissions-manual-freeze',
+        'permissions-emergency',
+        'permissions-transfer',
+        'distribution-perpetual',
+        'advanced'
+      ],
+      supplyConfig: {
+        editable: true,
+        baseSupplyDefault: '1000000000',
+        maxSupplyDefault: null,
+        decimalsDefault: 8,
+        useMaxSupplyDefault: false
+      }
+    },
+
+    invoice: {
+      name: 'InvoiceToken',
+      description: 'B2B payment token with encrypted notes for invoices and audit trails',
+      keywords: ['invoice', 'b2b', 'payment', 'business', 'audit', 'accounting'],
+      decimals: 2,  // Currency-like precision
+      baseSupply: '0',  // Mint as needed for invoices
+      maxSupply: null,
+      useMaxSupply: false,
+      keepsHistory: {
+        transfers: true,
+        mints: true,
+        burns: true,
+        freezes: true,
+        purchases: false
+      },
+      startAsPaused: false,
+      allowTransferToFrozenBalance: false,
+      transferNotesEnabled: true,
+      transferNoteTypes: {
+        public: false,
+        sharedEncrypted: true,  // Encrypted invoices
+        privateEncrypted: true
+      },
+      manualMint: { enabled: true },  // Mint per invoice
+      manualBurn: { enabled: true },  // Burn on payment
+      manualFreeze: { enabled: true },  // Dispute resolution
+      unfreeze: { enabled: true },
+      destroyFrozen: { enabled: false },
+      emergency: { enabled: true },
+      tradeMode: 'closed',  // Direct transfers only
+      changeControl: {
+        mint: true,
+        burn: true,
+        freeze: true,
+        unfreeze: true,
+        destroyFrozen: false,
+        emergency: true
+      },
+      distribution: null,
+      // Template wiring metadata
+      enabledFeatures: {
+        manualMint: true,
+        manualBurn: true,
+        manualFreeze: true,
+        unfreeze: true,
+        destroyFrozen: false,
+        distribution: false,
+        transferNotes: true
+      },
+      recommendedSubsteps: [
+        'permissions-manual-mint',
+        'permissions-manual-burn',
+        'permissions-manual-freeze',
+        'permissions-emergency',
+        'permissions-transfer'
+      ],
+      supplyConfig: {
+        editable: true,
+        baseSupplyDefault: '0',
+        maxSupplyDefault: null,
+        decimalsDefault: 2,
+        useMaxSupplyDefault: false
+      }
     }
   };
 
@@ -14463,7 +14673,7 @@ window.__WIZARD_RESET_MODE__ = false;
       state.activeTemplate = null;
       state.templateMeta = null;
 
-      // Hide the templates page screen first to avoid multiple active screens
+      // Hide the templates page screen
       const templatesScreen = document.getElementById('screen-templates-page');
       if (templatesScreen) {
         templatesScreen.classList.remove('wizard-screen--active');
@@ -14473,20 +14683,16 @@ window.__WIZARD_RESET_MODE__ = false;
       // Remove fullpage mode
       document.body.classList.remove('fullpage-mode');
 
-      // Show the wizard outline/sidebar
-      const wizardOutline = document.querySelector('.wizard-outline');
-      if (wizardOutline) {
-        wizardOutline.style.display = '';
+      // Navigate to Tokens page
+      if (window.globalHeader && typeof window.globalHeader.switchPage === 'function') {
+        window.globalHeader.switchPage('tokens');
       }
 
-      // Switch to Token tab and show wizard
-      if (window.switchTab) {
-        window.switchTab('token');
-      }
-
-      if (window.showScreen) {
-        window.showScreen('naming', { force: true });
-      }
+      // After page switch, show the naming screen
+      setTimeout(() => {
+        if (window.switchTab) window.switchTab('token');
+        if (window.showScreen) window.showScreen('naming', { force: true });
+      }, 50);
       return;
     }
 
@@ -14545,40 +14751,9 @@ window.__WIZARD_RESET_MODE__ = false;
       state.form.distribution.emission = template.distribution.emission ? { ...template.distribution.emission } : null;
     }
 
-    // Sync UI with state values
-    if (typeof window.syncPermissionsUIFromState === 'function') {
-      window.syncPermissionsUIFromState();
-    }
-    if (typeof window.syncAdvancedUIFromState === 'function') {
-      window.syncAdvancedUIFromState();
-    }
-    if (typeof window.syncDistributionUIFromState === 'function') {
-      window.syncDistributionUIFromState();
-    }
-
-    // Hide the templates page screen first to avoid multiple active screens
-    const templatesScreen = document.getElementById('screen-templates-page');
-    if (templatesScreen) {
-      templatesScreen.classList.remove('wizard-screen--active');
-      templatesScreen.setAttribute('hidden', '');
-    }
-
-    // Remove fullpage mode
-    document.body.classList.remove('fullpage-mode');
-
-    // Show the wizard outline/sidebar
-    const wizardOutline = document.querySelector('.wizard-outline');
-    if (wizardOutline) {
-      wizardOutline.style.display = '';
-    }
-
-    // Switch to Token tab and navigate to naming
-    if (window.switchTab) {
-      window.switchTab('token');
-    }
-
-    if (window.showScreen) {
-      window.showScreen('naming', { force: true });
+    // Sync UI with state values using the comprehensive hydrate function
+    if (typeof window.hydrateFormsFromState === 'function') {
+      window.hydrateFormsFromState();
     }
 
     // Validate steps silently (updates sidebar status)
@@ -14588,6 +14763,27 @@ window.__WIZARD_RESET_MODE__ = false;
     if (typeof window.persistState === 'function') {
       window.persistState();
     }
+
+    // Hide the templates page screen
+    const templatesScreen = document.getElementById('screen-templates-page');
+    if (templatesScreen) {
+      templatesScreen.classList.remove('wizard-screen--active');
+      templatesScreen.setAttribute('hidden', '');
+    }
+
+    // Remove fullpage mode
+    document.body.classList.remove('fullpage-mode');
+
+    // Navigate to Tokens page (the main wizard view)
+    if (window.globalHeader && typeof window.globalHeader.switchPage === 'function') {
+      window.globalHeader.switchPage('tokens');
+    }
+
+    // After page switch, show the naming screen
+    setTimeout(() => {
+      if (window.switchTab) window.switchTab('token');
+      if (window.showScreen) window.showScreen('naming', { force: true });
+    }, 50);
 
     console.log('[Templates Page] Template applied successfully:', template.name);
   }
@@ -14619,18 +14815,24 @@ window.__WIZARD_RESET_MODE__ = false;
       state.activeTemplate = null;
       state.templateMeta = null;
 
-      // Hide templates page and show wizard
+      // Hide templates page
       const templatesScreen = document.getElementById('screen-templates-page');
       if (templatesScreen) {
         templatesScreen.classList.remove('wizard-screen--active');
         templatesScreen.setAttribute('hidden', '');
       }
       document.body.classList.remove('fullpage-mode');
-      const wizardOutline = document.querySelector('.wizard-outline');
-      if (wizardOutline) wizardOutline.style.display = '';
 
-      if (window.switchTab) window.switchTab('token');
-      if (window.showScreen) window.showScreen('naming', { force: true });
+      // Navigate to Tokens page
+      if (window.globalHeader && typeof window.globalHeader.switchPage === 'function') {
+        window.globalHeader.switchPage('tokens');
+      }
+
+      // After page switch, show the naming screen
+      setTimeout(() => {
+        if (window.switchTab) window.switchTab('token');
+        if (window.showScreen) window.showScreen('naming', { force: true });
+      }, 50);
       return;
     }
 
@@ -14685,67 +14887,78 @@ window.__WIZARD_RESET_MODE__ = false;
     state.form.permissions.maxSupply = customValues.supply?.maxSupply || template.maxSupply || '';
     state.form.permissions.useMaxSupply = Boolean(customValues.supply?.maxSupply || template.useMaxSupply);
 
-    // Apply feature toggles from custom values
+    // Apply feature toggles from custom values (collected from modal UI)
     const features = customValues.features || {};
+
+    // Token actions - use features from modal if provided, otherwise use template defaults
     state.form.permissions.manualMint = {
-      enabled: features.mint ?? template.manualMint?.enabled ?? false,
+      enabled: features.manualMint?.enabled ?? template.manualMint?.enabled ?? false,
       authorizedBy: 'owner',
       rules: []
     };
     state.form.permissions.manualBurn = {
-      enabled: features.burn ?? template.manualBurn?.enabled ?? false,
+      enabled: features.manualBurn?.enabled ?? template.manualBurn?.enabled ?? false,
       authorizedBy: 'owner',
       rules: []
     };
     state.form.permissions.manualFreeze = {
-      enabled: features.freeze ?? template.manualFreeze?.enabled ?? false,
+      enabled: features.manualFreeze?.enabled ?? template.manualFreeze?.enabled ?? false,
       authorizedBy: 'owner',
       rules: []
     };
     state.form.permissions.unfreeze = {
-      enabled: features.freeze ?? template.unfreeze?.enabled ?? false, // Unfreeze tied to freeze
+      enabled: features.unfreeze?.enabled ?? template.unfreeze?.enabled ?? false,
+      authorizedBy: 'owner',
+      rules: []
+    };
+    state.form.permissions.destroyFrozen = {
+      enabled: features.destroyFrozen?.enabled ?? template.destroyFrozen?.enabled ?? false,
       authorizedBy: 'owner',
       rules: []
     };
     state.form.permissions.emergencyAction = {
-      enabled: features.emergency ?? template.emergency?.enabled ?? false,
+      enabled: features.emergency?.enabled ?? template.emergency?.enabled ?? false,
       authorizedBy: 'owner',
       rules: []
     };
-    state.form.permissions.transferNotesEnabled = features.notes ?? template.transferNotesEnabled ?? false;
-    if (features.notes || template.transferNotesEnabled) {
-      state.form.permissions.transferNoteTypes = template.transferNoteTypes || {
-        encrypted: true,
-        public: true
-      };
-    }
 
-    // Apply history tracking from custom values
-    const history = customValues.history || {};
-    state.form.permissions.keepsHistory = {
-      transfers: history.transfers ?? template.keepsHistory?.transfers ?? true,
-      mints: history.mints ?? template.keepsHistory?.mints ?? true,
-      burns: history.burns ?? template.keepsHistory?.burns ?? true,
-      freezes: history.freezes ?? template.keepsHistory?.freezes ?? false,
-      purchases: history.purchases ?? template.keepsHistory?.purchases ?? false
+    // Transfer notes
+    state.form.permissions.transferNotesEnabled = features.transferNotesEnabled ?? template.transferNotesEnabled ?? false;
+    state.form.permissions.transferNoteTypes = features.transferNoteTypes ?? template.transferNoteTypes ?? {
+      public: true,
+      sharedEncrypted: false,
+      privateEncrypted: false
     };
 
-    // Apply option toggles
-    const options = customValues.options || {};
-    state.form.permissions.allowTransferToFrozenBalance = options.transferToFrozen ?? template.allowTransferToFrozenBalance ?? false;
-    state.form.permissions.startAsPaused = template.startAsPaused ?? false;
-    state.form.permissions.destroyFrozen = template.destroyFrozen ? { ...template.destroyFrozen } : { enabled: false };
+    // History tracking from features object
+    state.form.permissions.keepsHistory = features.keepsHistory ?? {
+      transfers: template.keepsHistory?.transfers ?? true,
+      mints: template.keepsHistory?.mints ?? true,
+      burns: template.keepsHistory?.burns ?? true,
+      freezes: template.keepsHistory?.freezes ?? false,
+      purchases: template.keepsHistory?.purchases ?? false
+    };
 
-    // Apply advanced settings from template
-    state.form.advanced.tradeMode = template.tradeMode ?? 'closed';
+    // Launch settings
+    state.form.permissions.allowTransferToFrozenBalance = features.allowTransferToFrozenBalance ?? template.allowTransferToFrozenBalance ?? false;
+    state.form.permissions.startAsPaused = features.startAsPaused ?? template.startAsPaused ?? false;
+
+    // Apply advanced settings - use features.tradeMode if provided, otherwise template default
+    state.form.advanced.tradeMode = features.tradeMode ?? template.tradeMode ?? 'closed';
     state.form.advanced.changeControl = template.changeControl ? { ...template.changeControl } : {
       mint: false, burn: false, freeze: false, unfreeze: false, destroyFrozen: false, emergency: false
     };
 
-    // Apply distribution settings (for reward template with custom values)
-    if (template.distribution || (customValues.distribution?.intervalHours && customValues.distribution?.emissionAmount)) {
-      state.form.distribution.enablePerpetual = true;
+    // Apply distribution settings
+    // Check if distribution was enabled via modal toggle or if template has distribution
+    const distributionEnabled = features.enableDistribution ?? !!(template.distribution);
 
+    if (distributionEnabled && template.distribution) {
+      state.form.distribution.enablePerpetual = true;
+      state.form.distribution.cadence = template.distribution.cadence ? { ...template.distribution.cadence } : null;
+      state.form.distribution.emission = template.distribution.emission ? { ...template.distribution.emission } : null;
+    } else if (distributionEnabled && customValues.distribution?.intervalHours && customValues.distribution?.emissionAmount) {
+      state.form.distribution.enablePerpetual = true;
       // Use custom distribution values if provided
       const intervalHours = customValues.distribution?.intervalHours || 24;
       const emissionAmount = customValues.distribution?.emissionAmount || '1000';
@@ -14758,44 +14971,21 @@ window.__WIZARD_RESET_MODE__ = false;
         type: 'FixedAmount',
         amount: emissionAmount
       };
-    } else if (template.distribution) {
-      state.form.distribution.enablePerpetual = true;
-      state.form.distribution.cadence = template.distribution.cadence ? { ...template.distribution.cadence } : null;
-      state.form.distribution.emission = template.distribution.emission ? { ...template.distribution.emission } : null;
+    } else {
+      // Distribution disabled
+      state.form.distribution.enablePerpetual = false;
+      state.form.distribution.cadence = null;
+      state.form.distribution.emission = null;
     }
 
     // Apply search metadata from template
     state.form.search.description = template.description || '';
     state.form.search.keywords = template.keywords && Array.isArray(template.keywords) ? template.keywords.join(', ') : '';
 
-    // Sync UI with state values
-    if (typeof window.syncPermissionsUIFromState === 'function') {
-      window.syncPermissionsUIFromState();
+    // Sync UI with state values using the comprehensive hydrate function
+    if (typeof window.hydrateFormsFromState === 'function') {
+      window.hydrateFormsFromState();
     }
-    if (typeof window.syncAdvancedUIFromState === 'function') {
-      window.syncAdvancedUIFromState();
-    }
-    if (typeof window.syncDistributionUIFromState === 'function') {
-      window.syncDistributionUIFromState();
-    }
-    // Sync naming UI
-    if (typeof window.syncNamingUIFromState === 'function') {
-      window.syncNamingUIFromState();
-    }
-
-    // Hide templates page and show wizard
-    const templatesScreen = document.getElementById('screen-templates-page');
-    if (templatesScreen) {
-      templatesScreen.classList.remove('wizard-screen--active');
-      templatesScreen.setAttribute('hidden', '');
-    }
-    document.body.classList.remove('fullpage-mode');
-    const wizardOutline = document.querySelector('.wizard-outline');
-    if (wizardOutline) wizardOutline.style.display = '';
-
-    // Switch to Token tab and navigate to naming
-    if (window.switchTab) window.switchTab('token');
-    if (window.showScreen) window.showScreen('naming', { force: true });
 
     // Validate steps
     validateAllStepsAfterTemplateLoad();
@@ -14804,6 +14994,25 @@ window.__WIZARD_RESET_MODE__ = false;
     if (typeof window.persistState === 'function') {
       window.persistState();
     }
+
+    // Hide templates page
+    const templatesScreen = document.getElementById('screen-templates-page');
+    if (templatesScreen) {
+      templatesScreen.classList.remove('wizard-screen--active');
+      templatesScreen.setAttribute('hidden', '');
+    }
+    document.body.classList.remove('fullpage-mode');
+
+    // Navigate to Tokens page (the main wizard view)
+    if (window.globalHeader && typeof window.globalHeader.switchPage === 'function') {
+      window.globalHeader.switchPage('tokens');
+    }
+
+    // After page switch, show the naming screen
+    setTimeout(() => {
+      if (window.switchTab) window.switchTab('token');
+      if (window.showScreen) window.showScreen('naming', { force: true });
+    }, 50);
 
     console.log('[Templates Page] Template with custom values applied successfully:', template.name);
   }
@@ -15347,6 +15556,27 @@ window.__WIZARD_RESET_MODE__ = false;
         <path d="M6 9h12v4a6 6 0 01-12 0V9z" fill="none" stroke="currentColor" stroke-width="1.5"/>
         <path d="M9 20h6M12 17v3" stroke="currentColor" stroke-width="1.5"/>
         <path d="M12 8l1 2h2l-1.5 1.5.5 2-2-1-2 1 .5-2L9 10h2l1-2z"/>
+      </svg>`,
+      'membership': `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="1.5"/>
+        <circle cx="8" cy="15" r="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M12 14h6M12 16h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M6 7h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>`,
+      'testnet': `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <polyline points="16 18 22 12 16 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="8 6 2 12 8 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <line x1="12" y1="2" x2="12" y2="22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="3 3"/>
+        <circle cx="12" cy="12" r="2" fill="currentColor"/>
+      </svg>`,
+      'invoice': `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <polyline points="14 2 14 8 20 8" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="8" y1="13" x2="16" y2="13" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="8" y1="17" x2="13" y2="17" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M10 9h1v2h-1z" fill="currentColor"/>
+        <circle cx="16" cy="17" r="1.5" fill="none" stroke="currentColor" stroke-width="1"/>
       </svg>`
     };
     const iconSvg = templateIcons[pendingTemplateKey] || templateIcons['scratch'];
@@ -15402,9 +15632,12 @@ window.__WIZARD_RESET_MODE__ = false;
     // Set modal accent color based on template
     const accentColors = {
       'scratch': '#6366F1',
-      'simple-fixed': '#10B981',
-      'utility': '#F59E0B',
-      'reward': '#F43F5E'
+      'simple-fixed': '#0E76FD',
+      'utility': '#10B981',
+      'reward': '#8B5CF6',
+      'membership': '#F97316',
+      'testnet': '#06B6D4',
+      'invoice': '#14B8A6'
     };
     confirmModal.style.setProperty('--modal-accent', accentColors[pendingTemplateKey] || '#0E76FD');
 
@@ -15435,20 +15668,34 @@ window.__WIZARD_RESET_MODE__ = false;
     const featuresContainer = document.getElementById('template-features');
     if (!featuresContainer) return;
 
-    // Define feature mappings
+    // Reset feature overrides for new template
+    featureOverrides = {};
+
+    // Define feature mappings for toggle features
     const featureStates = {
       mint: template?.manualMint?.enabled || false,
       burn: template?.manualBurn?.enabled || false,
       freeze: template?.manualFreeze?.enabled || false,
       unfreeze: template?.unfreeze?.enabled || false,
       destroyFrozen: template?.destroyFrozen?.enabled || false,
-      transfer: template?.transferNotesEnabled || true, // Transfers always enabled by default
+      transfer: template?.transferNotesEnabled ?? true,
       distribution: !!(template?.distribution?.cadence || template?.distribution?.emission),
-      history: !!(template?.keepsHistory?.transfers || template?.keepsHistory?.mints ||
-                  template?.keepsHistory?.burns || template?.keepsHistory?.freezes)
+      emergency: template?.emergency?.enabled || false,
+      // History tracking
+      historyTransfers: template?.keepsHistory?.transfers ?? true,
+      historyMints: template?.keepsHistory?.mints ?? true,
+      historyBurns: template?.keepsHistory?.burns ?? true,
+      historyFreezes: template?.keepsHistory?.freezes || false,
+      // Transfer note types
+      notePublic: template?.transferNoteTypes?.public ?? true,
+      noteShared: template?.transferNoteTypes?.sharedEncrypted || false,
+      notePrivate: template?.transferNoteTypes?.privateEncrypted || false,
+      // Launch settings
+      startPaused: template?.startAsPaused || false,
+      allowTransferToFrozen: template?.allowTransferToFrozenBalance || false
     };
 
-    // Update each feature element
+    // Update each toggle feature element
     Object.entries(featureStates).forEach(([feature, isActive]) => {
       const featureEl = featuresContainer.querySelector(`[data-feature="${feature}"]`);
       if (featureEl) {
@@ -15459,6 +15706,18 @@ window.__WIZARD_RESET_MODE__ = false;
         }
       }
     });
+
+    // Update trade mode select
+    const tradeModeSelect = document.getElementById('template-trade-mode');
+    if (tradeModeSelect) {
+      tradeModeSelect.value = template?.tradeMode || 'closed';
+    }
+
+    // Show/hide transfer notes group based on transfer notes being enabled
+    const transferNotesGroup = document.getElementById('template-transfer-notes-group');
+    if (transferNotesGroup) {
+      transferNotesGroup.style.display = template?.transferNotesEnabled ? '' : 'none';
+    }
   }
 
   function hideTemplateConfirmation() {
@@ -15478,12 +15737,40 @@ window.__WIZARD_RESET_MODE__ = false;
   // Note: Template card click handlers are now on the Templates Page (setupPages function)
   // The [data-tpl] cards use window.showTemplateConfirmation directly
 
+  // Collect all feature overrides from modal UI
+  function collectFeatureOverrides() {
+    const featuresContainer = document.getElementById('template-features');
+    if (!featuresContainer) return {};
+
+    const overrides = {};
+
+    // Collect toggle feature states
+    const toggleFeatures = featuresContainer.querySelectorAll('.template-feature[data-feature]');
+    toggleFeatures.forEach(el => {
+      const feature = el.dataset.feature;
+      // Skip select-based features
+      if (el.classList.contains('template-feature--select')) return;
+      const isActive = el.getAttribute('data-active') === 'true';
+      overrides[feature] = isActive;
+    });
+
+    // Collect trade mode from select
+    const tradeModeSelect = document.getElementById('template-trade-mode');
+    if (tradeModeSelect) {
+      overrides.tradeMode = tradeModeSelect.value;
+    }
+
+    return overrides;
+  }
+
   // Confirm button
   if (confirmBtn) {
     confirmBtn.addEventListener('click', () => {
       console.log('Apply Template clicked, pendingTemplateKey:', pendingTemplateKey, 'fromPage:', pendingTemplateFromPage);
       if (pendingTemplateKey) {
         // Collect custom values from modal inputs
+        const featureOverridesFromUI = collectFeatureOverrides();
+
         const customValues = {
           naming: {
             singular: singularInput?.value?.trim() || '',
@@ -15493,6 +15780,37 @@ window.__WIZARD_RESET_MODE__ = false;
             baseSupply: baseSupplyInput?.value?.replace(/,/g, '') || '',
             maxSupply: maxSupplyInput?.value?.replace(/,/g, '') || '',
             decimals: parseInt(decimalsSelect?.value, 10) || 8
+          },
+          features: {
+            // Token actions
+            manualMint: { enabled: featureOverridesFromUI.mint ?? false },
+            manualBurn: { enabled: featureOverridesFromUI.burn ?? false },
+            manualFreeze: { enabled: featureOverridesFromUI.freeze ?? false },
+            unfreeze: { enabled: featureOverridesFromUI.unfreeze ?? false },
+            destroyFrozen: { enabled: featureOverridesFromUI.destroyFrozen ?? false },
+            emergency: { enabled: featureOverridesFromUI.emergency ?? false },
+            // Transfer notes
+            transferNotesEnabled: featureOverridesFromUI.transfer ?? true,
+            transferNoteTypes: {
+              public: featureOverridesFromUI.notePublic ?? true,
+              sharedEncrypted: featureOverridesFromUI.noteShared ?? false,
+              privateEncrypted: featureOverridesFromUI.notePrivate ?? false
+            },
+            // Distribution
+            enableDistribution: featureOverridesFromUI.distribution ?? false,
+            // History tracking
+            keepsHistory: {
+              transfers: featureOverridesFromUI.historyTransfers ?? true,
+              mints: featureOverridesFromUI.historyMints ?? true,
+              burns: featureOverridesFromUI.historyBurns ?? true,
+              freezes: featureOverridesFromUI.historyFreezes ?? false,
+              purchases: false
+            },
+            // Trading
+            tradeMode: featureOverridesFromUI.tradeMode || 'closed',
+            // Launch settings
+            startAsPaused: featureOverridesFromUI.startPaused ?? false,
+            allowTransferToFrozenBalance: featureOverridesFromUI.allowTransferToFrozen ?? false
           }
         };
 
