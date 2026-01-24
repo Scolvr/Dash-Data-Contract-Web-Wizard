@@ -4347,6 +4347,7 @@ window.__WIZARD_RESET_MODE__ = false;
 
   /**
    * Updates the export screen UI with current token name
+   * Validates contract completeness before allowing export
    */
   function updateExportScreenUI() {
     const tokenName = wizardState.form.tokenName || 'Token';
@@ -4364,35 +4365,145 @@ window.__WIZARD_RESET_MODE__ = false;
     const detExportBtn = document.getElementById('det-export-contract-btn');
     const detExportFullBtn = document.getElementById('det-export-full-config-btn');
 
-    // Get missing required steps - local helper function
-    function getExportMissingSteps() {
-      const required = ['naming', 'permissions'];
-      const missing = [];
-      const stepNames = {
-        'naming': 'Token Naming',
-        'permissions': 'Permissions'
-      };
-      const stepIssues = {
-        'naming': 'Token name required',
-        'permissions': 'Base supply required'
-      };
+    // Comprehensive contract validation - local helper function
+    function validateContractForExport() {
+      const issues = [];
+      const form = wizardState.form || {};
 
-      if (typeof wizardState !== 'undefined' && wizardState.steps) {
-        required.forEach(stepId => {
-          const state = wizardState.steps[stepId];
-          if (!state || state.validity !== 'valid') {
-            missing.push({
-              id: stepId,
-              name: stepNames[stepId] || stepId,
-              issue: stepIssues[stepId] || 'Configuration needed'
-            });
-          }
+      // 1. TOKEN NAME VALIDATION
+      const rawTokenName = form.tokenName || '';
+      const trimmedName = rawTokenName.trim();
+      if (!trimmedName) {
+        issues.push({
+          id: 'naming',
+          name: 'Token Naming',
+          issue: 'Token name is required'
+        });
+      } else if (trimmedName.length < 1 || trimmedName.length > 100) {
+        issues.push({
+          id: 'naming',
+          name: 'Token Naming',
+          issue: 'Token name must be 1-100 characters'
+        });
+      } else if (!/^[a-zA-Z][a-zA-Z0-9_\s-]*$/.test(trimmedName)) {
+        issues.push({
+          id: 'naming',
+          name: 'Token Naming',
+          issue: 'Token name must start with a letter'
         });
       }
-      return missing;
+
+      // 2. OWNER IDENTITY ID VALIDATION
+      const ownerIdentityId = form.ownerIdentityId || '';
+      const trimmedIdentity = ownerIdentityId.trim();
+      const base58Pattern = /^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$/;
+      if (!trimmedIdentity) {
+        issues.push({
+          id: 'naming',
+          name: 'Contract Owner',
+          issue: 'Owner Identity ID is required'
+        });
+      } else if (trimmedIdentity.length < 43 || trimmedIdentity.length > 44) {
+        issues.push({
+          id: 'naming',
+          name: 'Contract Owner',
+          issue: 'Identity ID must be 43-44 characters'
+        });
+      } else if (!base58Pattern.test(trimmedIdentity)) {
+        issues.push({
+          id: 'naming',
+          name: 'Contract Owner',
+          issue: 'Invalid Base58 identity format'
+        });
+      }
+
+      // 3. BASE SUPPLY VALIDATION
+      const permissions = form.permissions || {};
+      const baseSupply = permissions.baseSupply;
+      const baseSupplyNum = parseInt(baseSupply, 10);
+      if (baseSupply === undefined || baseSupply === null || baseSupply === '') {
+        issues.push({
+          id: 'permissions',
+          name: 'Permissions',
+          issue: 'Base supply is required'
+        });
+      } else if (isNaN(baseSupplyNum) || baseSupplyNum < 0) {
+        issues.push({
+          id: 'permissions',
+          name: 'Permissions',
+          issue: 'Base supply must be a valid number ≥ 0'
+        });
+      }
+
+      // 4. MAX SUPPLY VALIDATION (if enabled)
+      if (permissions.useMaxSupply) {
+        const maxSupply = permissions.maxSupply;
+        const maxSupplyNum = parseInt(maxSupply, 10);
+        if (maxSupply === undefined || maxSupply === null || maxSupply === '') {
+          issues.push({
+            id: 'permissions',
+            name: 'Permissions',
+            issue: 'Max supply is required when enabled'
+          });
+        } else if (isNaN(maxSupplyNum) || maxSupplyNum <= 0) {
+          issues.push({
+            id: 'permissions',
+            name: 'Permissions',
+            issue: 'Max supply must be greater than 0'
+          });
+        } else if (maxSupplyNum < baseSupplyNum) {
+          issues.push({
+            id: 'permissions',
+            name: 'Permissions',
+            issue: 'Max supply cannot be less than base supply'
+          });
+        }
+      }
+
+      // 5. DECIMALS VALIDATION
+      const decimals = permissions.decimals;
+      if (decimals === undefined || decimals === null) {
+        issues.push({
+          id: 'permissions',
+          name: 'Permissions',
+          issue: 'Decimals must be set (0-18)'
+        });
+      } else if (typeof decimals !== 'number' || decimals < 0 || decimals > 18 || !Number.isInteger(decimals)) {
+        issues.push({
+          id: 'permissions',
+          name: 'Permissions',
+          issue: 'Decimals must be an integer from 0 to 18'
+        });
+      }
+
+      // 6. LOCALIZATION VALIDATION (at least one valid entry)
+      const localizations = form.naming?.conventions?.localizations || {};
+      const locKeys = Object.keys(localizations);
+      if (locKeys.length === 0) {
+        // No localizations defined - this is okay, will use defaults
+      } else {
+        // Validate each localization entry
+        let hasValidLocalization = false;
+        for (const code of locKeys) {
+          const loc = localizations[code];
+          if (loc && loc.singular_form && loc.plural_form) {
+            hasValidLocalization = true;
+            break;
+          }
+        }
+        if (!hasValidLocalization && locKeys.length > 0) {
+          issues.push({
+            id: 'naming',
+            name: 'Localizations',
+            issue: 'Localizations must have singular and plural forms'
+          });
+        }
+      }
+
+      return issues;
     }
 
-    const missingSteps = getExportMissingSteps();
+    const missingSteps = validateContractForExport();
 
     if (missingSteps.length > 0) {
       // Configuration is incomplete
@@ -4400,12 +4511,12 @@ window.__WIZARD_RESET_MODE__ = false;
       if (incompleteState) incompleteState.hidden = false;
       if (successState) successState.hidden = true;
 
-      // Populate missing steps list
+      // Populate validation issues list
       if (missingStepsList) {
         missingStepsList.innerHTML = missingSteps.map(step => `
-          <li style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3);">
-            <a href="#" class="export-missing-step-link" data-step="${step.id}" style="display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: inherit;">
-              <span style="font-weight: 500;">${step.name}</span>
+          <li style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3);">
+            <a href="#" class="export-missing-step-link" data-step="${step.id}" style="display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: inherit; gap: var(--space-3); flex-wrap: wrap;">
+              <span style="font-weight: 500; color: var(--color-error, #ef4444);">${step.name}</span>
               <span style="font-size: 0.875rem; color: var(--color-text-muted);">${step.issue}</span>
             </a>
           </li>
