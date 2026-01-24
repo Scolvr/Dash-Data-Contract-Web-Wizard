@@ -4354,11 +4354,90 @@ window.__WIZARD_RESET_MODE__ = false;
     if (exportTokenNameEl) {
       exportTokenNameEl.textContent = tokenName;
     }
-    // Reset to ready state when entering export screen
+
+    // Check if configuration is complete
     const readyState = document.getElementById('export-ready-state');
+    const incompleteState = document.getElementById('export-incomplete-state');
     const successState = document.getElementById('export-success-state');
-    if (readyState) readyState.hidden = false;
-    if (successState) successState.hidden = true;
+    const missingStepsList = document.getElementById('export-missing-steps-list');
+    const saveBtn = document.getElementById('export-save-btn');
+    const detExportBtn = document.getElementById('det-export-contract-btn');
+    const detExportFullBtn = document.getElementById('det-export-full-config-btn');
+
+    // Get missing required steps - local helper function
+    function getExportMissingSteps() {
+      const required = ['naming', 'permissions'];
+      const missing = [];
+      const stepNames = {
+        'naming': 'Token Naming',
+        'permissions': 'Permissions'
+      };
+      const stepIssues = {
+        'naming': 'Token name required',
+        'permissions': 'Base supply required'
+      };
+
+      if (typeof wizardState !== 'undefined' && wizardState.steps) {
+        required.forEach(stepId => {
+          const state = wizardState.steps[stepId];
+          if (!state || state.validity !== 'valid') {
+            missing.push({
+              id: stepId,
+              name: stepNames[stepId] || stepId,
+              issue: stepIssues[stepId] || 'Configuration needed'
+            });
+          }
+        });
+      }
+      return missing;
+    }
+
+    const missingSteps = getExportMissingSteps();
+
+    if (missingSteps.length > 0) {
+      // Configuration is incomplete
+      if (readyState) readyState.hidden = true;
+      if (incompleteState) incompleteState.hidden = false;
+      if (successState) successState.hidden = true;
+
+      // Populate missing steps list
+      if (missingStepsList) {
+        missingStepsList.innerHTML = missingSteps.map(step => `
+          <li style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3);">
+            <a href="#" class="export-missing-step-link" data-step="${step.id}" style="display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: inherit;">
+              <span style="font-weight: 500;">${step.name}</span>
+              <span style="font-size: 0.875rem; color: var(--color-text-muted);">${step.issue}</span>
+            </a>
+          </li>
+        `).join('');
+
+        // Add click handlers to navigate to missing steps
+        missingStepsList.querySelectorAll('.export-missing-step-link').forEach(link => {
+          link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const stepId = link.dataset.step;
+            if (typeof showScreen === 'function') {
+              showScreen(stepId);
+            }
+          });
+        });
+      }
+
+      // Disable export buttons when incomplete
+      if (saveBtn) saveBtn.disabled = true;
+      if (detExportBtn) detExportBtn.disabled = true;
+      if (detExportFullBtn) detExportFullBtn.disabled = true;
+    } else {
+      // Configuration is complete - show ready state
+      if (readyState) readyState.hidden = false;
+      if (incompleteState) incompleteState.hidden = true;
+      if (successState) successState.hidden = true;
+
+      // Enable export buttons
+      if (saveBtn) saveBtn.disabled = false;
+      if (detExportBtn) detExportBtn.disabled = false;
+      if (detExportFullBtn) detExportFullBtn.disabled = false;
+    }
   }
 
   /**
@@ -17783,6 +17862,12 @@ window.__WIZARD_RESET_MODE__ = false;
         if (window.documentStorage && typeof window.documentStorage.render === 'function') {
           window.documentStorage.render();
         }
+      } else if (pageId === 'hub') {
+        // Navigate to hub page
+        if (typeof window.showHubPage === 'function') {
+          window.showHubPage();
+        }
+        return; // Hub page handles its own visibility
       }
 
       // Close dropdown if open
