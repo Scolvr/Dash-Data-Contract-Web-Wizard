@@ -22314,14 +22314,25 @@ html[data-theme='light'] .template-card--glass:hover {
   .templates-page {
     padding: 16px !important;
     padding-top: 0 !important;
-    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important; /* Extra space for bottom nav */
+    padding-bottom: 24px !important; /* Just regular bottom padding since container handles nav space */
+    min-height: auto !important; /* Allow natural height */
   }
 
-  /* Fix fullpage screens on mobile - they use position: fixed which cuts off bottom nav */
+  /* Fix fullpage screens on mobile - they use position: absolute which cuts off bottom nav */
   #screen-templates-page.wizard-screen--active,
   #screen-groups-page.wizard-screen--active,
   #screen-documents-page.wizard-screen--active {
-    bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important; /* Leave room for bottom nav */
+    position: fixed !important;
+    top: var(--header-height) !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+    min-height: unset !important; /* Remove min-height to let bottom work */
+    height: auto !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior-y: contain !important;
   }
 
   .templates-hero {
@@ -22409,7 +22420,8 @@ html[data-theme='light'] .template-card--glass:hover {
   .groups-page {
     padding: 16px !important;
     padding-top: 0 !important;
-    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important; /* Extra space for bottom nav */
+    padding-bottom: 24px !important; /* Just regular bottom padding since container handles nav space */
+    min-height: auto !important; /* Allow natural height */
   }
 
   .groups-hero {
@@ -22468,7 +22480,8 @@ html[data-theme='light'] .template-card--glass:hover {
   .documents-page {
     padding: 16px !important;
     padding-top: 0 !important;
-    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important; /* Extra space for bottom nav */
+    padding-bottom: 24px !important; /* Just regular bottom padding since container handles nav space */
+    min-height: auto !important; /* Allow natural height */
   }
 
   .documents-hero {
