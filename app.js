@@ -4534,15 +4534,79 @@ window.__WIZARD_RESET_MODE__ = false;
       if (detExportBtn) detExportBtn.disabled = true;
       if (detExportFullBtn) detExportFullBtn.disabled = true;
     } else {
-      // Configuration is complete - show ready state
-      if (readyState) readyState.hidden = false;
-      if (incompleteState) incompleteState.hidden = true;
-      if (successState) successState.hidden = true;
+      // Basic validation passed - now do SDK-based contract validation
+      try {
+        const contractJSON = generatePlatformContractJSON();
 
-      // Enable export buttons
-      if (saveBtn) saveBtn.disabled = false;
-      if (detExportBtn) detExportBtn.disabled = false;
-      if (detExportFullBtn) detExportFullBtn.disabled = false;
+        // Validate using Evo SDK if available
+        if (window.EvoSDK && window.EvoSDK.DataContract) {
+          const hasTokens = !!contractJSON.tokens && Object.keys(contractJSON.tokens).length > 0;
+
+          if (hasTokens) {
+            // For token contracts, do manual validation (wasm-dpp v2.1.3 doesn't support V1)
+            const tokenConfig = contractJSON.tokens?.[0] || contractJSON.tokens?.['0'];
+            if (!tokenConfig) {
+              throw new Error('Token configuration missing');
+            }
+
+            // Check required token fields
+            const requiredFields = ['conventions', 'baseSupply', 'keepsHistory'];
+            const missingFields = requiredFields.filter(f => tokenConfig[f] === undefined);
+            if (missingFields.length > 0) {
+              throw new Error(`Missing required token fields: ${missingFields.join(', ')}`);
+            }
+
+            // Validate conventions structure
+            if (!tokenConfig.conventions?.localizations) {
+              throw new Error('Token conventions must include localizations');
+            }
+
+            // Validate contract has required base fields
+            if (!contractJSON.ownerId) {
+              throw new Error('Contract missing required ownerId');
+            }
+          } else {
+            // No tokens - can do full SDK validation with V0 format
+            const validationContract = { ...contractJSON, '$format_version': '0' };
+            new window.EvoSDK.DataContract(validationContract);
+          }
+        }
+
+        // All validation passed - show ready state
+        if (readyState) readyState.hidden = false;
+        if (incompleteState) incompleteState.hidden = true;
+        if (successState) successState.hidden = true;
+
+        // Enable export buttons
+        if (saveBtn) saveBtn.disabled = false;
+        if (detExportBtn) detExportBtn.disabled = false;
+        if (detExportFullBtn) detExportFullBtn.disabled = false;
+
+      } catch (sdkError) {
+        // SDK validation failed
+        console.error('[Export] Contract validation failed:', sdkError);
+
+        if (readyState) readyState.hidden = true;
+        if (incompleteState) incompleteState.hidden = false;
+        if (successState) successState.hidden = true;
+
+        // Show SDK error
+        if (missingStepsList) {
+          missingStepsList.innerHTML = `
+            <li style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3);">
+              <div style="display: flex; flex-direction: column; gap: var(--space-1);">
+                <span style="font-weight: 500; color: var(--color-error, #ef4444);">Contract Validation Error</span>
+                <span style="font-size: 0.875rem; color: var(--color-text-muted);">${sdkError.message || 'Unknown validation error'}</span>
+              </div>
+            </li>
+          `;
+        }
+
+        // Disable export buttons
+        if (saveBtn) saveBtn.disabled = true;
+        if (detExportBtn) detExportBtn.disabled = true;
+        if (detExportFullBtn) detExportFullBtn.disabled = true;
+      }
     }
   }
 
