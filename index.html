@@ -9986,31 +9986,12 @@
     })();
   </script>
 
-  <!-- Collapsible Navigation Script -->
+  <!-- Navigation Event Dispatch Script -->
+  <!-- NOTE: Expand/collapse is handled by app.js (lines ~1379-1420) -->
+  <!-- This script only dispatches events for navigation coordination -->
   <script>
     (function () {
       document.addEventListener('DOMContentLoaded', function () {
-        // Handle collapsible navigation
-        const navButtons = document.querySelectorAll('.wizard-nav-item--expandable');
-
-        navButtons.forEach(function (button) {
-          button.addEventListener('click', function (e) {
-            e.preventDefault();
-
-            const submenuId = this.getAttribute('data-toggle');
-            const submenu = document.getElementById(submenuId);
-            const isExpanded = this.getAttribute('aria-expanded') === 'true';
-
-            // Toggle aria-expanded
-            this.setAttribute('aria-expanded', !isExpanded);
-
-            // Toggle submenu visibility
-            if (submenu) {
-              submenu.hidden = isExpanded;
-            }
-          });
-        });
-
         // Handle navigation clicks
         const allNavButtons = document.querySelectorAll('.wizard-nav-item[data-step]');
         allNavButtons.forEach(function (button) {

@@ -1591,15 +1591,6 @@ window.__WIZARD_RESET_MODE__ = false;
   const transferMessage = document.getElementById('permissions-transfer-message');
   const transferNextButton = document.getElementById('permissions-transfer-next');
 
-  // Note: Old screen-distribution removed (redundant - now using distribution-preprogrammed and distribution-perpetual substeps)
-  const distributionMessage = null;
-  const distributionNextButton = null;
-  const distributionSkipButton = null;
-  // Note: distribution-emission screen removed (redundant - functionality merged into distribution-perpetual)
-  const distributionEmissionSkipButton = null;
-  const distributionEmissionNextButton = null;
-  const distributionEmissionMessage = null;
-
   const advancedMessage = document.getElementById('advanced-message');
   const advancedNextButton = document.getElementById('advanced-next');
   const overviewNextButton = document.getElementById('overview-next');
@@ -2038,34 +2029,6 @@ window.__WIZARD_RESET_MODE__ = false;
 
   if (registrationMethodsContainer) {
     registrationMethodsContainer.addEventListener('change', handleRegistrationSelection);
-  }
-
-  // FIXED: Add Skip button handler for distribution step
-  if (distributionSkipButton) {
-    distributionSkipButton.addEventListener('click', () => {
-      // Mark distribution as valid so we can proceed
-      wizardState.steps.distribution = wizardState.steps.distribution || {};
-      wizardState.steps.distribution.validity = 'valid';
-      wizardState.steps.distribution.touched = true;
-      updateFurthestValidIndex();
-      // Skip to next main step (export)
-      const nextStep = 'export';
-      showScreen(nextStep, { force: true });
-    });
-  }
-
-  // FIXED: Add Skip button handler for distribution emission step
-  if (distributionEmissionSkipButton) {
-    distributionEmissionSkipButton.addEventListener('click', () => {
-      // Mark distribution as valid so we can proceed
-      wizardState.steps.distribution = wizardState.steps.distribution || {};
-      wizardState.steps.distribution.validity = 'valid';
-      wizardState.steps.distribution.touched = true;
-      updateFurthestValidIndex();
-      // Skip to next main step (export)
-      const nextStep = 'export';
-      showScreen(nextStep, { force: true });
-    });
   }
 
   // Add event listener for Pre-Programmed distribution radio buttons
@@ -3635,13 +3598,6 @@ window.__WIZARD_RESET_MODE__ = false;
 
     if (isScheduleSubstep) {
       // ===== SCHEDULE SUBSTEP =====
-      // Update Schedule button and message - only show errors when NOT silent
-      if (distributionMessage) {
-        distributionMessage.textContent = !silent && !scheduleValidation.valid ? scheduleValidation.message : '';
-      }
-      if (distributionNextButton) {
-        distributionNextButton.disabled = !scheduleValidation.valid;
-      }
       // Update sidebar status based on Schedule validation
       updateStepStatusFromValidation('distribution', scheduleValidation, touched);
 
@@ -3661,14 +3617,6 @@ window.__WIZARD_RESET_MODE__ = false;
       if (emissionType && emissionType !== '') {
         // User selected an emission type - validate it
         emissionValidation = validateDistributionValues(values, { skipEmissionValidation: false, decimals });
-      }
-
-      // Update Emission button and message - only show errors when NOT silent
-      if (distributionEmissionMessage) {
-        distributionEmissionMessage.textContent = !silent && !emissionValidation.valid ? emissionValidation.message : '';
-      }
-      if (distributionEmissionNextButton) {
-        distributionEmissionNextButton.disabled = !emissionValidation.valid;
       }
 
       // Keep Distribution valid in sidebar if Schedule is still valid
@@ -6564,10 +6512,7 @@ window.__WIZARD_RESET_MODE__ = false;
         }
         break;
       case 'distribution':
-        if (distributionMessage.textContent) {
-          distributionMessage.textContent = '';
-          return true;
-        }
+        // Distribution message element removed - no-op
         break;
       case 'advanced':
         if (advancedMessage.textContent) {
