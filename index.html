@@ -1,8 +1,16 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 
 <head>
   <meta charset="UTF-8">
+  <!-- Blocking script to prevent theme flash on page load -->
+  <script>
+    (function() {
+      var saved = localStorage.getItem('ui-theme');
+      var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- SECURITY: Content Security Policy to mitigate XSS and data injection attacks -->
   <!-- Note: frame-ancestors cannot be set via meta tag, only via HTTP header -->
@@ -1084,10 +1092,10 @@
         </svg>
       </button>
 
-      <!-- Register Button (CTA) -->
+      <!-- Export Button (CTA) -->
       <div class="global-header__register-wrapper">
         <button class="global-header__register" id="header-register-btn" type="button">
-          <span>Register Token</span>
+          <span>Export</span>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
             <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
@@ -1189,11 +1197,11 @@
           </div>
         </div>
 
-        <!-- 5. Registration -->
-        <div class="mobile-steps-drawer__group" data-step-group="registration">
-          <button class="mobile-steps-drawer__step" data-step="registration" data-screen="screen-registration">
+        <!-- 5. Export -->
+        <div class="mobile-steps-drawer__group" data-step-group="export">
+          <button class="mobile-steps-drawer__step" data-step="export" data-screen="screen-export">
             <span class="mobile-steps-drawer__step-num">5</span>
-            <span class="mobile-steps-drawer__step-label">Registration</span>
+            <span class="mobile-steps-drawer__step-label">Export</span>
             <span class="mobile-steps-drawer__step-status"></span>
           </button>
         </div>
@@ -1420,20 +1428,20 @@
             </div>
           </div>
 
-          <!-- Publish Section Label -->
-          <div class="sidebar-section-label">Publish</div>
+          <!-- Export Section Label -->
+          <div class="sidebar-section-label">Finish</div>
 
-          <!-- Registration Step -->
-          <div class="sidebar-step" data-step="registration">
-            <button class="sidebar-step__header wizard-nav-item" data-step="registration">
+          <!-- Export Step -->
+          <div class="sidebar-step" data-step="export">
+            <button class="sidebar-step__header wizard-nav-item" data-step="export">
               <span class="sidebar-step__indicator">
                 <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
                   <path d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16z" stroke="currentColor" stroke-width="1.5"/>
-                  <path d="M7 10l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M10 6v6M7 11l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </span>
-              <span class="sidebar-step__title wizard-nav-item__text">Register Token</span>
-              <span class="sidebar-step__status wizard-path__pill pill" id="status-registration" aria-live="polite"></span>
+              <span class="sidebar-step__title wizard-nav-item__text">Export</span>
+              <span class="sidebar-step__status wizard-path__pill pill" id="status-export" aria-live="polite"></span>
             </button>
           </div>
         </nav>
@@ -8001,7 +8009,7 @@
           </div>
         </section>
 
-        <section class="wizard-screen wizard-screen--redesigned" id="screen-registration" data-step="registration" data-tab="token" hidden>
+        <section class="wizard-screen wizard-screen--redesigned" id="screen-export" data-step="export" data-tab="token" hidden>
 
           <!-- Right Side Guide Panel -->
           <aside class="page-guide page-guide--glass" aria-label="Page guide" data-collapsed="false">
@@ -8022,65 +8030,44 @@
             </div>
             <div class="page-guide__panel page-guide__panel--info active" data-panel="info">
               <div class="page-guide__content">
-              <h2 class="page-guide__title">Register Your Token</h2>
-              <p class="page-guide__intro">The final step: deploy your token contract to Dash Platform. This page guides you through choosing a registration method and completing the deployment process.</p>
+              <h2 class="page-guide__title">Export Configuration</h2>
+              <p class="page-guide__intro">Your token configuration is complete! Save it to Documents for easy access, or download the contract JSON to deploy with Dash Evo Tool.</p>
 
               <div class="page-guide__section">
                 <h3 class="page-guide__section-title">Quick Reference</h3>
 
-                <h4 class="page-guide__step-heading" id="registration-overview">What is Registration?</h4>
-                <p><strong>What it is:</strong> Registration is the process of deploying your token contract to the Dash Platform blockchain. It involves creating a blockchain identity (if needed) and submitting your contract as an immutable data structure.</p>
-                <p><strong>Why it matters:</strong> Once registered, your token becomes a permanent part of the blockchain. The contract cannot be altered unless you explicitly configured change permissions in the Advanced step. Registration requires platform credits and network confirmations.</p>
-                <p><strong>Key concepts:</strong></p>
+                <h4 class="page-guide__step-heading">Save to Documents</h4>
+                <p><strong>What it does:</strong> Saves your complete token configuration to the Documents section of this wizard. You can access, edit, and export your saved configurations anytime.</p>
+                <p><strong>File naming:</strong> Your configuration is automatically named based on your token name (e.g., "MyToken_Config.json").</p>
+                <p><strong>Best for:</strong> Keeping your configurations organized, making edits later, or comparing different token setups.</p>
+
+                <h4 class="page-guide__step-heading">Download Contract JSON</h4>
+                <p><strong>What it does:</strong> Downloads the production-ready contract JSON file that can be imported directly into Dash Evo Tool for deployment.</p>
+                <p><strong>File format:</strong> Standard JSON file containing your complete token contract specification.</p>
+                <p><strong>Best for:</strong> Deploying your token to Dash Platform using external tools.</p>
+
+                <h4 class="page-guide__step-heading">Download Full Configuration</h4>
+                <p><strong>What it does:</strong> Downloads a complete backup of all wizard settings, including form values and metadata.</p>
+                <p><strong>Use case:</strong> Creating backups, sharing configurations with team members, or restoring settings later.</p>
+
+                <h4 class="page-guide__step-heading">Deploying Your Token</h4>
+                <p>To deploy your token to Dash Platform:</p>
+                <ol class="page-guide__list">
+                  <li>Download the Contract JSON file</li>
+                  <li>Open Dash Evo Tool (DET)</li>
+                  <li>Navigate to Contracts > Register Contract</li>
+                  <li>Import your JSON file</li>
+                  <li>Review and confirm deployment</li>
+                </ol>
+                <p style="margin-top: var(--space-2);"><strong>Note:</strong> You'll need a Dash Platform identity with sufficient credits to register the contract.</p>
+
+                <h4 class="page-guide__step-heading">Estimated Costs</h4>
                 <ul class="page-guide__list">
-                  <li><strong>Identity:</strong> A unique identifier on Dash Platform that owns your contract</li>
-                  <li><strong>Platform Credits:</strong> Network currency required to register identities and submit contracts</li>
-                  <li><strong>Network:</strong> Testnet (for testing) or Mainnet (production)</li>
-                  <li><strong>Immutability:</strong> Contracts cannot be changed after deployment (except via governance rules you defined)</li>
+                  <li><strong>Token Registration:</strong> 0.1 DASH (one-time)</li>
+                  <li><strong>Identity Creation:</strong> ~0.1 DASH (if needed)</li>
+                  <li><strong>Keywords:</strong> 0.1 DASH each (optional)</li>
+                  <li><strong>Distribution Features:</strong> 0.1 DASH each (if enabled)</li>
                 </ul>
-
-                <h4 class="page-guide__step-heading" id="registration-methods">Registration Methods</h4>
-                <p><strong>Dash Evo Tool (DET):</strong> The recommended method for most users. The wizard generates a downloadable contract JSON file that you import into DET for deployment. DET is a desktop application that provides a visual interface for contract deployment and identity management.</p>
-                <p><strong>Use when:</strong> You want a visual interface for contract deployment, need to manage multiple identities, or prefer a desktop application.</p>
-                <p style="margin-top: var(--space-3);"><strong>Self-service:</strong> For advanced users who want to register directly from the browser using the Dash SDK. Requires importing a wallet mnemonic.</p>
-                <p><strong>Use when:</strong> You're comfortable with wallet management and want full control over the registration process.</p>
-
-                <h4 class="page-guide__step-heading" id="network-selection">Network Selection</h4>
-                <p><strong>Testnet:</strong> A sandbox environment for testing. Use testnet to experiment with your token configuration, verify behavior, and test integrations without spending real funds or creating permanent contracts.</p>
-                <p><strong>Mainnet:</strong> The production Dash blockchain. Contracts deployed to mainnet are permanent and public. Only use mainnet when you've thoroughly tested your configuration and are ready for a live deployment.</p>
-                <p><strong>Best practice:</strong> Always test on testnet first. Once you've confirmed everything works as expected, you can re-run the wizard and deploy to mainnet.</p>
-
-                <h4 class="page-guide__step-heading" id="costs-and-requirements">Costs and Requirements</h4>
-                <p><strong>Token Registration Fee:</strong> Registering a token on Dash Platform costs 0.1 DASH. This is a one-time fee that makes your token contract permanent on the blockchain.</p>
-                <p><strong>Optional Keyword Fees:</strong> You can add up to 50 keywords for token discovery (3-50 characters each). Each keyword costs 0.1 DASH. Keywords are optional but help users find your token.</p>
-                <p><strong>Distribution Fees:</strong> Perpetual distribution costs 0.1 DASH if enabled. Pre-programmed distribution costs 0.1 DASH if enabled. These are one-time fees for distribution features.</p>
-                <p><strong>Example Total Costs:</strong> Basic token (no keywords, no distribution): 0.1 DASH. Token with 5 keywords and perpetual distribution: 0.8 DASH (0.1 base + 0.5 keywords + 0.1 distribution + 0.1 identity creation).</p>
-                <p><strong>Token ID Generation:</strong> Your token ID is automatically generated by the platform using double SHA256 hash of: tokenContractId + tokenContractPosition + 'dash_token' string. You don't need to specify this.</p>
-                <p><strong>Wallet Requirements:</strong> For self-service registration, you need a funded Dash wallet with a 12-word mnemonic phrase. For DET method, the external tool handles wallet management.</p>
-
-                <h4 class="page-guide__step-heading" id="deployment-process">The Deployment Process</h4>
-                <p><strong>Step 1 - Identity Check:</strong> The wizard checks if you already have a Dash Platform identity. If not, it creates one using your wallet.</p>
-                <p><strong>Step 2 - Contract Generation:</strong> Your wizard configuration is converted into a valid Dash Platform data contract JSON payload.</p>
-                <p><strong>Step 3 - Contract Submission:</strong> The contract is broadcast to the network and awaits confirmation by masternodes.</p>
-                <p><strong>Step 4 - Confirmation:</strong> Once confirmed (typically 2-5 minutes), your token is live and ready to use. You'll receive a contract ID that uniquely identifies your token.</p>
-
-                <h4 class="page-guide__step-heading" id="security-considerations">Security Considerations</h4>
-                <p><strong>Never share your mnemonic:</strong> Your 12-word recovery phrase provides complete control over your wallet and identity. Never enter it on untrusted websites or share it with anyone.</p>
-                <p><strong>Self-service risks:</strong> The self-service method requires entering your mnemonic into this web application. While the wizard doesn't store or transmit your keys, browser-based key entry carries inherent risks. Only use this method on a trusted device with a test wallet.</p>
-                <p><strong>Mobile/DET are safer:</strong> External tools (mobile app, DET) keep your keys isolated from the browser environment, reducing attack surface.</p>
-
-                <h4 class="page-guide__step-heading" id="technical-constraints">Technical Constraints</h4>
-                <p><strong>Keywords:</strong> Maximum 50 keywords allowed. Each keyword must be 3-50 characters in length. Keywords are optional and help with token discovery.</p>
-                <p><strong>Description:</strong> Token descriptions must be 3-100 characters in length. Keep descriptions concise and informative.</p>
-                <p><strong>Tokens Per Contract:</strong> Unlimited tokens per contract (only constrained by contract size). You can deploy multiple tokens within size limits.</p>
-                <p><strong>Token Transition Fields:</strong> The platform automatically manages $identityContractNonce (64-bit), $tokenContractPosition (16-bit), $dataContractId (32 bytes), and $tokenId (32 bytes).</p>
-                <p><strong>Epoch Timing:</strong> Masternode rewards are distributed approximately every 18 days (one Epoch on Dash Platform).</p>
-
-                <h4 class="page-guide__step-heading" id="after-deployment">After Deployment</h4>
-                <p><strong>Contract ID:</strong> Your token is identified by a unique contract ID. Save this ID—you'll need it to interact with your token programmatically.</p>
-                <p><strong>Testing:</strong> After deployment, test basic operations (transfers, minting if enabled, etc.) to verify everything works as expected.</p>
-                <p><strong>Documentation:</strong> Document your contract ID, governance rules, and any change control processes for your team and community.</p>
-                <p><strong>Monitoring:</strong> Use Dash Platform explorers to monitor your token's activity, supply changes, and transaction history.</p>
               </div>
             </div>
             </div>
@@ -8439,153 +8426,165 @@
 
           <div class="wizard-screen__inner">
             <form class="wizard-form" id="registration-form" novalidate>
-              <h1 class="wizard-screen__title" id="title-registration" tabindex="-1">How would you like to register your
-                token?</h1>
-              <p class="wizard-screen__subtitle">Choose your preferred method for publishing your token on the Dash
-                Platform.</p>
+              <h1 class="wizard-screen__title" id="title-registration" tabindex="-1">Export Token Configuration</h1>
+              <p class="wizard-screen__subtitle">Your token configuration is complete. Save it to Documents or download the contract JSON.</p>
 
-              <!-- Contract Validation Card -->
-              <div class="form-card form-card--highlight" id="registration-validation-card" hidden>
-                <div class="form-card__body" id="registration-validation-body">
-                  <p><strong>You're almost done!</strong></p>
-                  <p style="margin-bottom: 0;">Your token is configured and ready to go. Now you just need to publish it
-                    to the Dash Platform. Choose the method that works best for you below.</p>
+              <!-- Export Status Card -->
+              <div class="form-card form-card--highlight" id="export-status-card">
+                <div class="form-card__body" id="export-status-body" style="text-align: center; padding: var(--space-5);">
+                  <div id="export-ready-state">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style="margin-bottom: var(--space-3); color: var(--color-success, #22c55e);">
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                      <path d="M8 12l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <h3 style="margin: 0 0 var(--space-2) 0; font-size: 1.25rem;">Configuration Complete</h3>
+                    <p style="margin: 0; color: var(--color-text-muted);">Your token "<strong id="export-token-name">Token</strong>" is ready to export.</p>
+                  </div>
+                  <div id="export-success-state" hidden>
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style="margin-bottom: var(--space-3); color: var(--color-success, #22c55e);">
+                      <circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.15"/>
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                      <path d="M8 12l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <h3 style="margin: 0 0 var(--space-2) 0; font-size: 1.25rem; color: var(--color-success, #22c55e);">Saved to Documents</h3>
+                    <p style="margin: 0; color: var(--color-text-muted);">Your configuration has been saved as "<strong id="export-saved-name">Token_Config.json</strong>"</p>
+                  </div>
                 </div>
               </div>
 
-              <!-- Registration Methods -->
+              <!-- Primary Action: Save to Documents -->
               <div class="form-card form-card--glass">
                 <div class="form-card__header">
-                  <h3 class="form-card__title">Registration Method</h3>
-                  <p class="form-card__description">Register your token in the Dash Evo Tool</p>
+                  <h3 class="form-card__title">Save to Documents</h3>
+                  <p class="form-card__description">Store your configuration in the Documents section for easy access</p>
                 </div>
                 <div class="form-card__body">
-                  <div class="registration-methods" role="radiogroup" aria-labelledby="registration-methods-title">
-                    <div class="wizard-options registration-methods__options">
-                      <label class="wizard-option" data-method="det">
-                        <input class="wizard-option__input" type="radio" name="registration-method" value="det">
-                        <span class="wizard-option__body">
-                          <span class="wizard-option__header">
-                            <span class="wizard-option__title">🛠️ Dash Evo Tool</span>
-                            <span class="wizard-option__check" aria-hidden="true"></span>
-                          </span>
-                          <span class="wizard-option__description">Export JSON for the Dash Evo Tool</span>
-                        </span>
-                      </label>
+                  <button class="wizard-button wizard-button--primary" type="button" id="export-save-btn" style="width: 100%;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="margin-right: var(--space-2); vertical-align: middle;">
+                      <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <polyline points="17 21 17 13 7 13 7 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <polyline points="7 3 7 8 15 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Save to Documents
+                  </button>
+                  <p class="field-hint" style="margin-top: var(--space-2);">
+                    Your configuration will be saved and accessible from the Documents page
+                  </p>
+                </div>
+              </div>
+
+              <!-- Alternative: Download Options -->
+              <div class="form-card form-card--glass">
+                <div class="form-card__header">
+                  <h3 class="form-card__title">Download Options</h3>
+                  <p class="form-card__description">Download files for external tools or backup</p>
+                </div>
+                <div class="form-card__body">
+                  <div style="display: flex; gap: var(--space-3); flex-wrap: wrap;">
+                    <button class="wizard-button wizard-button--secondary" type="button" id="det-export-contract-btn" style="flex: 1; min-width: 200px;">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="margin-right: var(--space-2); vertical-align: middle;">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                      Contract JSON
+                    </button>
+                    <button class="wizard-button wizard-button--secondary" type="button" id="det-export-full-config-btn" style="flex: 1; min-width: 200px;">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="margin-right: var(--space-2); vertical-align: middle;">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                      Full Configuration
+                    </button>
+                  </div>
+                  <p class="field-hint" style="margin-top: var(--space-2);">
+                    <strong>Contract JSON:</strong> For Dash Evo Tool registration &nbsp;|&nbsp;
+                    <strong>Full Config:</strong> Complete wizard backup
+                  </p>
+                </div>
+              </div>
+
+              <!-- Preview JSON (Collapsible) -->
+              <div class="form-card form-card--glass">
+                <div class="form-card__header">
+                  <h3 class="form-card__title">Contract Preview</h3>
+                  <p class="form-card__description">Review the generated contract JSON</p>
+                </div>
+                <div class="form-card__body">
+                  <div class="wizard-inline" style="margin-bottom: var(--space-3);">
+                    <button class="wizard-button wizard-button--secondary" type="button" id="json-show-button">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="margin-right: var(--space-1); vertical-align: middle;">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                      </svg>
+                      Show JSON
+                    </button>
+                    <button class="wizard-button wizard-button--secondary" type="button" id="json-copy-button" disabled>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="margin-right: var(--space-1); vertical-align: middle;">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                      Copy JSON
+                    </button>
+                  </div>
+                  <div class="wizard-json" id="json-preview" hidden>
+                    <div class="wizard-json__header">
+                      <h3 class="wizard-json__title">JSON Preview</h3>
                     </div>
+                    <pre class="wizard-json__code" id="json-preview-content"></pre>
                   </div>
                 </div>
               </div>
 
-              <section class="registration-panel" id="registration-panel-det" aria-labelledby="registration-det-title"
-                hidden>
-                <h2 class="registration-panel__title" id="registration-det-title">Dash Evo Tool (DET)</h2>
-                <p class="wizard-screen__help">Export your token configuration and import it into the Dash Evo Tool for
-                  deployment.</p>
-
-                <!-- Step 1: Download Contract -->
-                <div class="form-card form-card--glass">
-                  <div class="form-card__header">
-                    <h3 class="form-card__title">Step 1: Download Contract JSON</h3>
-                    <p class="form-card__description">Download the production-ready contract file for Dash Platform</p>
-                  </div>
-                  <div class="form-card__body">
-                    <button class="wizard-button wizard-button--primary" type="button" id="det-export-contract-btn"
-                      style="width: 100%;">
-                      📥 Download Contract JSON
-                    </button>
-                    <p class="field-hint" style="margin-top: var(--space-2);">
-                      This file contains your complete token configuration ready for deployment
-                    </p>
-                  </div>
+              <!-- Next Steps Info -->
+              <div class="form-card form-card--glass">
+                <div class="form-card__header">
+                  <h3 class="form-card__title">Next Steps</h3>
+                  <p class="form-card__description">How to deploy your token to Dash Platform</p>
                 </div>
-
-                <!-- Step 2: Install & Open DET -->
-                <div class="form-card form-card--glass">
-                  <div class="form-card__header">
-                    <h3 class="form-card__title">Step 2: Download & Install Dash Evo Tool</h3>
-                    <p class="form-card__description">Get the desktop application for your operating system</p>
-                  </div>
-                  <div class="form-card__body">
-                    <ol style="margin: 0; padding-left: var(--space-4);">
-                      <li>Visit the <a href="https://github.com/dashpay/dash-evo-tool/releases" target="_blank" rel="noopener" class="wizard-link">Dash Evo Tool GitHub Releases</a></li>
-                      <li>Download the appropriate version for your OS (Windows, macOS, or Linux)</li>
-                      <li>Install and launch the application</li>
-                    </ol>
-                    <p class="field-hint" style="margin-top: var(--space-2);">
-                      For more information, visit the <a href="https://docs.dash.org" target="_blank" rel="noopener"
-                        class="wizard-link">Dash Platform Documentation</a>
-                    </p>
-                  </div>
+                <div class="form-card__body">
+                  <ol style="margin: 0; padding-left: var(--space-4); line-height: 1.8;">
+                    <li>Download the <a href="https://github.com/dashpay/dash-evo-tool/releases" target="_blank" rel="noopener" class="wizard-link">Dash Evo Tool</a> for your operating system</li>
+                    <li>Open DET and navigate to <strong>Contracts</strong> in the sidebar</li>
+                    <li>Click the <strong>Contracts</strong> dropdown and select <strong>Register Contract</strong></li>
+                    <li>Load your downloaded Contract JSON file or paste from clipboard</li>
+                    <li>Review and confirm to deploy your token to Dash Platform</li>
+                  </ol>
+                  <p class="field-hint" style="margin-top: var(--space-3);">
+                    Ensure you have a Dash Platform identity with sufficient credits before registering.
+                    <a href="https://docs.dash.org" target="_blank" rel="noopener" class="wizard-link">Learn more</a>
+                  </p>
                 </div>
+              </div>
 
-                <!-- Step 3: Import to DET -->
-                <div class="form-card form-card--glass">
-                  <div class="form-card__header">
-                    <h3 class="form-card__title">Step 3: Register Contract in DET</h3>
-                    <p class="form-card__description">Use the DET GUI to register your token contract</p>
-                  </div>
-                  <div class="form-card__body">
-                    <ol style="margin: 0; padding-left: var(--space-4);">
-                      <li>Open Dash Evo Tool and navigate to <strong>Contracts</strong> in the sidebar</li>
-                      <li>Click the <strong>Contracts</strong> dropdown in the top right corner</li>
-                      <li>Select <strong>Register Contract</strong></li>
-                      <li>Paste your downloaded JSON or load the file</li>
-                      <li>Review and confirm to deploy your contract</li>
-                    </ol>
-                    <p class="field-hint" style="margin-top: var(--space-2);">
-                      Make sure you have an identity with sufficient credits before registering
-                    </p>
-                  </div>
-                </div>
-
-                <!-- Optional: Preview JSON -->
-                <div class="form-card form-card--glass">
-                  <div class="form-card__header">
-                    <h3 class="form-card__title">Preview Contract JSON</h3>
-                    <p class="form-card__description">View your contract before downloading (optional)</p>
-                  </div>
-                  <div class="form-card__body">
-                    <div class="wizard-inline" style="margin-bottom: var(--space-3);">
-                      <button class="wizard-button wizard-button--secondary" type="button" id="json-show-button">👁️
-                        Show JSON</button>
-                      <button class="wizard-button wizard-button--secondary" type="button" id="json-copy-button"
-                        disabled>📋 Copy JSON</button>
-                    </div>
-                    <div class="wizard-json" id="json-preview" hidden>
-                      <div class="wizard-json__header">
-                        <h3 class="wizard-json__title">JSON Preview</h3>
-                      </div>
-                      <pre class="wizard-json__code" id="json-preview-content"></pre>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Optional: Full Configuration Backup -->
-                <div class="form-card form-card--glass">
-                  <div class="form-card__header">
-                    <h3 class="form-card__title">Optional: Download Full Configuration</h3>
-                    <p class="form-card__description">Backup complete wizard state for later</p>
-                  </div>
-                  <div class="form-card__body">
-                    <button class="wizard-button wizard-button--secondary" type="button" id="det-export-full-config-btn"
-                      style="width: 100%;">
-                      📥 Download Full Configuration
-                    </button>
-                    <p class="field-hint" style="margin-top: var(--space-2);">
-                      Save all your wizard settings to reload or share later
-                    </p>
-                  </div>
-                </div>
-              </section>
+              <!-- Hidden elements for registration functionality (kept for future use) -->
+              <div id="registration-validation-card" hidden></div>
+              <div id="registration-validation-body" hidden></div>
+              <div class="registration-methods" hidden>
+                <input type="radio" name="registration-method" value="det" checked>
+              </div>
+              <section id="registration-panel-det" hidden></section>
+              <section id="registration-panel-self" hidden></section>
 
               <div class="wizard-actions wizard-actions--between wizard-actions--sticky">
                 <button class="wizard-button wizard-button--secondary" type="button"
-                  data-step-back="registration">Back</button>
-                <button class="wizard-button wizard-button--secondary" type="button" id="contract-preview-btn">📄
-                  Contract Preview</button>
-                <button class="wizard-button wizard-button--primary js-create-token" id="create-new-token" type="button"
-                  disabled aria-disabled="true" aria-label="Create new token">Create new token</button>
+                  data-step-back="export">Back</button>
+                <button class="wizard-button wizard-button--secondary" type="button" id="contract-preview-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="margin-right: var(--space-1); vertical-align: middle;">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="2"/>
+                    <polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                  Contract Preview
+                </button>
+                <button class="wizard-button wizard-button--primary js-export-to-docs" id="export-to-documents" type="button"
+                  aria-label="Save to Documents">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="margin-right: var(--space-1); vertical-align: middle;">
+                    <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" stroke="currentColor" stroke-width="2"/>
+                    <polyline points="17 21 17 13 7 13 7 21" stroke="currentColor" stroke-width="2"/>
+                    <polyline points="7 3 7 8 15 8" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                  Save to Documents
+                </button>
               </div>
             </form>
           </div>
@@ -9289,16 +9288,18 @@
                     </span>
                   </div>
                   <div class="docs-editor__actions">
-                    <button class="docs-editor__action" id="editor-format-btn" type="button" title="Format JSON">
+                    <button class="docs-editor__action has-tooltip" id="editor-format-btn" type="button" aria-label="Format JSON">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                         <path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                       </svg>
+                      <span class="tooltip">Format</span>
                     </button>
-                    <button class="docs-editor__action" id="editor-copy-btn" type="button" title="Copy to clipboard">
+                    <button class="docs-editor__action has-tooltip" id="editor-copy-btn" type="button" aria-label="Copy to clipboard">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                         <rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/>
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2"/>
                       </svg>
+                      <span class="tooltip">Copy</span>
                     </button>
                     <button class="docs-editor__action" id="editor-download-btn" type="button" title="Download JSON">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none">

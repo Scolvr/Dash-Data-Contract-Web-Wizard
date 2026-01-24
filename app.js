@@ -124,7 +124,7 @@ window.__WIZARD_RESET_MODE__ = false;
   // FIXED: Correct order matching sidebar navigation
   // Note: 'overview' removed from sequence - accessible only from Document tab
   // Note: 'welcome' removed - templates now on standalone page
-  const STEP_SEQUENCE = ['naming', 'permissions', 'advanced', 'distribution', 'search', 'registration'];
+  const STEP_SEQUENCE = ['naming', 'permissions', 'advanced', 'distribution', 'search', 'export'];
   const INFO_STEPS = Object.freeze([
     'permissions-group',
     'permissions-manual-mint',
@@ -198,14 +198,14 @@ window.__WIZARD_RESET_MODE__ = false;
   // advanced (displayed as "Usage"): History → Trading Rules → Launch Settings
   // distribution: Schedule → Emission
   // search: Keywords & Description (single screen)
-  // registration: Register Token (no substeps)
+  // export: Export to Documents (no substeps)
   const SUBSTEP_SEQUENCES = Object.freeze({
     naming: ['naming', 'naming-localization', 'naming-update'],
     permissions: ['permissions', 'permissions-transfer', 'permissions-manual-mint', 'permissions-manual-burn', 'permissions-manual-freeze', 'permissions-emergency', 'permissions-marketplace-trade-mode-change', 'permissions-direct-pricing-change', 'permissions-main-control-change'],
     advanced: ['advanced-history', 'advanced', 'advanced-launch'],
     distribution: ['distribution-preprogrammed', 'distribution-perpetual'],
     search: ['search'],
-    registration: ['registration']
+    export: ['export']
   });
 
   const MAX_U32 = 4294967295;
@@ -215,7 +215,7 @@ window.__WIZARD_RESET_MODE__ = false;
     distribution: 'Distribution',
     advanced: 'Advanced',
     overview: 'Overview',
-    registration: 'Registration',
+    export: 'Export',
     'permissions-group': 'Group permissions',
     'permissions-transfer': 'Transfer settings',
     'permissions-manual-mint': 'Manual mint',
@@ -672,7 +672,7 @@ window.__WIZARD_RESET_MODE__ = false;
     'permissions': 1,
     'distribution': 2,
     'advanced': 3,
-    'registration': 4
+    'export': 4
   };
 
   /**
@@ -734,8 +734,8 @@ window.__WIZARD_RESET_MODE__ = false;
 
     if (!progressText || !progressFill) return;
 
-    // Count completed steps from STEP_SEQUENCE (naming, permissions, distribution, advanced, registration)
-    const mainSteps = ['naming', 'permissions', 'distribution', 'advanced', 'registration'];
+    // Count completed steps from STEP_SEQUENCE (naming, permissions, distribution, advanced, export)
+    const mainSteps = ['naming', 'permissions', 'distribution', 'advanced', 'export'];
     let completedCount = 0;
 
     mainSteps.forEach(stepId => {
@@ -1517,8 +1517,8 @@ window.__WIZARD_RESET_MODE__ = false;
       return;
     }
 
-    // INTERCEPT: When clicking on "Register Token" in sidebar, show validation modal first
-    if (stepId === 'registration') {
+    // INTERCEPT: When clicking on "Export" in sidebar, show validation modal first
+    if (stepId === 'export') {
       if (typeof window.showSettingsConfirmationModal === 'function') {
         window.showSettingsConfirmationModal();
         return;
@@ -1645,6 +1645,7 @@ window.__WIZARD_RESET_MODE__ = false;
     ? Array.from(registrationMethodsContainer.querySelectorAll('input[name="registration-method"]'))
     : [];
   const createTokenButton = document.getElementById('create-new-token');
+  const exportToDocumentsButton = document.getElementById('export-to-documents');
   const registrationPanelDet = document.getElementById('registration-panel-det');
   const registrationPanelSelf = document.getElementById('registration-panel-self');
   const registrationPanels = {
@@ -1701,7 +1702,7 @@ window.__WIZARD_RESET_MODE__ = false;
   const advancedScreen = document.getElementById('screen-advanced');
   const searchScreen = document.getElementById('screen-search');
   const overviewScreen = document.getElementById('screen-overview');
-  const registrationScreen = document.getElementById('screen-registration');
+  const exportScreen = document.getElementById('screen-export');
   const documentsScreen = document.getElementById('screen-documents');
   const manualMintScreen = document.getElementById('screen-permissions-manual-mint');
   const manualBurnScreen = document.getElementById('screen-permissions-manual-burn');
@@ -1783,10 +1784,10 @@ window.__WIZARD_RESET_MODE__ = false;
       element: overviewScreen
     },
     {
-      id: 'registration',
+      id: 'export',
       isAdvanced: false,
       shouldSkip: () => false,
-      element: registrationScreen
+      element: exportScreen
     },
     ...getAllSubstepScreens(),
     ...infoScreenEntries.map(({ id, element }) => ({
@@ -2047,8 +2048,8 @@ window.__WIZARD_RESET_MODE__ = false;
       wizardState.steps.distribution.validity = 'valid';
       wizardState.steps.distribution.touched = true;
       updateFurthestValidIndex();
-      // Skip to next main step (registration)
-      const nextStep = 'registration';
+      // Skip to next main step (export)
+      const nextStep = 'export';
       showScreen(nextStep, { force: true });
     });
   }
@@ -2061,8 +2062,8 @@ window.__WIZARD_RESET_MODE__ = false;
       wizardState.steps.distribution.validity = 'valid';
       wizardState.steps.distribution.touched = true;
       updateFurthestValidIndex();
-      // Skip to next main step (registration)
-      const nextStep = 'registration';
+      // Skip to next main step (export)
+      const nextStep = 'export';
       showScreen(nextStep, { force: true });
     });
   }
@@ -2445,7 +2446,16 @@ window.__WIZARD_RESET_MODE__ = false;
     });
   }
   if (createTokenButton) {
-    createTokenButton.addEventListener('click', () => handleStepAdvance('registration'));
+    createTokenButton.addEventListener('click', () => handleStepAdvance('export'));
+  }
+
+  // Export to Documents buttons (footer button and main content button)
+  if (exportToDocumentsButton) {
+    exportToDocumentsButton.addEventListener('click', handleExportToDocuments);
+  }
+  const exportSaveBtn = document.getElementById('export-save-btn');
+  if (exportSaveBtn) {
+    exportSaveBtn.addEventListener('click', handleExportToDocuments);
   }
 
   if (overviewNextButton) {
@@ -2570,8 +2580,8 @@ window.__WIZARD_RESET_MODE__ = false;
   window.addEventListener('unhandledrejection', handleChunkLoadRejection);
   window.addEventListener('error', handleChunkLoadError, true);
   window.addEventListener('evo:sdk-ready', () => {
-    if (getPrimaryStepId(wizardState.active) === 'registration') {
-      validateRegistrationContract();
+    if (getPrimaryStepId(wizardState.active) === 'export') {
+      validateExportContract();
     }
   });
 
@@ -3805,7 +3815,7 @@ window.__WIZARD_RESET_MODE__ = false;
 
     const result = ready ? { valid: true, message: '' } : { valid: false, message };
 
-    updateStepStatusFromValidation('registration', result, touched);
+    updateStepStatusFromValidation('export', result, touched);
     persistState();
     return result;
   }
@@ -3972,7 +3982,7 @@ window.__WIZARD_RESET_MODE__ = false;
         return evaluateOverview(options);
       case 'search':
         return evaluateSearch(options);
-      case 'registration':
+      case 'export':
         return evaluateRegistration(options);
       default:
         return undefined;
@@ -4034,13 +4044,13 @@ window.__WIZARD_RESET_MODE__ = false;
         }
         goToNextScreen(substepId);
         break;
-      case 'registration':
+      case 'export':
         validation = evaluateRegistration({ touched: true, silent: false, showFieldIndicators: true });
         if (!validation.valid) {
           announce(validation.message);
           return;
         }
-        handleRegistrationNext();
+        handleExportToDocuments();
         break;
       default:
         break;
@@ -4359,6 +4369,106 @@ window.__WIZARD_RESET_MODE__ = false;
     announce('Started a new token.');
     updateFurthestValidIndex();
     persistState();
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Export Step Functions (replaced Registration)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Updates the export preview with the generated JSON
+   */
+  function updateExportPreview() {
+    const exportPreviewContent = document.getElementById('json-preview-content');
+    if (!exportPreviewContent) return;
+
+    try {
+      const payload = generatePlatformContractJSON();
+      const serialized = JSON.stringify(payload, null, 2);
+      exportPreviewContent.textContent = serialized;
+    } catch (error) {
+      console.error('[Export] Error generating preview:', error);
+      exportPreviewContent.textContent = '// Error generating contract JSON';
+    }
+  }
+
+  /**
+   * Updates the export screen UI with current token name
+   */
+  function updateExportScreenUI() {
+    const tokenName = wizardState.form.tokenName || 'Token';
+    const exportTokenNameEl = document.getElementById('export-token-name');
+    if (exportTokenNameEl) {
+      exportTokenNameEl.textContent = tokenName;
+    }
+    // Reset to ready state when entering export screen
+    const readyState = document.getElementById('export-ready-state');
+    const successState = document.getElementById('export-success-state');
+    if (readyState) readyState.hidden = false;
+    if (successState) successState.hidden = true;
+  }
+
+  /**
+   * Handles exporting the token configuration to Documents
+   * Automatically names the document based on token name
+   * Uses window.documentStorage API which is exposed by the document storage IIFE
+   */
+  function handleExportToDocuments() {
+    try {
+      // Check if document storage is available
+      if (!window.documentStorage || typeof window.documentStorage.createDocument !== 'function') {
+        throw new Error('Document storage not initialized. Please try again.');
+      }
+
+      // Get token name for document naming
+      const tokenName = wizardState.form.tokenName || 'Token';
+      const sanitizedName = tokenName.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 50);
+      const documentName = `${sanitizedName}_Config`;
+
+      // Generate the contract JSON
+      const payload = generatePlatformContractJSON();
+
+      // Create document in storage via global API
+      const doc = window.documentStorage.createDocument(
+        documentName,
+        `Token configuration for "${tokenName}" - Created ${new Date().toLocaleDateString()}`,
+        payload
+      );
+
+      // Update documents UI
+      window.documentStorage.render();
+
+      // Update export screen to show success state
+      const readyState = document.getElementById('export-ready-state');
+      const successState = document.getElementById('export-success-state');
+      const savedNameEl = document.getElementById('export-saved-name');
+      if (readyState) readyState.hidden = true;
+      if (successState) successState.hidden = false;
+      if (savedNameEl) savedNameEl.textContent = `${documentName}.json`;
+
+      // Show success message
+      announce(`Token configuration saved as "${documentName}"`);
+
+      // Show toast
+      if (typeof window.showToast === 'function') {
+        window.showToast({ type: 'success', title: `Configuration saved as "${documentName}.json"` });
+      }
+
+      // Navigate to Documents page after a brief delay to show success
+      setTimeout(() => {
+        if (typeof switchPage === 'function') {
+          switchPage('documents');
+        }
+      }, 1500);
+
+      console.log('[Export] Document saved:', doc);
+    } catch (error) {
+      console.error('[Export] Error saving document:', error);
+      announce('Error saving configuration: ' + error.message);
+      if (typeof window.showToast === 'function') {
+        window.showToast({ type: 'error', title: 'Error saving configuration' });
+      }
+    }
   }
 
   function handleChunkLoadRejection(event) {
@@ -5952,9 +6062,10 @@ window.__WIZARD_RESET_MODE__ = false;
         syncSearchUI();
       }
 
-      // Validate contract when showing registration step
-      if (screenId === 'registration' || primaryStep === 'registration') {
-        validateRegistrationContract();
+      // Update export preview and UI when showing export step
+      if (screenId === 'export' || primaryStep === 'export') {
+        updateExportPreview();
+        updateExportScreenUI();
       }
 
       // Distribution screen updates
@@ -6464,9 +6575,9 @@ window.__WIZARD_RESET_MODE__ = false;
           return true;
         }
         break;
-      case 'registration':
-        if (registrationMessage.textContent) {
-          registrationMessage.textContent = '';
+      case 'export':
+        if (exportMessage && exportMessage.textContent) {
+          exportMessage.textContent = '';
           return true;
         }
         break;
@@ -15977,11 +16088,11 @@ window.__WIZARD_RESET_MODE__ = false;
 
     hideSettingsConfirmationModal();
 
-    // Navigate to registration step
+    // Navigate to export step
     if (typeof goToNextScreen === 'function') {
       goToNextScreen('search');
     } else if (typeof showScreen === 'function') {
-      showScreen('registration');
+      showScreen('export');
     }
   }
 
@@ -17541,7 +17652,7 @@ window.__WIZARD_RESET_MODE__ = false;
         'distribution': 'Distribution',
         'advanced': 'Usage',
         'search': 'Search Ability',
-        'registration': 'Registration'
+        'export': 'Export'
       };
       return names[stepId] || stepId;
     }
@@ -17619,10 +17730,10 @@ window.__WIZARD_RESET_MODE__ = false;
       const missingSteps = getMissingRequiredSteps();
 
       if (missingSteps.length === 0) {
-        // All complete - go to registration
+        // All complete - go to export
         switchPage('tokens');
         if (typeof showScreen === 'function') {
-          showScreen('registration');
+          showScreen('export');
         }
       } else {
         // Show dropdown with missing steps
@@ -18716,7 +18827,9 @@ window.__WIZARD_RESET_MODE__ = false;
     // Format button
     const formatBtn = document.getElementById('editor-format-btn');
     if (formatBtn) {
+      console.log('[Documents] Format button found, attaching listener');
       formatBtn.addEventListener('click', () => {
+        console.log('[Documents] Format button clicked');
         try {
           const parsed = JSON.parse(editor.value);
           editor.value = JSON.stringify(parsed, null, 2);
@@ -18724,22 +18837,30 @@ window.__WIZARD_RESET_MODE__ = false;
           validateJSON();
           showToast('JSON formatted', 'success');
         } catch (e) {
+          console.error('[Documents] Format error:', e);
           showToast('Cannot format invalid JSON', 'error');
         }
       });
+    } else {
+      console.warn('[Documents] Format button not found');
     }
 
     // Copy button
     const copyBtn = document.getElementById('editor-copy-btn');
     if (copyBtn) {
+      console.log('[Documents] Copy button found, attaching listener');
       copyBtn.addEventListener('click', async () => {
+        console.log('[Documents] Copy button clicked');
         try {
           await navigator.clipboard.writeText(editor.value);
           showToast('Copied to clipboard', 'success');
         } catch (e) {
+          console.error('[Documents] Copy error:', e);
           showToast('Failed to copy', 'error');
         }
       });
+    } else {
+      console.warn('[Documents] Copy button not found');
     }
 
     // Download button
@@ -18967,7 +19088,13 @@ window.__WIZARD_RESET_MODE__ = false;
     save: () => openSaveModal(false),
     load: loadDocuments,
     render: renderDocuments,
-    getCount: () => documents.length
+    getCount: () => documents.length,
+    createDocument: createDocument,
+    switchToDocumentsPage: () => {
+      if (typeof window.switchPage === 'function') {
+        window.switchPage('documents');
+      }
+    }
   };
 
   // Run setup when DOM is ready
