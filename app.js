@@ -4359,27 +4359,42 @@ window.__WIZARD_RESET_MODE__ = false;
           const hasTokens = !!contractJSON.tokens && Object.keys(contractJSON.tokens).length > 0;
 
           if (hasTokens) {
-            // For token contracts, do manual validation (wasm-dpp v2.1.3 doesn't support V1)
-            const tokenConfig = contractJSON.tokens?.[0] || contractJSON.tokens?.['0'];
-            if (!tokenConfig) {
-              throw new Error('Token configuration missing');
-            }
+            // For token contracts, use strict schema validation
+            // (wasm-dpp v2.1.3 doesn't support V1 format)
+            if (window.ContractSchema && typeof window.ContractSchema.validateContract === 'function') {
+              // Use strict schema validation from contractSchema.js
+              const schemaResult = window.ContractSchema.validateContract(contractJSON);
+              if (!schemaResult.valid) {
+                const errorMsg = schemaResult.errors.slice(0, 3).join('; ');
+                throw new Error(errorMsg);
+              }
+              // Log warnings but don't fail
+              if (schemaResult.warnings.length > 0) {
+                console.warn('[Export] Contract validation warnings:', schemaResult.warnings);
+              }
+            } else {
+              // Fallback: basic validation if schema module not loaded
+              const tokenConfig = contractJSON.tokens?.[0] || contractJSON.tokens?.['0'];
+              if (!tokenConfig) {
+                throw new Error('Token configuration missing');
+              }
 
-            // Check required token fields
-            const requiredFields = ['conventions', 'baseSupply', 'keepsHistory'];
-            const missingFields = requiredFields.filter(f => tokenConfig[f] === undefined);
-            if (missingFields.length > 0) {
-              throw new Error(`Missing required token fields: ${missingFields.join(', ')}`);
-            }
+              // Check required token fields
+              const requiredFields = ['conventions', 'baseSupply', 'keepsHistory'];
+              const missingFields = requiredFields.filter(f => tokenConfig[f] === undefined);
+              if (missingFields.length > 0) {
+                throw new Error(`Missing required token fields: ${missingFields.join(', ')}`);
+              }
 
-            // Validate conventions structure
-            if (!tokenConfig.conventions?.localizations) {
-              throw new Error('Token conventions must include localizations');
-            }
+              // Validate conventions structure
+              if (!tokenConfig.conventions?.localizations) {
+                throw new Error('Token conventions must include localizations');
+              }
 
-            // Validate contract has required base fields
-            if (!contractJSON.ownerId) {
-              throw new Error('Contract missing required ownerId');
+              // Validate contract has required base fields
+              if (!contractJSON.ownerId) {
+                throw new Error('Contract missing required ownerId');
+              }
             }
           } else {
             // No tokens - can do full SDK validation with V0 format

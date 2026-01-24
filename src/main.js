@@ -21,6 +21,7 @@ import * as state from './core/state.js';
 import * as formatters from './utils/formatters.js';
 import * as validation from './utils/validation.js';
 import * as helpers from './utils/helpers.js';
+import * as contractSchema from './utils/contractSchema.js';
 
 // Import UI modules
 import * as theme from './ui/theme.js';
@@ -59,6 +60,7 @@ function initializeModules() {
   console.log('  ✓ Formatters:', Object.keys(formatters).length, 'exports');
   console.log('  ✓ Validation:', Object.keys(validation).length, 'exports');
   console.log('  ✓ Helpers:', Object.keys(helpers).length, 'exports');
+  console.log('  ✓ Contract Schema:', Object.keys(contractSchema).length, 'exports');
   console.log('  ✓ Theme:', Object.keys(theme).length, 'exports');
   console.log('  ✓ Templates:', Object.keys(TOKEN_TEMPLATES).length, 'templates');
 
@@ -80,6 +82,7 @@ function initializeModules() {
     formatters,
     validation,
     helpers,
+    contractSchema,
 
     // UI
     theme,
@@ -96,9 +99,13 @@ function initializeModules() {
     buildMode: BUILD_MODE
   };
 
+  // Expose ContractSchema globally for use by app.js
+  window.ContractSchema = contractSchema;
+
   console.log('\n💡 Modules available globally via window.DashWizardModules');
   console.log('Example: window.DashWizardModules.validation.validateTokenName("MyToken")');
   console.log('Example: window.DashWizardModules.templates.get("utility")');
+  console.log('Example: window.ContractSchema.validateContract(contractJSON)');
 }
 
 // Wait for DOM to be ready
@@ -123,6 +130,7 @@ export {
   formatters,
   validation,
   helpers,
+  contractSchema,
   theme,
   TOKEN_TEMPLATES,
   WIZARD_VERSION,
