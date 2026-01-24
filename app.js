@@ -1775,8 +1775,8 @@ window.__WIZARD_RESET_MODE__ = false;
     naming: namingForm,
     permissions: permissionsForm,
     distribution: distributionForm,
-    advanced: advancedForm,
-    registration: registrationForm
+    advanced: advancedForm
+    // Note: registration removed - no longer in STEP_SEQUENCE
   };
 
   let activeScreens = [];
