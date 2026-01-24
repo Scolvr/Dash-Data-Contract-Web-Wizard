@@ -6,7 +6,7 @@
   <!-- Blocking script to prevent theme flash on page load -->
   <script>
     (function() {
-      var saved = localStorage.getItem('ui-theme');
+      var saved = localStorage.getItem('ui.theme');
       var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
       document.documentElement.setAttribute('data-theme', theme);
     })();

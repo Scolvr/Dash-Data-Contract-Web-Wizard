@@ -17548,14 +17548,15 @@ window.__WIZARD_RESET_MODE__ = false;
     }
 
     // ─────────────────────────────────────────────────────────────────────
-    // Theme Toggle
+    // Theme Toggle (syncs with wizard IIFE using 'ui.theme' key)
     // ─────────────────────────────────────────────────────────────────────
+    const THEME_KEY = 'ui.theme'; // Must match wizard IIFE's THEME_STORAGE_KEY
     const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
     function applyTheme(theme) {
       document.documentElement.setAttribute('data-theme', theme);
 
-      // Update button states
+      // Update header button states
       headerThemeBtns.forEach(btn => {
         btn.classList.toggle('global-header__theme-btn--active', btn.dataset.theme === theme);
       });
@@ -17564,13 +17565,17 @@ window.__WIZARD_RESET_MODE__ = false;
       const sidebarThemeRadios = document.querySelectorAll('input[name="ui-theme"], input[name="ui-theme-group"]');
       sidebarThemeRadios.forEach(radio => {
         radio.checked = radio.value === theme;
+        const option = radio.closest('.theme-toggle__option');
+        if (option) {
+          option.classList.toggle('theme-toggle__option--active', radio.value === theme);
+        }
       });
     }
 
-    function setTheme(theme, persist = true) {
+    function setThemeFromHeader(theme, persist = true) {
       applyTheme(theme);
       if (persist) {
-        localStorage.setItem('ui-theme', theme);
+        localStorage.setItem(THEME_KEY, theme);
       }
       console.log('[GlobalHeader] Theme set to:', theme, persist ? '(saved)' : '(system)');
     }
@@ -17579,30 +17584,29 @@ window.__WIZARD_RESET_MODE__ = false;
       btn.addEventListener('click', () => {
         const theme = btn.dataset.theme;
         if (theme) {
-          setTheme(theme, true); // User click = persist
+          setThemeFromHeader(theme, true); // User click = persist
         }
       });
     });
 
     // Initialize theme from localStorage or system preference
-    const savedTheme = localStorage.getItem('ui-theme');
+    const savedTheme = localStorage.getItem(THEME_KEY);
     const systemTheme = darkModeQuery.matches ? 'dark' : 'light';
     const initialTheme = savedTheme || systemTheme;
 
-    // Apply initial theme (persist=false if following system)
+    // Apply initial theme (don't persist if following system)
     applyTheme(initialTheme);
 
     // Listen for system theme changes
     darkModeQuery.addEventListener('change', (e) => {
       const newSystemTheme = e.matches ? 'dark' : 'light';
-      const userPref = localStorage.getItem('ui-theme');
+      const userPref = localStorage.getItem(THEME_KEY);
 
       if (!userPref) {
         // No saved preference - follow system
         applyTheme(newSystemTheme);
         console.log('[GlobalHeader] Following system theme:', newSystemTheme);
       } else {
-        // User has preference - but still update UI to show current system theme would be
         console.log('[GlobalHeader] System changed to', newSystemTheme, '- user preference:', userPref);
       }
     });
@@ -17797,7 +17801,7 @@ window.__WIZARD_RESET_MODE__ = false;
     // ─────────────────────────────────────────────────────────────────────
     window.globalHeader = {
       switchPage,
-      setTheme,
+      setTheme: setThemeFromHeader,
       getCurrentPage: () => currentPage
     };
 
