@@ -4093,44 +4093,9 @@ window.__WIZARD_RESET_MODE__ = false;
     // Stub - Registration UI removed, Export page handles validation
   }
 
-    updateRegistrationPreviewVisibility();
-    syncIdentityUI();
-    syncWizardReadiness();
-  }
-
+  // Note: setRegistrationValidationState removed - Export page handles validation UI
   function setRegistrationValidationState({ variant = 'pending', title = '', message = '' } = {}) {
-    if (!registrationValidationCard || !registrationValidationBody) {
-      return;
-    }
-    registrationValidationCard.hidden = false;
-    registrationValidationCard.classList.remove('form-card--error', 'form-card--highlight');
-
-    if (variant === 'success') {
-      registrationValidationCard.classList.add('form-card--highlight');
-      registrationValidationBody.innerHTML = registrationValidationDefaultHTML;
-      return;
-    }
-
-    if (variant === 'error') {
-      registrationValidationCard.classList.add('form-card--error');
-    } else {
-      registrationValidationCard.classList.add('form-card--highlight');
-    }
-
-    registrationValidationBody.innerHTML = '';
-
-    if (title) {
-      const heading = document.createElement('p');
-      const strong = document.createElement('strong');
-      strong.textContent = title;
-      heading.appendChild(strong);
-      registrationValidationBody.appendChild(heading);
-    }
-
-    const paragraph = document.createElement('p');
-    paragraph.style.marginBottom = '0';
-    paragraph.textContent = message || 'Generating your contract and checking it with the Dash Evo SDK.';
-    registrationValidationBody.appendChild(paragraph);
+    // Stub - Registration validation UI removed
   }
 
   function getReadableErrorMessage(error, fallback = 'Unknown error.') {
