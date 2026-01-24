@@ -1540,13 +1540,7 @@ window.__WIZARD_RESET_MODE__ = false;
   const transferForm = document.getElementById('permissions-transfer-form');
   const distributionForm = document.getElementById('distribution-form');
   const advancedForm = document.getElementById('advanced-form');
-  const registrationForm = document.getElementById('registration-form');
-  const registrationValidationCard = document.getElementById('registration-validation-card');
-  const registrationValidationBody = document.getElementById('registration-validation-body');
-  const registrationValidationFallbackHTML = '<p><strong>You\'re almost done!</strong></p><p style=\"margin-bottom: 0;\">Your token is configured and ready to go. Now you just need to publish it to the Dash Platform. Choose the method that works best for you below.</p>';
-  const registrationValidationDefaultHTML = registrationValidationBody
-    ? registrationValidationBody.innerHTML || registrationValidationFallbackHTML
-    : registrationValidationFallbackHTML;
+  // Note: Registration screen removed - Export page now handles token export
   const groupMainPositionInput = document.getElementById('group-main-position');
   const groupAddButton = document.getElementById('group-add');
   const groupListElement = document.getElementById('group-list');
@@ -1628,21 +1622,9 @@ window.__WIZARD_RESET_MODE__ = false;
   let localizationRows = [];
   let localizationRowIdCounter = 0;
 
-  const registrationMethodsContainer = document.querySelector('.registration-methods');
-  const registrationOptionLabels = registrationMethodsContainer
-    ? Array.from(registrationMethodsContainer.querySelectorAll('.wizard-option'))
-    : [];
-  const registrationMethodInputs = registrationMethodsContainer
-    ? Array.from(registrationMethodsContainer.querySelectorAll('input[name="registration-method"]'))
-    : [];
+  // Note: Registration methods container removed - Export page now handles exports
   const createTokenButton = document.getElementById('create-new-token');
   const exportToDocumentsButton = document.getElementById('export-to-documents');
-  const registrationPanelDet = document.getElementById('registration-panel-det');
-  const registrationPanelSelf = document.getElementById('registration-panel-self');
-  const registrationPanels = {
-    det: registrationPanelDet,
-    self: registrationPanelSelf
-  };
   const jsonPreview = document.getElementById('json-preview');
   const jsonPreviewContent = document.getElementById('json-preview-content');
   const jsonShowButton = document.getElementById('json-show-button');
@@ -2027,9 +2009,7 @@ window.__WIZARD_RESET_MODE__ = false;
   // Expose globally for template loading
   window.syncNamingUIFromState = syncNamingUIFromState;
 
-  if (registrationMethodsContainer) {
-    registrationMethodsContainer.addEventListener('change', handleRegistrationSelection);
-  }
+  // Note: Registration methods event listener removed - Export page now handles exports
 
   // Add event listener for Pre-Programmed distribution radio buttons
   const preprogrammedRadios = document.querySelectorAll('input[name="preprogrammed-enable"]');
@@ -3682,17 +3662,7 @@ window.__WIZARD_RESET_MODE__ = false;
     return result;
   }
 
-  function handleRegistrationSelection(event) {
-    if (!event.target || !event.target.matches('input[type="radio"][name="registration-method"]')) {
-      return;
-    }
-    const nextValue = event.target.value || null;
-    wizardState.form.registration.method = nextValue;
-    syncRegistrationSelection();
-    syncRegistrationPreflightUI();
-    evaluateRegistration({ touched: true });
-    refreshFlow({ suppressFocus: true });
-  }
+  // Note: handleRegistrationSelection removed - Export page now handles exports
 
   function evaluateOverview({ touched = false, silent = false } = {}) {
     // Overview step is always valid - it's just a review screen
@@ -3740,37 +3710,94 @@ window.__WIZARD_RESET_MODE__ = false;
     return result;
   }
 
-  function evaluateRegistration({ touched = false, silent = false, showFieldIndicators = false } = {}) {
-    const refreshStatus =
-      !silent &&
-      touched &&
-      registrationMessage &&
-      (!registrationMessage.dataset.status || registrationMessage.dataset.status === 'info');
+  function evaluateExport({ touched = false, silent = false, showFieldIndicators = false } = {}) {
+    // Validate contract for export using the same logic as updateExportScreenUI
+    const issues = validateContractForExport();
 
-    const ready = syncWizardReadiness({
-      refreshStatus: Boolean(refreshStatus)
-    });
-
-    let message = '';
-    if (!ready) {
-      const missing = [];
-      if (!wizardReadiness.hasJson) {
-        missing.push('Prepare the JSON payload.');
-      }
-      if (!wizardReadiness.hasIdentity) {
-        missing.push('Register an identity.');
-      }
-      if (!wizardReadiness.hasPrivateKey) {
-        missing.push('Import a private key.');
-      }
-      message = missing.join(' ') || readinessReminderMessage;
+    const stepState = wizardState.steps.export;
+    if (stepState) {
+      stepState.touched = touched || stepState.touched;
     }
 
-    const result = ready ? { valid: true, message: '' } : { valid: false, message };
+    let message = '';
+    if (issues.length > 0) {
+      message = issues.map(i => i.issue).join(' ');
+    }
 
-    updateStepStatusFromValidation('export', result, touched);
-    persistState();
+    const result = issues.length === 0 ? { valid: true, message: '' } : { valid: false, message };
+
+    if (!silent) {
+      updateStepStatusFromValidation('export', result, touched);
+      persistState();
+    }
+
     return result;
+  }
+
+  // Helper function for export validation (extracted for reuse)
+  function validateContractForExport() {
+    const issues = [];
+    const form = wizardState.form || {};
+
+    // 1. TOKEN NAME VALIDATION
+    const rawTokenName = form.tokenName || '';
+    const trimmedName = rawTokenName.trim();
+    if (!trimmedName) {
+      issues.push({ id: 'naming', name: 'Token Naming', issue: 'Token name is required' });
+    } else if (trimmedName.length > 100) {
+      issues.push({ id: 'naming', name: 'Token Naming', issue: 'Token name must be 100 characters or less' });
+    }
+
+    // 2. OWNER IDENTITY ID VALIDATION
+    const ownerIdentityId = form.ownerIdentityId || '';
+    const trimmedIdentity = ownerIdentityId.trim();
+    const base58Pattern = /^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$/;
+    if (!trimmedIdentity) {
+      issues.push({ id: 'naming', name: 'Contract Owner', issue: 'Owner Identity ID is required' });
+    } else if (trimmedIdentity.length < 43 || trimmedIdentity.length > 44) {
+      issues.push({ id: 'naming', name: 'Contract Owner', issue: 'Identity ID must be 43-44 characters' });
+    } else if (!base58Pattern.test(trimmedIdentity)) {
+      issues.push({ id: 'naming', name: 'Contract Owner', issue: 'Invalid Base58 identity format' });
+    }
+
+    // 3. BASE SUPPLY VALIDATION
+    const permissions = form.permissions || {};
+    const baseSupply = permissions.baseSupply;
+    const baseSupplyNum = parseInt(baseSupply, 10);
+    if (baseSupply === undefined || baseSupply === null || baseSupply === '') {
+      issues.push({ id: 'permissions', name: 'Permissions', issue: 'Base supply is required' });
+    } else if (isNaN(baseSupplyNum) || baseSupplyNum < 0) {
+      issues.push({ id: 'permissions', name: 'Permissions', issue: 'Base supply must be a valid number >= 0' });
+    }
+
+    // 4. MAX SUPPLY VALIDATION (if enabled)
+    if (permissions.useMaxSupply) {
+      const maxSupply = permissions.maxSupply;
+      const maxSupplyNum = parseInt(maxSupply, 10);
+      if (maxSupply === undefined || maxSupply === null || maxSupply === '') {
+        issues.push({ id: 'permissions', name: 'Permissions', issue: 'Max supply is required when enabled' });
+      } else if (isNaN(maxSupplyNum) || maxSupplyNum <= 0) {
+        issues.push({ id: 'permissions', name: 'Permissions', issue: 'Max supply must be greater than 0' });
+      } else if (maxSupplyNum < baseSupplyNum) {
+        issues.push({ id: 'permissions', name: 'Permissions', issue: 'Max supply cannot be less than base supply' });
+      }
+    }
+
+    // 5. DECIMALS VALIDATION
+    const decimals = permissions.decimals;
+    const decimalsNum = typeof decimals === 'number' ? decimals : parseInt(decimals, 10);
+    if (decimals === undefined || decimals === null || decimals === '') {
+      issues.push({ id: 'permissions', name: 'Permissions', issue: 'Decimals must be set (0-18)' });
+    } else if (isNaN(decimalsNum) || decimalsNum < 0 || decimalsNum > 18) {
+      issues.push({ id: 'permissions', name: 'Permissions', issue: 'Decimals must be an integer from 0 to 18' });
+    }
+
+    return issues;
+  }
+
+  // Alias for backward compatibility during transition
+  function evaluateRegistration(options) {
+    return evaluateExport(options);
   }
 
   function resetWizard() {
@@ -4365,139 +4392,7 @@ window.__WIZARD_RESET_MODE__ = false;
     const detExportBtn = document.getElementById('det-export-contract-btn');
     const detExportFullBtn = document.getElementById('det-export-full-config-btn');
 
-    // Comprehensive contract validation - local helper function
-    function validateContractForExport() {
-      const issues = [];
-      const form = wizardState.form || {};
-
-      // 1. TOKEN NAME VALIDATION
-      const rawTokenName = form.tokenName || '';
-      const trimmedName = rawTokenName.trim();
-      if (!trimmedName) {
-        issues.push({
-          id: 'naming',
-          name: 'Token Naming',
-          issue: 'Token name is required'
-        });
-      } else if (trimmedName.length > 100) {
-        issues.push({
-          id: 'naming',
-          name: 'Token Naming',
-          issue: 'Token name must be 100 characters or less'
-        });
-      }
-
-      // 2. OWNER IDENTITY ID VALIDATION
-      const ownerIdentityId = form.ownerIdentityId || '';
-      const trimmedIdentity = ownerIdentityId.trim();
-      const base58Pattern = /^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$/;
-      if (!trimmedIdentity) {
-        issues.push({
-          id: 'naming',
-          name: 'Contract Owner',
-          issue: 'Owner Identity ID is required'
-        });
-      } else if (trimmedIdentity.length < 43 || trimmedIdentity.length > 44) {
-        issues.push({
-          id: 'naming',
-          name: 'Contract Owner',
-          issue: 'Identity ID must be 43-44 characters'
-        });
-      } else if (!base58Pattern.test(trimmedIdentity)) {
-        issues.push({
-          id: 'naming',
-          name: 'Contract Owner',
-          issue: 'Invalid Base58 identity format'
-        });
-      }
-
-      // 3. BASE SUPPLY VALIDATION
-      const permissions = form.permissions || {};
-      const baseSupply = permissions.baseSupply;
-      const baseSupplyNum = parseInt(baseSupply, 10);
-      if (baseSupply === undefined || baseSupply === null || baseSupply === '') {
-        issues.push({
-          id: 'permissions',
-          name: 'Permissions',
-          issue: 'Base supply is required'
-        });
-      } else if (isNaN(baseSupplyNum) || baseSupplyNum < 0) {
-        issues.push({
-          id: 'permissions',
-          name: 'Permissions',
-          issue: 'Base supply must be a valid number ≥ 0'
-        });
-      }
-
-      // 4. MAX SUPPLY VALIDATION (if enabled)
-      if (permissions.useMaxSupply) {
-        const maxSupply = permissions.maxSupply;
-        const maxSupplyNum = parseInt(maxSupply, 10);
-        if (maxSupply === undefined || maxSupply === null || maxSupply === '') {
-          issues.push({
-            id: 'permissions',
-            name: 'Permissions',
-            issue: 'Max supply is required when enabled'
-          });
-        } else if (isNaN(maxSupplyNum) || maxSupplyNum <= 0) {
-          issues.push({
-            id: 'permissions',
-            name: 'Permissions',
-            issue: 'Max supply must be greater than 0'
-          });
-        } else if (maxSupplyNum < baseSupplyNum) {
-          issues.push({
-            id: 'permissions',
-            name: 'Permissions',
-            issue: 'Max supply cannot be less than base supply'
-          });
-        }
-      }
-
-      // 5. DECIMALS VALIDATION
-      const decimals = permissions.decimals;
-      const decimalsNum = typeof decimals === 'number' ? decimals : parseInt(decimals, 10);
-      if (decimals === undefined || decimals === null || decimals === '') {
-        issues.push({
-          id: 'permissions',
-          name: 'Permissions',
-          issue: 'Decimals must be set (0-18)'
-        });
-      } else if (isNaN(decimalsNum) || decimalsNum < 0 || decimalsNum > 18) {
-        issues.push({
-          id: 'permissions',
-          name: 'Permissions',
-          issue: 'Decimals must be an integer from 0 to 18'
-        });
-      }
-
-      // 6. LOCALIZATION VALIDATION (at least one valid entry)
-      const localizations = form.naming?.conventions?.localizations || {};
-      const locKeys = Object.keys(localizations);
-      if (locKeys.length === 0) {
-        // No localizations defined - this is okay, will use defaults
-      } else {
-        // Validate each localization entry
-        let hasValidLocalization = false;
-        for (const code of locKeys) {
-          const loc = localizations[code];
-          if (loc && loc.singular_form && loc.plural_form) {
-            hasValidLocalization = true;
-            break;
-          }
-        }
-        if (!hasValidLocalization && locKeys.length > 0) {
-          issues.push({
-            id: 'naming',
-            name: 'Localizations',
-            issue: 'Localizations must have singular and plural forms'
-          });
-        }
-      }
-
-      return issues;
-    }
-
+    // Use the shared validateContractForExport function defined at module level
     const missingSteps = validateContractForExport();
 
     if (missingSteps.length > 0) {
