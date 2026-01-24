@@ -4088,45 +4088,10 @@ window.__WIZARD_RESET_MODE__ = false;
     });
   }
 
+  // Note: syncRegistrationPreflightUI removed - Export page now handles exports
   function syncRegistrationPreflightUI() {
-    syncRegistrationSelection();
-    const method = wizardState.form.registration.method;
-
-    Object.entries(registrationPanels).forEach(([key, panel]) => {
-      if (!panel) {
-        return;
-      }
-      const active = method === key;
-      panel.hidden = !active;
-      panel.setAttribute('aria-hidden', String(!active));
-    });
-
-    if (jsonShowButton) {
-      jsonShowButton.disabled = method !== 'det';
-    }
-
-    if (jsonCopyButton) {
-      const displayed = Boolean(wizardState.form.registration.preflight.det.jsonDisplayed);
-      jsonCopyButton.disabled = method !== 'det' || !displayed;
-    }
-
-    if (selfWarningCheckbox) {
-      const acknowledged = Boolean(wizardState.form.registration.preflight.self.warningAcknowledged);
-      if (method !== 'self' && !acknowledged) {
-        selfWarningCheckbox.checked = false;
-      } else if (method === 'self') {
-        selfWarningCheckbox.checked = acknowledged;
-      }
-      selfWarningCheckbox.disabled = acknowledged;
-    }
-
-    if (selfWarningProceedButton) {
-      const identityId = (wizardState.form.registration.identity.id || '').trim();
-      const acknowledged = Boolean(wizardState.form.registration.preflight.self.warningAcknowledged);
-      const checkboxConfirmed = Boolean(selfWarningCheckbox && selfWarningCheckbox.checked);
-      const canProceed = method === 'self' && !acknowledged && checkboxConfirmed && identityId.length > 0;
-      selfWarningProceedButton.disabled = !canProceed;
-    }
+    // Stub - Registration UI removed, Export page handles validation
+  }
 
     updateRegistrationPreviewVisibility();
     syncIdentityUI();
@@ -6338,20 +6303,9 @@ window.__WIZARD_RESET_MODE__ = false;
     });
   }
 
+  // Note: syncRegistrationSelection removed - Export page now handles exports
   function syncRegistrationSelection() {
-    const selectedValue = wizardState.form.registration.method;
-    registrationMethodInputs.forEach((input) => {
-      input.checked = input.value === selectedValue;
-    });
-    registrationOptionLabels.forEach((label) => {
-      const input = label.querySelector('input[name="registration-method"]');
-      const isSelected = Boolean(input && input.value === selectedValue);
-      if (input) {
-        input.checked = isSelected;
-      }
-      label.classList.toggle('wizard-option--selected', isSelected);
-      label.setAttribute('aria-checked', String(isSelected));
-    });
+    // Stub - Registration UI removed, Export page handles validation
   }
 
   function syncSearchUI() {
@@ -6394,18 +6348,9 @@ window.__WIZARD_RESET_MODE__ = false;
     `).join('');
   }
 
+  // Note: updateRegistrationPreviewVisibility removed - Export page now handles preview
   function updateRegistrationPreviewVisibility() {
-    const method = wizardState.form.registration.method;
-    const jsonReady = Boolean(wizardState.form.registration.preflight.det.jsonDisplayed);
-    if (jsonPreview) {
-      if (method === 'det' && jsonReady) {
-        jsonPreview.hidden = false;
-        renderJsonPreview();
-      } else {
-        jsonPreview.hidden = true;
-        jsonPreviewContent.textContent = '';
-      }
-    }
+    // Stub - Registration UI removed, Export page handles JSON preview
   }
 
   function updateConfigurationOverview() {
