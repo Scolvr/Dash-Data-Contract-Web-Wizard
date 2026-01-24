@@ -4379,17 +4379,11 @@ window.__WIZARD_RESET_MODE__ = false;
           name: 'Token Naming',
           issue: 'Token name is required'
         });
-      } else if (trimmedName.length < 1 || trimmedName.length > 100) {
+      } else if (trimmedName.length > 100) {
         issues.push({
           id: 'naming',
           name: 'Token Naming',
-          issue: 'Token name must be 1-100 characters'
-        });
-      } else if (!/^[a-zA-Z][a-zA-Z0-9_\s-]*$/.test(trimmedName)) {
-        issues.push({
-          id: 'naming',
-          name: 'Token Naming',
-          issue: 'Token name must start with a letter'
+          issue: 'Token name must be 100 characters or less'
         });
       }
 
@@ -4462,13 +4456,14 @@ window.__WIZARD_RESET_MODE__ = false;
 
       // 5. DECIMALS VALIDATION
       const decimals = permissions.decimals;
-      if (decimals === undefined || decimals === null) {
+      const decimalsNum = typeof decimals === 'number' ? decimals : parseInt(decimals, 10);
+      if (decimals === undefined || decimals === null || decimals === '') {
         issues.push({
           id: 'permissions',
           name: 'Permissions',
           issue: 'Decimals must be set (0-18)'
         });
-      } else if (typeof decimals !== 'number' || decimals < 0 || decimals > 18 || !Number.isInteger(decimals)) {
+      } else if (isNaN(decimalsNum) || decimalsNum < 0 || decimalsNum > 18) {
         issues.push({
           id: 'permissions',
           name: 'Permissions',
