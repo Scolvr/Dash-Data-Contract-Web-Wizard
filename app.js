@@ -17550,9 +17550,10 @@ window.__WIZARD_RESET_MODE__ = false;
     // ─────────────────────────────────────────────────────────────────────
     // Theme Toggle
     // ─────────────────────────────────────────────────────────────────────
-    function setTheme(theme) {
+    const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    function applyTheme(theme) {
       document.documentElement.setAttribute('data-theme', theme);
-      localStorage.setItem('ui-theme', theme);
 
       // Update button states
       headerThemeBtns.forEach(btn => {
@@ -17564,24 +17565,47 @@ window.__WIZARD_RESET_MODE__ = false;
       sidebarThemeRadios.forEach(radio => {
         radio.checked = radio.value === theme;
       });
+    }
 
-      console.log('[GlobalHeader] Theme set to:', theme);
+    function setTheme(theme, persist = true) {
+      applyTheme(theme);
+      if (persist) {
+        localStorage.setItem('ui-theme', theme);
+      }
+      console.log('[GlobalHeader] Theme set to:', theme, persist ? '(saved)' : '(system)');
     }
 
     headerThemeBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         const theme = btn.dataset.theme;
         if (theme) {
-          setTheme(theme);
+          setTheme(theme, true); // User click = persist
         }
       });
     });
 
-    // Initialize theme from localStorage or preference
+    // Initialize theme from localStorage or system preference
     const savedTheme = localStorage.getItem('ui-theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
-    setTheme(initialTheme);
+    const systemTheme = darkModeQuery.matches ? 'dark' : 'light';
+    const initialTheme = savedTheme || systemTheme;
+
+    // Apply initial theme (persist=false if following system)
+    applyTheme(initialTheme);
+
+    // Listen for system theme changes
+    darkModeQuery.addEventListener('change', (e) => {
+      const newSystemTheme = e.matches ? 'dark' : 'light';
+      const userPref = localStorage.getItem('ui-theme');
+
+      if (!userPref) {
+        // No saved preference - follow system
+        applyTheme(newSystemTheme);
+        console.log('[GlobalHeader] Following system theme:', newSystemTheme);
+      } else {
+        // User has preference - but still update UI to show current system theme would be
+        console.log('[GlobalHeader] System changed to', newSystemTheme, '- user preference:', userPref);
+      }
+    });
 
     // ─────────────────────────────────────────────────────────────────────
     // Reset Button (Full Website Reset)
