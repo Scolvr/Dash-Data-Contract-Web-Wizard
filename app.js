@@ -3748,17 +3748,8 @@ window.__WIZARD_RESET_MODE__ = false;
       issues.push({ id: 'naming', name: 'Token Naming', issue: 'Token name must be 100 characters or less' });
     }
 
-    // 2. OWNER IDENTITY ID VALIDATION
-    const ownerIdentityId = form.ownerIdentityId || '';
-    const trimmedIdentity = ownerIdentityId.trim();
-    const base58Pattern = /^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$/;
-    if (!trimmedIdentity) {
-      issues.push({ id: 'naming', name: 'Contract Owner', issue: 'Owner Identity ID is required' });
-    } else if (trimmedIdentity.length < 43 || trimmedIdentity.length > 44) {
-      issues.push({ id: 'naming', name: 'Contract Owner', issue: 'Identity ID must be 43-44 characters' });
-    } else if (!base58Pattern.test(trimmedIdentity)) {
-      issues.push({ id: 'naming', name: 'Contract Owner', issue: 'Invalid Base58 identity format' });
-    }
+    // 2. OWNER IDENTITY ID - Optional (placeholder used, replaced in DET)
+    // No validation required - DET will use the registering user's identity
 
     // 3. BASE SUPPLY VALIDATION
     const permissions = form.permissions || {};
