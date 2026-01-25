@@ -16415,9 +16415,7 @@ window.__WIZARD_RESET_MODE__ = false;
     hideSettingsConfirmationModal();
 
     // Navigate to export step
-    if (typeof goToNextScreen === 'function') {
-      goToNextScreen('search');
-    } else if (typeof showScreen === 'function') {
+    if (typeof showScreen === 'function') {
       showScreen('export');
     }
   }
