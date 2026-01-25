@@ -68,8 +68,9 @@ export async function initializeEvoSDK() {
 
       return sdkModule;
     } catch (error) {
-      console.error('[Evo SDK] Failed to initialize:', error);
-      throw error;
+      // SDK is optional - validation still works without it
+      console.info('[Evo SDK] SDK not available (optional) - using local validation instead');
+      return null;
     }
   })();
 

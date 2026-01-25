@@ -10105,7 +10105,8 @@
         window.dispatchEvent(new CustomEvent('evo:sdk-ready'));
         console.info('[Evo SDK] Dash Evo SDK v2.1.3 initialized successfully (DataContract V1 with tokens supported)');
       } catch (error) {
-        console.error('[Evo SDK] Failed to initialize:', error);
+        // SDK is optional - validation still works without it
+        console.info('[Evo SDK] SDK not available (optional) - using local validation instead');
       }
     });
   </script>
