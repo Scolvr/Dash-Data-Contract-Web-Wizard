@@ -17635,15 +17635,6 @@ window.__WIZARD_RESET_MODE__ = false;
       });
     }
 
-    // Back to hub button on templates page
-    const templatesBackBtn = document.getElementById('templates-back-to-hub');
-    if (templatesBackBtn) {
-      templatesBackBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        showHubPage();
-      });
-    }
-
     // Templates page card click handlers - opens the confirmation modal
     const templatesContent = document.getElementById('templates-content');
     if (templatesContent) {
