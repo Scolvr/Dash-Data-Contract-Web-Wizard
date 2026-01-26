@@ -2486,8 +2486,9 @@ window.__WIZARD_RESET_MODE__ = false;
       apply(ready, detail || {});
       syncWizardReadiness({ refreshStatus: true });
       persistState();
-      if (wizardState.steps.registration.touched) {
-        evaluateRegistration({ touched: true, silent: false });
+      // Export step validation (registration step removed)
+      if (wizardState.steps.export?.touched) {
+        evaluateExport({ touched: true, silent: false });
       }
     });
   });
@@ -2891,8 +2892,6 @@ window.__WIZARD_RESET_MODE__ = false;
       persistState();
     }
     syncIdentityUI();
-    const registrationTouched = wizardState.steps.registration.touched;
-    evaluateRegistration({ touched: registrationTouched, silent: !registrationTouched });
   }
 
   function syncWalletInsights() {
@@ -3118,7 +3117,8 @@ window.__WIZARD_RESET_MODE__ = false;
       initialiseWalletClientWithFingerprint(fingerprint);
     }
 
-    evaluateRegistration({ touched: wizardState.steps.registration.touched, silent: true });
+    // Export step validation (registration step removed)
+    evaluateExport({ touched: wizardState.steps.export?.touched || false, silent: true });
     return validation;
   }
 
@@ -3262,7 +3262,8 @@ window.__WIZARD_RESET_MODE__ = false;
         identityMessage.textContent = reason;
       }
       syncIdentityUI();
-      evaluateRegistration({ touched: wizardState.steps.registration.touched, silent: true });
+      // Export step validation (registration step removed)
+      evaluateExport({ touched: wizardState.steps.export?.touched || false, silent: true });
     } finally {
       // Performance Enhancement: Always hide loading overlay when operation completes
       hideLoadingOverlay();
@@ -16003,20 +16004,38 @@ window.__WIZARD_RESET_MODE__ = false;
     // Reset wizard state without reloading the page
     hideStartOverModal();
 
+    console.log('[Reset] Starting wizard reset...');
+
     // Call the exposed resetWizard function
     if (typeof window.resetWizard === 'function') {
-      window.resetWizard();
+      try {
+        window.resetWizard();
+        console.log('[Reset] resetWizard() completed');
+      } catch (err) {
+        console.error('[Reset] resetWizard() failed:', err);
+      }
+    } else {
+      console.warn('[Reset] window.resetWizard not available');
     }
 
     // Navigate to first step of the wizard
     if (typeof window.showScreen === 'function') {
-      window.showScreen('naming', { force: true });
+      try {
+        window.showScreen('naming', { force: true });
+        console.log('[Reset] Navigated to naming step');
+      } catch (err) {
+        console.error('[Reset] showScreen() failed:', err);
+      }
+    } else {
+      console.warn('[Reset] window.showScreen not available');
     }
 
     // Show success toast
     if (typeof window.showToast === 'function') {
       window.showToast('Wizard has been reset', 'success');
     }
+
+    console.log('[Reset] Wizard reset complete');
   }
 
   // Show modal when Start Over clicked (main sidebar)
