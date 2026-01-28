@@ -1268,13 +1268,17 @@ img {
    ═══════════════════════════════════════════════════════════════════ */
 
 :root {
-  --header-bg: rgba(10, 10, 14, 0.95);
-  --header-border: rgba(255, 255, 255, 0.08);
+  --header-bg: rgba(10, 10, 14, 0.65);
+  --header-bg-gradient: linear-gradient(135deg, rgba(20, 20, 30, 0.7) 0%, rgba(10, 10, 14, 0.6) 100%);
+  --header-border: rgba(255, 255, 255, 0.12);
+  --header-glow: rgba(0, 141, 228, 0.08);
 }
 
 html[data-theme='light'] {
-  --header-bg: rgba(255, 255, 255, 0.95);
+  --header-bg: rgba(255, 255, 255, 0.65);
+  --header-bg-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(248, 250, 252, 0.65) 100%);
   --header-border: rgba(0, 0, 0, 0.08);
+  --header-glow: rgba(0, 141, 228, 0.05);
 }
 
 .global-header {
@@ -1287,12 +1291,15 @@ html[data-theme='light'] {
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  background: var(--header-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: var(--header-bg-gradient);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid var(--header-border);
+  box-shadow:
+    0 4px 30px rgba(0, 0, 0, 0.1),
+    0 1px 0 var(--header-glow) inset;
   z-index: 1000;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 /* Left Section: Brand */
@@ -22073,7 +22080,7 @@ html[data-theme='light'] .template-card--glass:hover {
     overflow-x: hidden !important;
   }
 
-  /* Global header becomes the mobile header */
+  /* Global header becomes the mobile header - glassmorphism */
   .global-header {
     position: fixed !important;
     top: 0 !important;
@@ -22086,8 +22093,11 @@ html[data-theme='light'] .template-card--glass:hover {
     justify-content: space-between !important;
     padding: 0 12px !important;
     gap: 8px !important;
-    background: var(--color-surface, #1a1a2e) !important;
-    border-bottom: 1px solid var(--color-border, rgba(255, 255, 255, 0.1)) !important;
+    background: var(--header-bg-gradient) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border-bottom: 1px solid var(--header-border) !important;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1), 0 1px 0 var(--header-glow) inset !important;
   }
 
   /* Header left section - brand */
@@ -22597,10 +22607,10 @@ html[data-theme='light'] .template-card--glass:hover {
     display: none !important;
   }
 
-  /* Light mode header styles */
+  /* Light mode header styles - glassmorphism */
   html[data-theme='light'] .global-header {
-    background: rgba(255, 255, 255, 0.95) !important;
-    border-bottom-color: rgba(0, 0, 0, 0.08) !important;
+    background: var(--header-bg-gradient) !important;
+    border-bottom-color: var(--header-border) !important;
   }
 
   html[data-theme='light'] .mobile-menu-btn {
