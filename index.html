@@ -9731,7 +9731,7 @@
           <div class="template-features__group">
             <span class="template-features__group-label">Trading & History</span>
             <div class="template-features__grid template-features__grid--4col">
-              <div class="template-feature template-feature--select" data-feature="tradeMode" data-value="closed">
+              <div class="template-feature template-feature--disabled" data-feature="tradeMode" data-value="closed" data-active="false" title="Marketplace trading not yet supported on Dash Platform" style="pointer-events: none; cursor: default;">
                 <div class="template-feature__icon">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
@@ -9739,11 +9739,7 @@
                   </svg>
                 </div>
                 <span class="template-feature__label">Trade Mode</span>
-                <select class="template-feature__select" id="template-trade-mode">
-                  <option value="closed">Closed</option>
-                  <option value="permissionless">Open</option>
-                  <option value="committee-approved">Committee</option>
-                </select>
+                <span class="template-feature__status">Closed</span>
               </div>
               <div class="template-feature" data-feature="historyTransfers" data-active="true">
                 <div class="template-feature__icon">
