@@ -762,13 +762,20 @@ export function generatePlatformContractJSON(state, options = {}) {
     platformContract.groups = groups;
   }
 
-  // Add keywords
+  // Add keywords - filter out invalid keywords (Dash Platform rejects whitespace/control chars)
   const userKeywordsText = state.form?.search?.keywords?.trim();
-  const userKeywords = userKeywordsText ? userKeywordsText.split(',').map(k => k.trim()).filter(k => k.length > 0) : [];
+  const userKeywords = userKeywordsText
+    ? userKeywordsText.split(',').map(k => k.trim()).filter(k => {
+        if (k.length < 3 || k.length > 50) return false;
+        if (/\s/.test(k)) return false;
+        if (/[\x00-\x1f\x7f-\x9f]/.test(k)) return false;
+        return true;
+      })
+    : [];
   if (userKeywords.length > 0) {
     platformContract.keywords = userKeywords.slice(0, 50);
   } else if (tokenName && tokenName !== 'Unnamed Token') {
-    platformContract.keywords = [tokenName.toLowerCase()];
+    platformContract.keywords = [tokenName.toLowerCase().replace(/\s+/g, '-')];
   }
 
   // Add description

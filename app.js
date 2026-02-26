@@ -3683,25 +3683,52 @@ window.__WIZARD_RESET_MODE__ = false;
     const stepState = wizardState.steps.search;
     stepState.touched = touched;
 
-    // FIX: When user actively clicks Continue (touched=true), mark as valid for navigation
-    // For initial page load (touched=false), only show valid if previous steps complete
-    // This prevents sidebar showing checkmark before user reaches the step
     const distributionStep = wizardState.steps.distribution;
     const previousStepsComplete = distributionStep && distributionStep.validity === 'valid';
 
-    // If user is actively interacting (touched), or previous steps are complete, mark valid
-    // Otherwise keep as unknown to prevent premature checkmark in sidebar
-    stepState.validity = (touched || previousStepsComplete) ? 'valid' : 'unknown';
+    // Validate keywords if any are provided
+    const keywordsText = wizardState.form.search.keywords?.trim() || '';
+    const keywordErrors = [];
 
-    // Form is always valid (all fields optional)
-    const result = { valid: true, message: '' };
+    if (keywordsText) {
+      const tags = keywordsText.split(',').map(k => k.trim()).filter(k => k.length > 0);
 
-    if (searchMessage) {
-      searchMessage.textContent = '';
+      if (tags.length > 50) {
+        keywordErrors.push(`Too many keywords (${tags.length}/50 max)`);
+      }
+
+      for (const tag of tags) {
+        const result = validateKeyword(tag);
+        if (!result.valid) {
+          keywordErrors.push(`"${tag}" ${result.reason}`);
+        }
+      }
     }
-    if (searchNextButton) {
-      searchNextButton.disabled = false;  // Always enabled - fields are optional
+
+    const hasErrors = keywordErrors.length > 0;
+
+    if (hasErrors) {
+      stepState.validity = 'invalid';
+      const message = keywordErrors.slice(0, 3).join('; ') + (keywordErrors.length > 3 ? ` (+${keywordErrors.length - 3} more)` : '');
+
+      if (searchMessage) {
+        searchMessage.textContent = message;
+      }
+      if (searchNextButton) {
+        searchNextButton.disabled = true;
+      }
+    } else {
+      stepState.validity = (touched || previousStepsComplete) ? 'valid' : 'unknown';
+
+      if (searchMessage) {
+        searchMessage.textContent = '';
+      }
+      if (searchNextButton) {
+        searchNextButton.disabled = false;
+      }
     }
+
+    const result = { valid: !hasErrors, message: hasErrors ? keywordErrors[0] : '' };
 
     if (!silent) {
       updateStepStatusUI('search');
@@ -6288,9 +6315,33 @@ window.__WIZARD_RESET_MODE__ = false;
     updateKeywordsPreview();
   }
 
+  /**
+   * Validate a single keyword against Dash Platform rules.
+   * Returns { valid, reason } where reason describes the issue if invalid.
+   */
+  function validateKeyword(keyword) {
+    // Check for whitespace characters within the keyword
+    if (/\s/.test(keyword)) {
+      return { valid: false, reason: 'contains spaces or whitespace' };
+    }
+    // Check for control characters (U+0000–U+001F, U+007F–U+009F)
+    if (/[\x00-\x1f\x7f-\x9f]/.test(keyword)) {
+      return { valid: false, reason: 'contains control characters' };
+    }
+    // Check length (3-50 characters)
+    if (keyword.length < 3) {
+      return { valid: false, reason: 'too short (min 3 characters)' };
+    }
+    if (keyword.length > 50) {
+      return { valid: false, reason: 'too long (max 50 characters)' };
+    }
+    return { valid: true, reason: '' };
+  }
+
   function updateKeywordsPreview() {
     const previewContainer = document.getElementById('search-keywords-preview');
     const tagContainer = document.getElementById('search-keywords-tag-container');
+    const validationContainer = document.getElementById('search-keywords-validation');
 
     if (!searchKeywordsInput || !previewContainer || !tagContainer) {
       return;
@@ -6301,6 +6352,10 @@ window.__WIZARD_RESET_MODE__ = false;
     if (!keywords) {
       previewContainer.style.display = 'none';
       tagContainer.innerHTML = '';
+      if (validationContainer) {
+        validationContainer.style.display = 'none';
+        validationContainer.textContent = '';
+      }
       return;
     }
 
@@ -6309,13 +6364,41 @@ window.__WIZARD_RESET_MODE__ = false;
     if (tags.length === 0) {
       previewContainer.style.display = 'none';
       tagContainer.innerHTML = '';
+      if (validationContainer) {
+        validationContainer.style.display = 'none';
+        validationContainer.textContent = '';
+      }
       return;
     }
 
     previewContainer.style.display = 'block';
-    tagContainer.innerHTML = tags.map(tag => `
-      <span class="keyword-tag">${tag}</span>
-    `).join('');
+
+    const errors = [];
+
+    // Check total count
+    if (tags.length > 50) {
+      errors.push(`Too many keywords: ${tags.length}/50`);
+    }
+
+    tagContainer.innerHTML = tags.map(tag => {
+      const escaped = tag.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const result = validateKeyword(tag);
+      if (!result.valid) {
+        errors.push(`"${tag}" — ${result.reason}`);
+        return `<span class="keyword-tag keyword-tag--invalid" title="${result.reason}">${escaped}</span>`;
+      }
+      return `<span class="keyword-tag">${escaped}</span>`;
+    }).join('');
+
+    if (validationContainer) {
+      if (errors.length > 0) {
+        validationContainer.style.display = 'block';
+        validationContainer.textContent = errors.join(' · ');
+      } else {
+        validationContainer.style.display = 'none';
+        validationContainer.textContent = '';
+      }
+    }
   }
 
   // Note: updateRegistrationPreviewVisibility removed - Export page now handles preview
@@ -10952,12 +11035,20 @@ window.__WIZARD_RESET_MODE__ = false;
     }
 
     // Add keywords - use user-provided keywords if available, otherwise generate from token name
+    // Filter out any keywords that contain whitespace/control characters (Dash Platform rejects them)
     const userKeywordsText = wizardState.form.search.keywords?.trim();
-    const userKeywords = userKeywordsText ? userKeywordsText.split(',').map(k => k.trim()).filter(k => k.length > 0) : [];
-    if (userKeywords && userKeywords.length > 0) {
-      platformContract.keywords = userKeywords.slice(0, 50); // Max 50 keywords
+    const userKeywords = userKeywordsText
+      ? userKeywordsText.split(',').map(k => k.trim()).filter(k => {
+          if (k.length < 3 || k.length > 50) return false;
+          if (/\s/.test(k)) return false;
+          if (/[\x00-\x1f\x7f-\x9f]/.test(k)) return false;
+          return true;
+        })
+      : [];
+    if (userKeywords.length > 0) {
+      platformContract.keywords = userKeywords.slice(0, 50);
     } else if (tokenName && tokenName !== 'Unnamed Token') {
-      platformContract.keywords = [tokenName.toLowerCase()];
+      platformContract.keywords = [tokenName.toLowerCase().replace(/\s+/g, '-')];
     }
 
     // Add description - use user-provided description if available, otherwise generate from token name

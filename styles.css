@@ -4698,6 +4698,22 @@ html[data-theme='light'] .form-card--optional {
   font-style: italic;
 }
 
+.keyword-tag--invalid {
+  background: var(--color-danger, #dc3545);
+  color: #fff;
+}
+
+.keyword-tag--warning {
+  background: var(--color-warning, #f0ad4e);
+  color: #000;
+}
+
+.keywords-validation-message {
+  margin-top: var(--space-2);
+  font-size: 0.8125rem;
+  color: var(--color-danger, #dc3545);
+}
+
 @media (max-width: 480px) {
   .keyword-tag {
     font-size: 0.8125rem;
